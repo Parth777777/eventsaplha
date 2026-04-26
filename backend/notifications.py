@@ -1,5 +1,5 @@
 """
-EventAlpha Notification System
+Tickwave Notification System
 Discord webhook + Telegram bot integration for trading signal alerts
 """
 
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 # Add scraper to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scraper'))
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def send_discord_alert(webhook_url: str, signal: dict) -> bool:
                 {"name": "Impact", "value": f"{signal.get('impact_score', 0)}/100", "inline": True},
                 {"name": "Predicted Returns", "value": "\n".join(pred_lines) if pred_lines else "N/A", "inline": False},
             ],
-            "footer": {"text": f"EventAlpha Signal Engine • {datetime.now().strftime('%H:%M IST')}"},
+            "footer": {"text": f"Tickwave Signal Engine • {datetime.now().strftime('%H:%M IST')}"},
             "timestamp": datetime.utcnow().isoformat()
         }
 
@@ -116,11 +116,11 @@ def send_telegram_alert(bot_token: str, chat_id: str, signal: dict, app_url: str
             f"Entry: ₹{signal.get('entry_price', 0):,.2f}\n"
             f"Regime: {signal.get('regime', 'N/A').replace('_', ' ').title()}\n\n"
             f"<b>Predictions:</b>\n{pred_text}\n\n"
-            f"<i>EventAlpha • {datetime.now().strftime('%H:%M IST')}</i>"
+            f"<i>Tickwave • {datetime.now().strftime('%H:%M IST')}</i>"
         )
 
         if app_url:
-            message += f"\n\n<a href='{app_url}'>Open EventAlpha</a>"
+            message += f"\n\n<a href='{app_url}'>Open Tickwave</a>"
 
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         resp = requests.post(url, json={
@@ -175,7 +175,7 @@ def should_notify(signal: dict, config: dict) -> bool:
     return True
 
 
-def check_cooldown(db: EventAlphaDB, ticker: str, channel: str, cooldown_minutes: int) -> bool:
+def check_cooldown(db: TickwaveDB, ticker: str, channel: str, cooldown_minutes: int) -> bool:
     """Check if enough time has passed since last notification for this ticker"""
     last_sent = db.get_last_notification_for_ticker(ticker, channel)
     if last_sent is None:
@@ -194,7 +194,7 @@ def check_cooldown(db: EventAlphaDB, ticker: str, channel: str, cooldown_minutes
 
 # ============ PROCESS NEW SIGNALS ============
 
-def process_signal_notifications(signals: list, db: EventAlphaDB, app_url: str = ''):
+def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = ''):
     """Process a batch of new signals and send notifications where appropriate"""
     config = db.get_notification_config()
     if not config:
@@ -251,7 +251,7 @@ def process_signal_notifications(signals: list, db: EventAlphaDB, app_url: str =
         logger.info(f"Sent {sent_count} notifications")
 
 
-def send_test_notification(db: EventAlphaDB, app_url: str = '', user_id: str = 'legacy') -> dict:
+def send_test_notification(db: TickwaveDB, app_url: str = '', user_id: str = 'legacy') -> dict:
     """Send a test notification to verify Discord/Telegram setup"""
     config = db.get_notification_config(user_id=user_id)
     if not config:
@@ -269,7 +269,7 @@ def send_test_notification(db: EventAlphaDB, app_url: str = '', user_id: str = '
         'magnitude': 8,
         'impact_score': 80,
         'entry_price': 1000.00,
-        'headline': 'This is a test notification from EventAlpha',
+        'headline': 'This is a test notification from Tickwave',
         'predictions': {
             '1D': {'return_pct': 1.5, 'confidence': 0.6},
             '3D': {'return_pct': 4.2, 'confidence': 0.55},

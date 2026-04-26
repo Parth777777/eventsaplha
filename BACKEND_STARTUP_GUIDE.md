@@ -1,4 +1,4 @@
-# EventAlpha Complete System Startup Guide
+# Tickwave Complete System Startup Guide
 
 ## 🎯 What's New
 
@@ -18,7 +18,7 @@ You now have a **fully integrated backend API** that:
 cd scraper
 python database_schema.py
 ```
-This creates `data/eventalpha.db` with all schemas including new alerts & watchlist tables.
+This creates `data/tickwave.db` with all schemas including new alerts & watchlist tables.
 
 ---
 
@@ -78,7 +78,7 @@ http://localhost:8000
        ↓
 ┌──────────────────────┐
 │ market_data.json     │  → Raw event intelligence
-│ eventalpha.db        │  → Persistent storage
+│ tickwave.db        │  → Persistent storage
 └──────────┬───────────┘
            ↓
     ┌──────────────┐

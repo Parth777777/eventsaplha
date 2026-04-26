@@ -36,7 +36,7 @@ class Glossary:
         self.reload()
 
     def attach_db(self, db) -> None:
-        """Optional: attach EventAlphaDB so unknown-term hits can be cached."""
+        """Optional: attach TickwaveDB so unknown-term hits can be cached."""
         self._db = db
 
     def reload(self) -> None:

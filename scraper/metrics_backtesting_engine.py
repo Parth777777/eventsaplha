@@ -1,5 +1,5 @@
 """
-EventAlpha - Metrics & Backtesting Engine
+Tickwave - Metrics & Backtesting Engine
 5-layer confidence system, multi-horizon predictions, backtesting analytics
 """
 

@@ -1,5 +1,5 @@
 """
-EventAlpha - Alpha Scoring Engine
+Tickwave - Alpha Scoring Engine
 Regime-aware quantitative scoring with dynamic event weighting and sentiment adjustments
 """
 

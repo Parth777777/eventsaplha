@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-EventAlpha Backend API
+Tickwave Backend API
 Flask server that serves the frontend, REST API, and runs the scraper on a schedule.
 Supports PostgreSQL (Supabase) and SQLite (local dev).
 """
@@ -23,7 +23,7 @@ import jwt as pyjwt
 # Add scraper to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scraper'))
 
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 from notifications import process_signal_notifications, send_test_notification
 
 # Setup logging
@@ -51,11 +51,11 @@ AUTH_MODE = 'supabase' if SUPABASE_URL else 'local'
 
 db = None
 
-def get_db() -> EventAlphaDB:
+def get_db() -> TickwaveDB:
     """Get or create database connection"""
     global db
     if db is None:
-        db = EventAlphaDB()
+        db = TickwaveDB()
         db.init_schema()
     return db
 
@@ -340,6 +340,86 @@ def start_scheduler():
         except Exception as ext_exc:
             logger.error(f"Failed to register extension jobs: {ext_exc}")
 
+        # ----- New scheduled jobs (bulk-deals, SEBI bans, manipulation, F&O) -----
+        def _bulk_deals_daily():
+            try:
+                from bulk_deals import fetch_nse_bulk_deals, fetch_nse_block_deals, fetch_sebi_bans
+                db_ = get_db()
+                a = fetch_nse_bulk_deals(db_)
+                b = fetch_nse_block_deals(db_)
+                c = fetch_sebi_bans(db_)
+                logger.info(f"bulk-deals job: bulk={a} block={b} sebi_bans={c}")
+            except Exception as e:
+                logger.warning(f"bulk_deals job failed: {e}")
+
+        def _manipulation_daily():
+            try:
+                from forensics.manipulation_detectors import (
+                    detect_circular_pattern, detect_insider_exit_pattern,
+                )
+                db_ = get_db()
+                cp = detect_circular_pattern(db_)
+                ie = detect_insider_exit_pattern(db_)
+                logger.info(f"manipulation job: circular={len(cp)} insider_exit={len(ie)}")
+            except Exception as e:
+                logger.warning(f"manipulation job failed: {e}")
+
+        def _fo_intraday():
+            try:
+                # Snapshot the F&O top 10 universe (heuristic: tickers with options activity)
+                from fo_signals import snapshot_and_persist
+                top_universe = ['NIFTY', 'BANKNIFTY', 'RELIANCE', 'TCS', 'INFY',
+                                'HDFCBANK', 'ICICIBANK', 'SBIN', 'TATAMOTORS',
+                                'AXISBANK', 'BHARTIARTL', 'LT']
+                # NIFTY/BANKNIFTY are indices — caller passes is_index=False here
+                # but our function tries the equity URL first; for indices we'd
+                # split. Keep simple: equity-only for now.
+                equities = [t for t in top_universe if t not in ('NIFTY', 'BANKNIFTY')]
+                result = snapshot_and_persist(get_db(), equities, is_index=False)
+                logger.info(f"fo intraday: {result}")
+            except Exception as e:
+                logger.warning(f"fo intraday failed: {e}")
+
+        scheduler.add_job(_bulk_deals_daily, 'cron', hour=12, minute=0,
+                          id='bulk_deals_daily', max_instances=1)
+        scheduler.add_job(_manipulation_daily, 'cron', hour=11, minute=30,
+                          id='manipulation_daily', max_instances=1)
+        scheduler.add_job(_fo_intraday, 'cron',
+                          day_of_week='mon-fri', hour='4-10', minute=15,
+                          id='fo_intraday', max_instances=1,
+                          # Skip if previous run still going
+                          coalesce=True)
+
+        # Social hub: X (verified) every 5 min, Reddit/Telegram serious every 15 min
+        def _social_quick():
+            try:
+                from social.hub import collect_x, seed_default_sources
+                from stock_universe import UNIVERSE_TICKERS
+                db_ = get_db()
+                seed_default_sources(db_)
+                n = collect_x(db_, UNIVERSE_TICKERS)
+                if n:
+                    logger.info(f"social X: {n} new posts")
+            except Exception as e:
+                logger.warning(f"social X failed: {e}")
+
+        def _social_serious():
+            try:
+                from social.hub import collect_reddit_serious, collect_telegram_serious
+                from stock_universe import UNIVERSE_TICKERS
+                db_ = get_db()
+                a = collect_reddit_serious(db_, UNIVERSE_TICKERS)
+                b = collect_telegram_serious(db_, UNIVERSE_TICKERS)
+                if a or b:
+                    logger.info(f"social serious: reddit={a} telegram={b}")
+            except Exception as e:
+                logger.warning(f"social serious failed: {e}")
+
+        scheduler.add_job(_social_quick, 'interval', minutes=5,
+                          id='social_quick', max_instances=1, coalesce=True)
+        scheduler.add_job(_social_serious, 'interval', minutes=15,
+                          id='social_serious', max_instances=1, coalesce=True)
+
         scheduler.start()
         logger.info(f"Scheduler started: scraper every {interval}min, prediction tracker daily 10:30 UTC")
 
@@ -620,8 +700,8 @@ def get_stock_detail(ticker):
     ticker = ticker.strip().upper()
     try:
         # Use fresh DB connection (avoids SQLite threading issues)
-        from database_schema import EventAlphaDB, _execute_query
-        local_db = EventAlphaDB()
+        from database_schema import TickwaveDB, _execute_query
+        local_db = TickwaveDB()
         placeholder = '%s' if os.getenv('DATABASE_URL', '').startswith('postgres') else '?'
 
         # Best signal for this ticker
@@ -714,9 +794,9 @@ def get_stock_detail(ticker):
 def get_sectors():
     """Get sector-level aggregated data for heatmap"""
     try:
-        from database_schema import EventAlphaDB, _execute_query
+        from database_schema import TickwaveDB, _execute_query
         from stock_universe import STOCK_UNIVERSE
-        local_db = EventAlphaDB()
+        local_db = TickwaveDB()
 
         # Get all active signals grouped by sector
         signals = _execute_query(local_db.conn, """
@@ -774,9 +854,9 @@ def get_sectors():
 def get_sector_stocks(sector):
     """Get all signals for a specific sector"""
     try:
-        from database_schema import EventAlphaDB, _execute_query
+        from database_schema import TickwaveDB, _execute_query
         from stock_universe import STOCK_UNIVERSE
-        local_db = EventAlphaDB()
+        local_db = TickwaveDB()
 
         signals = _execute_query(local_db.conn, """
             SELECT * FROM signals WHERE status = 'active'
@@ -803,8 +883,8 @@ def portfolio_simulator():
     """Simulate returns from following top alpha signals.
     Shows what would happen if you invested equally in top N signals."""
     try:
-        from database_schema import EventAlphaDB, _execute_query
-        local_db = EventAlphaDB()
+        from database_schema import TickwaveDB, _execute_query
+        local_db = TickwaveDB()
 
         min_alpha = request.args.get('min_alpha', 40, type=float)
         top_n = request.args.get('top', 10, type=int)
@@ -903,8 +983,8 @@ def portfolio_simulator():
 def simulator_equity_curve():
     """Return time-series data for cumulative PnL chart and drawdown chart."""
     try:
-        from database_schema import EventAlphaDB, _execute_query
-        local_db = EventAlphaDB()
+        from database_schema import TickwaveDB, _execute_query
+        local_db = TickwaveDB()
 
         min_alpha = request.args.get('min_alpha', 40, type=float)
 
@@ -1043,8 +1123,8 @@ def get_stock_timeline(ticker):
     """Get events + signals for a specific stock over time (for timeline view)"""
     ticker = ticker.strip().upper()
     try:
-        from database_schema import EventAlphaDB, _execute_query
-        local_db = EventAlphaDB()
+        from database_schema import TickwaveDB, _execute_query
+        local_db = TickwaveDB()
         placeholder = '%s' if os.getenv('DATABASE_URL', '').startswith('postgres') else '?'
 
         # Get all signals for this ticker
@@ -1464,8 +1544,8 @@ def get_analytics():
     IC estimate; sector concentration; and a signal leaderboard.
     """
     try:
-        from database_schema import EventAlphaDB, _execute_query
-        local_db = EventAlphaDB()
+        from database_schema import TickwaveDB, _execute_query
+        local_db = TickwaveDB()
         is_pg = os.getenv('DATABASE_URL', '').startswith('postgres')
         ph = '%s' if is_pg else '?'
 
@@ -1720,9 +1800,9 @@ def portfolio_longshort():
         import sys, os as _os
         sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), '..', 'scraper'))
         from quant_layer import run_quant_pipeline
-        from database_schema import EventAlphaDB, _execute_query
+        from database_schema import TickwaveDB, _execute_query
 
-        local_db = EventAlphaDB()
+        local_db = TickwaveDB()
         min_alpha = request.args.get('min_alpha', 30, type=float)
 
         # Fetch active signals with predictions
@@ -1857,6 +1937,15 @@ except Exception as _rt_exc:
     logger.error(f"realtime init failed: {_rt_exc}")
 
 
+# ============ V3 ROUTES (forensics, F&O, screeners, paper, telemetry, audit) ============
+try:
+    import api_v3
+    api_v3.register(app, get_db)
+    logger.info("api_v3 registered: /api/forensics/* /api/fo/* /api/bulk-deals /api/screeners/* /api/paper/* /api/telemetry /api/audit/* /api/onboarding/* /api/watchlist/tags /api/sectors/rotation /api/geo/india /api/earnings/* /api/compare/*")
+except Exception as _v3_exc:
+    logger.error(f"api_v3 init failed: {_v3_exc}")
+
+
 # ============ SMART ALERTS EVAL HOOK (called from scraper job) ============
 def _evaluate_smart_alerts(signals, articles=None):
     """Run smart-alert evaluation against the latest scraper output.
@@ -1870,6 +1959,12 @@ def _evaluate_smart_alerts(signals, articles=None):
             "signals": signals or [],
             "news_velocity": build_news_velocity(articles or []) if articles else {},
         }
+        # Add bulk-deal / pledge change context if the helper module is loaded
+        try:
+            from bulk_deals import build_alert_context
+            ctx.update(build_alert_context(get_db(), days=2))
+        except Exception:
+            pass
         try:
             from realtime import broadcast_alert as _bc
         except Exception:
@@ -1899,7 +1994,7 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
 
     logger.info("=" * 50)
-    logger.info("EventAlpha API Server Starting")
+    logger.info("Tickwave API Server Starting")
     logger.info(f"Database: {'PostgreSQL' if os.getenv('DATABASE_URL', '').startswith('postgres') else 'SQLite'}")
     logger.info(f"Frontend: {FRONTEND_DIR}")
     logger.info(f"Port: {port}")

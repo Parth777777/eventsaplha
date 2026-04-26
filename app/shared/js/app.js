@@ -1,4 +1,4 @@
-// EventAlpha - Shared Router, API, LiveData & Utilities
+// Tickwave - Shared Router, API, LiveData & Utilities
 
 // ============ ROUTER ============
 class Router {
@@ -39,7 +39,7 @@ class Router {
   }
 
   updatePageTitle(title) {
-    document.title = `EventAlpha | ${title}`;
+    document.title = `Tickwave | ${title}`;
   }
 
   getCurrentPage() {
@@ -51,8 +51,8 @@ const router = new Router();
 
 // ============ AUTH ============
 class Auth {
-  static TOKEN_KEY = 'eventalpha_token';
-  static USER_KEY = 'eventalpha_user';
+  static TOKEN_KEY = 'tickwave_token';
+  static USER_KEY = 'tickwave_user';
 
   static getToken() { return Storage.get(this.TOKEN_KEY); }
   static getUser() { return Storage.get(this.USER_KEY); }
@@ -1909,7 +1909,7 @@ class MobileNav {
 
     // Inject mobile top bar — defer so ticker bar inserts first
     if (!main.querySelector('.mobile-top-bar')) {
-      const pageTitle = document.title.split('|')[1]?.trim() || 'EventAlpha';
+      const pageTitle = document.title.split('|')[1]?.trim() || 'Tickwave';
       const bar = document.createElement('div');
       bar.className = 'mobile-top-bar';
       bar.innerHTML = `

@@ -41,7 +41,7 @@ def _parse_ts(value) -> Optional[datetime]:
 class PublishPriorityTracker:
     """Keeps a per-cluster first-seen record and decorates posts/events.
 
-    State is persisted in `event_clusters` table via an EventAlphaDB instance.
+    State is persisted in `event_clusters` table via an TickwaveDB instance.
     """
 
     def __init__(self, db):

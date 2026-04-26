@@ -1,4 +1,4 @@
-# EventAlpha Hybrid Multi-Source Scraper - Setup Guide
+# Tickwave Hybrid Multi-Source Scraper - Setup Guide
 
 ## 🚀 Quick Start
 
@@ -105,7 +105,7 @@ python hybrid_scraper.py
 
 ### Windows (Task Scheduler)
 1. Open Task Scheduler
-2. Create Basic Task → "EventAlpha Scraper"
+2. Create Basic Task → "Tickwave Scraper"
 3. Trigger: Repeat every 5 minutes
 4. Action: `C:\path\to\python.exe C:\path\to\scraper\hybrid_scraper.py`
 

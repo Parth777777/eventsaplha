@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-EventAlpha Hybrid Multi-Source Scraper
+Tickwave Hybrid Multi-Source Scraper
 =====================================
 Combines RSS feeds, NewsAPI, Google News, market data APIs, and NLP
 for real-time event extraction. Writes to database AND JSON.
@@ -75,7 +75,7 @@ from alpha_scoring_engine import (
 from config import STOCK_SECTORS, SECTOR_STOCKS
 
 # Database
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 # Source tiering (Tier 1-4 weighting + content-hash dedup + cross-source gate)
 try:
@@ -216,7 +216,7 @@ Only include tickers from this list. If no specific company is affected, return 
 Handle negation carefully: "did NOT beat" is bearish, "despite war, markets rallied" is bullish.
 Return ONLY valid JSON, nothing else."""
 
-    def __init__(self, db: EventAlphaDB):
+    def __init__(self, db: TickwaveDB):
         self.db = db
         self.api_key = GROQ_API_KEY
         self.model = GROQ_MODEL
@@ -402,7 +402,7 @@ Return ONLY valid JSON, nothing else."""
 class RSSFeedCollector:
     """Collects news from RSS feeds, Google News RSS, and NewsAPI"""
 
-    def __init__(self, db: EventAlphaDB):
+    def __init__(self, db: TickwaveDB):
         self.sources = RSS_SOURCES
         self.db = db
         self.articles = []
@@ -1067,8 +1067,8 @@ class SignalEngine:
                     # Look up prior magnitude for this ticker (SurpriseFactor)
                     prior_mag = 0.0
                     try:
-                        from database_schema import EventAlphaDB, _execute_query
-                        _db = EventAlphaDB()
+                        from database_schema import TickwaveDB, _execute_query
+                        _db = TickwaveDB()
                         prior_rows = _execute_query(_db.conn,
                             "SELECT alpha_score FROM signals WHERE ticker=? AND event_type=? ORDER BY created_at DESC LIMIT 1",
                             (company, event['event_type']), fetch=True)
@@ -1127,7 +1127,7 @@ class SignalEngine:
                     _db_for_ci = None
                     if _ci:
                         try:
-                            from database_schema import EventAlphaDB as _DB
+                            from database_schema import TickwaveDB as _DB
                             _db_for_ci = _DB()
                         except Exception:
                             _db_for_ci = None
@@ -1304,7 +1304,7 @@ class DataPipeline:
     """Orchestrates data collection, processing, and storage"""
 
     def __init__(self):
-        self.db = EventAlphaDB()
+        self.db = TickwaveDB()
         self.db.init_schema()
         self.rss_collector = RSSFeedCollector(self.db)
         self.market_collector = MarketDataCollector(MONITORED_STOCKS)
@@ -1315,7 +1315,7 @@ class DataPipeline:
     def run(self) -> Dict:
         """Execute complete data pipeline"""
         logger.info("\n" + "=" * 60)
-        logger.info("EventAlpha Data Pipeline Starting...")
+        logger.info("Tickwave Data Pipeline Starting...")
         logger.info("=" * 60)
 
         start_time = time.time()

@@ -1,8 +1,8 @@
-# EventAlpha Backend API
+# Tickwave Backend API
 
 ## 📋 Overview
 
-The EventAlpha Backend API is a Flask-based REST server that:
+The Tickwave Backend API is a Flask-based REST server that:
 - Serves trading signals, events, and predictions from the scraper
 - Stores and retrieves data from SQLite database
 - Provides endpoints for alerts, watchlist, and statistics
@@ -75,7 +75,7 @@ python api.py
 │ (localhost:5000) │
 └────────┬─────────┘
          │
-         ├─→ SQLite Database (eventalpha.db)
+         ├─→ SQLite Database (tickwave.db)
          ├─→ JSON Data (market_data.json)
          └─→ CORS enabled for frontend
          
@@ -90,7 +90,7 @@ python api.py
 │ - Collects RSS feeds, market data     │
 │ - Generates signals                   │
 │ - Outputs market_data.json            │
-│ - Writes to eventalpha.db             │
+│ - Writes to tickwave.db             │
 └──────────────────────────────────────┘
 ```
 
@@ -162,7 +162,7 @@ Then open: **http://localhost:8000**
 
 ### Backend Settings (api.py)
 ```python
-DATABASE_PATH = '../data/eventalpha.db'
+DATABASE_PATH = '../data/tickwave.db'
 JSON_DATA_PATH = '../data/market_data.json'
 API_PORT = 5000
 API_HOST = '0.0.0.0'
@@ -221,7 +221,7 @@ curl http://localhost:5000/api/stats
 ### No data appearing
 - Run scraper: `python hybrid_scraper.py` 
 - Check `data/market_data.json` exists
-- Check database exists: `data/eventalpha.db`
+- Check database exists: `data/tickwave.db`
 
 ### Port already in use
 ```bash

@@ -1,5 +1,5 @@
 """
-EventAlpha Scraper Configuration
+Tickwave Scraper Configuration
 All settings loaded from environment variables with sensible defaults
 """
 import os

@@ -149,6 +149,7 @@ def predict_nifty_bias(snapshot: Dict[str, Dict],
         "direction": direction,
         "confidence": round(confidence, 2),
         "inputs": {k: round(v, 3) for k, v in x.items()},
+        "weights": {k: round(float(v), 4) for k, v in w.items()},
     }
 
 

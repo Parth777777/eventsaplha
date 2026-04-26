@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import yfinance as yf
 
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def _hit_target(predicted: float, actual: float) -> bool:
 
 
 def resolve_all(
-    db: EventAlphaDB,
+    db: TickwaveDB,
     max_tickers: Optional[int] = None,
     per_ticker_sleep: float = 0.5,
     progress_every: int = 10,
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-    db = EventAlphaDB()
+    db = TickwaveDB()
     max_t = int(sys.argv[1]) if len(sys.argv) > 1 else None
     result = resolve_all(db, max_tickers=max_t)
     print(result)

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Social Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.tab { background:#0d1118; color:#9aa0c8; border:1px solid #1f2336; border-radius:999px; padding:6px 18px; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; }
+.tab.active { background:#5b6cff22; color:#5b6cff; border-color:#5b6cff66; }
+.post { background:#0d1118; border:1px solid #1f2336; border-radius:12px; padding:14px 16px; margin-bottom:10px; transition:all 0.15s; }
+.post:hover { border-color:#5b6cff55; }
+.post-x { border-left:3px solid #1da1f2; }
+.post-reddit { border-left:3px solid #ff4500; }
+.post-telegram { border-left:3px solid #2aabee; }
+.tier1 { background:#4ee6b822; color:#4ee6b8; border:1px solid #4ee6b855; }
+.tier2 { background:#5b6cff22; color:#5b6cff; border:1px solid #5b6cff55; }
+.serious-hi { background:#f9d42322; color:#f9d423; border:1px solid #f9d42355; }
+.chip { display:inline-block; padding:2px 8px; border-radius:999px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-right:4px; }
+.handle-link { color:#9aa0c8; font-family:monospace; font-size:11px; }
+.ticker-pill { display:inline-block; padding:2px 8px; background:#1f2336; color:#dde3ef; border-radius:4px; font-family:monospace; font-size:11px; font-weight:700; margin-right:4px; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body" style="background:#080c12;color:#dde3ef;">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Social Feed</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+    <a class="sidebar-link active" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+    <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
+    <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+  </nav>
+</aside>
+
+<main class="main-content" style="padding:32px;max-width:1100px;">
+
+<header style="margin-bottom:18px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+    <span class="material-symbols-outlined" style="color:#5b6cff;font-size:30px;">forum</span>
+    <h1 style="font-family:'Plus Jakarta Sans';font-weight:900;font-size:32px;">SOCIAL FEED</h1>
+    <button onclick="manualRefresh()" id="refreshBtn" style="margin-left:auto;background:#1f2336;color:#9aa0c8;border:1px solid #2a3142;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;">↻ Refresh sources</button>
+  </div>
+  <p style="color:#9aa0c8;font-size:13px;line-height:1.5;">
+    <b style="color:#1da1f2;">X (verified handles only)</b> for quick news ·
+    <b style="color:#ff4500;">Reddit (serious-news subs only)</b> ·
+    <b style="color:#2aabee;">Telegram (serious channels only)</b>.
+    Pump-and-dump style content is filtered out.
+  </p>
+</header>
+
+<section style="display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+  <button class="tab active" data-tab="all" onclick="setTab('all')">All</button>
+  <button class="tab" data-tab="x" onclick="setTab('x')">X · Quick</button>
+  <button class="tab" data-tab="reddit" onclick="setTab('reddit')">Reddit · Serious</button>
+  <button class="tab" data-tab="telegram" onclick="setTab('telegram')">Telegram · Serious</button>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#9aa0c8;">
+    <input type="text" id="tickerFilter" placeholder="Filter ticker (RELIANCE)" style="background:#0d1118;color:#dde3ef;border:1px solid #1f2336;border-radius:6px;padding:6px 12px;font-size:11px;width:170px;text-transform:uppercase;" />
+    <select id="hoursFilter" onchange="loadFeed()" style="background:#0d1118;color:#dde3ef;border:1px solid #1f2336;border-radius:6px;padding:6px 10px;font-size:11px;">
+      <option value="1">last 1h</option>
+      <option value="6">last 6h</option>
+      <option value="12" selected>last 12h</option>
+      <option value="24">last 24h</option>
+      <option value="72">last 3d</option>
+    </select>
+  </span>
+</section>
+
+<section id="feed" style="margin-bottom:30px;">
+  <div style="padding:40px;text-align:center;color:#5a5d6a;font-size:12px;">Loading…</div>
+</section>
+
+<section style="margin-top:24px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+    <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px;color:#dde3ef;">My sources</h2>
+    <span style="height:1px;flex:1;background:#1f2336;"></span>
+    <span style="font-size:10px;color:#5a5d6a;font-family:monospace;">click "+" to add a handle / sub / channel</span>
+  </div>
+  <div id="sourcesPanel" style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;padding:16px;"></div>
+</section>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script>
+let activeTab = 'all';
+let _tickerTimer = null;
+
+function setTab(t) {
+  activeTab = t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  loadFeed();
+}
+
+document.getElementById('tickerFilter').addEventListener('input', () => {
+  clearTimeout(_tickerTimer);
+  _tickerTimer = setTimeout(loadFeed, 350);
+});
+
+async function loadFeed() {
+  const params = new URLSearchParams();
+  if (activeTab !== 'all') params.set('platform', activeTab);
+  const tk = document.getElementById('tickerFilter').value.trim().toUpperCase();
+  if (tk) params.set('ticker', tk);
+  const hrs = document.getElementById('hoursFilter').value;
+  params.set('hours', hrs);
+  params.set('limit', '80');
+
+  const r = await fetch('/api/social/feed?' + params.toString());
+  const j = await r.json();
+  const items = (j && j.data) || [];
+  const feed = document.getElementById('feed');
+  if (!items.length) {
+    feed.innerHTML = `<div style="padding:50px;text-align:center;color:#5a5d6a;font-size:12px;">
+      No items in this window.<br><span style="font-size:10px;">Try refreshing sources or widening the time filter.</span>
+      ${j.warning ? '<div style="margin-top:8px;color:#ff9466;font-size:10px;">' + j.warning + '</div>' : ''}
+    </div>`;
+    return;
+  }
+  feed.innerHTML = items.map(renderPost).join('');
+}
+
+function renderPost(p) {
+  const platform = p.platform;
+  const cls = 'post post-' + platform;
+  const handleLink = platform === 'x'
+      ? `https://x.com/${p.handle}`
+      : platform === 'reddit'
+          ? `https://www.reddit.com/r/${p.handle}`
+          : `https://t.me/s/${p.handle}`;
+  const handleLabel = platform === 'x'
+      ? '@' + p.handle
+      : platform === 'reddit'
+          ? 'r/' + p.handle
+          : 't.me/' + p.handle;
+  const platformIcon = platform === 'x' ? '𝕏' : platform === 'reddit' ? '👽' : '✈︎';
+
+  const chips = [];
+  if (p.verified && p.verified_tier === 1) chips.push('<span class="chip tier1">✓ T1 EXCHANGE</span>');
+  else if (p.verified && p.verified_tier === 2) chips.push('<span class="chip tier2">✓ VERIFIED</span>');
+  if (p.severity === 'serious' && p.serious_score >= 50) chips.push('<span class="chip serious-hi">SERIOUS</span>');
+  if (p.severity === 'quick') chips.push('<span class="chip" style="background:#1f2336;color:#9aa0c8;">QUICK</span>');
+
+  const ticks = (p.tickers || []).slice(0, 6).map(t =>
+    `<a href="compare.html?t=${t}" class="ticker-pill">${t}</a>`).join('');
+
+  const ago = window.Realtime ? (window.Realtime.ageLabel ? window.Realtime.ageLabel(p.posted_at || p.collected_at) : '') : '';
+  const eng = p.engagement ? `· ${p.engagement.toLocaleString()} ${platform === 'reddit' ? '↑' : platform === 'x' ? 'eng' : 'views'}` : '';
+
+  const text = (p.text || p.title || '').replace(/</g, '&lt;').slice(0, 600);
+
+  return `
+    <div class="${cls}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+        <span style="font-family:'JetBrains Mono',monospace;color:${platform === 'x' ? '#1da1f2' : platform === 'reddit' ? '#ff4500' : '#2aabee'};font-weight:800;">${platformIcon}</span>
+        <a href="${handleLink}" target="_blank" rel="noopener" class="handle-link" style="font-weight:800;color:#dde3ef;">${handleLabel}</a>
+        ${chips.join('')}
+        <span style="margin-left:auto;font-size:10px;color:#5a5d6a;font-family:monospace;">${ago} ${eng}</span>
+      </div>
+      <div style="font-size:13px;color:#dde3ef;line-height:1.5;margin-bottom:8px;white-space:pre-wrap;">${text}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#5a5d6a;">
+        <div>${ticks}</div>
+        <a href="${p.url}" target="_blank" rel="noopener" style="color:#9aa0c8;text-decoration:none;">→ open on ${platform}</a>
+      </div>
+    </div>`;
+}
+
+// ---- sources panel ----
+async function loadSources() {
+  const r = await fetch('/api/social/sources');
+  const j = await r.json();
+  const sources = (j && j.data) || [];
+  const groups = { x: [], reddit: [], telegram: [] };
+  sources.forEach(s => (groups[s.platform] || (groups[s.platform] = [])).push(s));
+  const panel = document.getElementById('sourcesPanel');
+  panel.innerHTML = ['x', 'reddit', 'telegram'].map(plat => `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:800;color:${plat === 'x' ? '#1da1f2' : plat === 'reddit' ? '#ff4500' : '#2aabee'};">${plat}</span>
+        <span style="font-size:10px;color:#5a5d6a;">${plat === 'x' ? '(verified quick news)' : '(serious news only)'}</span>
+        <button onclick="addSource('${plat}')" style="margin-left:auto;background:#1f2336;color:#5b6cff;border:1px solid #5b6cff55;border-radius:5px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">+ add</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${(groups[plat] || []).map(s => `
+          <span style="background:#1f2336;color:#dde3ef;padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+            ${plat === 'reddit' ? 'r/' + s.handle : plat === 'telegram' ? 't.me/' + s.handle : '@' + s.handle}
+            <button onclick="removeSource(${s.id})" style="background:transparent;color:#5a5d6a;border:0;cursor:pointer;font-size:14px;line-height:1;">×</button>
+          </span>
+        `).join('') || '<span style="color:#5a5d6a;font-size:11px;">none</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addSource(platform) {
+  let label = platform === 'x' ? 'X handle (without @)'
+            : platform === 'reddit' ? 'Subreddit name (without r/)'
+            : 'Telegram channel (without t.me/)';
+  const handle = (prompt('Add ' + label + ':') || '').trim();
+  if (!handle) return;
+  const r = await fetch('/api/social/sources', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ platform, handle }),
+  });
+  if ((await r.json()).success) loadSources();
+}
+
+async function removeSource(id) {
+  if (!confirm('Remove this source from your list?')) return;
+  await fetch('/api/social/sources/' + id, { method: 'DELETE' });
+  loadSources();
+}
+
+async function manualRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.textContent = '… fetching';
+  try {
+    const r = await fetch('/api/social/refresh', { method: 'POST' });
+    const j = await r.json();
+    btn.textContent = j.success
+      ? `✓ X:${j.data.x} R:${j.data.reddit} T:${j.data.telegram}`
+      : '⚠ ' + (j.error || 'failed');
+    setTimeout(() => { btn.textContent = '↻ Refresh sources'; btn.disabled = false; }, 3000);
+    loadFeed();
+  } catch (e) {
+    btn.textContent = '⚠ failed'; btn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadFeed();
+  loadSources();
+  setInterval(loadFeed, 60000);
+});
+</script>
+</body>
+</html>

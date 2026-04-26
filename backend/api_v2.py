@@ -527,6 +527,86 @@ def commodities_prices():
                     "as_of": datetime.utcnow().isoformat() + "Z"})
 
 
+# ---- /api/global/history ----------------------------------------------------
+
+_HISTORY_CACHE: Dict[str, Dict] = {}
+_HISTORY_TTL_SECS = 600  # 10 min — yfinance is slow and the data is daily
+
+
+@bp.route("/api/global/history", methods=["GET"])
+def global_history():
+    """Daily closes for the headline world indices over the last N trading days.
+
+    Powers the 30-day normalized-returns line chart and the overnight-impact
+    bar chart on the Global page. Cached for 10 minutes — yfinance bulk
+    downloads are slow (~3-6s) and the underlying data is daily.
+
+    Query params:
+        days: int, default 30, capped at 90.
+    """
+    try:
+        days = max(5, min(90, int(request.args.get("days", 30))))
+    except (TypeError, ValueError):
+        days = 30
+
+    cache_key = f"days={days}"
+    cached = _HISTORY_CACHE.get(cache_key)
+    if cached and (time.time() - cached["_ts"]) < _HISTORY_TTL_SECS:
+        return jsonify({"success": True, "data": cached["payload"], "cached": True})
+
+    indices = [
+        ("^IXIC", "nasdaq", "NASDAQ"),
+        ("^GSPC", "sp500", "S&P 500"),
+        ("^DJI", "dow", "Dow Jones"),
+        ("^GDAXI", "dax", "DAX"),
+        ("^FTSE", "ftse", "FTSE 100"),
+        ("^N225", "nikkei", "Nikkei 225"),
+        ("^HSI", "hangseng", "Hang Seng"),
+        ("000001.SS", "shanghai", "Shanghai"),
+        ("^NSEI", "nifty", "Nifty 50"),
+    ]
+
+    payload: Dict = {"indices": {}, "as_of": None, "days": days, "stale": False}
+    try:
+        import yfinance as yf
+        # Pull a few extra calendar days to cover weekends/holidays
+        period_days = int(days * 1.6) + 10
+        syms = [s for s, _, _ in indices]
+        data = yf.download(syms, period=f"{period_days}d", interval="1d",
+                           group_by="ticker", progress=False, threads=True)
+
+        for sym, key, label in indices:
+            try:
+                closes = data[sym]["Close"].dropna() if len(syms) > 1 else data["Close"].dropna()
+                if len(closes) < 2:
+                    continue
+                # Take last `days` trading days only
+                tail = closes.tail(days)
+                series = [
+                    {"date": idx.strftime("%Y-%m-%d"), "close": round(float(val), 2)}
+                    for idx, val in tail.items()
+                ]
+                payload["indices"][key] = {
+                    "label": label, "symbol": sym, "series": series,
+                }
+            except Exception as e:
+                logger.debug(f"global_history: skipped {sym}: {e}")
+                continue
+
+        payload["as_of"] = datetime.utcnow().isoformat() + "Z"
+    except Exception as exc:
+        payload["stale"] = True
+        payload["error"] = str(exc)
+        logger.warning(f"global_history yfinance failed: {exc}")
+
+    if not payload["indices"]:
+        return jsonify({"success": False, "error": "no historical data available",
+                        "data": payload}), 503
+
+    _HISTORY_CACHE[cache_key] = {"_ts": time.time(), "payload": payload}
+    return jsonify({"success": True, "data": payload, "cached": False})
+
+
 # ---- registration -----------------------------------------------------------
 
 def register(app, get_db: Callable, scraper_status_ref: Optional[Dict] = None):

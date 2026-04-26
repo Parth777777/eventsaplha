@@ -1,5 +1,5 @@
 """
-EventAlpha Prediction Tracker
+Tickwave Prediction Tracker
 Checks expired predictions against actual market prices to validate accuracy.
 Runs daily after NSE close (4 PM IST) via scheduler, or on-demand via API.
 """
@@ -9,7 +9,7 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
 
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ HORIZON_DAYS = {'1D': 1, '3D': 3, '5D': 5, '20D': 20}
 class PredictionTracker:
     """Validates predictions by comparing predicted returns to actual prices."""
 
-    def __init__(self, db: EventAlphaDB):
+    def __init__(self, db: TickwaveDB):
         self.db = db
 
     def fetch_actual_price(self, ticker, target_date):
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     import os
     load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-    db = EventAlphaDB()
+    db = TickwaveDB()
     tracker = PredictionTracker(db)
     result = tracker.run()
     print(f"Results: {result}")

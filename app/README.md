@@ -1,4 +1,4 @@
-# EventAlpha - Modular Web Application
+# Tickwave - Modular Web Application
 
 ## 📁 Project Structure
 

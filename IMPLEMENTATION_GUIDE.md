@@ -1,4 +1,4 @@
-# EventAlpha Complete Implementation Guide
+# Tickwave Complete Implementation Guide
 
 ## 🎯 Quick Summary
 
@@ -51,7 +51,7 @@ OUTPUT: JSON signals with alpha scores, predictions, price targets
         ↓
 DATABASE STORAGE
         ↓
-    [EventAlphaDB] → SQLite: signals, predictions, backtest_results, perf metrics
+    [TickwaveDB] → SQLite: signals, predictions, backtest_results, perf metrics
         ↓
 FRONTEND DISPLAY
         ↓
@@ -89,7 +89,7 @@ Event-Trad/
 │
 ├── data/
 │   ├── market_data.json (Real signal output from scraper)
-│   └── eventalpha.db (SQLite database)
+│   └── tickwave.db (SQLite database)
 │
 ├── IMPLEMENTATION_GUIDE.md (This file)
 ├── BACKEND_STARTUP_GUIDE.md (Complete system startup)
@@ -321,9 +321,9 @@ class API {
 
 ### Connect Database to Backend
 ```python
-from scraper.database_schema import EventAlphaDB
+from scraper.database_schema import TickwaveDB
 
-db = EventAlphaDB('scraper/eventalpha.db')
+db = TickwaveDB('scraper/tickwave.db')
 
 # After scraper runs, insert signals
 for signal in scraped_signals:
@@ -412,7 +412,7 @@ metrics = BacktestEngine.calculate_performance_metrics([result, ...])
 
 **Q: Database errors**
 - Ensure `scraper/` directory has write permissions
-- Delete eventalpha.db and reinitialize if corrupted
+- Delete tickwave.db and reinitialize if corrupted
 - Check SQL syntax for your DB type (SQLite vs PostgreSQL)
 
 **Q: Frontend showing zeros/null**
@@ -426,11 +426,11 @@ metrics = BacktestEngine.calculate_performance_metrics([result, ...])
 
 - **Alpha Scoring**: See `alpha_scoring_engine.py` docstrings
 - **Confidence System**: See `metrics_backtesting_engine.py` ConfidenceCalculator class
-- **Database**: See `database_schema.py` EventAlphaDB class
+- **Database**: See `database_schema.py` TickwaveDB class
 - **Scraper Integration**: See `hybrid_scraper.py` SignalEngine.generate_signals()
 
 ---
 
 **Status**: ✅ Production-Ready Implementation Complete
 **Last Updated**: April 2026
-**Maintainer**: EventAlpha Dev Team
+**Maintainer**: Tickwave Dev Team

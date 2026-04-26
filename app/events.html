@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventAlpha | Events</title>
+    <title>Tickwave | Events</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -35,7 +35,7 @@
 
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">EventAlpha</h1>
+        <h1 class="sidebar-brand">Tickwave</h1>
         <p class="sidebar-brand-sub">Precision Intelligence</p>
     </div>
     <nav class="sidebar-nav">
@@ -44,6 +44,7 @@
         <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
         <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
         <a class="sidebar-link active" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
         <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
         <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
         <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
@@ -215,6 +216,7 @@
 </div>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/phase_1_5.js"></script>
 <script src="./shared/js/realtime.js"></script>
@@ -244,6 +246,42 @@ function renderEvents() {
     if (currentFilter !== 'all') {
         filtered = allEvents.filter(e => e.event_type === currentFilter);
     }
+    // Cluster-as-one: collapse near-duplicate events by content hash of title.
+    // We keep the highest-impact event as the head, attach the rest as `_co_sources`.
+    const clustered = (function clusterFeed(list) {
+        function tokenize(s) {
+            return new Set((s || '').toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length >= 3));
+        }
+        function jaccard(a, b) {
+            if (!a.size || !b.size) return 0;
+            let inter = 0; for (const t of a) if (b.has(t)) inter++;
+            return inter / (a.size + b.size - inter);
+        }
+        const out = [];
+        const tokens = [];
+        const TH = 0.45;
+        for (const e of list) {
+            const ts = tokenize(e.title);
+            let merged = false;
+            for (let i = 0; i < out.length; i++) {
+                if (jaccard(ts, tokens[i]) >= TH) {
+                    const head = out[i];
+                    head._co_sources = head._co_sources || [];
+                    head._co_sources.push({ source: e.source, link: e.link, published: e.published_at || e.timestamp });
+                    if ((e.impact_score || 0) > (head.impact_score || 0)) {
+                        // Promote this one to head, demote previous
+                        const prev = head;
+                        out[i] = e; out[i]._co_sources = (prev._co_sources || []).concat([{ source: prev.source, link: prev.link }]);
+                        tokens[i] = ts;
+                    }
+                    merged = true; break;
+                }
+            }
+            if (!merged) { out.push(e); tokens.push(ts); }
+        }
+        return out;
+    })(filtered);
+    filtered = clustered;
     if (filtered.length === 0) {
         feedDiv.innerHTML = '<div class="text-center py-12 text-on-surface-variant/50 text-sm">No events matching this filter.</div>';
         return;

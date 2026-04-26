@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Paper Trading</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+</head>
+<body class="bg-background text-on-surface font-body" style="background:#080c12;color:#dde3ef;">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Paper Book</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link active" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
+    <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+  </nav>
+</aside>
+
+<main class="main-content" style="padding:32px;max-width:1300px;">
+<header style="margin-bottom:24px;">
+  <h1 style="font-family:'Plus Jakarta Sans';font-weight:900;font-size:32px;">PAPER TRADING BOOK</h1>
+  <p style="color:#9aa0c8;font-size:13px;">Track positions without risking capital. Live mark-to-market against current prices.</p>
+</header>
+
+<section id="summaryStrip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;"></section>
+
+<section style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;padding:20px;margin-bottom:24px;">
+  <h3 style="font-weight:800;color:#dde3ef;margin-bottom:14px;">Open new paper position</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+    <input id="pTicker" placeholder="Ticker" style="text-transform:uppercase;background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
+    <select id="pSide" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;">
+      <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+    </select>
+    <input id="pQty" type="number" placeholder="Quantity" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
+    <input id="pEntry" type="number" step="0.05" placeholder="Entry ₹" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
+    <input id="pTag" placeholder="Tag (optional)" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
+    <button onclick="openPosition()" style="background:#5b6cff;color:#fff;border:0;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;letter-spacing:0.06em;cursor:pointer;">+ OPEN</button>
+  </div>
+  <div id="pMsg" style="margin-top:8px;font-size:11px;font-family:monospace;color:#9aa0c8;"></div>
+</section>
+
+<section id="positionsPanel"></section>
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script>
+async function loadAll() {
+  const [sumR, posR] = await Promise.all([fetch('/api/paper/summary'), fetch('/api/paper/positions')]);
+  const sum = (await sumR.json()).data || {};
+  const pos = (await posR.json()).data || [];
+
+  const strip = document.getElementById('summaryStrip');
+  const card = (label, value, color) => `
+    <div style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;padding:16px;">
+      <div style="font-size:10px;color:#5a5d6a;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">${label}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-weight:900;font-size:24px;margin-top:6px;color:${color || '#dde3ef'};">${value}</div>
+    </div>`;
+  strip.innerHTML =
+    card('Open positions', sum.open_count || 0, '#5b6cff') +
+    card('Closed', sum.closed_count || 0, '#9aa0c8') +
+    card('Realized P&L', '₹' + (sum.realized_pnl || 0).toLocaleString('en-IN'), (sum.realized_pnl || 0) >= 0 ? '#4ee6b8' : '#ff7a8a') +
+    card('Win rate', sum.win_rate_pct != null ? sum.win_rate_pct.toFixed(1) + '%' : '—', '#f9d423') +
+    card('Avg P&L %', (sum.avg_pnl_pct != null ? sum.avg_pnl_pct.toFixed(2) + '%' : '—'), (sum.avg_pnl_pct || 0) >= 0 ? '#4ee6b8' : '#ff7a8a');
+
+  const open = pos.filter(p => p.status === 'OPEN');
+  const closed = pos.filter(p => p.status === 'CLOSED');
+
+  let html = '';
+  if (open.length) {
+    html += `<h3 style="font-weight:800;color:#dde3ef;margin-bottom:10px;">Open (${open.length})</h3>`;
+    html += '<div style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;overflow:auto;margin-bottom:24px;"><table style="width:100%;font-size:12px;color:#dde3ef;border-collapse:collapse;">';
+    html += '<thead><tr style="border-bottom:1px solid #1f2336;">';
+    ['Ticker','Side','Qty','Entry','Live','Unrealized','Tag','Action'].forEach(h => html += `<th style="text-align:left;padding:10px 14px;font-size:10px;color:#9aa0c8;text-transform:uppercase;font-weight:800;">${h}</th>`);
+    html += '</tr></thead><tbody>';
+    for (const p of open) {
+      const pct = p.unrealized_pct;
+      const color = pct == null ? '#9aa0c8' : pct >= 0 ? '#4ee6b8' : '#ff7a8a';
+      html += `<tr style="border-bottom:1px solid #1f2336;">
+        <td style="padding:10px 14px;font-family:monospace;font-weight:800;">${p.ticker}</td>
+        <td style="padding:10px 14px;color:${p.side === 'LONG' ? '#4ee6b8' : '#ff7a8a'};font-weight:700;">${p.side}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.quantity}</td>
+        <td style="padding:10px 14px;font-family:monospace;">₹${p.entry_price.toFixed(2)}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.current_price ? '₹' + p.current_price.toFixed(2) : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${pct != null ? (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% (₹' + (p.unrealized_inr || 0).toLocaleString('en-IN') + ')' : '—'}</td>
+        <td style="padding:10px 14px;color:#9aa0c8;font-size:11px;">${p.tag || ''}</td>
+        <td style="padding:10px 14px;"><button onclick="closePosition(${p.id})" style="background:#3a1f1f;color:#ff7a8a;border:1px solid #ff7a8a33;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">CLOSE</button></td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+  if (closed.length) {
+    html += `<h3 style="font-weight:800;color:#dde3ef;margin-bottom:10px;">Closed (${closed.length})</h3>`;
+    html += '<div style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;overflow:auto;"><table style="width:100%;font-size:12px;color:#dde3ef;border-collapse:collapse;">';
+    html += '<thead><tr style="border-bottom:1px solid #1f2336;">';
+    ['Ticker','Side','Qty','Entry','Exit','P&L %','P&L ₹','Closed at'].forEach(h => html += `<th style="text-align:left;padding:10px 14px;font-size:10px;color:#9aa0c8;text-transform:uppercase;font-weight:800;">${h}</th>`);
+    html += '</tr></thead><tbody>';
+    for (const p of closed.slice(0, 100)) {
+      const color = p.pnl_pct >= 0 ? '#4ee6b8' : '#ff7a8a';
+      html += `<tr style="border-bottom:1px solid #1f2336;">
+        <td style="padding:10px 14px;font-family:monospace;font-weight:800;">${p.ticker}</td>
+        <td style="padding:10px 14px;color:${p.side === 'LONG' ? '#4ee6b8' : '#ff7a8a'};">${p.side}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.quantity}</td>
+        <td style="padding:10px 14px;font-family:monospace;">₹${p.entry_price.toFixed(2)}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.exit_price ? '₹' + p.exit_price.toFixed(2) : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${p.pnl_pct != null ? (p.pnl_pct >= 0 ? '+' : '') + p.pnl_pct.toFixed(2) + '%' : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};">${p.pnl_inr != null ? '₹' + p.pnl_inr.toLocaleString('en-IN') : '—'}</td>
+        <td style="padding:10px 14px;color:#5a5d6a;font-size:10px;">${p.exit_at || ''}</td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+  if (!open.length && !closed.length) html = '<div style="padding:50px;text-align:center;color:#5a5d6a;">No paper positions yet. Open one above.</div>';
+  document.getElementById('positionsPanel').innerHTML = html;
+}
+
+async function openPosition() {
+  const body = {
+    ticker: document.getElementById('pTicker').value.toUpperCase().trim(),
+    side: document.getElementById('pSide').value,
+    quantity: parseInt(document.getElementById('pQty').value || '0'),
+    entry_price: parseFloat(document.getElementById('pEntry').value || '0'),
+    tag: document.getElementById('pTag').value || null,
+  };
+  const r = await fetch('/api/paper/positions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const j = await r.json();
+  document.getElementById('pMsg').textContent = j.success ? `Opened (id ${j.id}).` : `Failed: ${j.error || 'unknown'}`;
+  if (j.success) { ['pTicker','pQty','pEntry','pTag'].forEach(id => document.getElementById(id).value = ''); loadAll(); }
+}
+
+async function closePosition(id) {
+  if (!confirm('Close this position at the current market price?')) return;
+  const r = await fetch('/api/paper/positions/' + id + '/close', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  if ((await r.json()).success) loadAll();
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadAll(); setInterval(loadAll, 30000); });
+</script>
+</body>
+</html>

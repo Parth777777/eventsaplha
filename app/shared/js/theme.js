@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  const KEY = 'eventalpha:theme';
+  const KEY = 'tickwave:theme';
 
   function get() {
     return document.documentElement.getAttribute('data-theme') || 'dark';

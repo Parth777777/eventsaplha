@@ -1,4 +1,4 @@
-# EventAlpha Testing & Verification Guide
+# Tickwave Testing & Verification Guide
 
 ## ✅ Pre-Launch Verification Checklist
 
@@ -89,10 +89,10 @@ print('✅ Metrics & Backtesting Engine functional')
 ### 4. Database Schema Test
 ```bash
 python -c "
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 # Initialize
-db = EventAlphaDB('test_eventalpha.db')
+db = TickwaveDB('test_tickwave.db')
 print('✅ Database created successfully')
 
 # Test insert
@@ -108,7 +108,7 @@ print(f'✅ Retrieved {len(signals)} signal(s)')
 
 db.close()
 import os
-os.remove('test_eventalpha.db')
+os.remove('test_tickwave.db')
 print('✅ Database Schema functional')
 "
 ```
@@ -306,7 +306,7 @@ End-to-end test: Event → Signal → Database
 
 from alpha_scoring_engine import RegimeDetector, AlphaScoringEngine, MarketData, EventData, MarketRegime
 from metrics_backtesting_engine import MultiHorizonPredictor, BacktestEngine, BacktestResult
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 # Create test event
 print("Step 1: Creating test event...")
@@ -336,7 +336,7 @@ predictions = MultiHorizonPredictor.predict_multi_horizon(
 
 # Store in database
 print("Step 5: Storing in database...")
-db = EventAlphaDB('integration_test.db')
+db = TickwaveDB('integration_test.db')
 db.insert_signal(
     'TEST_INTEGRATION', event.event_type, event.ticker,
     alpha, event.confidence, regime.value, 100.0, event.sentiment

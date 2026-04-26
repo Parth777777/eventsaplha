@@ -1,5 +1,5 @@
 """
-EventAlpha - Complete NSE/BSE Stock Universe
+Tickwave - Complete NSE/BSE Stock Universe
 Downloads the full equity list from NSE (~2300 stocks) and caches locally.
 Used for: entity extraction from news + frontend search autocomplete.
 """

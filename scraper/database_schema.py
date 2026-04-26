@@ -1,5 +1,5 @@
 """
-EventAlpha Database Schema
+Tickwave Database Schema
 Supports PostgreSQL (production via Supabase) and SQLite (local development)
 """
 
@@ -472,10 +472,10 @@ def get_connection():
         return conn
     else:
         import sqlite3
-        db_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'eventalpha.db')
+        db_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'tickwave.db')
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         # check_same_thread=False required for Flask's threaded dev server —
-        # we serialize access via the single EventAlphaDB singleton.
+        # we serialize access via the single TickwaveDB singleton.
         conn = sqlite3.connect(db_path, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         return conn
@@ -502,8 +502,8 @@ def _execute_query(conn, query, params=None, fetch=False):
     return cursor
 
 
-class EventAlphaDB:
-    """Database helper for EventAlpha - supports PostgreSQL and SQLite"""
+class TickwaveDB:
+    """Database helper for Tickwave - supports PostgreSQL and SQLite"""
 
     def __init__(self):
         self.is_postgres = _is_postgres()
@@ -1347,7 +1347,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-    db = EventAlphaDB()
+    db = TickwaveDB()
     if db.init_schema():
         print("Database schema initialized successfully!")
         print(f"Using: {'PostgreSQL' if db.is_postgres else 'SQLite'}")

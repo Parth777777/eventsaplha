@@ -1,5 +1,5 @@
 """
-EventAlpha — Quant Layer
+Tickwave — Quant Layer
 Cross-sectional ranking, long-short construction, Bayesian confidence,
 abnormal return model, and volatility-adjusted positioning.
 

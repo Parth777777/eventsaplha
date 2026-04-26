@@ -1,4 +1,4 @@
-# EventAlpha - Complete Setup & Deployment Guide
+# Tickwave - Complete Setup & Deployment Guide
 
 ## Table of Contents
 1. [Local Setup (5 minutes)](#1-local-setup)
@@ -44,7 +44,7 @@ The scraper runs automatically every 10 minutes. First run starts immediately on
 
 ### What Happens on Startup
 1. Flask starts serving the frontend on port 5000
-2. SQLite database is created at `data/eventalpha.db`
+2. SQLite database is created at `data/tickwave.db`
 3. APScheduler kicks off the scraper immediately
 4. Scraper fetches RSS feeds + Google News + stock data from yfinance
 5. NLP engine extracts events, classifies sentiment, detects macro themes
@@ -62,7 +62,7 @@ The scraper runs automatically every 10 minutes. First run starts immediately on
 
 1. Go to **https://supabase.com** and sign up (use GitHub login)
 2. Click **"New Project"**
-   - Name: `eventalpha`
+   - Name: `tickwave`
    - Password: choose a strong password (you'll need it)
    - Region: pick closest to you
    - Click **Create**
@@ -93,7 +93,7 @@ The scraper runs automatically every 10 minutes. First run starts immediately on
 
 ## 3. Discord Alerts
 
-Discord uses **webhooks** - no bot token needed. Webhooks are one-way: EventAlpha posts alerts to your Discord channel.
+Discord uses **webhooks** - no bot token needed. Webhooks are one-way: Tickwave posts alerts to your Discord channel.
 
 ### Steps
 
@@ -102,10 +102,10 @@ Discord uses **webhooks** - no bot token needed. Webhooks are one-way: EventAlph
 3. Click the **channel name** > **Edit Channel** (gear icon)
 4. Go to **Integrations** > **Webhooks**
 5. Click **"New Webhook"**
-6. Name it `EventAlpha` and pick an avatar if you want
+6. Name it `Tickwave` and pick an avatar if you want
 7. Click **"Copy Webhook URL"**
 8. Two options to save it:
-   - **Option A (recommended):** Open EventAlpha > Alerts page > paste in "Discord Webhook URL" field > Save
+   - **Option A (recommended):** Open Tickwave > Alerts page > paste in "Discord Webhook URL" field > Save
    - **Option B:** Add to `.env` file:
      ```
      DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/1234567890/abcdef...
@@ -129,8 +129,8 @@ Telegram requires a **bot** (free, takes 2 minutes via @BotFather).
 1. Open **Telegram** (phone or desktop)
 2. Search for **@BotFather** and open it
 3. Send: `/newbot`
-4. BotFather asks for a name - type: `EventAlpha Alerts`
-5. BotFather asks for a username - type something unique: `eventalpha_yourname_bot`
+4. BotFather asks for a name - type: `Tickwave Alerts`
+5. BotFather asks for a username - type something unique: `tickwave_yourname_bot`
 6. BotFather gives you a token like:
    ```
    7123456789:AAHbcDefGhIjKlMnOpQrStUvWxYz
@@ -153,7 +153,7 @@ Telegram requires a **bot** (free, takes 2 minutes via @BotFather).
 
 ### Step 3: Save Config
 
-- **Option A (recommended):** Open EventAlpha > Alerts page > paste Bot Token + Chat ID > Save
+- **Option A (recommended):** Open Tickwave > Alerts page > paste Bot Token + Chat ID > Save
 - **Option B:** Add to `.env`:
   ```
   TELEGRAM_BOT_TOKEN=7123456789:AAHbcDefGhIjKlMnOpQrStUvWxYz
@@ -192,9 +192,9 @@ The scraper automatically uses NewsAPI when the key is present.
 1. Go to **https://render.com** and sign up (use GitHub login)
 2. Click **"New +"** > **"Web Service"**
 3. Connect your GitHub repo (you may need to grant access)
-4. Select your EventAlpha repo
+4. Select your Tickwave repo
 5. Configure:
-   - **Name:** `eventalpha` (this becomes your URL: eventalpha.onrender.com)
+   - **Name:** `tickwave` (this becomes your URL: tickwave.onrender.com)
    - **Runtime:** `Python`
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `gunicorn backend.api:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120`
@@ -213,7 +213,7 @@ The scraper automatically uses NewsAPI when the key is present.
 
 7. Click **"Create Web Service"**
 8. Wait 3-5 minutes for the first build and deploy
-9. Your app is live at: **https://eventalpha.onrender.com**
+9. Your app is live at: **https://tickwave.onrender.com**
 
 ### Auto-Deploy
 Every time you `git push` to your repo, Render automatically redeploys.
@@ -228,7 +228,7 @@ Render's free tier **sleeps after 15 minutes of inactivity**. The scraper won't 
 
 1. Go to **https://cron-job.org** (free, no card required)
 2. Sign up and create a new cron job:
-   - **URL:** `https://eventalpha.onrender.com/api/health`
+   - **URL:** `https://tickwave.onrender.com/api/health`
    - **Schedule:** Every 14 minutes
    - **OR** Custom: only during market hours (Mon-Fri 9:00-16:30 IST)
 3. This keeps the service awake so the scraper runs on schedule
@@ -236,7 +236,7 @@ Render's free tier **sleeps after 15 minutes of inactivity**. The scraper won't 
 ### Option B: UptimeRobot
 
 1. Go to **https://uptimerobot.com** (free tier: 50 monitors)
-2. Add HTTP monitor for `https://eventalpha.onrender.com/api/health`
+2. Add HTTP monitor for `https://tickwave.onrender.com/api/health`
 3. Check interval: 5 minutes
 
 ---

@@ -301,9 +301,9 @@ def magnitude_multiplier(db, horizon: str = "3D") -> float:
 if __name__ == "__main__":
     import os
     from dotenv import load_dotenv
-    from database_schema import EventAlphaDB
+    from database_schema import TickwaveDB
 
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    db = EventAlphaDB()
+    db = TickwaveDB()
     print(run_calibration(db))

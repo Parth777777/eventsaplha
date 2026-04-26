@@ -498,9 +498,9 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
-    from database_schema import EventAlphaDB
+    from database_schema import TickwaveDB
 
-    db = EventAlphaDB()
+    db = TickwaveDB()
     apply(db.conn)
     print("extensions applied")
     db.close()

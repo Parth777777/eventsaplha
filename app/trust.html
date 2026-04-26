@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EventAlpha | Trust & Track Record</title>
+<title>Tickwave | Trust & Track Record</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -20,13 +20,14 @@
 
 <aside class="sidebar hidden md:flex">
   <div class="sidebar-header">
-    <h1 class="sidebar-brand">EventAlpha</h1>
+    <h1 class="sidebar-brand">Tickwave</h1>
     <p class="sidebar-brand-sub">Trust & Track Record</p>
   </div>
   <nav class="sidebar-nav">
     <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
     <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
     <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
     <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
     <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
     <a class="sidebar-link active" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
@@ -81,7 +82,7 @@
 <section style="margin-bottom:32px;">
   <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:#dde3ef;margin-bottom:12px;">Disclaimers</h2>
   <div class="metric-card" style="font-size:12px;color:#9aa0c8;line-height:1.7;">
-    <p><b style="color:#ff9466;">Not investment advice.</b> EventAlpha publishes statistical signals derived from public news + market data. It is research tooling, not registered advisory. Do your own diligence and consult a SEBI-registered investment advisor before trading.</p>
+    <p><b style="color:#ff9466;">Not investment advice.</b> Tickwave publishes statistical signals derived from public news + market data. It is research tooling, not registered advisory. Do your own diligence and consult a SEBI-registered investment advisor before trading.</p>
     <p style="margin-top:10px;"><b style="color:#dde3ef;">Data sources.</b> NSE/BSE corporate filings (public), SEBI disclosures (public), RBI press releases (public), 20+ Indian financial RSS feeds, yfinance market data. Every event card links back to its primary source — click through to verify.</p>
     <p style="margin-top:10px;"><b style="color:#dde3ef;">Manipulation reporting.</b> If a signal here looks fake or coordinated, click the forensics badge on its card and submit feedback. False positives + false negatives are reviewed weekly.</p>
   </div>
@@ -90,6 +91,7 @@
 </main>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/realtime.js"></script>
 <script>
 async function loadTrust() {

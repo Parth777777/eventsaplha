@@ -22,7 +22,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
-from database_schema import EventAlphaDB
+from database_schema import TickwaveDB
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def _parse_since(s: Optional[str]) -> Optional[datetime]:
     return datetime.utcnow() - delta
 
 
-def fetch_signals_to_enrich(db: EventAlphaDB, since: Optional[datetime] = None,
+def fetch_signals_to_enrich(db: TickwaveDB, since: Optional[datetime] = None,
                               limit: Optional[int] = None,
                               only_missing: bool = True) -> List[Dict]:
     p = "%s" if getattr(db, "is_postgres", False) else "?"
@@ -68,7 +68,7 @@ def fetch_signals_to_enrich(db: EventAlphaDB, since: Optional[datetime] = None,
     return out
 
 
-def enrich_one(db: EventAlphaDB, signal: Dict) -> bool:
+def enrich_one(db: TickwaveDB, signal: Dict) -> bool:
     """Run the v2 forensics + rescoring + volume on a single signal."""
     try:
         from orchestrator_ext import enrich_signal_forensics_v2, enrich_signal_volume, persist_signal_extensions
@@ -101,7 +101,7 @@ def enrich_one(db: EventAlphaDB, signal: Dict) -> bool:
 def run(since: Optional[str] = None, limit: Optional[int] = None,
         only_missing: bool = True, progress_every: int = 50,
         per_signal_sleep: float = 0.0) -> Dict:
-    db = EventAlphaDB()
+    db = TickwaveDB()
     since_dt = _parse_since(since) if since else None
     signals = fetch_signals_to_enrich(db, since_dt, limit, only_missing)
     logger.info("backfill: %d signals to enrich (since=%s, limit=%s, only_missing=%s)",

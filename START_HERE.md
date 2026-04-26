@@ -1,4 +1,4 @@
-# 🚀 EventAlpha - START HERE
+# 🚀 Tickwave - START HERE
 
 ## Your Event-Driven Trading System is Ready!
 

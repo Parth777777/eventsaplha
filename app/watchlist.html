@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventAlpha | Watchlist</title>
+    <title>Tickwave | Watchlist</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -31,7 +31,7 @@
 
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">EventAlpha</h1>
+        <h1 class="sidebar-brand">Tickwave</h1>
         <p class="sidebar-brand-sub">Precision Quant</p>
     </div>
     <nav class="sidebar-nav">
@@ -40,6 +40,7 @@
         <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
         <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
         <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
         <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
         <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
         <a class="sidebar-link active" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
@@ -205,6 +206,7 @@
 </main>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script>
 async function loadWatchlistPage() {
@@ -280,8 +282,59 @@ async function removeFromWatchlist(ticker) {
     loadWatchlistPage();
 }
 
+// ── Tag-based watchlist groups ─────────────────────────────────────────
+async function loadTagGroups() {
+    let host = document.getElementById('tagGroupsPanel');
+    if (!host) {
+        host = document.createElement('section');
+        host.id = 'tagGroupsPanel';
+        host.style.cssText = 'margin:24px 0;padding:18px;background:#0d1118;border:1px solid #1f2336;border-radius:12px;';
+        const main = document.querySelector('main') || document.body;
+        main.insertBefore(host, main.firstChild);
+    }
+    const r = await fetch('/api/watchlist/tags');
+    const j = await r.json();
+    const tags = (j && j.data) || [];
+    host.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;">Watchlist groups</span>
+            <span style="height:1px;flex:1;background:#1f2336;"></span>
+            <button onclick="addTag()" style="background:#5b6cff;color:#fff;border:0;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">+ Tag a stock</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;">
+            ${tags.length === 0 ? '<div style="color:#5a5d6a;font-size:12px;">No groups yet. Tag any stock to organize your watchlist (e.g. "smallcaps", "banks-i-track").</div>' : tags.map(g => `
+                <div style="background:#0a0e14;border:1px solid #1f2336;border-radius:8px;padding:10px 14px;min-width:180px;">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                        <span style="font-weight:800;color:#4ee6b8;font-size:12px;text-transform:uppercase;">${g.tag}</span>
+                        <button onclick="deleteTag('${g.tag.replace(/'/g, '')}')" style="background:transparent;color:#5a5d6a;border:0;cursor:pointer;font-size:14px;">×</button>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                        ${g.tickers.map(t => `<span style="background:#1f2336;color:#dde3ef;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11px;font-weight:700;">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>`;
+}
+async function addTag() {
+    const tag = (prompt('Tag name (e.g. "smallcaps", "banks", "watch-Q4"):') || '').trim();
+    if (!tag) return;
+    const ticker = (prompt('Ticker to add to "' + tag + '":') || '').toUpperCase().trim();
+    if (!ticker) return;
+    const r = await fetch('/api/watchlist/tags', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag, ticker }),
+    });
+    if ((await r.json()).success) loadTagGroups();
+}
+async function deleteTag(tag) {
+    if (!confirm('Delete tag "' + tag + '" and its members?')) return;
+    await fetch('/api/watchlist/tags?tag=' + encodeURIComponent(tag), { method: 'DELETE' });
+    loadTagGroups();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     DataRefresher.start(loadWatchlistPage, 60000);
+    loadTagGroups();
     Auth.updateAuthUI();
 });
 </script>
