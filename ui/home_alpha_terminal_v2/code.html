@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#4d8eff",
+              "on-secondary": "#003824",
+              "background": "#10141a",
+              "inverse-on-surface": "#2d3137",
+              "surface-container-lowest": "#0a0e14",
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-secondary-fixed-variant": "#005236",
+              "primary": "#adc6ff",
+              "tertiary-fixed": "#ffdadb",
+              "on-primary": "#002e6a",
+              "surface-variant": "#31353c",
+              "primary-fixed-dim": "#adc6ff",
+              "surface-bright": "#353940",
+              "surface-container-low": "#181c22",
+              "primary-fixed": "#d8e2ff",
+              "on-surface": "#dfe2eb",
+              "secondary": "#4edea3",
+              "surface-dim": "#10141a",
+              "on-primary-fixed": "#001a42",
+              "outline": "#8c909f",
+              "on-primary-container": "#00285d",
+              "on-background": "#dfe2eb",
+              "surface-container-high": "#262a31",
+              "surface-container": "#1c2026",
+              "error": "#ffb4ab",
+              "tertiary-fixed-dim": "#ffb2b7",
+              "surface-container-highest": "#31353c",
+              "error-container": "#93000a",
+              "on-primary-fixed-variant": "#004395",
+              "on-tertiary-fixed-variant": "#92002a",
+              "outline-variant": "#424754",
+              "surface-tint": "#adc6ff",
+              "on-secondary-fixed": "#002113",
+              "on-tertiary": "#67001b",
+              "secondary-container": "#00a572",
+              "on-secondary-container": "#00311f",
+              "inverse-surface": "#dfe2eb",
+              "on-tertiary-container": "#5b0017",
+              "tertiary": "#ffb2b7",
+              "inverse-primary": "#005ac2",
+              "surface": "#10141a",
+              "on-surface-variant": "#c2c6d6",
+              "tertiary-container": "#ff516a",
+              "on-error-container": "#ffdad6",
+              "on-tertiary-fixed": "#40000d",
+              "on-error": "#690005"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .alpha-glass {
+            background: rgba(28, 32, 38, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .vix-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-6 fixed left-0 top-0 w-64 bg-[#0a0e14] border-r border-[#424754]/15 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-[#adc6ff] font-bold text-lg font-headline">EventAlpha</h1>
+<p class="text-on-surface-variant text-[10px] uppercase tracking-[0.2em] font-medium">Financial Intelligence</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 bg-[#4d8eff]/10 text-[#adc6ff] border-r-4 border-[#adc6ff] font-bold font-headline text-sm transition-all duration-150 translate-x-1" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="home">home</span>
+            Home
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="explore">explore</span>
+            Explore
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="map">map</span>
+            Map
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event">event</span>
+            Events
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="star">star</span>
+            Watchlist
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notifications">notifications</span>
+            Alerts
+        </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-[#424754]/15 space-y-1">
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+            Settings
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+            Support
+        </a>
+<div class="px-6 mt-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="person">person</span>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Quant_Analyst_01</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Pro Tier</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<div class="md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-[#10141a] border-b border-[#424754]/15 sticky top-0 z-40">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-sm pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary/40 placeholder:text-on-surface-variant/50" placeholder="Search signals, tickers, or events..." type="text"/>
+</div>
+<!-- Alpha Engine Status -->
+<div class="hidden xl:flex items-center gap-3 border-l border-outline-variant/20 pl-6">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_#4edea3]"></span>
+<span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Engine: Active</span>
+</div>
+<div class="h-4 w-px bg-outline-variant/20"></div>
+<div class="flex items-center gap-1">
+<span class="text-[10px] font-mono text-on-surface-variant uppercase">Latency:</span>
+<span class="text-[10px] font-mono text-secondary">42ms</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-6">
+<a class="text-[#adc6ff] border-b-2 border-[#adc6ff] font-headline font-bold text-sm h-16 flex items-center px-2" href="#">Terminal</a>
+<a class="text-[#dfe2eb] font-headline font-medium text-sm h-16 flex items-center px-2 hover:bg-[#31353c] transition-colors" href="#">Signals</a>
+<a class="text-[#dfe2eb] font-headline font-medium text-sm h-16 flex items-center px-2 hover:bg-[#31353c] transition-colors" href="#">Portfolios</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-[#31353c] rounded-sm transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-[#31353c] rounded-sm transition-colors active:scale-95">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="flex-1 p-6 pb-24 space-y-6">
+<!-- Market Sentiment & Sector Strips (Bento Style) -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Market Sentiment Bar Enhanced -->
+<div class="lg:col-span-2 bg-surface-container-low p-5 rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h2 class="font-headline text-xs font-bold text-on-surface-variant uppercase tracking-[0.15em]">Market Sentiment</h2>
+<span class="px-1.5 py-0.5 bg-secondary/10 text-secondary text-[9px] font-mono rounded">BULLISH BIAS</span>
+</div>
+<p class="text-xs text-on-surface-variant/70 font-medium">Aggregate signal across NIFTY 50 basket</p>
+</div>
+<div class="text-right flex flex-col items-end">
+<div class="flex items-baseline gap-2">
+<span class="font-mono text-[10px] text-on-surface-variant">INDIA VIX:</span>
+<span class="font-headline text-lg font-bold text-tertiary">14.82</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary vix-dot"></span>
+</div>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="font-headline text-3xl font-bold text-secondary">74.2</span>
+<span class="text-[10px] text-on-surface-variant font-mono">/100</span>
+</div>
+</div>
+</div>
+<!-- Enhanced Sentiment Gauge -->
+<div class="relative pt-6">
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full flex relative">
+<!-- Zones -->
+<div class="absolute -top-5 left-0 text-[8px] font-mono text-on-surface-variant/40 border-l border-outline-variant/20 pl-1">OVERSOLD</div>
+<div class="absolute -top-5 left-[25%] text-[8px] font-mono text-on-surface-variant/40 border-l border-outline-variant/20 pl-1">WEAK</div>
+<div class="absolute -top-5 left-[50%] text-[8px] font-mono text-on-surface-variant/40 border-l border-outline-variant/20 pl-1">NEUTRAL</div>
+<div class="absolute -top-5 left-[75%] text-[8px] font-mono text-on-surface-variant/40 border-l border-outline-variant/20 pl-1">STRONG</div>
+<div class="absolute -top-5 right-0 text-[8px] font-mono text-on-surface-variant/40 border-r border-outline-variant/20 pr-1 text-right">OVERBOUGHT</div>
+<!-- Progress -->
+<div class="h-full bg-gradient-to-r from-secondary to-primary shadow-[0_0_15px_rgba(78,222,163,0.3)] rounded-full transition-all duration-1000" style="width: 74.2%"></div>
+<!-- Current Pointer -->
+<div class="absolute h-4 w-0.5 bg-white top-1/2 -translate-y-1/2 shadow-[0_0_8px_#fff]" style="left: 74.2%"></div>
+</div>
+</div>
+</div>
+<!-- Sector Momentum Strip -->
+<div class="bg-surface-container-low p-5 rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline text-xs font-bold text-on-surface-variant uppercase tracking-[0.15em] flex items-center">
+<span class="material-symbols-outlined text-sm mr-2 text-primary" data-icon="analytics">analytics</span>
+                        Sector Momentum
+                    </h3>
+<span class="text-[9px] font-mono text-on-surface-variant/50">WTD Performance</span>
+</div>
+<div class="space-y-3.5">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold tracking-wide">IT SERVICES</span>
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 82%"></div>
+</div>
+<span class="text-[10px] font-mono font-bold text-secondary">+2.4%</span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold tracking-wide">BANKING</span>
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 45%"></div>
+</div>
+<span class="text-[10px] font-mono font-bold text-secondary">+0.8%</span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold tracking-wide">AUTO</span>
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 20%"></div>
+</div>
+<span class="text-[10px] font-mono font-bold text-tertiary">-1.1%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Signals Feed -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline text-lg font-bold tracking-tight text-on-surface">Alpha Signal Terminal</h2>
+<p class="text-xs text-on-surface-variant/60">Live model outputs based on multi-factor quantitative analysis</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-container-highest text-[10px] font-bold uppercase tracking-wider rounded-sm text-primary border border-primary/20 hover:bg-primary/10 transition-colors">Live Feed</button>
+<button class="px-3 py-1 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider rounded-sm text-on-surface-variant border border-outline-variant/20 hover:bg-surface-container-high transition-colors">Performance</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+<!-- Signal Card: TATA MOTORS -->
+<div class="bg-surface-container rounded-lg p-5 border border-outline-variant/10 hover:border-primary/40 hover:bg-surface-container-high transition-all group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="font-headline text-base font-bold tracking-tight">TATA MOTORS</h3>
+<span class="text-[10px] font-mono font-bold text-secondary">88% ACC</span>
+</div>
+<p class="text-[10px] font-mono text-on-surface-variant">NSE: TATAMOTORS • <span class="text-secondary/70">Win Rate: 72%</span></p>
+</div>
+<div class="text-right">
+<div class="text-xl font-mono font-bold text-secondary">82</div>
+<p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-tighter">Alpha Score</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-5">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[9px] font-bold rounded-sm border border-secondary/20 uppercase">Strong Bullish</span>
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant text-[9px] font-bold rounded-sm border border-outline-variant/20 uppercase">Conf: High</span>
+</div>
+<div class="space-y-4 mb-5">
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Key Drivers &amp; Attribution</p>
+<div class="flex flex-wrap gap-2">
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-secondary">
+<span class="font-bold mr-1.5 opacity-60">PIB</span> EV Subsidy
+                                </span>
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-secondary">
+<span class="font-bold mr-1.5 opacity-60">NSE</span> Earnings Beat
+                                </span>
+</div>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Expected Return &amp; Confidence</p>
+<div class="space-y-1.5">
+<div class="flex justify-between text-[10px] font-mono mb-1">
+<span class="text-on-surface-variant">3D Target</span>
+<span class="text-secondary">+2.4%</span>
+</div>
+<div class="relative h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute inset-y-0 bg-secondary/20" style="left: 60%; width: 25%"></div>
+<div class="absolute top-0 bottom-0 w-0.5 bg-secondary shadow-[0_0_5px_#4edea3]" style="left: 72%"></div>
+</div>
+<div class="flex justify-between text-[8px] font-mono text-on-surface-variant/40">
+<span>-5%</span>
+<span>0%</span>
+<span>+5%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Signal Card: HDFC BANK -->
+<div class="bg-surface-container rounded-lg p-5 border border-outline-variant/10 hover:border-tertiary/40 hover:bg-surface-container-high transition-all group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="font-headline text-base font-bold tracking-tight">HDFC BANK</h3>
+<span class="text-[10px] font-mono font-bold text-tertiary">64% ACC</span>
+</div>
+<p class="text-[10px] font-mono text-on-surface-variant">NSE: HDFCBANK • <span class="text-tertiary/70">Win Rate: 58%</span></p>
+</div>
+<div class="text-right">
+<div class="text-xl font-mono font-bold text-tertiary">34</div>
+<p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-tighter">Alpha Score</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-5">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[9px] font-bold rounded-sm border border-tertiary/20 uppercase">Bearish</span>
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant text-[9px] font-bold rounded-sm border border-outline-variant/20 uppercase">Conf: Med</span>
+</div>
+<div class="space-y-4 mb-5">
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Key Drivers &amp; Attribution</p>
+<div class="flex flex-wrap gap-2">
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-tertiary">
+<span class="font-bold mr-1.5 opacity-60">RT</span> NIM Pressure
+                                </span>
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-on-surface-variant">
+<span class="font-bold mr-1.5 opacity-60">NSE</span> FII Outflow
+                                </span>
+</div>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Expected Return &amp; Confidence</p>
+<div class="space-y-1.5">
+<div class="flex justify-between text-[10px] font-mono mb-1">
+<span class="text-on-surface-variant">3D Target</span>
+<span class="text-tertiary">-1.8%</span>
+</div>
+<div class="relative h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute inset-y-0 bg-tertiary/20" style="left: 20%; width: 40%"></div>
+<div class="absolute top-0 bottom-0 w-0.5 bg-tertiary shadow-[0_0_5px_#ffb4ab]" style="left: 35%"></div>
+</div>
+<div class="flex justify-between text-[8px] font-mono text-on-surface-variant/40">
+<span>-5%</span>
+<span>0%</span>
+<span>+5%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Signal Card: RELIANCE -->
+<div class="bg-surface-container rounded-lg p-5 border border-outline-variant/10 hover:border-primary/40 hover:bg-surface-container-high transition-all group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="font-headline text-base font-bold tracking-tight">RELIANCE</h3>
+<span class="text-[10px] font-mono font-bold text-primary">81% ACC</span>
+</div>
+<p class="text-[10px] font-mono text-on-surface-variant">NSE: RELIANCE • <span class="text-primary/70">Win Rate: 65%</span></p>
+</div>
+<div class="text-right">
+<div class="text-xl font-mono font-bold text-primary">58</div>
+<p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-tighter">Alpha Score</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-5">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-bold rounded-sm border border-primary/20 uppercase">Neutral +</span>
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant text-[9px] font-bold rounded-sm border border-outline-variant/20 uppercase">Conf: High</span>
+</div>
+<div class="space-y-4 mb-5">
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Key Drivers &amp; Attribution</p>
+<div class="flex flex-wrap gap-2">
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-secondary">
+<span class="font-bold mr-1.5 opacity-60">RT</span> O2C Recovery
+                                </span>
+<span class="text-[9px] bg-surface-container-lowest border border-outline-variant/10 px-2 py-1 rounded-sm flex items-center text-on-surface-variant">
+<span class="font-bold mr-1.5 opacity-60">NSE</span> Jio Sub Growth
+                                </span>
+</div>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-on-surface-variant/60 mb-2 tracking-widest">Expected Return &amp; Confidence</p>
+<div class="space-y-1.5">
+<div class="flex justify-between text-[10px] font-mono mb-1">
+<span class="text-on-surface-variant">3D Target</span>
+<span class="text-on-surface">+0.4%</span>
+</div>
+<div class="relative h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute inset-y-0 bg-primary/20" style="left: 45%; width: 20%"></div>
+<div class="absolute top-0 bottom-0 w-0.5 bg-primary shadow-[0_0_5px_#adc6ff]" style="left: 54%"></div>
+</div>
+<div class="flex justify-between text-[8px] font-mono text-on-surface-variant/40">
+<span>-5%</span>
+<span>0%</span>
+<span>+5%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Intelligence Map Enhanced -->
+<section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div class="lg:col-span-4 bg-surface-container-low rounded-lg p-0 overflow-hidden relative min-h-[340px] border border-outline-variant/10 group">
+<!-- Map Background Focus India -->
+<div class="absolute inset-0">
+<img class="w-full h-full object-cover grayscale opacity-20 mix-blend-luminosity scale-110 group-hover:scale-100 transition-transform duration-[10s]" data-alt="India specialized financial event map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9hA5zH1szhhjseotngHNDHHqM-1PzX2GXiG5WoVBcBZl8_J6bDsXJYwbSxpI4eCsePxtvMZjm-Dmwp5CFRD9l7vm9aYmYXISSbfzL012aYPKAqkfZkZvTvTK6cIkRbOylOv_fs5OgTFIs83H1V2HJf8cZxt61sh9D2tKJdZLRqY4rMsps5LCrI5ALp0P2JiV1nYBBSDw-mC3_F48iHTKv6RpzcO4EwdZ4qL9BZtyarWuHadNPL7uJfrTxP03hAZOiM34BhUW_9oRa"/>
+<!-- Overlay Grid -->
+<div class="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="relative z-10 p-8 h-full flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="px-1.5 py-0.5 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-tighter rounded-sm">INDIA-CORE</span>
+<h2 class="font-headline text-2xl font-extrabold tracking-tighter text-on-surface">Regional Event Cluster</h2>
+</div>
+<p class="text-sm text-on-surface-variant max-w-lg leading-relaxed">
+                                Real-time mapping of legislative and corporate events affecting the NIFTY 50 index. 
+                                <span class="text-secondary font-medium">4 high-impact triggers detected</span> in Maharashtra &amp; Delhi economic zones.
+                            </p>
+</div>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary hover:bg-primary-fixed transition-all rounded font-bold font-headline text-sm shadow-xl shadow-primary/10 group/btn">
+                            Generate Intel Report
+                            <span class="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="flex gap-12 mt-auto">
+<div>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase mb-1">Active Clusters</p>
+<p class="text-lg font-bold">12 Active</p>
+</div>
+<div>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase mb-1">Volatility Influence</p>
+<p class="text-lg font-bold text-secondary">High-Correlation</p>
+</div>
+<div>
+<p class="text-[10px] font-mono text-on-surface-variant uppercase mb-1">Last Node Sync</p>
+<p class="text-lg font-bold">0.4s ago</p>
+</div>
+</div>
+</div>
+<!-- Strategic Map Markers (India Focus Points) -->
+<!-- Delhi Zone -->
+<div class="absolute top-[35%] left-[48%] group/pin">
+<div class="w-3 h-3 bg-primary rounded-full shadow-[0_0_15px_#adc6ff] animate-pulse"></div>
+<div class="absolute -inset-4 bg-primary/10 rounded-full scale-0 group-hover/pin:scale-100 transition-transform"></div>
+<div class="hidden group-hover/pin:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-surface-container-highest text-[10px] font-mono whitespace-nowrap rounded border border-outline-variant/30">
+                        DELHI: Policy Change (NITI)
+                    </div>
+</div>
+<!-- Mumbai Zone -->
+<div class="absolute top-[55%] left-[45%] group/pin">
+<div class="w-4 h-4 bg-secondary rounded-full shadow-[0_0_20px_#4edea3]"></div>
+<div class="absolute -inset-5 bg-secondary/10 rounded-full animate-ping"></div>
+<div class="hidden group-hover/pin:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-surface-container-highest text-[10px] font-mono whitespace-nowrap rounded border border-outline-variant/30">
+                        MUMBAI: NSE High Flow
+                    </div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] px-8 py-2.5 bg-[#10141a] border-t border-[#424754]/15 z-40 flex justify-between items-center alpha-glass">
+<div class="flex items-center gap-4">
+<p class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6]">Market Status: <span class="text-secondary">Open</span></p>
+<div class="h-3 w-px bg-outline-variant/20"></div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6]">Data Source: NSE/BSE/REUTERS Live</p>
+</div>
+<div class="flex gap-6">
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">API Status</a>
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">Quant Docs</a>
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">Privacy</a>
+</div>
+</footer>
+</div>
+</body></html>

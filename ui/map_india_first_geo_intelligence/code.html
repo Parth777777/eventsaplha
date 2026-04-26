@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EventAlpha | India Geo Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#4d8eff",
+              "on-secondary": "#003824",
+              "background": "#0a0c10",
+              "inverse-on-surface": "#2d3137",
+              "surface-container-lowest": "#05070a",
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-secondary-fixed-variant": "#005236",
+              "primary": "#adc6ff",
+              "tertiary-fixed": "#ffdadb",
+              "on-primary": "#002e6a",
+              "surface-variant": "#1c2026",
+              "primary-fixed-dim": "#adc6ff",
+              "surface-bright": "#262a31",
+              "surface-container-low": "#11151c",
+              "primary-fixed": "#d8e2ff",
+              "on-surface": "#dfe2eb",
+              "secondary": "#4edea3",
+              "surface-dim": "#0a0c10",
+              "on-primary-fixed": "#001a42",
+              "outline": "#424754",
+              "on-primary-container": "#00285d",
+              "on-background": "#dfe2eb",
+              "surface-container-high": "#21252b",
+              "surface-container": "#181c22",
+              "error": "#ffb4ab",
+              "warning": "#f9d423",
+              "tertiary-fixed-dim": "#ffb2b7",
+              "surface-container-highest": "#31353c",
+              "error-container": "#93000a",
+              "on-primary-fixed-variant": "#004395",
+              "on-tertiary-fixed-variant": "#92002a",
+              "outline-variant": "#424754",
+              "surface-tint": "#adc6ff",
+              "on-secondary-fixed": "#002113",
+              "on-tertiary": "#67001b",
+              "secondary-container": "#00a572",
+              "on-secondary-container": "#00311f",
+              "inverse-surface": "#dfe2eb",
+              "on-tertiary-container": "#5b0017",
+              "tertiary": "#ffb2b7",
+              "inverse-primary": "#005ac2",
+              "surface": "#0a0c10",
+              "on-surface-variant": "#c2c6d6",
+              "tertiary-container": "#ff516a",
+              "on-error-container": "#ffdad6",
+              "on-tertiary-fixed": "#40000d",
+              "on-error": "#690005"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .map-gradient-overlay {
+            background: radial-gradient(circle at center, transparent 0%, #0a0c10 95%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            background: rgba(16, 20, 26, 0.75);
+        }
+        .pulse-warning {
+            animation: pulse-warning 2s infinite;
+        }
+        @keyframes pulse-warning {
+            0% { box-shadow: 0 0 0 0 rgba(249, 212, 35, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(249, 212, 35, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 212, 35, 0); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#05070a] border-r border-outline/10 z-50 flex flex-col py-6">
+<div class="px-6 mb-8">
+<h1 class="text-[#adc6ff] font-headline font-bold text-lg tracking-tight">EventAlpha</h1>
+<p class="text-[#c2c6d6] opacity-70 font-mono text-[10px] uppercase tracking-widest mt-1">Quant Intelligence</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm font-medium hover:bg-surface-variant hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="home">home</span>
+            Home
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm font-medium hover:bg-surface-variant hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="explore">explore</span>
+            Explore
+        </a>
+<a class="flex items-center px-6 py-3 bg-primary/10 text-primary border-r-4 border-primary font-headline text-sm font-bold transition-all transform translate-x-1" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="map">map</span>
+            Geo Map
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm font-medium hover:bg-surface-variant hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="insights">insights</span>
+            Sector Analysis
+        </a>
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm font-medium hover:bg-surface-variant hover:text-[#dfe2eb] transition-all group" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="star">star</span>
+            Watchlist
+        </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline/10">
+<a class="flex items-center px-6 py-3 text-[#c2c6d6] opacity-70 font-headline text-sm font-medium hover:bg-surface-variant transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="settings">settings</span>
+            Settings
+        </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="h-16 flex justify-between items-center px-8 bg-background border-b border-outline/10 z-40">
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+</span>
+<input class="bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-2 text-sm w-96 focus:ring-1 focus:ring-primary/40 placeholder:text-on-surface-variant/40 font-body" placeholder="Search India-centric risks, NSE symbols..." type="text"/>
+</div>
+<div class="h-4 w-px bg-outline/20"></div>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] text-outline uppercase font-bold tracking-tighter">NIFTY 50</span>
+<span class="text-xs font-mono text-secondary">22,453.10 (+0.45%)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded text-[11px] font-bold text-on-surface border border-outline/10">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                LIVE INTEL
+            </button>
+<button class="p-2 text-primary hover:bg-surface-variant transition-colors rounded-lg">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-variant transition-colors rounded-lg">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Map Canvas Section -->
+<section class="relative flex-1 bg-surface-container-lowest">
+<!-- Mock Interactive Map (Centered on India) -->
+<div class="absolute inset-0 z-0 bg-[#05070a]">
+<!-- This image is a placeholder; in a real app, this would be a Leaflet/Mapbox instance centered on India [20.5937, 78.9629] -->
+<img alt="Dark high-contrast map focused on Indian subcontinent" class="w-full h-full object-cover opacity-40 mix-blend-screen scale-150 origin-[70%_50%]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5SL8uRG8KK7AoNbPnsO16v8dk9Rb0M3SA6C6jyIu_xCE3--vO39k9WW_RdWFtcbTsqYTHVsxHMAAQFeE0bFCBIK_57ijYXw4jVkcqmw2j84p2Vu6oLLFEpERmKFtVmDiyJth6OU4xOp9CGrUzf2YzGV02lJicOBz9cxhGrhg3VvhTNjWqiJrQVWVmQ_HbBI3_XEOsgLYGJQ8wDADFb2nSckuzXxnG5NFBjaDIcpC6EeVkxLu6k5sthckGnsmJkKEGzq0TllyhkPTm"/>
+<div class="absolute inset-0 map-gradient-overlay"></div>
+</div>
+<!-- Floating Layer Toggle -->
+<div class="absolute top-6 left-6 z-20 flex flex-col gap-4">
+<div class="glass-panel p-1 rounded-xl flex items-center border border-outline/10 shadow-2xl">
+<button class="px-4 py-2 rounded-lg text-on-surface-variant font-headline text-xs font-medium hover:bg-surface-bright transition-all">Global</button>
+<button class="px-4 py-2 rounded-lg bg-primary/20 text-primary font-headline text-xs font-bold border border-primary/30 transition-all">India Focus</button>
+<button class="px-4 py-2 rounded-lg text-on-surface-variant font-headline text-xs font-medium hover:bg-surface-bright transition-all">NSE/BSE Assets</button>
+</div>
+<!-- Map Legend/Overlay -->
+<div class="glass-panel p-4 rounded-xl border border-outline/10 w-56">
+<h4 class="text-[10px] font-mono font-bold text-outline mb-3 uppercase tracking-widest">Live Risk Layers</h4>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Policy Updates</span>
+<div class="w-8 h-4 bg-primary/20 rounded-full relative"><div class="absolute right-1 top-1 w-2 h-2 bg-primary rounded-full"></div></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Supply Chain</span>
+<div class="w-8 h-4 bg-warning/20 rounded-full relative"><div class="absolute right-1 top-1 w-2 h-2 bg-warning rounded-full"></div></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Capital Flows</span>
+<div class="w-8 h-4 bg-secondary/20 rounded-full relative"><div class="absolute right-1 top-1 w-2 h-2 bg-secondary rounded-full"></div></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Map Controls (Bottom Left) -->
+<div class="absolute bottom-12 left-6 z-20 flex flex-col gap-2">
+<div class="glass-panel p-1 rounded-lg flex flex-col border border-outline/10">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm" data-icon="add">add</span></button>
+<div class="h-px bg-outline/10"></div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm" data-icon="remove">remove</span></button>
+</div>
+<button class="glass-panel p-3 rounded-lg text-primary border border-outline/10 hover:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="my_location">my_location</span>
+</button>
+</div>
+<!-- INTERACTIVE MARKERS (India Focus) -->
+<!-- Delhi - Policy -->
+<div class="absolute top-[42%] left-[68.5%] z-10 group cursor-pointer">
+<div class="relative flex items-center justify-center">
+<div class="absolute w-10 h-10 bg-primary/20 rounded-full animate-pulse"></div>
+<div class="w-6 h-6 bg-primary rounded-full shadow-[0_0_15px_rgba(173,198,255,0.6)] border-2 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-background font-bold" data-icon="gavel">gavel</span>
+</div>
+<div class="absolute left-full ml-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+<div class="glass-panel px-3 py-2 rounded border border-primary/30">
+<p class="text-[10px] font-bold text-primary">NEW DELHI</p>
+<p class="text-xs text-on-surface">Telecom Policy Shift</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Mumbai - Industrial -->
+<div class="absolute top-[52%] left-[66%] z-10 group cursor-pointer">
+<div class="relative flex items-center justify-center">
+<div class="w-5 h-5 bg-warning rounded-full shadow-[0_0_12px_rgba(249,212,35,0.5)] border-2 border-background flex items-center justify-center pulse-warning">
+<span class="material-symbols-outlined text-[10px] text-background font-bold" data-icon="factory">factory</span>
+</div>
+<div class="absolute left-full ml-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+<div class="glass-panel px-3 py-2 rounded border border-warning/30">
+<p class="text-[10px] font-bold text-warning">MUMBAI</p>
+<p class="text-xs text-on-surface">Industrial Order Surge</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bangalore - Tech -->
+<div class="absolute top-[58%] left-[68%] z-10 group cursor-pointer">
+<div class="relative flex items-center justify-center">
+<div class="w-4 h-4 bg-secondary rounded-full shadow-[0_0_10px_rgba(78,222,163,0.5)] border-2 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-background font-bold" data-icon="terminal">terminal</span>
+</div>
+<div class="absolute left-full ml-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+<div class="glass-panel px-3 py-2 rounded border border-secondary/30">
+<p class="text-[10px] font-bold text-secondary">BANGALORE</p>
+<p class="text-xs text-on-surface">FDI Tech Inflow</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Global Risks with India Impact Paths -->
+<!-- Middle East Oil Path -->
+<div class="absolute top-[48%] left-[55%] z-10 group">
+<div class="relative">
+<div class="w-8 h-8 bg-error/30 rounded-full flex items-center justify-center animate-ping absolute -inset-0"></div>
+<div class="w-8 h-8 bg-error rounded-full shadow-[0_0_20px_#ffb4ab] border-2 border-background flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-sm text-background font-bold" data-icon="oil_barrel">oil_barrel</span>
+</div>
+<!-- Animated flow line towards India -->
+<svg class="absolute top-4 left-8 w-48 h-24 overflow-visible pointer-events-none opacity-40" viewbox="0 0 200 100">
+<path d="M0,0 Q100,50 180,20" fill="none" stroke="#ffb4ab" stroke-dasharray="4,4" stroke-width="2">
+<animate attributename="stroke-dashoffset" dur="3s" from="100" repeatcount="indefinite" to="0"></animate>
+</path>
+</svg>
+</div>
+</div>
+<!-- Side Panel (Floating/Right) -->
+<div class="absolute top-6 bottom-6 right-6 w-96 z-30 pointer-events-none">
+<div class="pointer-events-auto h-full glass-panel rounded-2xl border border-outline/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+<div class="p-6 bg-surface-container-high/40 border-b border-outline/10">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex gap-2 mb-2">
+<span class="bg-error/10 text-error border border-error/20 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase">Severe Impact</span>
+<span class="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase">Macro</span>
+</div>
+<h2 class="font-headline font-bold text-xl tracking-tight text-on-surface">India Impact Summary</h2>
+<p class="text-on-surface-variant text-[11px] mt-1 font-medium">Context: Middle East Supply Disruptions</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1 transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- Impact Heatmap -->
+<section>
+<h3 class="text-[10px] font-mono uppercase tracking-[0.2em] text-outline mb-4">Sector Sensitivity</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-low p-3 rounded border border-secondary/10">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[9px] text-secondary font-bold">UPSTREAM OIL</span>
+<span class="material-symbols-outlined text-secondary text-xs" data-icon="trending_up">trending_up</span>
+</div>
+<div class="text-lg font-headline font-bold text-on-surface">BULLISH</div>
+<div class="text-[9px] text-outline mt-1 italic">Est +4.2% Alpha</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded border border-error/10">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[9px] text-error font-bold">OMCs / LOGISTICS</span>
+<span class="material-symbols-outlined text-error text-xs" data-icon="trending_down">trending_down</span>
+</div>
+<div class="text-lg font-headline font-bold text-on-surface">BEARISH</div>
+<div class="text-[9px] text-outline mt-1 italic">Margin Compression</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded border border-warning/10">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[9px] text-warning font-bold">PAINT / CHEM</span>
+<span class="material-symbols-outlined text-warning text-xs" data-icon="horizontal_rule">horizontal_rule</span>
+</div>
+<div class="text-lg font-headline font-bold text-on-surface">NEUTRAL</div>
+<div class="text-[9px] text-outline mt-1 italic">Hedged Exposure</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded border border-secondary/10">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[9px] text-secondary font-bold">RELIANCE (O2C)</span>
+<span class="material-symbols-outlined text-secondary text-xs" data-icon="trending_up">trending_up</span>
+</div>
+<div class="text-lg font-headline font-bold text-on-surface">BULLISH</div>
+<div class="text-[9px] text-outline mt-1 italic">Export Advantage</div>
+</div>
+</div>
+</section>
+<!-- Top Indian Assets -->
+<section>
+<h3 class="text-[10px] font-mono uppercase tracking-[0.2em] text-outline mb-4">High Sensitivity Stocks</h3>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-2.5 bg-surface-container-lowest rounded border border-outline/5 hover:border-primary/30 transition-all group cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center font-bold text-[10px] text-primary">ONGC</div>
+<div>
+<div class="text-xs font-bold text-on-surface">Oil &amp; Nat. Gas Corp</div>
+<div class="text-[9px] text-outline">NSE: ONGC</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-xs font-mono text-secondary">+3.85%</div>
+<div class="text-[8px] text-outline uppercase font-bold">High Cov</div>
+</div>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-container-lowest rounded border border-outline/5 hover:border-primary/30 transition-all group cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center font-bold text-[10px] text-on-surface">BPCL</div>
+<div>
+<div class="text-xs font-bold text-on-surface">Bharat Petroleum</div>
+<div class="text-[9px] text-outline">NSE: BPCL</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-xs font-mono text-error">-2.10%</div>
+<div class="text-[8px] text-outline uppercase font-bold">Volatility</div>
+</div>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-container-lowest rounded border border-outline/5 hover:border-primary/30 transition-all group cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center font-bold text-[10px] text-warning">ADNI</div>
+<div>
+<div class="text-xs font-bold text-on-surface">Adani Enterprises</div>
+<div class="text-[9px] text-outline">NSE: ADANIENT</div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-xs font-mono text-warning">+0.15%</div>
+<div class="text-[8px] text-outline uppercase font-bold">Neutral</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Quant Briefing -->
+<section>
+<h3 class="text-[10px] font-mono uppercase tracking-[0.2em] text-outline mb-3">India Briefing</h3>
+<p class="text-on-surface-variant text-[12px] leading-relaxed">
+                            Supply chain friction in the <span class="text-on-surface font-semibold underline decoration-error/30">Hormuz straits</span> is expected to drive a <span class="text-error font-bold">7% increase</span> in domestic freight costs by next month. RBI policy stance likely to remain <span class="text-warning font-semibold">cautiously neutral</span>. Current NSE model suggests prioritizing <span class="text-secondary font-semibold">domestic energy producers</span> with low debt-to-equity ratios.
+                        </p>
+</section>
+</div>
+<div class="p-4 bg-surface-container-lowest border-t border-outline/10">
+<button class="w-full py-3 bg-primary text-on-primary font-headline font-bold rounded-lg shadow-[0_4px_15px_rgba(173,198,255,0.3)] hover:brightness-110 active:scale-[0.98] transition-all text-sm">
+                        Generate Indian Market Intel
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-16rem)] px-8 py-2 bg-[#05070a] border-t border-outline/5 z-50 flex justify-between items-center">
+<div class="flex items-center gap-6">
+<span class="font-mono text-[9px] uppercase tracking-[0.2em] text-outline">LATENCY: 42ms | REGION: APAC-SOUTH-1 | ASSETS: 2,450+ Active</span>
+<div class="flex items-center gap-2">
+<span class="w-1 h-1 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-mono text-[9px] text-secondary font-bold">QUANT ENGINE NOMINAL</span>
+</div>
+</div>
+<div class="flex gap-4">
+<a class="font-mono text-[9px] uppercase font-bold text-outline hover:text-primary transition-colors" href="#">NSE API</a>
+<a class="font-mono text-[9px] uppercase font-bold text-outline hover:text-primary transition-colors" href="#">System Map</a>
+</div>
+</footer>
+</main>
+</body></html>

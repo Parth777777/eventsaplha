@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EventAlpha | Precision Intel Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#424754",
+                        "surface": "#10141a",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "surface-container-lowest": "#0a0e14",
+                        "on-background": "#dfe2eb",
+                        "surface-variant": "#31353c",
+                        "outline": "#8c909f",
+                        "surface-dim": "#10141a",
+                        "surface-container-low": "#181c22",
+                        "on-tertiary-fixed": "#40000d",
+                        "primary-container": "#4d8eff",
+                        "background": "#10141a",
+                        "primary": "#adc6ff",
+                        "on-tertiary-container": "#5b0017",
+                        "on-secondary-fixed-variant": "#005236",
+                        "secondary": "#4edea3",
+                        "surface-container": "#1c2026",
+                        "error-container": "#93000a",
+                        "surface-tint": "#adc6ff",
+                        "inverse-primary": "#005ac2",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary": "#003824",
+                        "tertiary": "#ffb2b7",
+                        "error": "#ffb4ab",
+                        "on-tertiary": "#67001b",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-surface": "#dfe2eb",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-bright": "#353940",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-container": "#ff516a",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary-container": "#00285d",
+                        "on-primary": "#002e6a",
+                        "tertiary-fixed": "#ffdadb",
+                        "surface-container-high": "#262a31",
+                        "inverse-on-surface": "#2d3137",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary-container": "#00a572",
+                        "on-surface": "#dfe2eb",
+                        "surface-container-highest": "#31353c",
+                        "on-tertiary-fixed-variant": "#92002a",
+                        "on-primary-fixed-variant": "#004395"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .sparkline { stroke-width: 2; fill: none; stroke-linecap: round; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 z-50 w-full flex justify-between items-center px-6 py-3 bg-[#10141a] border-b border-[#424754]/15">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-[#adc6ff] font-headline">EventAlpha</span>
+<div class="hidden md:flex items-center bg-[#0a0e14] px-4 py-1.5 rounded-lg border border-[#424754]/15">
+<span class="material-symbols-outlined text-sm text-[#c2c6d6] mr-2">search</span>
+<input class="bg-transparent border-none text-sm text-[#dfe2eb] focus:ring-0 w-64 p-0 placeholder-[#424754]" placeholder="Search events, tickers, or impact..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#c2c6d6] hover:bg-[#31353c] transition-colors duration-200 rounded-lg">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-[#c2c6d6] hover:bg-[#31353c] transition-colors duration-200 rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-highest border border-outline-variant/30 ml-2">
+<img alt="User Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFwzFZv6bgw-8KA8bkgjX8gqH4fQRTJ3k8WQKgcbwbI5ff7L7KgsxlxYYNsTqfZYNvr1dIhWIX97kfNp9NbHqDJbRu-vV1uG-CWlQG_lvwnpHwWbWg6z9CkO6y1_xqoMftWoy3GPy7s89_xPPRaL1Mmcpc_f0ufP74k7g3IQu7B5-LbW5hEVXioFiaIzOXXE1_d_ZkocdI-j40eG0t_PUF-Kh1r-QtAJcfKCZb1qkkpnxrJQApvOrb_8FFLiBxiMNSSVNrnJGh1ncN"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#0a0e14] border-r border-[#424754]/15 flex flex-col py-6 pt-20 hidden md:flex">
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#c2c6d6] opacity-70 font-medium text-sm tabular-nums hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#adc6ff]">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#c2c6d6] opacity-70 font-medium text-sm tabular-nums hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#adc6ff]">explore</span>
+<span>Explore</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#c2c6d6] opacity-70 font-medium text-sm tabular-nums hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#adc6ff]">map</span>
+<span>Map</span>
+</a>
+<!-- Active Tab: Events -->
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#adc6ff] border-r-2 border-[#adc6ff] bg-[#31353c]/30 font-medium text-sm tabular-nums translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span>Events</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#c2c6d6] opacity-70 font-medium text-sm tabular-nums hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#adc6ff]">visibility</span>
+<span>Watchlist</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#c2c6d6] opacity-70 font-medium text-sm tabular-nums hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#adc6ff]">notifications_active</span>
+<span>Alerts</span>
+</a>
+</nav>
+<div class="px-8 mt-auto">
+<div class="p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-bold tracking-widest text-[#adc6ff] uppercase">Precision Quant</span>
+<span class="flex h-2 w-2 rounded-full bg-secondary"></span>
+</div>
+<div class="text-xs text-on-surface-variant font-medium leading-relaxed">
+                Alpha Terminal Active
+                <span class="block text-[10px] opacity-40 font-mono mt-1">ID: 4492-AXQ</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-20 px-6 pb-12">
+<!-- Header & Category Filter Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
+<div>
+<h1 class="font-headline text-4xl font-black tracking-tight text-on-background mb-2">Precision Intel Feed</h1>
+<p class="text-on-surface-variant font-light">Advanced signal processing and quantitative impact analysis.</p>
+</div>
+<div class="flex items-center gap-2 p-1 bg-surface-container-lowest rounded-lg border border-outline-variant/15 no-scrollbar overflow-x-auto">
+<button class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-black rounded bg-primary text-on-primary-container">Live Feed</button>
+<button class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">Earnings</button>
+<button class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">CapEx</button>
+<button class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">Regulatory</button>
+<button class="px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">Macro</button>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Event Feed List -->
+<div class="flex-1 space-y-6">
+<!-- Event Card 1 -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-primary/40 transition-all duration-300 overflow-hidden">
+<div class="flex flex-col md:flex-row">
+<!-- Impact Score Sidebar -->
+<div class="md:w-16 bg-surface-container-high/30 flex md:flex-col items-center justify-center p-4 border-b md:border-b-0 md:border-r border-outline-variant/10 gap-2">
+<span class="text-[9px] font-black text-on-surface-variant uppercase vertical-text md:rotate-180 md:[writing-mode:vertical-lr]">Impact Score</span>
+<div class="flex flex-col items-center">
+<span class="text-2xl font-black font-headline text-secondary">88</span>
+<div class="w-8 h-1 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="flex-1 p-6">
+<div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-surface-container-highest p-2.5 rounded-lg border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary">assignment_turned_in</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-0.5">
+<span class="text-[10px] font-black tracking-widest text-primary uppercase">Order Win</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-[10px] font-bold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] fill-1">verified</span> Official - Verified
+                                        </span>
+</div>
+<h3 class="font-headline text-xl font-black text-on-background">KNR Constructions Ltd.</h3>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<span class="block text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Effect Projection</span>
+<span class="text-sm font-black text-secondary uppercase bg-secondary/10 px-2 py-1 rounded border border-secondary/20 italic tracking-tighter">Aggressive Bullish</span>
+</div>
+</div>
+</div>
+<!-- Precision Data Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Order Value</span>
+<span class="text-base font-bold font-mono text-on-background tracking-tighter">₹1,240.50 Cr</span>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Confidence</span>
+<div class="flex items-center gap-1.5">
+<span class="text-base font-bold text-on-background tracking-tighter">High</span>
+<div class="flex gap-0.5">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Ticker</span>
+<span class="text-base font-bold text-primary font-mono tracking-tighter underline underline-offset-4 decoration-primary/30">KNRCON:NS</span>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Sentiment Delta</span>
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-secondary">+12.4%</span>
+<span class="material-symbols-outlined text-secondary text-sm">trending_up</span>
+</div>
+</div>
+</div>
+<!-- Related Symbols & Sparklines -->
+<div class="mb-6 p-4 bg-surface-container-lowest/50 rounded-lg border border-outline-variant/10">
+<span class="block text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Related Alpha Assets</span>
+<div class="flex flex-wrap gap-6">
+<div class="flex items-center gap-3">
+<div>
+<span class="block text-xs font-bold font-mono text-on-background">L&amp;T</span>
+<span class="text-[10px] text-secondary font-bold">+1.2%</span>
+</div>
+<svg class="w-12 h-6" viewbox="0 0 50 20">
+<polyline class="sparkline stroke-secondary" points="0,15 5,14 10,16 15,10 20,12 25,8 30,10 35,4 40,6 45,2 50,5"></polyline>
+</svg>
+</div>
+<div class="flex items-center gap-3">
+<div>
+<span class="block text-xs font-bold font-mono text-on-background">IRB</span>
+<span class="text-[10px] text-secondary font-bold">+2.4%</span>
+</div>
+<svg class="w-12 h-6" viewbox="0 0 50 20">
+<polyline class="sparkline stroke-secondary" points="0,18 10,14 20,15 30,10 40,5 50,2"></polyline>
+</svg>
+</div>
+<div class="flex items-center gap-3 opacity-60">
+<div>
+<span class="block text-xs font-bold font-mono text-on-background">NIFTY_INFRA</span>
+<span class="text-[10px] text-on-surface-variant font-bold">+0.4%</span>
+</div>
+<svg class="w-12 h-6" viewbox="0 0 50 20">
+<polyline class="sparkline stroke-on-surface-variant" points="0,10 10,12 20,8 30,10 40,9 50,11"></polyline>
+</svg>
+</div>
+</div>
+</div>
+<!-- Insights & Sentiment Comparison -->
+<div class="grid md:grid-cols-3 gap-4">
+<div class="md:col-span-2 flex items-start gap-3 bg-primary/5 p-4 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary text-sm mt-0.5">analytics</span>
+<div class="text-[13px] leading-relaxed text-on-surface-variant">
+                                    Infrastructure mandate for NHAI project confirms revenue visibility of <span class="text-on-background font-bold">3.8x Book-to-Bill</span>. Expected IRR of <span class="text-secondary font-bold">14.2%</span> outperforming sector median.
+                                </div>
+</div>
+<div class="bg-surface-container-highest/60 p-4 rounded-lg flex flex-col justify-center border border-outline-variant/10">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[9px] font-black text-on-surface-variant uppercase">Quant Sentiment</span>
+<span class="text-xs font-black text-secondary">82%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-low rounded-full mb-3 overflow-hidden">
+<div class="h-full bg-secondary w-[82%]"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[9px] font-black text-on-surface-variant uppercase">Crowd Sentiment</span>
+<span class="text-xs font-black text-primary">64%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[64%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-error/40 transition-all duration-300 overflow-hidden">
+<div class="flex flex-col md:flex-row">
+<div class="md:w-16 bg-surface-container-high/30 flex md:flex-col items-center justify-center p-4 border-b md:border-b-0 md:border-r border-outline-variant/10 gap-2">
+<span class="text-[9px] font-black text-on-surface-variant uppercase vertical-text md:rotate-180 md:[writing-mode:vertical-lr]">Impact Score</span>
+<div class="flex flex-col items-center">
+<span class="text-2xl font-black font-headline text-error">94</span>
+<div class="w-8 h-1 bg-error rounded-full"></div>
+</div>
+</div>
+<div class="flex-1 p-6">
+<div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-surface-container-highest p-2.5 rounded-lg border border-outline-variant/10">
+<span class="material-symbols-outlined text-error">query_stats</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-0.5">
+<span class="text-[10px] font-black tracking-widest text-error uppercase">Earnings Miss</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-[10px] font-bold text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">feedback</span> Market Rumor - Low Confidence
+                                        </span>
+</div>
+<h3 class="font-headline text-xl font-black text-on-background">Tech-Core Dynamics</h3>
+</div>
+</div>
+<div class="text-right">
+<span class="block text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-1">Effect Projection</span>
+<span class="text-sm font-black text-error uppercase bg-error/10 px-2 py-1 rounded border border-error/20 italic tracking-tighter">Critical Bearish</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">EPS Deviation</span>
+<span class="text-base font-bold font-mono text-error tracking-tighter">-18.4%</span>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Confidence</span>
+<div class="flex items-center gap-1.5">
+<span class="text-base font-bold text-on-background tracking-tighter">Medium</span>
+<div class="flex gap-0.5">
+<div class="w-1.5 h-1.5 rounded-full bg-error"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-error"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant/30"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Ticker</span>
+<span class="text-base font-bold text-on-background font-mono tracking-tighter">TCD:NAS</span>
+</div>
+<div class="bg-surface-container-highest/40 p-3 rounded-lg border border-outline-variant/5">
+<span class="block text-[9px] uppercase font-black text-on-surface-variant mb-1 tracking-widest">Guidance</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-sm">trending_down</span>
+<span class="text-xs font-bold text-error">Revised -20%</span>
+</div>
+</div>
+</div>
+<!-- Related Symbols -->
+<div class="mb-6 p-4 bg-surface-container-lowest/50 rounded-lg border border-outline-variant/10">
+<div class="flex flex-wrap gap-6">
+<div class="flex items-center gap-3">
+<div>
+<span class="block text-xs font-bold font-mono text-on-background">MSFT</span>
+<span class="text-[10px] text-error font-bold">-0.8%</span>
+</div>
+<svg class="w-12 h-6" viewbox="0 0 50 20">
+<polyline class="sparkline stroke-error" points="0,2 10,5 20,4 30,12 40,15 50,18"></polyline>
+</svg>
+</div>
+<div class="flex items-center gap-3">
+<div>
+<span class="block text-xs font-bold font-mono text-on-background">AWS</span>
+<span class="text-[10px] text-error font-bold">-1.2%</span>
+</div>
+<svg class="w-12 h-6" viewbox="0 0 50 20">
+<polyline class="sparkline stroke-error" points="0,5 10,8 20,10 30,14 40,12 50,16"></polyline>
+</svg>
+</div>
+</div>
+</div>
+<div class="grid md:grid-cols-3 gap-4">
+<div class="md:col-span-2 flex items-start gap-3 bg-error/5 p-4 rounded-lg border border-error/10">
+<span class="material-symbols-outlined text-error text-sm mt-0.5">priority_high</span>
+<div class="text-[13px] leading-relaxed text-on-surface-variant">
+                                    Unconfirmed reports suggest massive slowdown in <span class="text-on-background font-bold">Hyperscaler Tier-1</span> contracts. Institutional outflows detected in past 48 hours.
+                                </div>
+</div>
+<div class="bg-surface-container-highest/60 p-4 rounded-lg flex flex-col justify-center border border-outline-variant/10">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[9px] font-black text-on-surface-variant uppercase">Quant Sentiment</span>
+<span class="text-xs font-black text-error">12%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-low rounded-full mb-3 overflow-hidden">
+<div class="h-full bg-error w-[12%]"></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[9px] font-black text-on-surface-variant uppercase">Crowd Sentiment</span>
+<span class="text-xs font-black text-on-surface-variant">42%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-on-surface-variant w-[42%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side Data Column -->
+<aside class="w-full lg:w-80 space-y-6">
+<!-- Alpha Movers with Sector Sensitivity -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15">
+<h4 class="font-headline font-black text-on-background mb-4 text-sm flex items-center justify-between">
+                    Alpha Movers
+                    <span class="material-symbols-outlined text-xs text-primary">auto_graph</span>
+</h4>
+<div class="space-y-4">
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/5">
+<div class="flex items-center justify-between mb-2">
+<div>
+<span class="block text-xs font-black text-on-background">KNRCON</span>
+<span class="text-[10px] text-on-surface-variant">Infrastructure</span>
+</div>
+<span class="text-secondary font-mono font-black text-sm">+8.42%</span>
+</div>
+<div class="grid grid-cols-5 gap-0.5 h-1.5">
+<div class="bg-secondary rounded-l-full"></div>
+<div class="bg-secondary"></div>
+<div class="bg-secondary"></div>
+<div class="bg-secondary/40"></div>
+<div class="bg-secondary/20 rounded-r-full"></div>
+</div>
+<span class="block mt-1.5 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Sector Sensitivity: High</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/5">
+<div class="flex items-center justify-between mb-2">
+<div>
+<span class="block text-xs font-black text-on-background">RELIANCE</span>
+<span class="text-[10px] text-on-surface-variant">Energy</span>
+</div>
+<span class="text-secondary font-mono font-black text-sm">+1.24%</span>
+</div>
+<div class="grid grid-cols-5 gap-0.5 h-1.5">
+<div class="bg-secondary rounded-l-full"></div>
+<div class="bg-secondary/40"></div>
+<div class="bg-outline-variant/20"></div>
+<div class="bg-outline-variant/20"></div>
+<div class="bg-outline-variant/20 rounded-r-full"></div>
+</div>
+<span class="block mt-1.5 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Sector Sensitivity: Low</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/5">
+<div class="flex items-center justify-between mb-2">
+<div>
+<span class="block text-xs font-black text-on-background">TECHM</span>
+<span class="text-[10px] text-on-surface-variant">IT Services</span>
+</div>
+<span class="text-error font-mono font-black text-sm">-3.15%</span>
+</div>
+<div class="grid grid-cols-5 gap-0.5 h-1.5">
+<div class="bg-error rounded-l-full"></div>
+<div class="bg-error"></div>
+<div class="bg-error"></div>
+<div class="bg-error/40"></div>
+<div class="bg-error/20 rounded-r-full"></div>
+</div>
+<span class="block mt-1.5 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Sector Sensitivity: High</span>
+</div>
+</div>
+<!-- Sector Sensitivity Heatmap Summary -->
+<div class="mt-6 pt-6 border-t border-outline-variant/15">
+<span class="block text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Global Sector Sentiment</span>
+<div class="grid grid-cols-3 gap-1">
+<div class="h-8 bg-secondary rounded-sm flex items-center justify-center text-[10px] font-black text-on-secondary-container">INFRA</div>
+<div class="h-8 bg-secondary/60 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface">ENER</div>
+<div class="h-8 bg-error/40 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface">TECH</div>
+<div class="h-8 bg-surface-container-highest rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface-variant">FIN</div>
+<div class="h-8 bg-secondary/80 rounded-sm flex items-center justify-center text-[10px] font-black text-on-secondary-container">AUTO</div>
+<div class="h-8 bg-error/20 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface-variant">CONS</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2.5 text-[10px] font-black tracking-widest uppercase border border-outline-variant/30 hover:bg-surface-bright hover:border-primary/50 transition-all rounded text-on-surface-variant hover:text-primary">Global Sensitivity Report</button>
+</div>
+<!-- Terminal Signal Status -->
+<div class="bg-primary/5 p-6 rounded-xl border border-primary/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+<div class="flex items-center gap-2 mb-3 relative z-10">
+<span class="material-symbols-outlined text-primary text-sm">precision_manufacturing</span>
+<h4 class="font-headline font-black text-primary text-sm">Quant Signal Terminal</h4>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-relaxed mb-4 relative z-10">
+                    Neural Engine detected high-velocity accumulation in <span class="text-primary font-bold">KNRCON</span>. Cross-asset correlation confirms validity at <span class="text-on-background font-bold">0.92 Sigma</span>.
+                </p>
+<div class="flex items-center gap-2 mb-1">
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full w-[88%] bg-primary"></div>
+</div>
+<span class="text-[10px] font-mono text-primary font-black">88%</span>
+</div>
+<span class="text-[8px] font-bold text-on-surface-variant uppercase tracking-tighter">Signal Convergence Confidence</span>
+</div>
+</aside>
+</div>
+</main>
+<!-- Mobile Nav Anchor -->
+<nav class="md:hidden fixed bottom-0 w-full bg-[#10141a] border-t border-[#424754]/15 flex justify-around py-3 px-2 z-50">
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px]">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#adc6ff] font-bold" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-[10px]">Events</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined">visibility</span>
+<span class="text-[10px]">Watch</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#c2c6d6]" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="text-[10px]">Alerts</span>
+</a>
+</nav>
+</body></html>

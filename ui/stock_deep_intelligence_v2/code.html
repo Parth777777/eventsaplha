@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EventAlpha | RELIANCE Core Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#4d8eff",
+                        "on-secondary": "#003824",
+                        "background": "#10141a",
+                        "inverse-on-surface": "#2d3137",
+                        "surface-container-lowest": "#0a0e14",
+                        "secondary-fixed-dim": "#4edea3",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-secondary-fixed-variant": "#005236",
+                        "primary": "#adc6ff",
+                        "tertiary-fixed": "#ffdadb",
+                        "on-primary": "#002e6a",
+                        "surface-variant": "#31353c",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-bright": "#353940",
+                        "surface-container-low": "#181c22",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface": "#dfe2eb",
+                        "secondary": "#4edea3",
+                        "surface-dim": "#10141a",
+                        "on-primary-fixed": "#001a42",
+                        "outline": "#8c909f",
+                        "on-primary-container": "#00285d",
+                        "on-background": "#dfe2eb",
+                        "surface-container-high": "#262a31",
+                        "surface-container": "#1c2026",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "surface-container-highest": "#31353c",
+                        "error-container": "#93000a",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-fixed-variant": "#92002a",
+                        "outline-variant": "#424754",
+                        "surface-tint": "#adc6ff",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary": "#67001b",
+                        "secondary-container": "#00a572",
+                        "on-secondary-container": "#00311f",
+                        "inverse-surface": "#dfe2eb",
+                        "on-tertiary-container": "#5b0017",
+                        "tertiary": "#ffb2b7",
+                        "inverse-primary": "#005ac2",
+                        "surface": "#10141a",
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary-container": "#ff516a",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#40000d",
+                        "on-error": "#690005"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #10141a; color: #dfe2eb; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        .glass-panel {
+            background: rgba(28, 32, 38, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .sparkline-animate {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: dash 1.5s ease-in-out forwards;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#0a0e14] border-r border-[#424754]/15 z-50 flex flex-col py-6">
+<div class="px-6 mb-10">
+<h1 class="text-[#adc6ff] font-bold text-lg font-headline tracking-tight">EventAlpha</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-[#c2c6d6] opacity-50 mt-1">Financial Intelligence</p>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded font-headline text-sm font-medium group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="home">home</span>
+                Home
+            </a>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded font-headline text-sm font-medium group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="explore">explore</span>
+                Explore
+            </a>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded font-headline text-sm font-medium group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="map">map</span>
+                Map
+            </a>
+<a class="flex items-center px-4 py-3 bg-[#4d8eff]/10 text-[#adc6ff] border-r-4 border-[#adc6ff] font-bold transition-all rounded-l font-headline text-sm group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="event" style="font-variation-settings: 'FILL' 1;">event</span>
+                Events
+            </a>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded font-headline text-sm font-medium group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="star">star</span>
+                Watchlist
+            </a>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] hover:text-[#dfe2eb] transition-all rounded font-headline text-sm font-medium group" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="notifications">notifications</span>
+                Alerts
+            </a>
+</nav>
+<div class="px-3 pt-6 border-t border-[#424754]/15 mt-auto space-y-1">
+<button class="w-full flex items-center px-4 py-3 mb-4 bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition-all rounded font-headline text-[11px] font-black uppercase tracking-widest">
+<span class="material-symbols-outlined mr-2 text-sm" data-icon="download">download</span>
+                Download Intel Report
+            </button>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] transition-all rounded font-headline text-sm font-medium" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center px-4 py-3 text-[#c2c6d6] opacity-70 hover:bg-[#31353c] transition-all rounded font-headline text-sm font-medium" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="help">help</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-[#10141a] border-b border-[#424754]/15 z-40 flex justify-between items-center px-8">
+<div class="flex items-center space-x-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-surface-container-lowest border-none text-xs rounded h-9 w-64 pl-10 focus:ring-1 focus:ring-primary/40 font-body placeholder:text-on-surface-variant/40" placeholder="Search events or tickers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2 text-[10px] font-mono text-secondary px-3 py-1 bg-secondary/10 rounded-full border border-secondary/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span>Price live: 2s ago</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+</button>
+<div class="flex items-center space-x-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">Quant_User_Alpha</p>
+<p class="text-[10px] text-on-surface-variant/60 font-mono uppercase tracking-tighter">Pro Tier</p>
+</div>
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 pb-12 overflow-y-auto h-[calc(100vh-4rem)]">
+<!-- Header Info Row (Asymmetric) -->
+<div class="grid grid-cols-12 gap-8 items-end mb-10">
+<div class="col-span-12 lg:col-span-5">
+<div class="flex items-baseline space-x-3">
+<h2 class="text-5xl font-extrabold font-headline tracking-tighter text-on-surface">RELIANCE</h2>
+<span class="text-primary-fixed-dim text-sm font-mono bg-primary/10 px-2 py-0.5 rounded">NSE:RELIANCE</span>
+</div>
+<div class="mt-4 flex space-x-8 items-center">
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-mono">Current Price</p>
+<p class="text-2xl font-bold tabular-nums">₹2,842.15 <span class="text-secondary text-sm font-medium ml-2">+1.42%</span></p>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-mono">Analyst Consensus</p>
+<div class="flex items-center space-x-1.5">
+<p class="text-2xl font-bold tabular-nums text-secondary">Strong Buy</p>
+<span class="text-[10px] text-on-surface-variant">(24/28 Analyst)</span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-7 flex justify-end space-x-4">
+<div class="bg-surface-container-low p-5 rounded border-l-4 border-primary flex items-center space-x-6 min-w-[240px]">
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-mono mb-1">Alpha Score</p>
+<p class="text-4xl font-black font-headline text-primary italic">75.4</p>
+</div>
+<div class="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded border-l-4 border-secondary flex items-center space-x-6 min-w-[240px]">
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-mono mb-1">Sentiment</p>
+<p class="text-4xl font-black font-headline text-secondary italic">Bullish</p>
+</div>
+<span class="material-symbols-outlined text-4xl text-secondary" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Main Content -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Main Chart Area -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<div class="bg-surface-container rounded p-6 h-[480px] relative overflow-hidden group">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface">Main Chart Area <span class="text-xs font-normal text-on-surface-variant ml-2">Live 1h Interval</span></h3>
+<div class="flex space-x-2">
+<button class="px-3 py-1 text-[10px] font-bold bg-surface-container-highest text-on-surface rounded hover:bg-primary/20 transition-colors uppercase">1D</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-primary text-on-primary rounded uppercase">1W</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-surface-container-highest text-on-surface rounded hover:bg-primary/20 transition-colors uppercase">1M</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-surface-container-highest text-on-surface rounded hover:bg-primary/20 transition-colors uppercase">YTD</button>
+</div>
+</div>
+<!-- Abstract Chart Representation -->
+<div class="w-full h-full absolute inset-0 pt-20 pb-12 px-6 flex items-end">
+<div class="w-full h-full flex items-end space-x-1 opacity-40">
+<div class="bg-surface-container-highest/20 h-1/4 w-full relative">
+<div class="absolute bottom-0 left-0 w-full bg-secondary/30 h-[2px]"></div>
+<div class="absolute bottom-[20%] left-0 w-full border-b border-dashed border-outline-variant/30"></div>
+</div>
+</div>
+<!-- Main Path Visualization using SVG with Event Markers on Line -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="none" viewbox="0 0 800 400">
+<path d="M0 350 Q 100 320, 200 340 T 400 200 T 600 150 T 800 80" fill="none" stroke="#adc6ff" stroke-width="2.5"></path>
+<path d="M0 350 Q 100 320, 200 340 T 400 200 T 600 150 T 800 80 V 400 H 0 Z" fill="url(#grad1)"></path>
+<!-- Markers explicitly positioned on the line path above -->
+<circle class="animate-pulse" cx="200" cy="340" fill="#adc6ff" r="4"></circle>
+<circle cx="400" cy="200" fill="#6ffbbe" r="4"></circle>
+<circle cx="600" cy="150" fill="#adc6ff" r="4"></circle>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:rgba(173,198,255,0.15);stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:rgba(173,198,255,0);stop-opacity:1"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Event Tooltip Markers positioned relative to the path points -->
+<div class="absolute top-[320px] left-[200px] group/marker -translate-x-1/2 -translate-y-full mb-2">
+<div class="bg-surface-bright px-2 py-1.5 rounded text-[9px] w-24 border border-outline-variant/40 shadow-xl opacity-0 group-hover/marker:opacity-100 transition-opacity">
+<p class="font-bold">Tax Revision</p>
+<p class="text-primary-fixed-dim">Neutral Impact</p>
+</div>
+</div>
+<div class="absolute top-[180px] left-[400px] group/marker -translate-x-1/2 -translate-y-full mb-2">
+<div class="bg-surface-bright px-2 py-1.5 rounded text-[9px] w-24 border border-outline-variant/40 shadow-xl opacity-0 group-hover/marker:opacity-100 transition-opacity">
+<p class="font-bold">Earnings Beat</p>
+<p class="text-secondary">+4.2% Impact</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Timeline -->
+<div class="bg-surface-container rounded p-6 overflow-hidden">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-6 flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary" data-icon="history">history</span>
+                        Event Timeline &amp; Intelligence Feed
+                    </h3>
+<div class="space-y-4">
+<!-- Timeline Item -->
+<div class="flex items-start space-x-6 relative pb-4 group">
+<div class="absolute left-1.5 top-8 bottom-0 w-px bg-outline-variant/20 group-last:hidden"></div>
+<div class="w-3 h-3 rounded-full bg-secondary-container mt-1.5 z-10 shrink-0"></div>
+<div class="flex-1 bg-surface-container-low p-4 rounded border border-transparent hover:border-secondary/20 hover:bg-surface-bright transition-all cursor-default">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<div class="flex items-center space-x-2 mb-1">
+<h4 class="font-headline font-bold text-sm">Large Order Acquisition: Hydrogen Expansion</h4>
+<span class="flex items-center text-[8px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded uppercase font-bold">
+<span class="material-symbols-outlined text-[10px] mr-1" data-icon="verified">verified</span>Verified
+                                            </span>
+</div>
+<p class="text-xs text-on-surface-variant">Consortium led by RELIANCE secures $2.1B green energy project.</p>
+</div>
+<div class="flex flex-col items-end space-y-2">
+<span class="px-2 py-1 bg-secondary/10 text-secondary text-[9px] font-black rounded uppercase tracking-tighter shrink-0">High Impact</span>
+<svg class="shrink-0" height="15" width="60">
+<path class="sparkline-animate" d="M0 10 L10 12 L20 5 L30 14 L40 2 L50 8 L60 0" fill="none" stroke="#4edea3" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-[10px] font-mono text-on-surface-variant/60">
+<span>Source: MENA Regulatory Filing #42-X</span>
+<span>12 OCT 23:15</span>
+</div>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="flex items-start space-x-6 relative pb-4 group">
+<div class="absolute left-1.5 top-8 bottom-0 w-px bg-outline-variant/20 group-last:hidden"></div>
+<div class="w-3 h-3 rounded-full bg-primary-container mt-1.5 z-10 shrink-0"></div>
+<div class="flex-1 bg-surface-container-low p-4 rounded border border-transparent hover:border-primary/20 hover:bg-surface-bright transition-all cursor-default">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<div class="flex items-center space-x-2 mb-1">
+<h4 class="font-headline font-bold text-sm">Q3 Earnings Release: Record Performance</h4>
+<span class="flex items-center text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded uppercase font-bold">
+<span class="material-symbols-outlined text-[10px] mr-1" data-icon="verified">verified</span>Verified
+                                            </span>
+</div>
+<p class="text-xs text-on-surface-variant">Net profit jumps 14% YoY, beating analyst consensus by 3.2%.</p>
+</div>
+<div class="flex flex-col items-end space-y-2">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[9px] font-black rounded uppercase tracking-tighter shrink-0">Medium Impact</span>
+<svg class="shrink-0" height="15" width="60">
+<path class="sparkline-animate" d="M0 12 L10 8 L20 14 L30 6 L40 10 L50 4 L60 2" fill="none" stroke="#adc6ff" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-[10px] font-mono text-on-surface-variant/60">
+<span>Source: Investor Relations Portal</span>
+<span>10 OCT 16:45</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Cards -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Sentiment Breakdown -->
+<div class="bg-surface-container rounded p-6">
+<h3 class="font-headline font-bold text-lg text-on-surface mb-6">Sentiment Breakdown</h3>
+<div class="space-y-5">
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-xs font-medium text-on-surface-variant">Earnings Quality</span>
+<span class="text-xs font-mono font-bold text-secondary">+2.1</span>
+</div>
+<div class="h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-1.5">
+<div class="h-full bg-secondary w-[85%]"></div>
+</div>
+<p class="text-[9px] text-on-surface-variant/70 italic">Cash flow conversion ratio improved to 0.94x this quarter.</p>
+</div>
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-xs font-medium text-on-surface-variant">New Orders</span>
+<span class="text-xs font-mono font-bold text-secondary">+1.5</span>
+</div>
+<div class="h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-1.5">
+<div class="h-full bg-secondary w-[65%]"></div>
+</div>
+<p class="text-[9px] text-on-surface-variant/70 italic">Order backlog increased by ₹12k Cr in green energy vertical.</p>
+</div>
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-xs font-medium text-on-surface-variant">Policy Tailwinds</span>
+<span class="text-xs font-mono font-bold text-primary">+0.8</span>
+</div>
+<div class="h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-1.5">
+<div class="h-full bg-primary w-[40%]"></div>
+</div>
+<p class="text-[9px] text-on-surface-variant/70 italic">Export duty reductions providing 40bps margin expansion.</p>
+</div>
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-xs font-medium text-on-surface-variant">Institutional Ownership</span>
+<span class="text-xs font-mono font-bold text-tertiary">-0.3</span>
+</div>
+<div class="h-1.5 bg-surface-container-highest rounded-full overflow-hidden mb-1.5">
+<div class="h-full bg-tertiary w-[15%]"></div>
+</div>
+<p class="text-[9px] text-on-surface-variant/70 italic">Net outflow: Institutional Ownership ↓ 2.4% last 7D.</p>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10 text-center">
+<button class="w-full py-3 bg-surface-container-highest text-on-surface text-xs font-bold rounded hover:bg-surface-bright transition-all font-headline uppercase tracking-widest">
+                            Run Sensitivity Analysis
+                        </button>
+</div>
+</div>
+<!-- Historical Analog Enhanced -->
+<div class="bg-surface-container rounded p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline font-bold text-lg text-on-surface">Historical Analog</h3>
+<div class="text-right">
+<p class="text-[9px] text-on-surface-variant uppercase tracking-widest font-mono">Pattern Match</p>
+<p class="text-xs font-bold text-primary">88% Correlation</p>
+</div>
+</div>
+<div class="mt-6 bg-surface-container-lowest p-4 rounded border border-outline-variant/10 relative">
+<div class="flex justify-between mb-4">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-mono mb-1">Success Rate</p>
+<p class="text-3xl font-black font-headline text-secondary italic">78%</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-mono mb-1">Trust Score</p>
+<div class="flex items-center space-x-1 justify-end">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="shield">shield</span>
+<p class="text-sm font-bold text-on-surface">HIGH</p>
+</div>
+</div>
+</div>
+<!-- Mini Comparison Chart -->
+<div class="h-20 w-full flex items-center space-x-4 mb-4">
+<div class="flex-1 h-full bg-surface-container-highest/10 rounded flex flex-col justify-end p-1 relative overflow-hidden border border-outline-variant/5">
+<p class="absolute top-1 left-1 text-[7px] text-on-surface-variant uppercase">Current Setup</p>
+<svg height="100%" preserveaspectratio="none" viewbox="0 0 100 40" width="100%">
+<path d="M0 35 Q 25 30, 50 15 T 100 5" fill="none" stroke="#adc6ff" stroke-width="2"></path>
+</svg>
+</div>
+<div class="flex-1 h-full bg-surface-container-highest/10 rounded flex flex-col justify-end p-1 relative overflow-hidden border border-outline-variant/5">
+<p class="absolute top-1 left-1 text-[7px] text-on-surface-variant uppercase">May 2022 Match</p>
+<svg height="100%" preserveaspectratio="none" viewbox="0 0 100 40" width="100%">
+<path d="M0 38 Q 20 32, 55 18 T 100 2" fill="none" stroke="#6ffbbe" stroke-dasharray="2,2" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<p class="text-[11px] leading-relaxed text-on-surface/80">
+                            Current setup (Earnings+ / Order+ / Policy Neutral) occurred 12 times in 5 years. Price rallied <span class="text-secondary font-bold">5.4% avg.</span> in next 15 sessions.
+                        </p>
+</div>
+<div class="mt-6 space-y-3">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-mono">Analog Match Highlights</p>
+<div class="flex items-center space-x-2 text-xs">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>May 2022 (94% Sentiment Match)</span>
+</div>
+<div class="flex items-center space-x-2 text-xs">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Jan 2021 (82% Volatility Match)</span>
+</div>
+</div>
+</div>
+<!-- Alpha Alert Feed -->
+<div class="bg-primary/5 border border-primary/20 rounded p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline font-bold text-sm text-primary uppercase tracking-tighter">Alpha Intelligence Alert</h3>
+<span class="bg-primary text-on-primary text-[8px] px-1.5 py-0.5 font-black rounded">NEW</span>
+</div>
+<p class="text-xs text-on-surface italic leading-relaxed">
+                        "Unusual call option activity detected at ₹3,000 strike. Intelligence suggesting a front-running move ahead of next week's policy review."
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-16rem)] px-8 py-2 bg-[#10141a] border-t border-[#424754]/15 z-50 flex justify-between items-center">
+<div class="flex items-center space-x-4">
+<p class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6]">Intelligence Status: Active Monitoring | Core Alpha Model v4.2</p>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+</div>
+<div class="flex items-center space-x-6">
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">Status</a>
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">Terms</a>
+<a class="font-mono text-[10px] uppercase tracking-widest text-[#c2c6d6] hover:text-[#adc6ff] transition-colors" href="#">Privacy</a>
+</div>
+</footer>
+</body></html>
