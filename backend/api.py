@@ -228,6 +228,44 @@ def run_scraper_job():
             except Exception as e:
                 logger.error(f"Notification processing failed: {e}")
 
+        # Push fresh signals + events to SSE subscribers (fast user-facing path)
+        try:
+            import realtime
+            for ev in (output.get('events') or [])[:50]:
+                realtime.broadcast_raw({
+                    'event_id': ev.get('event_id'),
+                    'title': ev.get('title'),
+                    'summary': ev.get('summary'),
+                    'tickers': ev.get('companies') or [],
+                    'sentiment': ev.get('sentiment'),
+                    'source_name': ev.get('source'),
+                    'link': ev.get('link'),
+                    'published_at': ev.get('published') or ev.get('timestamp'),
+                    'event_type': ev.get('event_type'),
+                    'magnitude': ev.get('magnitude'),
+                })
+            for sg in (signals or [])[:30]:
+                realtime.broadcast_scored({
+                    'event_id': sg.get('event_id'),
+                    'ticker': sg.get('ticker'),
+                    'company': sg.get('company'),
+                    'alpha_score': sg.get('alpha_score'),
+                    'sentiment': sg.get('sentiment'),
+                    'event_type': sg.get('event_type'),
+                    'headline': sg.get('headline'),
+                    'link': sg.get('link'),
+                    'forensic_band': sg.get('forensic_band'),
+                    'predictions': sg.get('predictions'),
+                })
+        except Exception as e:
+            logger.warning(f"SSE broadcast failed: {e}")
+
+        # Smart-alert evaluation (volume / news velocity / forensic flip / alpha threshold)
+        try:
+            _evaluate_smart_alerts(signals, articles=output.get('events'))
+        except Exception:
+            pass
+
         logger.info(f"Scraper completed: {output.get('summary', {})}")
 
     except Exception as e:
@@ -1799,6 +1837,47 @@ try:
     init_extension(app, get_db)
 except Exception as _ext_exc:
     logger.error(f"api_ext init failed (continuing with core app only): {_ext_exc}")
+
+
+# ============ V2 ROUTES (status, fast news, smart alerts, global, commodities) ============
+try:
+    import api_v2
+    api_v2.register(app, get_db, scraper_status)
+    logger.info("api_v2 registered: /api/status /api/news/fast /api/alerts/smart /api/global/markets /api/commodities/prices")
+except Exception as _v2_exc:
+    logger.error(f"api_v2 init failed: {_v2_exc}")
+
+
+# ============ REALTIME / SSE ============
+try:
+    import realtime
+    realtime.register(app, get_db)
+    logger.info("realtime registered: /api/stream /api/stream/recent /api/stream/stats")
+except Exception as _rt_exc:
+    logger.error(f"realtime init failed: {_rt_exc}")
+
+
+# ============ SMART ALERTS EVAL HOOK (called from scraper job) ============
+def _evaluate_smart_alerts(signals, articles=None):
+    """Run smart-alert evaluation against the latest scraper output.
+
+    Pushes hits to the SSE 'alert' channel. Wired into run_scraper_job below.
+    """
+    try:
+        import smart_alerts
+        from smart_alerts import build_news_velocity
+        ctx = {
+            "signals": signals or [],
+            "news_velocity": build_news_velocity(articles or []) if articles else {},
+        }
+        try:
+            from realtime import broadcast_alert as _bc
+        except Exception:
+            _bc = None
+        return smart_alerts.evaluate(get_db(), ctx, broadcast_fn=_bc)
+    except Exception as e:
+        logger.warning(f"smart_alerts eval failed: {e}")
+        return []
 
 
 # ============ ERROR HANDLERS ============

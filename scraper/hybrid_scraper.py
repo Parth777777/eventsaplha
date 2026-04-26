@@ -58,6 +58,99 @@ from config import STOCK_SECTORS, SECTOR_STOCKS
 # Database
 from database_schema import EventAlphaDB
 
+# Source tiering (Tier 1-4 weighting + content-hash dedup + cross-source gate)
+try:
+    from source_tiering import (
+        classify_source,
+        cluster_events,
+        composite_event_weight,
+        alpha_cap_for_status,
+        freshness_label,
+    )
+except Exception:  # pragma: no cover — keep pipeline working if module missing
+    classify_source = cluster_events = composite_event_weight = None
+    alpha_cap_for_status = freshness_label = None
+
+
+def enrich_events_with_tiering(events, articles):
+    """Attach source_tier, freshness, confirmation status to each event.
+
+    Mutates events in place (also returns the list for chaining).
+    Downstream alpha scoring reads `event['tier_weight']` and
+    `event['confirmation']` to penalise single-source / unverified news.
+    """
+    if not classify_source:
+        return events
+
+    # Cluster the raw articles first so each event can pick up its cluster
+    clusters = cluster_events(articles or [])
+    title_to_cluster = {}
+    for cl in clusters:
+        title_to_cluster[cl.canonical_title] = cl
+        for s in cl.sources:
+            # also index by link for direct lookup
+            if s.get("link"):
+                title_to_cluster[s["link"]] = cl
+
+    for ev in events:
+        link = ev.get("link", "")
+        title = ev.get("title", "")
+        cl = title_to_cluster.get(link) or title_to_cluster.get(title)
+
+        is_filing = bool(classify_source(ev.get("source", ""), link).tier == 1)
+        if cl:
+            w = composite_event_weight(cl, is_filing=is_filing)
+            ev["tier_weight"] = w["weight"]
+            ev["source_tier"] = w["best_tier"]
+            ev["freshness"] = w["freshness"]
+            ev["freshness_label"] = w["freshness_label"]
+            ev["confirmation"] = w["confirmation"]
+            ev["source_count"] = w["source_count"]
+            ev["distinct_sources"] = w["distinct_sources"]
+            ev["news_velocity_per_hour"] = w["velocity_per_hour"]
+            ev["high_velocity"] = w["is_high_velocity"]
+            cap = alpha_cap_for_status(w["confirmation"])
+            if cap is not None:
+                ev["alpha_cap"] = cap
+        else:
+            meta = classify_source(ev.get("source", ""), link)
+            ev["tier_weight"] = meta.weight
+            ev["source_tier"] = meta.tier
+            published = ev.get("published") or ev.get("timestamp")
+            ev["freshness_label"] = freshness_label(published) if freshness_label else None
+            ev["confirmation"] = "single" if meta.tier <= 2 else "unconfirmed"
+
+        # Apply tier weight to impact/magnitude — single tipster sources get downweighted.
+        try:
+            tw = float(ev.get("tier_weight", 1.0) or 1.0)
+            base_mag = float(ev.get("magnitude", 0) or 0)
+            ev["magnitude"] = max(1, int(round(base_mag * (0.5 + 0.5 * tw))))
+            ev["impact_score"] = int(ev["magnitude"] * 10)
+        except Exception:
+            pass
+
+        # Cluster summary: list co-reporting sources (for "5 sources covering this" UI)
+        if cl and cl.source_count > 1:
+            ev["cluster_sources"] = sorted({
+                s.get("canonical") or s.get("name") for s in cl.sources if s.get("canonical")
+            })
+
+        # Filing-first override: if any source in this cluster is Tier-1
+        # (BSE / NSE / SEBI / RBI filing), flag it as filing-grade so the alpha
+        # engine can give it a higher confidence floor and the UI can label it.
+        if cl and any(s.get("tier") == 1 for s in cl.sources):
+            ev["is_filing"] = True
+            # Filings get a confidence floor: if event_confidence is too low, lift it.
+            try:
+                ev["event_confidence"] = max(float(ev.get("event_confidence", 0) or 0), 0.85)
+                ev["sentiment_confidence"] = max(float(ev.get("sentiment_confidence", 0) or 0), 0.75)
+            except Exception:
+                pass
+            # And drop any unconfirmed alpha cap — filings are confirmation by themselves.
+            ev.pop("alpha_cap", None)
+
+    return events
+
 # LLM config
 from config import GROQ_API_KEY, GROQ_MODEL, GROQ_BATCH_SIZE
 
@@ -966,6 +1059,14 @@ class SignalEngine:
                     )
                     alpha_breakdown = getattr(AlphaScoringEngine, '_last_breakdown', {})
 
+                    # Cross-source confirmation cap: unconfirmed/single-tipster
+                    # events can't fire above alpha=65 even if scoring loves them.
+                    cap = event.get('alpha_cap')
+                    if cap is not None and alpha_score > cap:
+                        alpha_score = cap
+                        if isinstance(alpha_breakdown, dict):
+                            alpha_breakdown = {**alpha_breakdown, 'capped_for_unconfirmed': True}
+
                     is_valid, validation = self.validator.is_valid_signal(
                         alpha_score=alpha_score,
                         confidence=event['sentiment_confidence'],
@@ -974,6 +1075,17 @@ class SignalEngine:
 
                     # Generate predictions for all horizons
                     predictions = {}
+                    try:
+                        from prediction_intervals import compute_interval as _ci
+                    except Exception:
+                        _ci = None
+                    _db_for_ci = None
+                    if _ci:
+                        try:
+                            from database_schema import EventAlphaDB as _DB
+                            _db_for_ci = _DB()
+                        except Exception:
+                            _db_for_ci = None
                     for horizon in ['1D', '3D', '20D']:
                         pred = self.predictor.predict_return(
                             event_type=event['event_type'],
@@ -983,10 +1095,27 @@ class SignalEngine:
                             sentiment=company_sentiment,
                             horizon=horizon
                         )
-                        predictions[horizon] = {
-                            'return_pct': float(pred['predicted_return_pct']),
+                        return_pct = float(pred['predicted_return_pct'])
+                        rec = {
+                            'return_pct': return_pct,
+                            'predicted_return_pct': return_pct,  # alias for UI compat
                             'confidence': float(pred['confidence'])
                         }
+                        if _ci and _db_for_ci is not None:
+                            try:
+                                interval = _ci(_db_for_ci, horizon, return_pct,
+                                               volatility=market_data.volatility)
+                                rec['interval'] = interval
+                                rec['range_68'] = [interval['lower68'], interval['upper68']]
+                                rec['range_95'] = [interval['lower95'], interval['upper95']]
+                            except Exception:
+                                pass
+                        predictions[horizon] = rec
+                    if _db_for_ci is not None:
+                        try:
+                            _db_for_ci.close()
+                        except Exception:
+                            pass
 
                     # Price targets
                     price_targets = {}
@@ -1025,6 +1154,14 @@ class SignalEngine:
                         'link': event['link'],
                         'geo': event.get('geo'),
                         'alpha_breakdown': alpha_breakdown,
+                        'source_tier': event.get('source_tier'),
+                        'tier_weight': event.get('tier_weight'),
+                        'confirmation': event.get('confirmation'),
+                        'freshness_label': event.get('freshness_label'),
+                        'source_count': event.get('source_count', 1),
+                        'distinct_sources': event.get('distinct_sources', 1),
+                        'news_velocity_per_hour': event.get('news_velocity_per_hour', 0),
+                        'high_velocity': event.get('high_velocity', False),
                         'timestamp': datetime.now().isoformat()
                     }
 
@@ -1160,6 +1297,13 @@ class DataPipeline:
 
         # Step 3: Parse events with NLP
         events = self.parser.parse_articles(articles)
+
+        # Step 3.5: Enrich events with source tiering + freshness + cross-source
+        # confirmation. Drops weight on single-source / stale / tipster items.
+        try:
+            events = enrich_events_with_tiering(events, articles)
+        except Exception as _tier_exc:
+            logger.warning(f"source tiering enrichment skipped: {_tier_exc}")
 
         # Step 4: Generate signals with alpha scoring
         signals, regime, regime_strength = self.signal_engine.generate_signals(events, stock_data)
