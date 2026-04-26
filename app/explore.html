@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Explore</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* stock-grid defined in style.css — override local def only */
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Precision Quant</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link active" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" style="margin-top:auto;padding:12px 20px;border-top:1px solid var(--b0);font-size:10px;color:var(--t3);letter-spacing:0.04em;"></div>
+</aside>
+
+<main class="main-content">
+    <!-- Page header -->
+    <header style="position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--b1);padding:10px 24px;margin-bottom:16px;overflow:visible;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="display:flex;align-items:baseline;gap:10px;">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">EventAlpha</span>
+                <span style="color:var(--b2);">·</span>
+                <h1 style="font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--t1);">Signal Scanner</h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:5px;height:5px;border-radius:50%;background:var(--bull);" class="pulse"></div>
+                <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--t3);">Live</span>
+            </div>
+        </div>
+        <!-- Filter bar -->
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:180px;position:relative;" id="searchContainer">
+                <span class="material-symbols-outlined" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--t3);z-index:1;pointer-events:none;">search</span>
+                <input id="stockSearch" type="text" autocomplete="off"
+                    placeholder="Ticker or company…"
+                    style="width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:5px 56px 5px 28px;font-size:12px;color:var(--t1);outline:none;font-family:var(--font-ui);"
+                    onfocus="this.style.borderColor='var(--info)'" onblur="this.style.borderColor='var(--b1)'">
+                <button onclick="searchNewStock()" id="searchBtn"
+                    style="position:absolute;right:3px;top:50%;transform:translateY(-50%);padding:3px 8px;background:var(--s3);border:1px solid var(--b1);border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.07em;color:var(--t2);cursor:pointer;z-index:1;">
+                    LOOKUP
+                </button>
+                <div id="autocomplete" class="hidden" style="position:absolute;left:0;right:0;top:calc(100% + 2px);background:var(--s3);border:1px solid var(--b2);border-radius:4px;max-height:240px;overflow-y:auto;z-index:50;"></div>
+            </div>
+            <select id="filterType" onchange="loadExplorePage()"
+                style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--t2);outline:none;cursor:pointer;">
+                <option value="all">All Types</option>
+                <option value="earnings">Earnings</option>
+                <option value="order_win">Orders</option>
+                <option value="policy">Policy</option>
+                <option value="merger">M&A</option>
+                <option value="supply">Supply</option>
+            </select>
+            <select id="filterSentiment" onchange="loadExplorePage()"
+                style="background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--t2);outline:none;cursor:pointer;">
+                <option value="all">All Directions</option>
+                <option value="bullish">Long</option>
+                <option value="bearish">Short</option>
+            </select>
+        </div>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'explore'}); });</script>
+
+    <!-- ============ EXPLORE INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-6" id="exploreStudio" style="margin-top:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;">
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Universe by sector</div>
+              <div class="widget__meta">Click a ring to filter the grid</div>
+            </div>
+            <span class="widget__year-pill" id="explUniTotal">— stocks</span>
+          </div>
+          <div id="explRings" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Live alpha movers</div>
+              <div class="widget__meta">Top 6 by alpha — click to scan</div>
+            </div>
+          </div>
+          <div id="explMovers" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        const [stocksRes, sigRes] = await Promise.all([
+          Widgets.fetchJSON('/stocks/list'),
+          Widgets.fetchJSON('/signals?limit=80')
+        ]);
+        const stocks = (stocksRes && stocksRes.data) || [];
+        const sigs = (sigRes && sigRes.data) || [];
+        document.getElementById('explUniTotal').textContent = stocks.length + ' stocks';
+
+        // Universe rings — top 4 sectors by stock count
+        const byS = {};
+        for (const s of stocks) {
+          const sec = (s.sector || 'OTHER').replace(/_/g, ' ');
+          byS[sec] = (byS[sec] || 0) + 1;
+        }
+        const top = Object.entries(byS).sort((a,b) => b[1]-a[1]).slice(0, 4);
+        Widgets.rings(document.getElementById('explRings'),
+          top.map(([s, n]) => ({label: s, value: n})),
+          {onClick: 'explRingClick'});
+
+        // Live alpha movers — top signals by alpha, mini-spark using their alpha trend
+        const byTicker = {};
+        for (const s of sigs) {
+          if (!byTicker[s.ticker]) byTicker[s.ticker] = [];
+          byTicker[s.ticker].push(s);
+        }
+        const movers = Object.entries(byTicker)
+          .map(([t, list]) => {
+            list.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+            return {t, list, lastA: list[list.length-1].alpha_score || 0};
+          })
+          .sort((a,b) => b.lastA - a.lastA)
+          .slice(0, 6)
+          .map(({t, list}) => {
+            const points = list.map(x => x.alpha_score || 0);
+            const last = points[points.length - 1];
+            const first = points[0] || last;
+            return {
+              label: t,
+              value: 'α ' + last.toFixed(0),
+              deltaPct: first ? ((last - first) / first * 100) : 0,
+              points: points.length > 1 ? points : [last - 3, last + 1, last - 1, last],
+              onClick: `document.getElementById('stockSearch').value='${t}';loadExplorePage();`
+            };
+          });
+        Widgets.miniSparkGrid(document.getElementById('explMovers'), movers, {cols: 'repeat(auto-fill, minmax(180px, 1fr))'});
+      } catch(e) { console.warn('explore studio:', e); }
+    })();
+    function explRingClick(label) {
+      // Filter the existing grid by this sector
+      const cards = document.querySelectorAll('#stockGrid > *');
+      const norm = label.toUpperCase().replace(/ /g, '_');
+      let shown = 0;
+      cards.forEach(c => {
+        const txt = (c.textContent || '').toUpperCase();
+        const match = txt.includes(label.toUpperCase()) || txt.includes(norm);
+        c.style.display = match ? '' : 'none';
+        if (match) shown++;
+      });
+      // Toast
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--s2);border:1px solid var(--info-border);color:var(--info);padding:10px 16px;border-radius:8px;font-size:12px;z-index:1000;cursor:pointer;';
+      toast.textContent = '✓ Filtered to ' + label + ' (' + shown + ') · click to clear';
+      toast.onclick = () => { cards.forEach(c => c.style.display = ''); toast.remove(); };
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+    </script>
+    <!-- ============ END EXPLORE INSIGHT STUDIO ============ -->
+
+    <!-- Signal Grid -->
+    <div class="stock-grid mb-12" id="stockGrid">
+        <!-- Rendered by renderGrid() -->
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+let allSignals = [];
+let watchlistSet = new Set();
+let searchResult = null;
+let stockList = [];  // Full universe for autocomplete
+
+async function loadExplorePage() {
+    const grid = document.getElementById('stockGrid');
+    if (!allSignals.length) UIHelper.showLoading(grid);
+
+    // Load watchlist for checked state
+    const wl = await LiveData.getWatchlist();
+    watchlistSet = new Set((wl || []).map(w => w.ticker));
+
+    const raw = await LiveData.getStockCards(100);
+    if (!raw || raw.length === 0) {
+        UIHelper.showEmpty(grid, 'No signals yet. Scraper will populate data automatically.');
+        return;
+    }
+
+    // Deduplicate: keep highest alpha signal per ticker
+    const byTicker = {};
+    for (const s of raw) {
+        const t = s.ticker;
+        if (!byTicker[t] || (s.alpha_score || 0) > (byTicker[t].alpha_score || 0)) {
+            byTicker[t] = s;
+        }
+    }
+    allSignals = Object.values(byTicker).sort((a, b) => (b.alpha_score || 0) - (a.alpha_score || 0));
+    renderGrid();
+}
+
+function buildReasoning(card) {
+    const parts = [];
+    const sent = card.sentiment || 'neutral';
+    const evType = (card.event_type || 'news').replace(/_/g, ' ');
+    const alpha = card.alpha_score || 0;
+
+    if (card.insight) return card.insight;
+
+    if (evType !== 'news') parts.push(`${evType.charAt(0).toUpperCase() + evType.slice(1)} event detected`);
+    if (sent === 'bullish') parts.push('positive sentiment in news coverage');
+    else if (sent === 'bearish') parts.push('negative sentiment in news coverage');
+
+    if (card.sector && card.relative_strength > 2) parts.push(`outperforming ${card.sector} sector by ${card.relative_strength.toFixed(1)}%`);
+    else if (card.sector && card.relative_strength < -2) parts.push(`underperforming ${card.sector} sector`);
+
+    if (card.regime) {
+        const r = card.regime.replace(/_/g, ' ');
+        if (r.includes('bull')) parts.push(`market in ${r} regime`);
+        else if (r.includes('bear') || r.includes('spike down')) parts.push(`caution: market in ${r} regime`);
+    }
+
+    if (alpha >= 70) parts.push(`high-conviction signal (alpha ${alpha.toFixed(0)})`);
+
+    return parts.join('. ') + '.';
+}
+
+// --- EV and Risk/Reward computation ---
+// Uses heuristic predicted return from signal data + hit-rate calibration by alpha bucket
+const ALPHA_HIT_RATES = { '80+': 0.62, '65-80': 0.56, '50-65': 0.50, '0-50': 0.44 };
+
+function getAlphaBucket(alpha) {
+    if (alpha >= 80) return '80+';
+    if (alpha >= 65) return '65-80';
+    if (alpha >= 50) return '50-65';
+    return '0-50';
+}
+
+function calcEV(card) {
+    const alpha = card.alpha_score || 0;
+    const conf  = card.confidence || 0;
+    const confFrac = conf <= 1 ? conf : conf / 100;
+    const bkt   = getAlphaBucket(alpha);
+    const hitRate = ALPHA_HIT_RATES[bkt];
+
+    // Base predicted move: earnings 1.5%, order 1.0%, merger 2.0%, else 0.8%
+    const ET_BASE = { earnings: 1.5, order_win: 1.0, merger: 2.0, policy: 0.9, supply: 0.8 };
+    const et = (card.event_type || '').replace(/_/g, ' ');
+    let basePred = ET_BASE[card.event_type] || 0.8;
+    basePred *= (1 + (alpha - 65) / 200);  // scale by alpha quality
+    basePred *= (0.6 + confFrac * 0.8);    // scale by confidence
+
+    const sentMult = card.sentiment === 'bullish' ? 1 : card.sentiment === 'bearish' ? -1 : 0.2;
+    const predicted = basePred * sentMult;
+
+    const avgWin  = Math.abs(predicted);
+    const avgLoss = avgWin * 0.4;  // assume 2.5:1 R/R hypothesis
+    const ev      = hitRate * avgWin - (1 - hitRate) * avgLoss;
+    const rr      = avgWin / Math.max(avgLoss, 0.01);
+
+    return { hitRate, ev: parseFloat(ev.toFixed(2)), rr: parseFloat(rr.toFixed(1)),
+             predicted: parseFloat(predicted.toFixed(2)) };
+}
+
+function renderGrid() {
+    const grid = document.getElementById('stockGrid');
+    const search = (document.getElementById('stockSearch')?.value || '').toUpperCase().trim();
+    const typeFilter = document.getElementById('filterType')?.value || 'all';
+    const sentFilter = document.getElementById('filterSentiment')?.value || 'all';
+
+    // Show search result card if we have one
+    let searchHtml = '';
+    if (searchResult) {
+        const sr = searchResult;
+        const inWl = watchlistSet.has(sr.ticker);
+        searchHtml = `
+        <div class="col-span-full mb-4">
+            <div class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h3 class="font-headline font-bold text-2xl text-primary">${sr.ticker}</h3>
+                        <span class="text-[9px] px-2 py-0.5 bg-surface-container-highest rounded font-bold text-on-surface-variant">${sr.exchange}</span>
+                    </div>
+                    <p class="text-sm text-on-surface">${sr.company}</p>
+                    <p class="text-xs text-on-surface-variant mt-1">${sr.sector}${sr.industry ? ' / ' + sr.industry : ''}</p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <div class="text-xl font-bold text-on-surface font-mono">${UIHelper.formatPrice(sr.price)}</div>
+                        <div class="text-xs font-bold ${sr.change_pct >= 0 ? 'text-secondary' : 'text-error'}">${UIHelper.formatPercent(sr.change_pct)}</div>
+                    </div>
+                    <button onclick="toggleWatchlist('${sr.ticker}')" class="flex items-center gap-2 px-4 py-2.5 ${inWl ? 'bg-secondary/20 border-secondary/30 text-secondary' : 'bg-primary/10 border-primary/20 text-primary'} border rounded-lg text-xs font-bold hover:opacity-80 transition-all">
+                        <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' ${inWl ? 1 : 0}">${inWl ? 'star' : 'star'}</span>
+                        ${inWl ? 'Watching' : 'Add to Watchlist'}
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    let filtered = allSignals;
+    if (search && !searchResult) {
+        filtered = filtered.filter(s =>
+            (s.ticker || '').toUpperCase().includes(search) ||
+            (s.company || '').toUpperCase().includes(search)
+        );
+    }
+    if (typeFilter !== 'all') filtered = filtered.filter(s => s.event_type === typeFilter);
+    if (sentFilter !== 'all') filtered = filtered.filter(s => s.sentiment === sentFilter);
+
+    if (filtered.length === 0 && !searchResult) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-on-surface-variant/50 text-sm">No matching signals. Try the LOOKUP button to search any NSE/BSE stock.</div>';
+        return;
+    }
+
+    // Split into tiers
+    const tier1 = filtered.filter(c => (c.alpha_score || 0) >= 80);
+    const tier2 = filtered.filter(c => { const a = c.alpha_score || 0; return a >= 60 && a < 80; });
+    const tier3 = filtered.filter(c => (c.alpha_score || 0) < 60);
+
+    let html = searchHtml;
+
+    if (tier1.length > 0) {
+        html += `<div class="grid-section-label"><p class="text-[9px] text-on-surface-variant/40 uppercase tracking-widest font-bold">Critical &mdash; Alpha &ge; 80</p></div>`;
+        html += tier1.map(card => renderSignalCard(card, 't1')).join('');
+    }
+    if (tier2.length > 0) {
+        html += `<div class="grid-section-label mt-2"><p class="text-[9px] text-on-surface-variant/40 uppercase tracking-widest font-bold">High Conviction &mdash; Alpha 60-79</p></div>`;
+        html += tier2.map(card => renderSignalCard(card, 't2')).join('');
+    }
+    if (tier3.length > 0) {
+        html += `<div class="grid-section-label mt-2"><p class="text-[9px] text-on-surface-variant/40 uppercase tracking-widest font-bold">Watch &mdash; Alpha &lt; 60</p></div>`;
+        html += tier3.map(card => renderSignalCard(card, 't3')).join('');
+    }
+
+    grid.innerHTML = html;
+}
+
+// ── shared card helpers ────────────────────────────────────────────────────
+function _cardVars(card) {
+    const alpha   = card.alpha_score || 0;
+    const conf    = card.confidence || 0;
+    const confPct = conf <= 1 ? Math.round(conf * 100) : Math.round(conf);
+    const sent    = card.sentiment || 'neutral';
+    // CSS class — uses design system variable names (no inline hex)
+    const dirCls  = sent === 'bullish' ? 'bull' : sent === 'bearish' ? 'bear' : 'neut';
+    const dirLabel = sent === 'bullish' ? 'LONG' : sent === 'bearish' ? 'SHORT' : 'NEUTRAL';
+    const evType  = (card.event_type || 'news').replace(/_/g, ' ');
+    const headline = card.headline || evType;
+    const entry   = card.entry_price || 0;
+    const regime  = (card.regime || '').replace(/_/g, ' ');
+    const inWl    = watchlistSet.has(card.ticker);
+    const { hitRate, ev, rr, predicted } = calcEV(card);
+    // Alpha class: high ≥ 75, mid ≥ 55, else low
+    const alphaCls = alpha >= 75 ? 'high' : alpha >= 55 ? 'mid' : 'low';
+    // EV class
+    const evCls   = ev > 0.3 ? 'high' : ev > 0 ? 'mid' : 'low';
+
+    const rawReason = buildReasoning(card);
+    let cause = rawReason, impact = '';
+    const splitIdx = rawReason.search(/[→|]/);
+    if (splitIdx > 0) {
+        cause  = rawReason.slice(0, splitIdx).trim();
+        impact = rawReason.slice(splitIdx + 1).trim();
+    }
+
+    return { alpha, conf, confPct, sent, dirCls, dirLabel,
+             evType, headline, entry, regime, inWl, hitRate, ev, rr, predicted,
+             alphaCls, evCls, cause, impact };
+}
+
+// Shared expandable detail panel — no inline colors
+function _expandDetail(id, v) {
+    const { confPct, entry, ev, rr, predicted, evCls, cause, headline, impact } = v;
+    return `
+    <div class="signal-detail" id="detail-${id}">
+        <div class="sig-detail-grid">
+            <div class="sig-detail-cell">
+                <div class="sig-detail-cell__label">Entry</div>
+                <div class="sig-detail-cell__val">${UIHelper.formatPrice(entry)}</div>
+            </div>
+            <div class="sig-detail-cell">
+                <div class="sig-detail-cell__label">Confidence</div>
+                <div class="sig-detail-cell__val">${confPct}%</div>
+            </div>
+            <div class="sig-detail-cell">
+                <div class="sig-detail-cell__label">3D Predicted</div>
+                <div class="sig-detail-cell__val sig-alpha ${evCls}">${predicted >= 0 ? '+' : ''}${predicted}%</div>
+            </div>
+            <div class="sig-detail-cell">
+                <div class="sig-detail-cell__label">R/R</div>
+                <div class="sig-detail-cell__val">${rr}:1</div>
+            </div>
+        </div>
+        <div style="padding:10px 14px 12px;border-top:1px solid var(--b0);">
+            <div class="reasoning-pill">
+                <span class="reasoning-cause">Cause:</span> ${cause || headline}
+                ${impact ? `<span class="reasoning-impact"> → Impact: ${impact}</span>` : ''}
+            </div>
+        </div>
+    </div>`;
+}
+
+// ── Unified square signal card (all tiers) ───────────────────
+function renderSignalCard(card, tier) {
+    const id = card.id || card.ticker + Math.random().toString(36).slice(2, 6);
+    const v  = _cardVars(card);
+    const { alpha, confPct, dirCls, dirLabel, alphaCls, evType, headline,
+            inWl, hitRate, ev } = v;
+    const borderColor = dirCls === 'bull' ? 'var(--bull)' : dirCls === 'bear' ? 'var(--bear)' : 'var(--b2)';
+    const alphaColor  = alphaCls === 'high' ? 'var(--bull)' : alphaCls === 'mid' ? 'var(--caution)' : 'var(--t2)';
+    const evColor     = ev > 0 ? 'var(--bull)' : ev < 0 ? 'var(--bear)' : 'var(--t2)';
+    const alphaSize   = tier === 't1' ? '2.2rem' : tier === 't2' ? '1.75rem' : '1.4rem';
+    return `
+    <div class="group flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-outline-variant/25 hover:bg-surface-container transition-all overflow-hidden"
+         style="border-left: 3px solid ${borderColor}; min-height: 220px;">
+        <!-- Top: ticker + alpha score -->
+        <div class="flex items-start justify-between gap-2 p-4 pb-2">
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="dir-badge ${dirCls}">${dirLabel}</span>
+                    <span class="text-[9px] px-1.5 py-0.5 bg-surface-container-highest rounded font-bold text-on-surface-variant uppercase tracking-wider">${evType}</span>
+                </div>
+                <span data-ticker="${card.ticker}" class="font-mono font-black text-lg text-on-surface cursor-pointer hover:text-primary transition-colors leading-none block">${card.ticker}</span>
+                <p class="text-[11px] text-on-surface-variant mt-0.5 truncate">${card.company || card.ticker}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <div class="font-mono font-black leading-none" style="font-size:${alphaSize};color:${alphaColor};">${alpha.toFixed(0)}</div>
+                <p class="text-[8px] uppercase tracking-widest text-on-surface-variant/40 mt-0.5">Alpha</p>
+            </div>
+        </div>
+        <!-- Headline -->
+        <div class="px-4 flex-1">
+            <p class="text-[11px] text-on-surface-variant/70 leading-relaxed line-clamp-2">${headline}</p>
+        </div>
+        <!-- Stats bar -->
+        <div class="grid grid-cols-3 mx-4 mt-3 mb-0 border border-outline-variant/10 rounded-lg overflow-hidden text-center">
+            <div class="py-2 border-r border-outline-variant/10">
+                <p class="text-[8px] uppercase tracking-wider text-on-surface-variant/40 mb-0.5">Conf</p>
+                <p class="text-xs font-bold font-mono text-on-surface">${confPct}%</p>
+            </div>
+            <div class="py-2 border-r border-outline-variant/10">
+                <p class="text-[8px] uppercase tracking-wider text-on-surface-variant/40 mb-0.5">Win%</p>
+                <p class="text-xs font-bold font-mono text-on-surface">${Math.round(hitRate * 100)}%</p>
+            </div>
+            <div class="py-2">
+                <p class="text-[8px] uppercase tracking-wider text-on-surface-variant/40 mb-0.5">EV</p>
+                <p class="text-xs font-bold font-mono" style="color:${evColor};">${ev >= 0 ? '+' : ''}${ev}%</p>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="flex items-center justify-between px-4 py-2.5 border-t border-outline-variant/10 mt-3">
+            <span class="text-[9px] text-on-surface-variant/40 font-mono">${UIHelper.formatTime(card.created_at)}</span>
+            <div class="flex items-center gap-1">
+                <button onclick="toggleExpand('${id}')" class="p-1.5 rounded hover:bg-surface-container-highest transition-colors" title="Details">
+                    <span class="material-symbols-outlined expand-chevron" id="chev-${id}" style="font-size:14px;color:var(--t3);">expand_more</span>
+                </button>
+                <a href="compare.html?t=${card.ticker}" class="p-1.5 rounded hover:bg-surface-container-highest transition-colors" title="Compare">
+                    <span class="material-symbols-outlined" style="font-size:14px;color:var(--t3);">compare_arrows</span>
+                </a>
+                <button onclick="event.stopPropagation();toggleWatchlist('${card.ticker}')" class="p-1.5 rounded hover:bg-surface-container-highest transition-colors" title="${inWl ? 'Remove' : 'Watch'}">
+                    <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' ${inWl ? 1 : 0};color:${inWl ? 'var(--bull)' : 'var(--t3)'};">star</span>
+                </button>
+            </div>
+        </div>
+        ${_expandDetail(id, v)}
+    </div>`;
+}
+
+function toggleExpand(id) {
+    const detail = document.getElementById('detail-' + id);
+    const chev   = document.getElementById('chev-' + id);
+    if (!detail) return;
+    detail.classList.toggle('open');
+    if (chev) chev.classList.toggle('open');
+}
+
+async function toggleWatchlist(ticker) {
+    if (watchlistSet.has(ticker)) {
+        await LiveData.removeFromWatchlist(ticker);
+        watchlistSet.delete(ticker);
+        SoundFX.pop();
+    } else {
+        await LiveData.addToWatchlist(ticker);
+        watchlistSet.add(ticker);
+        SoundFX.success();
+    }
+    LiveData.invalidateWatchlistCache();
+    renderGrid();
+}
+
+async function searchNewStock() {
+    const input = document.getElementById('stockSearch');
+    const query = (input?.value || '').trim().toUpperCase();
+    if (!query || query.length < 2) return;
+
+    const btn = document.getElementById('searchBtn');
+    btn.textContent = '...';
+
+    const results = await LiveData.searchStock(query);
+    if (results && results.length > 0) {
+        searchResult = results[0];
+        SoundFX.pop();
+    } else {
+        searchResult = null;
+        alert(`No stock found for "${query}". Try the exact NSE/BSE ticker symbol.`);
+    }
+    btn.textContent = 'LOOKUP';
+    renderGrid();
+}
+
+function showAutocomplete(query) {
+    const ac = document.getElementById('autocomplete');
+    if (!query || query.length < 1 || !stockList.length) {
+        ac.classList.add('hidden');
+        return;
+    }
+    const q = query.toUpperCase();
+    const ql = query.toLowerCase();
+    const matches = stockList.filter(s =>
+        s.ticker.includes(q) || s.company.toLowerCase().includes(ql)
+    ).slice(0, 8);
+
+    if (matches.length === 0) {
+        ac.classList.add('hidden');
+        return;
+    }
+
+    ac.innerHTML = matches.map(s => `
+        <div class="px-4 py-2.5 hover:bg-surface-container cursor-pointer flex items-center justify-between border-b border-outline-variant/5 last:border-0"
+             onmousedown="selectStock('${s.ticker}')">
+            <div>
+                <span class="font-mono font-bold text-sm text-primary">${s.ticker}</span>
+                <span class="text-xs text-on-surface-variant ml-2">${s.company}</span>
+            </div>
+            <span class="text-[9px] px-2 py-0.5 bg-surface-container-highest rounded text-on-surface-variant/60">${s.sector}</span>
+        </div>
+    `).join('');
+    ac.classList.remove('hidden');
+}
+
+function selectStock(ticker) {
+    document.getElementById('stockSearch').value = ticker;
+    document.getElementById('autocomplete').classList.add('hidden');
+    searchNewStock();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    SoundFX.init();
+
+    // Load full stock universe for autocomplete
+    const res = await API.get('/stocks/list');
+    if (res?.data) {
+        stockList = res.data;
+        console.log(`Stock universe loaded: ${stockList.length} stocks`);
+    } else {
+        console.warn('Failed to load stock list for autocomplete');
+    }
+
+    DataRefresher.start(loadExplorePage, 60000);
+    Auth.updateAuthUI();
+
+    const searchInput = document.getElementById('stockSearch');
+    searchInput?.addEventListener('input', (e) => {
+        searchResult = null;
+        const val = e.target.value.trim();
+        if (val.length >= 1) {
+            showAutocomplete(val);
+        } else {
+            document.getElementById('autocomplete').classList.add('hidden');
+            renderGrid();
+        }
+    });
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('autocomplete').classList.add('hidden');
+            searchNewStock();
+        }
+    });
+    searchInput?.addEventListener('blur', () => {
+        setTimeout(() => document.getElementById('autocomplete').classList.add('hidden'), 200);
+    });
+});
+</script>
+</body>
+</html>

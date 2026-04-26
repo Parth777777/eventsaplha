@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Edge Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#5b6cff", "secondary": "#4ee6b8", "tertiary": "#ff7a8a",
+                "background": "#0e1124", "surface": "#181d40",
+                "surface-container": "#181d40", "surface-container-low": "#181d40",
+                "surface-container-high": "#1f2550", "surface-container-highest": "#262d63",
+                "on-surface": "#eef0ff", "on-surface-variant": "#9aa0c8",
+                "outline-variant": "rgba(255,255,255,0.08)",
+                "bull": "#4ee6b8", "bear": "#ff7a8a"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Edge Analytics</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link active" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">science</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant">
+        <div class="flex items-start justify-between">
+            <div>
+                <h1 class="text-4xl font-black font-headline text-on-surface mb-0.5">EDGE ANALYTICS</h1>
+                <p class="text-on-surface-variant text-sm">Empirical signal quality — hit rates, Information Coefficient, EV, and portfolio statistics.</p>
+            </div>
+            <div id="noDataBanner" class="hidden text-xs px-3 py-1.5 rounded-full font-bold" style="background:var(--caution-dim);color:var(--caution);border:1px solid var(--caution-border);">
+                Awaiting resolved predictions
+            </div>
+        </div>
+    </header>
+
+    <!-- Pastel KPI strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px;">
+        <div class="pastel-card pastel-card--mint">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">verified</span></span>3D hit rate</span></div>
+            <div class="pastel-card__value" id="kpiHit3D">—</div>
+            <div class="pastel-card__sub" id="kpiHit3DSub">— resolved</div>
+        </div>
+        <div class="pastel-card pastel-card--yellow">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">verified</span></span>1D hit rate</span></div>
+            <div class="pastel-card__value" id="kpiHit1D">—</div>
+            <div class="pastel-card__sub" id="kpiHit1DSub">— resolved</div>
+        </div>
+        <div class="pastel-card pastel-card--lavender">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">analytics</span></span>Information coeff.</span></div>
+            <div class="pastel-card__value" id="kpiIC">—</div>
+            <div class="pastel-card__sub" id="kpiICSub">predicted vs actual</div>
+        </div>
+        <div class="pastel-card pastel-card--coral">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">warning</span></span>Concentration risk</span></div>
+            <div class="pastel-card__value" id="kpiConc">—</div>
+            <div class="pastel-card__sub" id="kpiConcSub">top sector share</div>
+        </div>
+        <div class="pastel-card pastel-card--dark">
+            <div class="pastel-card__head"><span class="pastel-card__chip" style="background:rgba(255,255,255,0.10);color:inherit;"><span class="pastel-card__icon-bg" style="background:rgba(255,255,255,0.10);"><span class="material-symbols-outlined">bolt</span></span>Active signals</span><span class="delta" style="background:rgba(200,245,98,0.20);color:var(--accent-lime);">live</span></div>
+            <div class="pastel-card__value" id="kpiActive">—</div>
+            <div class="pastel-card__sub" style="opacity:0.7;">currently tracked</div>
+        </div>
+    </div>
+
+    <!-- Three-column: hit rings / portfolio stats / alpha buckets -->
+    <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Hit rate by horizon</div>
+                    <div class="widget__meta">% where direction matched outcome</div>
+                </div>
+            </div>
+            <div id="horizonRings" style="display:flex;justify-content:space-around;align-items:center;gap:14px;flex:1;padding:8px 0;"></div>
+        </div>
+
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">3-day portfolio stats</div>
+                    <div class="widget__meta">Resolved over the 3D window</div>
+                </div>
+            </div>
+            <div id="port3dStats" style="display:flex;flex-direction:column;gap:6px;flex:1;"></div>
+        </div>
+
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Hit rate by alpha bucket</div>
+                    <div class="widget__meta">Higher α should hit more often</div>
+                </div>
+            </div>
+            <div id="alphaBuckets" style="display:flex;flex-direction:column;gap:8px;flex:1;padding-top:6px;"></div>
+        </div>
+    </div>
+
+    <!-- Two-column: Leaderboard + Concentration -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Top performing signals · resolved</div>
+                    <div class="widget__meta">Highest actual return on the resolved window</div>
+                </div>
+                <span class="widget__year-pill" id="leaderCount">— signals</span>
+            </div>
+            <div id="leaderboard" style="display:flex;flex-direction:column;gap:5px;max-height:340px;overflow-y:auto;"></div>
+        </div>
+
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Sector concentration</div>
+                    <div class="widget__meta">Active signals grouped by sector</div>
+                </div>
+            </div>
+            <div id="concentration" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding-top:4px;"></div>
+        </div>
+    </div>
+
+    <!-- Event-type performance -->
+    <div class="widget" style="margin-bottom:14px;">
+        <div class="widget__head">
+            <div>
+                <div class="widget__title">Hit rate by event type</div>
+                <div class="widget__meta">Earnings, news, insider, mergers, dividends</div>
+            </div>
+        </div>
+        <div id="eventTypes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding-top:6px;"></div>
+    </div>
+
+    <p style="font-size:10px;color:var(--t3);text-align:center;padding:8px;">
+        Statistics derived from resolved predictions only. <span style="color:var(--bear);font-weight:700;">Not financial advice.</span>
+    </p>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script>
+function fmtPct1(v) { return v == null ? '—' : (Number(v).toFixed(1)+'%'); }
+function fmtPct2(v, sign) {
+    if (v == null) return '—';
+    const s = sign && v >= 0 ? '+' : '';
+    return s + Number(v).toFixed(2) + '%';
+}
+function ringSVG(pct, color) {
+    const C = 2 * Math.PI * 38;
+    const off = C * (1 - Math.max(0, Math.min(100, pct)) / 100);
+    return `<svg viewBox="0 0 90 90" width="90" height="90" style="transform:rotate(-90deg);">
+        <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="45" cy="45" r="38" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round"
+                stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+                style="transition:stroke-dashoffset 700ms cubic-bezier(.2,.8,.2,1);"/>
+    </svg>`;
+}
+
+function renderHorizonRings(horizons) {
+    const root = document.getElementById('horizonRings');
+    const order = ['1D', '3D', '20D'];
+    const colors = {'1D':'#5b6cff', '3D':'#4ee6b8', '20D':'#ffc266'};
+    const cards = order.filter(h => horizons[h]).map(h => {
+        const stat = horizons[h];
+        const pct = (stat.hit_rate || 0) * 100;
+        return `
+        <div style="text-align:center;flex:1;">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto;">
+                ${ringSVG(pct, colors[h])}
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <span class="font-headline" style="font-size:18px;font-weight:800;color:var(--t1);letter-spacing:-0.03em;">${pct.toFixed(0)}%</span>
+                    <span style="font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">${h}</span>
+                </div>
+            </div>
+            <div style="font-size:9.5px;color:var(--t2);margin-top:4px;">${stat.total||0} resolved</div>
+            <div style="font-size:9px;color:var(--t3);margin-top:1px;">avg ${fmtPct2(stat.avg_actual, true)}</div>
+        </div>`;
+    });
+    root.innerHTML = cards.length ? cards.join('') : '<div style="font-size:11px;color:var(--t3);padding:30px;text-align:center;">No resolved data yet</div>';
+}
+
+function renderPort3d(p) {
+    const root = document.getElementById('port3dStats');
+    if (!p || !p.total) {
+        root.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:24px;text-align:center;">No 3D portfolio data</div>'; return;
+    }
+    const rows = [
+        ['Hit rate',       fmtPct1(p.hit_rate*100), p.hit_rate>=0.5 ? '#4ee6b8' : '#ff7a8a'],
+        ['Avg return',     fmtPct2(p.avg_return, true), p.avg_return>=0 ? '#4ee6b8' : '#ff7a8a'],
+        ['Avg win',        fmtPct2(p.avg_win, true), '#4ee6b8'],
+        ['Avg loss',       fmtPct2(-Math.abs(p.avg_loss||0), true), '#ff7a8a'],
+        ['Profit factor',  (p.profit_factor||0).toFixed(2), p.profit_factor>=1 ? '#4ee6b8' : '#ff7a8a'],
+        ['Sharpe (ann.)',  (p.annualized_sharpe||0).toFixed(2), p.annualized_sharpe>=0.5 ? '#4ee6b8' : '#ffc266'],
+        ['Total trades',   String(p.total||0), 'var(--t1)'],
+    ];
+    root.innerHTML = rows.map(([k, v, c]) => `
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b0);">
+            <span style="font-size:11px;color:var(--t2);">${k}</span>
+            <span class="font-headline" style="font-size:13px;font-weight:700;color:${c};letter-spacing:-0.01em;">${v}</span>
+        </div>
+    `).join('');
+}
+
+function renderAlphaBuckets(buckets) {
+    const root = document.getElementById('alphaBuckets');
+    if (!buckets || !Object.keys(buckets).length) {
+        root.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:24px;text-align:center;">No bucket data</div>'; return;
+    }
+    const order = ['0-50', '50-65', '65-80', '80+'];
+    const colors = {'0-50':'#9aa0c8', '50-65':'#5b6cff', '65-80':'#4ee6b8', '80+':'#ffc266'};
+    root.innerHTML = order.filter(k => buckets[k]).map(k => {
+        const b = buckets[k];
+        const pct = (b.hit_rate || 0) * 100;
+        return `
+        <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                <span style="color:var(--t2);font-weight:600;">α ${k}</span>
+                <span class="font-headline" style="color:${colors[k]};font-weight:700;">${pct.toFixed(0)}% · ${b.total||0}</span>
+            </div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+                <div style="width:${pct}%;background:${colors[k]};height:100%;border-radius:3px;transition:width 600ms ease;"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderLeaderboard(rows) {
+    const root = document.getElementById('leaderboard');
+    document.getElementById('leaderCount').textContent = (rows && rows.length || 0) + ' signals';
+    if (!rows || !rows.length) {
+        root.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:24px;text-align:center;">No resolved signals yet</div>'; return;
+    }
+    const medals = ['1','2','3'];
+    root.innerHTML = rows.slice(0, 15).map((r, i) => {
+        const ret = r.actual || 0;
+        const c = ret >= 0 ? '#4ee6b8' : '#ff7a8a';
+        const rank = i < 3 ? medals[i] : (i+1);
+        return `
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-md);padding:8px 12px;display:grid;grid-template-columns:32px 1fr auto auto;gap:10px;align-items:center;">
+            <span style="font-size:11px;font-weight:800;text-align:center;color:var(--t3);font-family:var(--font-head);">${rank}</span>
+            <div style="min-width:0;">
+                <span class="font-headline" style="font-size:12px;font-weight:700;color:var(--t1);">${r.ticker}</span>
+                <span style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.05em;margin-left:6px;">${(r.event_type||'').replace(/_/g,' ')}</span>
+            </div>
+            <div style="font-size:10px;color:var(--t2);font-family:var(--font-mono);">α ${(r.alpha_score||0).toFixed(0)} · pred ${fmtPct2(r.predicted, true)}</div>
+            <div class="font-headline" style="font-size:13px;font-weight:800;color:${c};letter-spacing:-0.02em;">${fmtPct2(ret, true)}</div>
+        </div>`;
+    }).join('');
+}
+
+function renderConcentration(rows) {
+    const root = document.getElementById('concentration');
+    if (!rows || !rows.length) {
+        root.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:24px;text-align:center;">No data</div>'; return;
+    }
+    const colors = ['#5b6cff','#4ee6b8','#ff7a8a','#ffc266','#8458ff','#4ec5e6','#ff9466','#b6c2ff'];
+    const max = Math.max(...rows.map(r => r.pct || 0));
+    root.innerHTML = rows.slice(0, 10).map((r, i) => {
+        const pct = r.pct || 0;
+        const w = max ? (pct / max * 100) : 0;
+        const c = colors[i % colors.length];
+        return `
+        <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                <span style="color:var(--t1);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">${(r.sector||'').replace(/_/g,' ').toLowerCase()}</span>
+                <span class="font-headline" style="color:${c};font-weight:700;">${pct.toFixed(1)}% · ${r.count||0}</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+                <div style="width:${w}%;background:${c};height:100%;border-radius:3px;transition:width 600ms ease;"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderEventTypes(types) {
+    const root = document.getElementById('eventTypes');
+    if (!types || !Object.keys(types).length) {
+        root.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:24px;text-align:center;grid-column:1/-1;">No event-type data</div>'; return;
+    }
+    const items = Object.entries(types).sort((a,b) => (b[1].total||0) - (a[1].total||0));
+    root.innerHTML = items.map(([type, s]) => {
+        const pct = (s.hit_rate || 0) * 100;
+        const c = pct >= 50 ? '#4ee6b8' : pct >= 40 ? '#ffc266' : '#ff7a8a';
+        return `
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-md);padding:10px 12px;">
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px;">${type.replace(/_/g,' ')}</div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;">
+                <span class="font-headline" style="font-size:18px;font-weight:800;color:${c};letter-spacing:-0.03em;">${pct.toFixed(0)}%</span>
+                <span style="font-size:9px;color:var(--t3);">${s.total||0} resolved</span>
+            </div>
+            <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:6px;">
+                <div style="width:${pct}%;background:${c};height:100%;border-radius:2px;transition:width 600ms ease;"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function loadAnalytics() {
+    let res;
+    try { res = await fetch('/api/analytics').then(r => r.json()); }
+    catch (e) { console.error('analytics fetch failed:', e); return; }
+
+    const d = (res && res.data) || {};
+    const summary = d.summary || {};
+    const horizons = d.horizons || {};
+
+    const h3d = horizons['3D'] || {};
+    const h1d = horizons['1D'] || {};
+    document.getElementById('kpiHit3D').textContent = h3d.hit_rate != null ? Math.round(h3d.hit_rate*100) + '%' : '—';
+    document.getElementById('kpiHit3DSub').textContent = (h3d.total || 0) + ' resolved';
+    document.getElementById('kpiHit1D').textContent = h1d.hit_rate != null ? Math.round(h1d.hit_rate*100) + '%' : '—';
+    document.getElementById('kpiHit1DSub').textContent = (h1d.total || 0) + ' resolved';
+    const ic = summary.ic_estimate;
+    document.getElementById('kpiIC').textContent = ic != null ? ic.toFixed(3) : '—';
+    document.getElementById('kpiICSub').textContent = ic == null ? 'awaiting data' : ic >= 0.05 ? 'positive edge' : ic >= 0 ? 'weak edge' : 'inverted';
+    document.getElementById('kpiConc').textContent = summary.top_sector_pct != null ? summary.top_sector_pct.toFixed(0) + '%' : '—';
+    document.getElementById('kpiConcSub').textContent = (summary.concentration_risk || '—').toLowerCase();
+    document.getElementById('kpiActive').textContent = summary.active_signals || 0;
+
+    if (!summary.total_resolved || summary.total_resolved < 10) {
+        document.getElementById('noDataBanner').classList.remove('hidden');
+    }
+
+    renderHorizonRings(horizons);
+    renderPort3d(d.portfolio_3d || {});
+    renderAlphaBuckets(d.alpha_buckets || {});
+    renderLeaderboard(d.leaderboard || []);
+    renderConcentration(d.concentration || []);
+    renderEventTypes(d.event_types || {});
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadAnalytics();
+    if (window.Auth) Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

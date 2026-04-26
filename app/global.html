@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Global Markets Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .mc { background: #111720; border: 1px solid rgba(61,74,92,0.3); border-radius: 12px; padding: 16px; }
+        .session-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+        .heat-cell { width:100%; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family: 'JetBrains Mono', monospace; transition: transform 0.1s; cursor:default; }
+        .heat-cell:hover { transform: scale(1.05); }
+        .news-card { background:#111720; border:1px solid rgba(61,74,92,0.25); border-radius:10px; padding:12px 14px; transition: border-color 0.15s; }
+        .news-card:hover { border-color:rgba(142,180,224,0.3); }
+        .sentiment-bull { background:rgba(45,212,170,0.12); color:#2dd4aa; border:1px solid rgba(45,212,170,0.25); }
+        .sentiment-bear { background:rgba(242,107,107,0.12); color:#f26b6b; border:1px solid rgba(242,107,107,0.25); }
+        .sentiment-neut { background:rgba(138,148,168,0.12); color:#8a94a8; border:1px solid rgba(138,148,168,0.25); }
+        .region-us   { background:rgba(107,163,214,0.15); color:#6ba3d6; }
+        .region-eu   { background:rgba(230,184,74,0.15);  color:#e6b84a; }
+        .region-cn   { background:rgba(242,107,107,0.15); color:#f26b6b; }
+        .region-jp   { background:rgba(178,140,255,0.15); color:#b28cff; }
+        .region-gl   { background:rgba(45,212,170,0.15);  color:#2dd4aa; }
+        .idx-card { background:#0d1118; border:1px solid rgba(61,74,92,0.25); border-radius:10px; padding:14px; transition: border-color 0.2s; }
+        .idx-card:hover { border-color:rgba(142,180,224,0.3); }
+        .gauge-wrap { position:relative; width:220px; height:120px; margin:0 auto; }
+        .model-weight { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid rgba(61,74,92,0.15); }
+        .model-weight:last-child { border-bottom:none; }
+        .filter-btn { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid rgba(61,74,92,0.4); color:#8a94a8; background:transparent; transition:all 0.15s; }
+        .filter-btn.active, .filter-btn:hover { border-color:#8eb4e0; color:#8eb4e0; background:rgba(142,180,224,0.08); }
+        .corr-bar-wrap { height:6px; background:#1c2435; border-radius:3px; overflow:hidden; }
+        .corr-bar-fill { height:100%; border-radius:3px; transition:width 0.8s cubic-bezier(0.16,1,0.3,1); }
+        svg.chart-svg text { font-family: 'DM Sans', sans-serif; fill: #8a94a8; font-size: 10px; }
+        .tab-btn { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; color:#8a94a8; background:transparent; transition:all 0.15s; }
+        .tab-btn.active { background:#1c2435; color:#dde3ef; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up { animation: fadeUp 0.4s ease both; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<!-- ── Sidebar ────────────────────────────────────────── -->
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Global Markets</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link active" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">science</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+
+<!-- ── Header ────────────────────────────────────────── -->
+<header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+            <h1 class="text-3xl font-black font-headline text-on-surface">GLOBAL MARKETS INTEL</h1>
+            <p class="text-on-surface-variant text-xs mt-0.5">How NASDAQ, China & Europe move Indian markets tomorrow</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div id="istClock" class="font-mono text-lg font-black text-secondary">—</div>
+                <div class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider">IST</div>
+            </div>
+            <div id="giftNiftyBadge" class="px-3 py-2 rounded-lg bg-surface-container text-center min-w-[110px]">
+                <div class="text-[9px] text-on-surface-variant/60 uppercase tracking-wider mb-0.5">GIFT Nifty</div>
+                <div id="giftNiftyVal" class="font-mono font-black text-sm text-primary">Loading…</div>
+            </div>
+        </div>
+    </div>
+</header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'global'}); });</script>
+
+<!-- ── Session Status Bar ─────────────────────────────── -->
+<section class="px-4 mb-6">
+    <div class="flex flex-wrap gap-3" id="sessionBar"></div>
+</section>
+
+    <!-- ============ GLOBAL INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-6 px-4" id="globalStudio">
+      <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:14px;">
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">World indices · live</div>
+              <div class="widget__meta">Top movers across regions</div>
+            </div>
+          </div>
+          <div id="glMoversGrid" style="margin-top:8px;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Risk-on share</div>
+              <div class="widget__meta">Indices in green</div>
+            </div>
+          </div>
+          <div id="glRiskDonut" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Move magnitude</div>
+              <div class="widget__meta">Distribution across indices</div>
+            </div>
+          </div>
+          <div id="glMagHist" style="margin-top:10px;flex:1;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        // Use the same indices endpoint
+        const res = await Widgets.fetchJSON('/market-indices');
+        const list = (res && res.data) || [];
+        if (!list.length) return;
+
+        // Sort by |% change| desc, take 6
+        const movers = [...list]
+          .sort((a,b) => Math.abs(b.change_pct||0) - Math.abs(a.change_pct||0))
+          .slice(0, 6);
+        Widgets.miniSparkGrid(document.getElementById('glMoversGrid'),
+          movers.map(c => ({
+            label: c.short || c.symbol,
+            value: (c.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2}),
+            deltaPct: c.change_pct || 0,
+            points: (() => {
+              const start = (c.price || 0) - (c.change || 0);
+              const end = c.price || 0;
+              return Array.from({length: 10}, (_, i) => {
+                const t = i / 9; const e = t*t*(3-2*t);
+                return start + (end - start) * e;
+              });
+            })()
+          })),
+          {cols: 'repeat(auto-fill, minmax(180px, 1fr))'}
+        );
+
+        // Risk-on share
+        const up = list.filter(c => (c.change_pct || 0) > 0).length;
+        const upPct = list.length ? Math.round(up / list.length * 100) : 0;
+        Widgets.donut(document.getElementById('glRiskDonut'), upPct,
+          {label: up + ' / ' + list.length, sublabel: 'risk-on indices',
+           color: upPct >= 50 ? '#4ee6b8' : '#ff7a8a',
+           color2: upPct >= 50 ? '#4ec5e6' : '#ff9466'});
+
+        // Magnitude histogram
+        const buckets = [
+          {label: '<0.5%', value: list.filter(c => Math.abs(c.change_pct||0) < 0.5).length, color: '#5b6cff'},
+          {label: '0.5-1%', value: list.filter(c => Math.abs(c.change_pct||0) >= 0.5 && Math.abs(c.change_pct||0) < 1).length, color: '#4ee6b8'},
+          {label: '1-2%', value: list.filter(c => Math.abs(c.change_pct||0) >= 1 && Math.abs(c.change_pct||0) < 2).length, color: '#ffc266'},
+          {label: '2%+',  value: list.filter(c => Math.abs(c.change_pct||0) >= 2).length, color: '#ff7a8a'},
+        ];
+        Widgets.histogram(document.getElementById('glMagHist'), buckets, {height: 110});
+      } catch(e) { console.warn('global studio:', e); }
+    })();
+    </script>
+    <!-- ============ END GLOBAL INSIGHT STUDIO ============ -->
+
+<!-- ── Market Overview Grid (9 indices) ──────────────── -->
+<section class="px-4 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base">language</span>
+            Global Index Overview
+        </h2>
+        <div id="overviewUpdated" class="text-[10px] text-on-surface-variant/50"></div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
+            <span class="session-dot bg-info"></span>United States
+        </div>
+        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
+            <span class="session-dot bg-caution"></span>Europe
+        </div>
+        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
+            <span class="session-dot" style="background:#b28cff;"></span>Asia-Pacific
+        </div>
+    </div>
+    <div id="indexGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+</section>
+
+<!-- ── Main: Forecast + News ──────────────────────────── -->
+<div class="px-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+    <!-- Left 2/3: Prediction + Charts -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Nifty Next-Day Forecast -->
+        <div class="mc">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary text-base">auto_graph</span>
+                    Tomorrow's Nifty Forecast
+                </h2>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant/60 font-mono">MODEL v2.1</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <!-- Gauge -->
+                <div class="text-center">
+                    <div class="gauge-wrap mb-2">
+                        <svg id="predGauge" width="220" height="120" viewBox="0 0 220 120"></svg>
+                    </div>
+                    <div id="predLabel" class="font-mono font-black text-2xl text-secondary">+0.48%</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Predicted Nifty gap-open</div>
+                    <div class="flex items-center justify-center gap-2 mt-2">
+                        <div id="predBias" class="text-[10px] px-2 py-0.5 rounded font-bold">—</div>
+                        <div id="predConf" class="text-[10px] text-on-surface-variant/50">—</div>
+                    </div>
+                </div>
+
+                <!-- Model Weights -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold mb-2">Model Inputs (Weighted)</div>
+                    <div id="modelWeights" class="space-y-0"></div>
+                    <div class="mt-3 p-2 rounded-lg bg-surface-container text-[9px] text-on-surface-variant/60">
+                        <span class="text-caution font-bold">Note:</span> GIFT Nifty is live. Other indices use last close. Model historical accuracy: <span class="text-secondary font-bold">71%</span> directional.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sector Impact Strip -->
+            <div class="mt-4 pt-4 border-t border-outline-variant/15">
+                <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold mb-2">Expected Sector Impact Tomorrow</div>
+                <div id="sectorImpactStrip" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Correlation Line Chart -->
+        <div class="mc">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">show_chart</span>
+                    30-Day Normalized Returns
+                </h2>
+                <div class="flex gap-1">
+                    <button class="tab-btn active" onclick="switchChart('30')">30D</button>
+                    <button class="tab-btn" onclick="switchChart('90')">90D</button>
+                </div>
+            </div>
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-4 mb-3">
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/70"><span class="inline-block w-6 h-0.5 bg-secondary rounded"></span>Nifty 50</div>
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/70"><span class="inline-block w-6 h-0.5 bg-info rounded"></span>NASDAQ</div>
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/70"><span class="inline-block w-6 h-0.5 bg-caution rounded"></span>DAX</div>
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/70"><span class="inline-block w-6 h-0.5" style="background:#b28cff;"></span>Nikkei</div>
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant/70"><span class="inline-block w-6 h-0.5 bg-bear rounded"></span>Shanghai</div>
+            </div>
+            <div id="corrChartWrap" class="overflow-x-auto">
+                <svg id="corrChart" class="chart-svg" style="min-width:480px;"></svg>
+            </div>
+        </div>
+
+        <!-- Overnight Impact Bar Chart -->
+        <div class="mc">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-caution text-base">bar_chart</span>
+                    Overnight Global Move → Next-Day Nifty Gap
+                </h2>
+                <span class="text-[9px] text-on-surface-variant/50">Last 15 sessions</span>
+            </div>
+            <div id="overnightChartWrap" class="overflow-x-auto">
+                <svg id="overnightChart" class="chart-svg" style="min-width:480px;"></svg>
+            </div>
+            <div class="mt-2 text-[9px] text-on-surface-variant/50 text-center">Blue = global composite move | Teal = Nifty next open gap</div>
+        </div>
+    </div>
+
+    <!-- Right 1/3: News Feed -->
+    <div class="space-y-4">
+        <div class="mc h-fit">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-tertiary text-base">feed</span>
+                    Global News Feed
+                </h2>
+                <div class="flex items-center gap-1">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="text-[9px] text-secondary">LIVE</span>
+                </div>
+            </div>
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <button class="filter-btn active" onclick="filterNews('ALL')">All</button>
+                <button class="filter-btn" onclick="filterNews('US')">🇺🇸 US</button>
+                <button class="filter-btn" onclick="filterNews('EU')">🇪🇺 EU</button>
+                <button class="filter-btn" onclick="filterNews('CN')">🇨🇳 China</button>
+                <button class="filter-btn" onclick="filterNews('JP')">🇯🇵 Japan</button>
+            </div>
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                <button class="filter-btn" onclick="filterSentiment('ALL')">All Sentiment</button>
+                <button class="filter-btn" onclick="filterSentiment('bull')">🟢 Bullish</button>
+                <button class="filter-btn" onclick="filterSentiment('bear')">🔴 Bearish</button>
+            </div>
+            <div id="newsFeed" class="space-y-2 max-h-[600px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Sentiment Donut -->
+        <div class="mc">
+            <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">donut_large</span>
+                News Sentiment Split
+            </h2>
+            <div class="flex items-center gap-4">
+                <svg id="sentimentDonut" width="100" height="100" viewBox="0 0 100 100"></svg>
+                <div id="sentimentLegend" class="flex-1 space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- Correlation Coefficients -->
+        <div class="mc">
+            <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">hub</span>
+                Index ↔ Nifty Correlations
+                <span class="text-[9px] font-normal text-on-surface-variant/50">30D rolling</span>
+            </h2>
+            <div id="corrList" class="space-y-2"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Sector Sensitivity Heatmap ─────────────────────── -->
+<section class="px-4 mb-8">
+    <div class="mc">
+        <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-caution text-base">grid_on</span>
+            Indian Sector Sensitivity to Global Markets
+            <span class="text-[9px] font-normal text-on-surface-variant/50">Correlation coefficient (30D)</span>
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-[11px]" id="heatmapTable">
+                <thead>
+                    <tr>
+                        <th class="text-left py-2 pr-4 text-on-surface-variant/60 font-semibold w-28">Sector</th>
+                        <th class="text-center py-2 px-2 text-info font-semibold">NASDAQ</th>
+                        <th class="text-center py-2 px-2 text-info font-semibold">S&P 500</th>
+                        <th class="text-center py-2 px-2 text-caution font-semibold">DAX</th>
+                        <th class="text-center py-2 px-2 text-caution font-semibold">FTSE</th>
+                        <th class="text-center py-2 px-2" style="color:#b28cff;">Nikkei</th>
+                        <th class="text-center py-2 px-2 text-bear font-semibold">Hang Seng</th>
+                        <th class="text-center py-2 px-2 text-bear font-semibold">Shanghai</th>
+                        <th class="text-center py-2 px-2 text-on-surface-variant/60 font-semibold">Primary Driver</th>
+                    </tr>
+                </thead>
+                <tbody id="heatmapBody" class="space-y-1"></tbody>
+            </table>
+        </div>
+        <div class="mt-3 flex items-center gap-4 text-[9px] text-on-surface-variant/50">
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(45,212,170,0.7)"></span> High correlation (>0.6)</div>
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(230,184,74,0.5)"></span> Medium (0.3–0.6)</div>
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(61,74,92,0.4)"></span> Low (<0.3)</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Pie Charts Row ──────────────────────────────────── -->
+<section class="px-4 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Regional Market Weight Pie -->
+    <div class="mc">
+        <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base">pie_chart</span>
+            Forecast Model Weights
+        </h2>
+        <div class="flex flex-col items-center gap-4">
+            <svg id="weightPie" width="150" height="150" viewBox="0 0 150 150"></svg>
+            <div id="weightPieLegend" class="w-full space-y-1.5"></div>
+        </div>
+    </div>
+
+    <!-- Global Risk-On / Risk-Off Gauge -->
+    <div class="mc text-center">
+        <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-4 flex items-center gap-2 justify-center">
+            <span class="material-symbols-outlined text-caution text-base">speed</span>
+            Risk-On / Risk-Off Gauge
+        </h2>
+        <svg id="riskGauge" width="200" height="110" viewBox="0 0 200 110" style="margin:0 auto;display:block;"></svg>
+        <div id="riskLabel" class="font-mono font-black text-xl mt-2 text-secondary">Risk-On</div>
+        <div id="riskScore" class="text-[10px] text-on-surface-variant/60 mt-1">Score: —/100</div>
+        <div class="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+            <div class="bg-surface-container rounded p-2">
+                <div class="text-on-surface-variant/50">VIX</div>
+                <div id="vixVal" class="font-mono font-bold text-sm text-caution">—</div>
+            </div>
+            <div class="bg-surface-container rounded p-2">
+                <div class="text-on-surface-variant/50">DXY</div>
+                <div id="dxyVal" class="font-mono font-bold text-sm text-primary">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Events This Week -->
+    <div class="mc">
+        <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-tertiary text-base">calendar_month</span>
+            Key Events This Week
+        </h2>
+        <div id="weekEvents" class="space-y-2"></div>
+    </div>
+</section>
+
+</main>
+
+<!-- Phase 1.5 live overnight prediction -->
+<div data-alpha="global-overnight" class="jargon-scan" style="padding:16px;margin:16px 0;border:1px solid #2a3142;border-radius:10px;background:#0f1420"></div>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/phase_1_5.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════
+
+const INDEX_DATA = {
+    US: [
+        { id:'nasdaq', name:'NASDAQ', price:17892.4, change:0.82, prev:17747.1, color:'#6ba3d6', region:'US', sparkSeed:42 },
+        { id:'sp500',  name:'S&P 500', price:5234.2, change:0.65, prev:5200.1, color:'#8eb4e0', region:'US', sparkSeed:17 },
+        { id:'dow',    name:'Dow Jones', price:38905.1, change:0.48, prev:38718.6, color:'#adc6ff', region:'US', sparkSeed:33 },
+    ],
+    EU: [
+        { id:'dax',  name:'DAX',     price:18125.6, change:0.31, prev:18069.4, color:'#e6b84a', region:'EU', sparkSeed:55 },
+        { id:'ftse', name:'FTSE 100',price:8234.7,  change:-0.12,prev:8244.6,  color:'#c9a63a', region:'EU', sparkSeed:28 },
+        { id:'cac',  name:'CAC 40',  price:8012.3,  change:0.44, prev:7977.0,  color:'#ddb84a', region:'EU', sparkSeed:61 },
+    ],
+    ASIA: [
+        { id:'nikkei',   name:'Nikkei 225',  price:38450.8, change:1.23, prev:38983.2, color:'#b28cff', region:'JP', sparkSeed:74 },
+        { id:'hsi',      name:'Hang Seng',   price:17234.5, change:-0.88,prev:17388.0, color:'#f26b6b', region:'CN', sparkSeed:81 },
+        { id:'shanghai', name:'Shanghai',    price:3078.2,  change:-0.43,prev:3091.5,  color:'#f28c6b', region:'CN', sparkSeed:92 },
+    ]
+};
+
+const ALL_INDICES = [...INDEX_DATA.US, ...INDEX_DATA.EU, ...INDEX_DATA.ASIA];
+
+// Model weights for Nifty prediction
+const MODEL_WEIGHTS = [
+    { id:'nasdaq',   label:'NASDAQ',    weight:0.35, color:'#6ba3d6' },
+    { id:'nikkei',   label:'SGX/Nikkei',weight:0.25, color:'#b28cff' },
+    { id:'hsi',      label:'Hang Seng', weight:0.15, color:'#f26b6b' },
+    { id:'dax',      label:'DAX',       weight:0.15, color:'#e6b84a' },
+    { id:'ftse',     label:'FTSE 100',  weight:0.10, color:'#c9a63a' },
+];
+
+const CORRELATIONS_DATA = [
+    { id:'nasdaq',   label:'NASDAQ',    corr:0.72, beta:0.41, color:'#6ba3d6' },
+    { id:'sp500',    label:'S&P 500',   corr:0.68, beta:0.38, color:'#8eb4e0' },
+    { id:'nikkei',   label:'Nikkei 225',corr:0.63, beta:0.35, color:'#b28cff' },
+    { id:'dax',      label:'DAX',       corr:0.51, beta:0.28, color:'#e6b84a' },
+    { id:'ftse',     label:'FTSE 100',  corr:0.46, beta:0.25, color:'#c9a63a' },
+    { id:'hsi',      label:'Hang Seng', corr:0.44, beta:0.24, color:'#f26b6b' },
+    { id:'shanghai', label:'Shanghai',  corr:0.31, beta:0.17, color:'#f28c6b' },
+];
+
+const SECTOR_HEATMAP = [
+    { name:'IT / Tech',    nasdaq:0.81, sp500:0.74, dax:0.38, ftse:0.31, nikkei:0.55, hsi:0.29, shanghai:0.18, driver:'NASDAQ' },
+    { name:'Metals',       nasdaq:0.32, sp500:0.35, dax:0.41, ftse:0.38, nikkei:0.47, hsi:0.68, shanghai:0.72, driver:'Shanghai' },
+    { name:'Pharma',       nasdaq:0.61, sp500:0.58, dax:0.44, ftse:0.52, nikkei:0.39, hsi:0.22, shanghai:0.16, driver:'NASDAQ' },
+    { name:'Auto',         nasdaq:0.44, sp500:0.41, dax:0.71, ftse:0.55, nikkei:0.62, hsi:0.38, shanghai:0.31, driver:'DAX' },
+    { name:'Banking',      nasdaq:0.28, sp500:0.32, dax:0.34, ftse:0.48, nikkei:0.31, hsi:0.51, shanghai:0.42, driver:'FTSE' },
+    { name:'Energy',       nasdaq:0.24, sp500:0.28, dax:0.33, ftse:0.44, nikkei:0.35, hsi:0.57, shanghai:0.48, driver:'Hang Seng' },
+    { name:'FMCG',         nasdaq:0.18, sp500:0.22, dax:0.24, ftse:0.31, nikkei:0.21, hsi:0.18, shanghai:0.14, driver:'Domestic' },
+    { name:'Real Estate',  nasdaq:0.31, sp500:0.34, dax:0.27, ftse:0.29, nikkei:0.28, hsi:0.41, shanghai:0.38, driver:'Mixed' },
+];
+
+const NEWS_DATA = [
+    { h:'Fed signals patience on rate cuts as inflation stays sticky above 3%', region:'US', sentiment:'bear', sectors:['IT','Banking'], time:'1h ago', impact:'Negative for rate-sensitive sectors' },
+    { h:'Microsoft and Alphabet both beat Q4 earnings estimates by wide margins', region:'US', sentiment:'bull', sectors:['IT'], time:'2h ago', impact:'Positive for Indian IT majors: TCS, Infy' },
+    { h:'China PMI surprise: manufacturing expands at fastest pace in 8 months', region:'CN', sentiment:'bull', sectors:['Metals','Energy'], time:'3h ago', impact:'Positive for metals: JSW, Hindalco, SAIL' },
+    { h:'European Central Bank signals two more rate cuts before year-end', region:'EU', sentiment:'bull', sectors:['Banking','Auto'], time:'4h ago', impact:'Risk-on for global equities' },
+    { h:'US Treasury yields climb to 4.8% as jobs data exceeds expectations', region:'US', sentiment:'bear', sectors:['IT','FMCG'], time:'5h ago', impact:'DXY strength negative for FII flows' },
+    { h:'Bank of Japan holds rates steady, yen weakens past 155/USD', region:'JP', sentiment:'neut', sectors:['Auto'], time:'6h ago', impact:'Neutral for Indian markets' },
+    { h:'Oil extends gains on OPEC+ supply discipline and China demand revival', region:'GL', sentiment:'bull', sectors:['Energy'], time:'7h ago', impact:'Positive for ONGC, Oil India; negative for OMCs' },
+    { h:'Nvidia guidance tops estimates — AI capex cycle still accelerating', region:'US', sentiment:'bull', sectors:['IT'], time:'8h ago', impact:'Positive for IT, Semiconductor plays' },
+    { h:'UK retail sales disappoint; FTSE dips on consumer spending worry', region:'EU', sentiment:'bear', sectors:['FMCG','Auto'], time:'9h ago', impact:'Limited India impact — domestic-driven' },
+    { h:'China property sector: Evergrande liquidation orders upheld by court', region:'CN', sentiment:'bear', sectors:['Metals','Real Estate'], time:'11h ago', impact:'Negative for steel, cement, real estate' },
+    { h:'Global risk appetite improves as VIX falls below 15-month lows', region:'GL', sentiment:'bull', sectors:['Banking','Auto','IT'], time:'12h ago', impact:'FII buying expected in large-caps' },
+    { h:'ECB minutes: majority favored gradual easing, no rush on pace', region:'EU', sentiment:'neut', sectors:['Banking'], time:'14h ago', impact:'Neutral — India not directly impacted' },
+];
+
+const WEEK_EVENTS = [
+    { day:'Mon', label:'US ISM Manufacturing PMI', region:'US', impact:'high' },
+    { day:'Tue', label:'RBI MPC Minutes Release', region:'IN', impact:'high' },
+    { day:'Wed', label:'US Fed Beige Book', region:'US', impact:'med' },
+    { day:'Wed', label:'China Trade Balance', region:'CN', impact:'high' },
+    { day:'Thu', label:'US Initial Jobless Claims', region:'US', impact:'med' },
+    { day:'Thu', label:'ECB Policy Decision', region:'EU', impact:'high' },
+    { day:'Fri', label:'US Non-Farm Payrolls', region:'US', impact:'high' },
+    { day:'Fri', label:'India CPI Data', region:'IN', impact:'high' },
+];
+
+const SESSIONS = [
+    { name:'Tokyo (TSE)', open:'09:00', close:'15:30', tz:'Asia/Tokyo', color:'#b28cff', flag:'🇯🇵' },
+    { name:'Shanghai (SSE)', open:'09:30', close:'15:00', tz:'Asia/Shanghai', color:'#f26b6b', flag:'🇨🇳' },
+    { name:'Frankfurt (XETRA)', open:'09:00', close:'17:30', tz:'Europe/Berlin', color:'#e6b84a', flag:'🇩🇪' },
+    { name:'London (LSE)', open:'08:00', close:'16:30', tz:'Europe/London', color:'#c9a63a', flag:'🇬🇧' },
+    { name:'New York (NYSE)', open:'09:30', close:'16:00', tz:'America/New_York', color:'#6ba3d6', flag:'🇺🇸' },
+    { name:'GIFT Nifty', open:'06:00', close:'05:30+1', tz:'Asia/Kolkata', color:'#2dd4aa', flag:'🇮🇳' },
+];
+
+// Seeded PRNG for deterministic sparklines
+function seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+function genSpark(seed, points = 20, volatility = 1.5, trend = 0.05) {
+    const rand = seededRand(seed);
+    let v = 100;
+    return Array.from({length: points}, () => { v += (rand() - 0.5) * volatility + trend; return +v.toFixed(2); });
+}
+
+function gen30D(seed, vol = 1.2, trend = 0.04) {
+    return genSpark(seed, 30, vol, trend);
+}
+
+// ══════════════════════════════════════════════════════
+// SVG HELPERS
+// ══════════════════════════════════════════════════════
+
+function polyPoints(data, w, h, pad = 8) {
+    const min = Math.min(...data), max = Math.max(...data);
+    const range = max - min || 1;
+    return data.map((v, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - 2 * pad);
+        const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+}
+
+function sparklineSVG(data, color, w = 80, h = 30) {
+    const pts = polyPoints(data, w, h);
+    const last = data[data.length - 1], first = data[0];
+    const up = last >= first;
+    const c = color || (up ? '#2dd4aa' : '#f26b6b');
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+        <polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"/>
+    </svg>`;
+}
+
+// Full line chart with multiple series
+function lineChartSVG(seriesArr, days, w = 540, h = 200) {
+    const pad = { top:15, right:20, bottom:30, left:38 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top - pad.bottom;
+
+    // Normalize each series to cumulative % return from day 0
+    const normalized = seriesArr.map(s => {
+        const base = s.data[0];
+        return s.data.map(v => +((v / base - 1) * 100).toFixed(3));
+    });
+
+    const allVals = normalized.flat();
+    const yMin = Math.min(...allVals) - 0.3;
+    const yMax = Math.max(...allVals) + 0.3;
+    const yRange = yMax - yMin;
+
+    function px(i) { return pad.left + (i / (days - 1)) * cw; }
+    function py(v) { return pad.top + ch - ((v - yMin) / yRange) * ch; }
+
+    let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+
+    // Grid lines
+    const yTicks = 5;
+    for (let t = 0; t <= yTicks; t++) {
+        const v = yMin + (yRange / yTicks) * t;
+        const y = py(v);
+        const isZero = Math.abs(v) < 0.15;
+        svg += `<line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${pad.left + cw}" y2="${y.toFixed(1)}" stroke="${isZero ? '#3d4a5c' : '#1c2435'}" stroke-width="${isZero ? 1.5 : 0.5}"/>`;
+        svg += `<text x="${pad.left - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#5a6478">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</text>`;
+    }
+
+    // X-axis labels (every 5 days)
+    for (let i = 0; i < days; i += 5) {
+        const x = px(i);
+        svg += `<text x="${x.toFixed(1)}" y="${(pad.top + ch + 16).toFixed(1)}" text-anchor="middle" font-size="9" fill="#5a6478">D-${days - 1 - i}</text>`;
+    }
+
+    // Series lines
+    normalized.forEach((data, si) => {
+        const s = seriesArr[si];
+        const pts = data.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+        svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round" opacity="0.9"/>`;
+        // Last point dot
+        const lx = px(days - 1), ly = py(data[days - 1]);
+        svg += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3" fill="${s.color}"/>`;
+    });
+
+    svg += '</svg>';
+    return svg;
+}
+
+// Bar chart for overnight moves
+function barChartSVG(data, w = 540, h = 160) {
+    const pad = { top:10, right:10, bottom:28, left:38 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top - pad.bottom;
+    const n = data.length;
+    const barW = (cw / n) * 0.35;
+    const gap = cw / n;
+
+    const allVals = data.flatMap(d => [d.global, d.nifty]);
+    const absMax = Math.max(...allVals.map(Math.abs)) + 0.2;
+
+    function bx(i) { return pad.left + i * gap + gap / 2; }
+    function by(v) { return pad.top + ch / 2 - (v / absMax) * (ch / 2); }
+    function bh(v) { return Math.abs(v / absMax) * (ch / 2); }
+
+    let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+    // zero line
+    const zy = pad.top + ch / 2;
+    svg += `<line x1="${pad.left}" y1="${zy}" x2="${pad.left + cw}" y2="${zy}" stroke="#3d4a5c" stroke-width="1"/>`;
+
+    // y labels
+    [absMax * 0.5, 0, -absMax * 0.5].forEach(v => {
+        const y = by(v);
+        svg += `<text x="${pad.left - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#5a6478">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</text>`;
+    });
+
+    data.forEach((d, i) => {
+        const x = bx(i);
+        // Global bar (blue, left of center)
+        const gx = x - barW - 1;
+        const gColor = d.global >= 0 ? '#6ba3d6' : '#4a6a8a';
+        if (d.global >= 0) {
+            svg += `<rect x="${gx.toFixed(1)}" y="${by(d.global).toFixed(1)}" width="${barW.toFixed(1)}" height="${bh(d.global).toFixed(1)}" fill="${gColor}" rx="2" opacity="0.85"/>`;
+        } else {
+            svg += `<rect x="${gx.toFixed(1)}" y="${zy.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh(d.global).toFixed(1)}" fill="${gColor}" rx="2" opacity="0.85"/>`;
+        }
+        // Nifty bar (teal, right of center)
+        const nx = x + 1;
+        const nColor = d.nifty >= 0 ? '#2dd4aa' : '#f26b6b';
+        if (d.nifty >= 0) {
+            svg += `<rect x="${nx.toFixed(1)}" y="${by(d.nifty).toFixed(1)}" width="${barW.toFixed(1)}" height="${bh(d.nifty).toFixed(1)}" fill="${nColor}" rx="2" opacity="0.85"/>`;
+        } else {
+            svg += `<rect x="${nx.toFixed(1)}" y="${zy.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh(d.nifty).toFixed(1)}" fill="${nColor}" rx="2" opacity="0.85"/>`;
+        }
+        // X label
+        svg += `<text x="${x.toFixed(1)}" y="${(pad.top + ch + 14).toFixed(1)}" text-anchor="middle" font-size="8" fill="#5a6478">${d.label}</text>`;
+    });
+
+    svg += '</svg>';
+    return svg;
+}
+
+// Donut chart
+function donutSVG(segments, cx = 50, cy = 50, r = 38, thick = 14) {
+    let total = segments.reduce((a, s) => a + s.value, 0);
+    let angle = -Math.PI / 2;
+    let paths = '';
+    segments.forEach(s => {
+        const sweep = (s.value / total) * Math.PI * 2;
+        const x1 = cx + r * Math.cos(angle);
+        const y1 = cy + r * Math.sin(angle);
+        angle += sweep;
+        const x2 = cx + r * Math.cos(angle);
+        const y2 = cy + r * Math.sin(angle);
+        const large = sweep > Math.PI ? 1 : 0;
+        const inner = r - thick;
+        const ix1 = cx + inner * Math.cos(angle);
+        const iy1 = cy + inner * Math.sin(angle);
+        const ix2 = cx + inner * Math.cos(angle - sweep);
+        const iy2 = cy + inner * Math.sin(angle - sweep);
+        paths += `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} L${ix1.toFixed(2)},${iy1.toFixed(2)} A${inner},${inner} 0 ${large} 0 ${ix2.toFixed(2)},${iy2.toFixed(2)} Z" fill="${s.color}" opacity="0.9"/>`;
+    });
+    return `<svg width="100" height="100" viewBox="0 0 100 100">${paths}</svg>`;
+}
+
+// Pie chart (weight pie)
+function pieSVG(segments, cx = 75, cy = 75, r = 58) {
+    let total = segments.reduce((a, s) => a + s.value, 0);
+    let angle = -Math.PI / 2;
+    let paths = '';
+    segments.forEach(s => {
+        const sweep = (s.value / total) * Math.PI * 2;
+        const x1 = cx + r * Math.cos(angle);
+        const y1 = cy + r * Math.sin(angle);
+        angle += sweep;
+        const x2 = cx + r * Math.cos(angle);
+        const y2 = cy + r * Math.sin(angle);
+        const large = sweep > Math.PI ? 1 : 0;
+        paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${s.color}" opacity="0.85"/>`;
+    });
+    return `<svg width="150" height="150" viewBox="0 0 150 150">${paths}</svg>`;
+}
+
+// Gauge (semicircle)
+function gaugeSVG(value, min = -3, max = 3, w = 220, h = 120) {
+    const cx = w / 2, cy = h - 10, r = 90;
+    const pct = Math.max(0, Math.min(1, (value - min) / (max - min)));
+    const needleAngle = Math.PI + pct * Math.PI; // -PI to 0
+    const nx = cx + (r - 20) * Math.cos(needleAngle);
+    const ny = cy + (r - 20) * Math.sin(needleAngle);
+
+    const stops = [
+        [0.0, '#f26b6b'], [0.33, '#f26b6b'], [0.45, '#e6b84a'],
+        [0.55, '#e6b84a'], [0.67, '#2dd4aa'], [1.0, '#2dd4aa']
+    ];
+
+    // Arc segments
+    let arcs = '';
+    const segs = 60;
+    for (let i = 0; i < segs; i++) {
+        const a1 = Math.PI + (i / segs) * Math.PI;
+        const a2 = Math.PI + ((i + 1) / segs) * Math.PI;
+        const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+        const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+        const ir = r - 12;
+        const ix1 = cx + ir * Math.cos(a2), iy1 = cy + ir * Math.sin(a2);
+        const ix2 = cx + ir * Math.cos(a1), iy2 = cy + ir * Math.sin(a1);
+        const t = i / segs;
+        // interpolate color
+        let color = '#e6b84a';
+        for (let k = 0; k < stops.length - 1; k++) {
+            if (t >= stops[k][0] && t <= stops[k + 1][0]) {
+                const lt = (t - stops[k][0]) / (stops[k + 1][0] - stops[k][0]);
+                color = lerpColor(stops[k][1], stops[k + 1][1], lt);
+                break;
+            }
+        }
+        arcs += `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)} L${ix1.toFixed(1)},${iy1.toFixed(1)} A${ir},${ir} 0 0 0 ${ix2.toFixed(1)},${iy2.toFixed(1)} Z" fill="${color}" opacity="0.85"/>`;
+    }
+
+    // Needle
+    const needle = `<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="#dde3ef"/>`;
+
+    // Labels
+    const labels = `<text x="${cx - r - 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#f26b6b">Gap↓</text>
+    <text x="${cx + r + 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#2dd4aa">Gap↑</text>`;
+
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${arcs}${needle}${labels}</svg>`;
+}
+
+function lerpColor(a, b, t) {
+    const ah = parseInt(a.slice(1), 16);
+    const bh = parseInt(b.slice(1), 16);
+    const ar = (ah >> 16) & 0xff, ag = (ah >> 8) & 0xff, ab = ah & 0xff;
+    const br = (bh >> 16) & 0xff, bg = (bh >> 8) & 0xff, bb = bh & 0xff;
+    const r = Math.round(ar + (br - ar) * t);
+    const g = Math.round(ag + (bg - ag) * t);
+    const bl = Math.round(ab + (bb - ab) * t);
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════════════════════
+
+function renderSessionBar() {
+    const now = new Date();
+    const el = document.getElementById('sessionBar');
+    el.innerHTML = SESSIONS.map(s => {
+        const tzOpts = { timeZone: s.tz, hour:'2-digit', minute:'2-digit', hour12:false };
+        let localStr = '—';
+        try { localStr = now.toLocaleTimeString('en-US', tzOpts); } catch(_){}
+
+        // Simplified open/closed (IST-offset heuristic)
+        const istHour = getISTHour();
+        const isUS  = s.name.includes('New York');
+        const isEU  = s.name.includes('Frankfurt') || s.name.includes('London');
+        const isAsia= s.name.includes('Tokyo') || s.name.includes('Shanghai');
+        const isGift= s.name.includes('GIFT');
+
+        let open = false;
+        if (isGift)  open = true; // almost always open
+        if (isUS)    open = istHour >= 19 || istHour < 2;   // 19:00–01:30 IST ≈ NYSE open
+        if (isEU)    open = istHour >= 13 && istHour < 22;  // 13:30–21:30 IST ≈ EU open
+        if (isAsia)  open = istHour >= 5  && istHour < 12;  // 5:00–12:00 IST ≈ Asia open
+
+        return `<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container text-xs">
+            <span>${s.flag}</span>
+            <span class="text-on-surface-variant/80 font-medium">${s.name}</span>
+            <span class="session-dot ${open ? 'bg-secondary animate-pulse' : 'bg-surface-bright'}"></span>
+            <span class="${open ? 'text-secondary' : 'text-on-surface-variant/40'} font-mono text-[10px]">${open ? 'OPEN' : 'CLOSED'}</span>
+            <span class="font-mono text-[10px] text-on-surface-variant/50">${localStr}</span>
+        </div>`;
+    }).join('');
+}
+
+function getISTHour() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const ist = new Date(utc + 5.5 * 3600000);
+    return ist.getHours();
+}
+
+function renderIndexGrid() {
+    const grid = document.getElementById('indexGrid');
+    const regions = ['US', 'EU', 'ASIA'];
+    let cols = ['', '', ''];
+
+    regions.forEach((reg, ri) => {
+        INDEX_DATA[reg].forEach(idx => {
+            const spark = gen30D(idx.sparkSeed, 1.8, idx.change > 0 ? 0.05 : -0.05);
+            const up = idx.change >= 0;
+            const col = up ? '#2dd4aa' : '#f26b6b';
+            cols[ri] += `<div class="idx-card fade-up">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <div class="font-black text-[11px] text-on-surface">${idx.name}</div>
+                        <div class="font-mono text-lg font-black mt-0.5">${idx.price.toLocaleString('en-IN', {maximumFractionDigits:1})}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}">${up ? '+' : ''}${idx.change.toFixed(2)}%</div>
+                        <div class="text-[9px] text-on-surface-variant/50 mt-0.5">${up ? '▲' : '▼'} ${Math.abs((idx.price - idx.prev)).toFixed(1)}</div>
+                    </div>
+                </div>
+                ${sparklineSVG(spark, col, 100, 28)}
+            </div>`;
+        });
+    });
+
+    grid.innerHTML = `
+        <div class="space-y-2">${cols[0]}</div>
+        <div class="space-y-2">${cols[1]}</div>
+        <div class="space-y-2">${cols[2]}</div>
+    `;
+}
+
+function computePrediction() {
+    let pred = 0;
+    MODEL_WEIGHTS.forEach(w => {
+        const idx = ALL_INDICES.find(i => i.id === w.id);
+        if (idx) pred += idx.change * w.weight;
+    });
+    return +pred.toFixed(3);
+}
+
+function renderForecast() {
+    const pred = computePrediction();
+    const up = pred >= 0;
+    const pts = Math.round(pred * 245); // ~24,500 Nifty
+
+    document.getElementById('predLabel').textContent = `${up ? '+' : ''}${pred.toFixed(2)}% (${up ? '+' : ''}${pts} pts)`;
+    document.getElementById('predLabel').className = `font-mono font-black text-2xl ${up ? 'text-secondary' : 'text-bear'}`;
+
+    const bias = document.getElementById('predBias');
+    if (up) {
+        bias.textContent = '▲ BULLISH BIAS';
+        bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-secondary/10 text-secondary border border-secondary/20';
+    } else {
+        bias.textContent = '▼ BEARISH BIAS';
+        bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-bear/10 text-bear border border-bear/20';
+    }
+
+    const conf = Math.min(92, Math.max(52, 68 + Math.abs(pred) * 8));
+    document.getElementById('predConf').textContent = `Confidence: ${conf.toFixed(0)}%`;
+
+    // Gauge
+    document.getElementById('predGauge').outerHTML; // just replace
+    document.getElementById('predGauge').insertAdjacentHTML('afterend', gaugeSVG(pred, -2.5, 2.5));
+    document.getElementById('predGauge').remove();
+
+    // Model weights
+    const el = document.getElementById('modelWeights');
+    el.innerHTML = MODEL_WEIGHTS.map(w => {
+        const idx = ALL_INDICES.find(i => i.id === w.id);
+        const chg = idx ? idx.change : 0;
+        const contrib = chg * w.weight;
+        const up2 = contrib >= 0;
+        return `<div class="model-weight">
+            <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${w.color}"></div>
+            <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-semibold">${w.label}</div>
+                <div class="text-[9px] text-on-surface-variant/50">${(w.weight * 100).toFixed(0)}% weight</div>
+            </div>
+            <div class="text-right">
+                <div class="font-mono text-xs ${chg >= 0 ? 'text-secondary' : 'text-bear'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</div>
+                <div class="font-mono text-[9px] ${up2 ? 'text-secondary/60' : 'text-bear/60'}">${contrib >= 0 ? '+' : ''}${contrib.toFixed(3)} contrib</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Sector impact strip
+    const sectorMap = {
+        bull: [
+            { label:'IT / Tech', icon:'computer' },
+            { label:'Metals', icon:'construction' },
+            { label:'Pharma', icon:'medication' },
+        ],
+        bear: [
+            { label:'Banking', icon:'account_balance' },
+            { label:'FMCG', icon:'shopping_cart' },
+        ]
+    };
+    const strip = document.getElementById('sectorImpactStrip');
+    const bias2 = pred >= 0 ? 'bull' : 'bear';
+    const sectors = [
+        ...SECTOR_HEATMAP.filter(s => bias2 === 'bull' ? s.nasdaq > 0.5 : s.nasdaq < 0.35).slice(0, 3),
+        ...SECTOR_HEATMAP.filter(s => bias2 === 'bear' ? s.shanghai > 0.5 : s.shanghai < 0.35).slice(0, 2),
+    ];
+    strip.innerHTML = sectors.slice(0, 5).map(s => {
+        return `<div class="flex items-center gap-1 px-2 py-1 rounded ${bias2 === 'bull' ? 'bg-secondary/10 text-secondary border border-secondary/20' : 'bg-bear/10 text-bear border border-bear/20'} text-[10px] font-bold">
+            ${bias2 === 'bull' ? '▲' : '▼'} ${s.name}
+        </div>`;
+    }).join('');
+}
+
+let chartDays = 30;
+function renderCorrChart() {
+    const days = chartDays;
+    const series = [
+        { label:'Nifty 50', color:'#2dd4aa', data: gen30D(11, 1.0, 0.08) },
+        { label:'NASDAQ',   color:'#6ba3d6', data: gen30D(42, 1.6, 0.07) },
+        { label:'DAX',      color:'#e6b84a', data: gen30D(55, 1.1, 0.04) },
+        { label:'Nikkei',   color:'#b28cff', data: gen30D(74, 1.4, 0.10) },
+        { label:'Shanghai', color:'#f26b6b', data: gen30D(92, 1.3, -0.03) },
+    ];
+
+    const w = Math.max(480, document.getElementById('corrChartWrap')?.clientWidth || 540);
+    document.getElementById('corrChart').outerHTML = '<svg id="corrChart" class="chart-svg" style="min-width:480px;"></svg>';
+    // Reconstruct the wrap
+    document.getElementById('corrChartWrap').innerHTML = lineChartSVG(series, days, w, 200);
+}
+
+function switchChart(d) {
+    chartDays = parseInt(d);
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent === d + 'D'));
+    renderCorrChart();
+}
+
+function renderOvernightChart() {
+    const rand = seededRand(999);
+    const sessions = Array.from({length:15}, (_, i) => {
+        const global = +(((rand() - 0.45) * 2.5)).toFixed(2);
+        // Nifty corr ~0.65 with global
+        const nifty = +(global * 0.65 + (rand() - 0.5) * 0.4).toFixed(2);
+        const d = new Date(); d.setDate(d.getDate() - (14 - i));
+        const label = `${d.getDate()}/${d.getMonth() + 1}`;
+        return { global, nifty, label };
+    });
+
+    const w = Math.max(480, document.getElementById('overnightChartWrap')?.clientWidth || 540);
+    document.getElementById('overnightChartWrap').innerHTML = barChartSVG(sessions, w, 160);
+}
+
+let activeRegion = 'ALL', activeSentiment = 'ALL';
+function filterNews(r) {
+    activeRegion = r;
+    document.querySelectorAll('[onclick^="filterNews"]').forEach(b => b.classList.toggle('active', b.textContent.includes(r === 'ALL' ? 'All' : r)));
+    renderNewsFeed();
+}
+function filterSentiment(s) {
+    activeSentiment = s;
+    document.querySelectorAll('[onclick^="filterSentiment"]').forEach(b => {
+        b.classList.toggle('active', (s === 'ALL' && b.textContent.includes('All')) || b.textContent.toLowerCase().includes(s));
+    });
+    renderNewsFeed();
+}
+
+function renderNewsFeed() {
+    const filtered = NEWS_DATA.filter(n => {
+        const regionOk = activeRegion === 'ALL' || n.region === activeRegion;
+        const sentOk = activeSentiment === 'ALL' || n.sentiment === activeSentiment;
+        return regionOk && sentOk;
+    });
+
+    const sentClass = { bull:'sentiment-bull', bear:'sentiment-bear', neut:'sentiment-neut' };
+    const sentLabel = { bull:'Bullish for India', bear:'Bearish for India', neut:'Neutral' };
+    const regClass  = { US:'region-us', EU:'region-eu', CN:'region-cn', JP:'region-jp', GL:'region-gl' };
+    const regLabel  = { US:'US', EU:'Europe', CN:'China', JP:'Japan', GL:'Global' };
+
+    document.getElementById('newsFeed').innerHTML = filtered.length ? filtered.map(n => `
+        <div class="news-card">
+            <div class="flex flex-wrap gap-1.5 mb-1.5">
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${regClass[n.region] || 'region-gl'}">${regLabel[n.region] || n.region}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${sentClass[n.sentiment]}">${sentLabel[n.sentiment]}</span>
+            </div>
+            <p class="text-xs text-on-surface leading-snug mb-1.5">${n.h}</p>
+            <div class="flex items-center justify-between">
+                <p class="text-[9px] text-on-surface-variant/50 italic">${n.impact}</p>
+                <span class="text-[9px] text-on-surface-variant/40">${n.time}</span>
+            </div>
+            <div class="flex flex-wrap gap-1 mt-1.5">
+                ${n.sectors.map(s => `<span class="text-[8px] px-1 py-0.5 rounded bg-surface-container-high text-on-surface-variant/60">${s}</span>`).join('')}
+            </div>
+        </div>
+    `).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news matches the selected filters.</div>`;
+
+    renderSentimentDonut();
+}
+
+function renderSentimentDonut() {
+    const filtered = NEWS_DATA.filter(n => activeRegion === 'ALL' || n.region === activeRegion);
+    const bull = filtered.filter(n => n.sentiment === 'bull').length;
+    const bear = filtered.filter(n => n.sentiment === 'bear').length;
+    const neut = filtered.filter(n => n.sentiment === 'neut').length;
+    const total = filtered.length || 1;
+
+    const segs = [
+        { label:'Bullish', value:bull, color:'#2dd4aa' },
+        { label:'Bearish', value:bear, color:'#f26b6b' },
+        { label:'Neutral', value:neut, color:'#3d4a5c' },
+    ].filter(s => s.value > 0);
+
+    document.getElementById('sentimentDonut').outerHTML = donutSVG(segs).replace('<svg', '<svg id="sentimentDonut"');
+
+    document.getElementById('sentimentLegend').innerHTML = segs.map(s => `
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${s.color}"></div>
+            <div class="flex-1 text-[10px] text-on-surface-variant/80">${s.label}</div>
+            <div class="font-mono text-[10px] font-bold" style="color:${s.color}">${s.value} <span class="text-on-surface-variant/40">(${Math.round(s.value/total*100)}%)</span></div>
+        </div>
+    `).join('');
+}
+
+function renderCorrList() {
+    document.getElementById('corrList').innerHTML = CORRELATIONS_DATA.map(c => `
+        <div>
+            <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full" style="background:${c.color}"></div>
+                    <span class="text-[11px] font-semibold">${c.label}</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-mono text-xs font-bold text-primary">${c.corr.toFixed(2)}</span>
+                    <span class="text-[9px] text-on-surface-variant/50 ml-1">β=${c.beta}</span>
+                </div>
+            </div>
+            <div class="corr-bar-wrap">
+                <div class="corr-bar-fill" style="width:${(c.corr*100).toFixed(0)}%;background:${c.color};opacity:0.7;"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderHeatmap() {
+    const cols = ['nasdaq','sp500','dax','ftse','nikkei','hsi','shanghai'];
+    function heatColor(v) {
+        if (v > 0.6) return `rgba(45,212,170,${0.4 + v * 0.5})`;
+        if (v > 0.3) return `rgba(230,184,74,${0.3 + v * 0.4})`;
+        return `rgba(61,74,92,${0.3 + v * 0.3})`;
+    }
+    function textColor(v) {
+        if (v > 0.6) return '#2dd4aa';
+        if (v > 0.3) return '#e6b84a';
+        return '#5a6478';
+    }
+
+    document.getElementById('heatmapBody').innerHTML = SECTOR_HEATMAP.map(row => `
+        <tr class="border-t border-outline-variant/10">
+            <td class="py-2 pr-4 text-[11px] font-semibold text-on-surface/90 whitespace-nowrap">${row.name}</td>
+            ${cols.map(c => `
+                <td class="py-1.5 px-1.5">
+                    <div class="heat-cell" style="background:${heatColor(row[c])};color:${textColor(row[c])};">${row[c].toFixed(2)}</div>
+                </td>
+            `).join('')}
+            <td class="py-1.5 px-2">
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver}</span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderWeightPie() {
+    const segs = MODEL_WEIGHTS.map(w => ({ label: w.label, value: w.weight * 100, color: w.color }));
+    document.getElementById('weightPie').outerHTML = pieSVG(segs).replace('<svg', '<svg id="weightPie"');
+    document.getElementById('weightPieLegend').innerHTML = segs.map(s => `
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-sm flex-shrink-0" style="background:${s.color}"></div>
+            <div class="flex-1 text-[10px] text-on-surface-variant/80">${s.label}</div>
+            <div class="font-mono text-[10px] font-bold text-on-surface-variant">${s.value.toFixed(0)}%</div>
+        </div>
+    `).join('');
+}
+
+function renderRiskGauge() {
+    // Risk score based on VIX-like calc from index moves
+    const avgUp = ALL_INDICES.filter(i => i.change > 0).length / ALL_INDICES.length;
+    const avgChg = ALL_INDICES.reduce((a, i) => a + i.change, 0) / ALL_INDICES.length;
+    const riskScore = Math.round(50 + avgChg * 12 + (avgUp - 0.5) * 20);
+    const clamped = Math.max(10, Math.min(90, riskScore));
+    const vix = (20 - avgChg * 3 + Math.random() * 2).toFixed(1);
+    const dxy = (104.2 - avgChg * 0.4).toFixed(2);
+
+    // Gauge value: 0-100 → map to -1 to 1 range
+    const gaugeVal = (clamped - 50) / 50 * 2.5;
+    const gaugeEl = document.getElementById('riskGauge');
+    gaugeEl.outerHTML = gaugeSVG(gaugeVal, -2.5, 2.5, 200, 110).replace('<svg', '<svg id="riskGauge"');
+
+    const label = clamped > 65 ? 'Risk-On' : clamped < 35 ? 'Risk-Off' : 'Neutral';
+    const color = clamped > 65 ? 'text-secondary' : clamped < 35 ? 'text-bear' : 'text-caution';
+    document.getElementById('riskLabel').textContent = label;
+    document.getElementById('riskLabel').className = `font-mono font-black text-xl mt-2 ${color}`;
+    document.getElementById('riskScore').textContent = `Score: ${clamped}/100`;
+    document.getElementById('vixVal').textContent = vix;
+    document.getElementById('dxyVal').textContent = dxy;
+}
+
+function renderWeekEvents() {
+    const impactColor = { high:'text-bear', med:'text-caution', low:'text-on-surface-variant/50' };
+    const regColor = { US:'text-info', IN:'text-secondary', EU:'text-caution', CN:'text-bear' };
+    const days = ['Mon','Tue','Wed','Thu','Fri'];
+    const today = days[Math.min(new Date().getDay() - 1, 4)] || 'Mon';
+
+    document.getElementById('weekEvents').innerHTML = WEEK_EVENTS.map(e => `
+        <div class="flex items-start gap-2 p-2 rounded-lg ${e.day === today ? 'bg-surface-container border border-outline-variant/20' : ''}">
+            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day}</div>
+            <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-medium text-on-surface leading-snug">${e.label}</div>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region}</span>
+                    <span class="text-[8px] ${impactColor[e.impact]}">${e.impact.toUpperCase()} IMPACT</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderGiftNifty() {
+    const pred = computePrediction();
+    const niftySpot = 24350;
+    const giftPremium = pred * niftySpot / 100;
+    const giftVal = (niftySpot + giftPremium).toFixed(0);
+    const up = giftPremium >= 0;
+    document.getElementById('giftNiftyVal').textContent = `${Number(giftVal).toLocaleString('en-IN')} ${up ? '▲' : '▼'}`;
+    document.getElementById('giftNiftyVal').className = `font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}`;
+}
+
+// Clock
+function updateClock() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const ist = new Date(utc + 5.5 * 3600000);
+    const h = String(ist.getHours()).padStart(2, '0');
+    const m = String(ist.getMinutes()).padStart(2, '0');
+    const s = String(ist.getSeconds()).padStart(2, '0');
+    document.getElementById('istClock').textContent = `${h}:${m}:${s}`;
+    document.getElementById('overviewUpdated').textContent = `Updated ${h}:${m} IST`;
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    updateClock();
+    setInterval(updateClock, 1000);
+    setInterval(renderSessionBar, 60000);
+
+    renderSessionBar();
+    renderIndexGrid();
+    renderForecast();
+    renderCorrList();
+    renderNewsFeed();
+    renderHeatmap();
+    renderWeightPie();
+    renderRiskGauge();
+    renderWeekEvents();
+    renderGiftNifty();
+
+    // Charts need a tick to measure width
+    setTimeout(() => {
+        renderCorrChart();
+        renderOvernightChart();
+    }, 100);
+
+    Auth.updateAuthUI();
+    DataRefresher.start(() => {
+        renderSessionBar();
+        renderGiftNifty();
+    }, 30000);
+});
+</script>
+</body>
+</html>

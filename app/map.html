@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Geo Intelligence Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        #map { background: #080b10; }
+        .leaflet-container { background: #080b10 !important; }
+        .leaflet-control-zoom a { background: #1c2026 !important; color: #dfe2eb !important; border-color: #424754 !important; }
+        .leaflet-control-attribution { background: rgba(8,11,16,0.9) !important; color: #424754 !important; font-size: 8px !important; }
+        .leaflet-control-attribution a { color: #6b7280 !important; }
+        .leaflet-popup-content-wrapper { background: #1c2026 !important; color: #dfe2eb !important; border: 1px solid rgba(66,71,84,0.4) !important; border-radius: 10px !important; box-shadow: 0 12px 40px rgba(0,0,0,0.7) !important; }
+        .leaflet-popup-tip { background: #1c2026 !important; }
+        .leaflet-popup-close-button { color: #8c909f !important; font-size: 18px !important; }
+        .leaflet-popup-content { margin: 12px 14px !important; }
+        .pulse-marker { border-radius: 50%; }
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0px rgba(173,198,255,0.5); }
+            70%  { box-shadow: 0 0 0 14px rgba(173,198,255,0); }
+            100% { box-shadow: 0 0 0 0px rgba(173,198,255,0); }
+        }
+        @keyframes pulse-ring-red {
+            0%   { box-shadow: 0 0 0 0px rgba(255,107,107,0.5); }
+            70%  { box-shadow: 0 0 0 18px rgba(255,107,107,0); }
+            100% { box-shadow: 0 0 0 0px rgba(255,107,107,0); }
+        }
+        @keyframes pulse-ring-green {
+            0%   { box-shadow: 0 0 0 0px rgba(78,222,163,0.4); }
+            70%  { box-shadow: 0 0 0 10px rgba(78,222,163,0); }
+            100% { box-shadow: 0 0 0 0px rgba(78,222,163,0); }
+        }
+        .pulse-high   { animation: pulse-ring-red   2.2s ease-out infinite; }
+        .pulse-medium { animation: pulse-ring       2.8s ease-out infinite; }
+        .pulse-low    { animation: pulse-ring-green 3.5s ease-out infinite; }
+        .exchange-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+        .exchange-open   { background: rgba(78,222,163,0.15); color: #4edea3; border: 1px solid rgba(78,222,163,0.2); }
+        .exchange-closed { background: rgba(140,144,159,0.1); color: #8c909f; border: 1px solid rgba(140,144,159,0.15); }
+        .ev-chip { font-size: 9px; padding: 2px 7px; border-radius: 4px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .ev-chip.active { background: rgba(173,198,255,0.2); color: #adc6ff; border: 1px solid rgba(173,198,255,0.3); }
+        .ev-chip:not(.active) { background: rgba(66,71,84,0.15); color: #8c909f; border: 1px solid rgba(66,71,84,0.2); }
+        .ev-chip:hover { opacity: 0.8; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #424754; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Geo Intelligence</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link active" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-3 mb-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+                <h1 class="text-3xl font-black font-headline text-on-surface">GEO INTELLIGENCE</h1>
+                <p class="text-on-surface-variant text-xs mt-0.5">Global macro event flows and their impact on Indian equities</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Impact filters -->
+                <div class="flex gap-1.5">
+                    <span class="ev-chip active" id="filter-high"   onclick="toggleFilter('high')">🔴 High</span>
+                    <span class="ev-chip active" id="filter-medium" onclick="toggleFilter('medium')">🔵 Medium</span>
+                    <span class="ev-chip active" id="filter-low"    onclick="toggleFilter('low')">🟢 Low</span>
+                </div>
+                <div class="h-5 w-px bg-outline-variant/30 hidden md:block"></div>
+                <!-- Exchange status -->
+                <div id="exchangeStatus" class="flex gap-1.5"></div>
+                <div class="flex items-center px-3 py-1.5 bg-surface-container rounded-full border border-outline-variant/10">
+                    <span class="w-2 h-2 rounded-full bg-secondary mr-2 animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-on-surface-variant" id="eventCount">Loading…</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'map'}); });</script>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 px-2">
+        <!-- Map -->
+        <div class="lg:col-span-3">
+            <div id="map" class="h-[640px] rounded-xl border border-outline-variant/10 overflow-hidden"></div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="space-y-3 flex flex-col">
+            <!-- Region hotspots -->
+            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+                <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Event Hotspots</h3>
+                <div id="regionStats" class="space-y-2"></div>
+            </div>
+
+            <!-- Event feed -->
+            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 flex-1 min-h-0">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Live Event Feed</h3>
+                    <span id="feedCount" class="text-[9px] text-on-surface-variant/50 font-mono"></span>
+                </div>
+                <div id="map-events" class="space-y-2 overflow-y-auto" style="max-height:420px;">
+                    <div class="text-center py-4 text-on-surface-variant/40 text-xs">Loading…</div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+                <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Map Legend</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-4 h-4 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#ff6b6b,#ff6b6b44);border:1.5px solid #ff6b6b66;"></div>
+                        <span class="text-on-surface-variant">High impact — Major market mover</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#adc6ff,#adc6ff44);border:1.5px solid #adc6ff66;"></div>
+                        <span class="text-on-surface-variant">Medium — Sector / indirect</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#4edea3,#4edea344);border:1.5px solid #4edea366;"></div>
+                        <span class="text-on-surface-variant">Low — Informational</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 mt-2 pt-2 border-t border-outline-variant/10">
+                        <svg width="28" height="8"><line x1="0" y1="4" x2="28" y2="4" stroke="#adc6ff" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/></svg>
+                        <span class="text-on-surface-variant">Impact flow to India (NSE)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MAP INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-6 px-4 mt-4" id="mapStudio">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:14px;">
+        <div class="widget" style="min-height:200px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Event tier mix</div>
+              <div class="widget__meta">Impact distribution</div>
+            </div>
+          </div>
+          <div id="mapTierRings" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:200px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">High-impact share</div>
+              <div class="widget__meta">Of all geo events</div>
+            </div>
+          </div>
+          <div id="mapHighDonut" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:200px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Geo event velocity</div>
+              <div class="widget__meta">Last 30 days</div>
+            </div>
+          </div>
+          <div id="mapVelHeat" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:200px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Region concentration</div>
+              <div class="widget__meta">Top regions by event count</div>
+            </div>
+          </div>
+          <div id="mapRegHist" style="margin-top:10px;flex:1;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        const res = await Widgets.fetchJSON('/geoevents?limit=300');
+        const events = (res && res.data) || [];
+        if (!events.length) return;
+
+        // Tier rings (high/medium/low)
+        const high = events.filter(e => e.impact === 'high' || e.severity === 'high').length;
+        const med  = events.filter(e => e.impact === 'medium' || e.severity === 'medium').length;
+        const low  = events.length - high - med;
+        Widgets.rings(document.getElementById('mapTierRings'),
+          [{label: 'Low', value: low}, {label: 'Medium', value: med}, {label: 'High', value: high}]
+        );
+
+        // High-impact donut
+        const hpct = events.length ? Math.round(high / events.length * 100) : 0;
+        Widgets.donut(document.getElementById('mapHighDonut'), hpct,
+          {sublabel: high + ' high-impact', color: '#ff7a8a', color2: '#ff9466'});
+
+        // Velocity
+        Widgets.heatmap(document.getElementById('mapVelHeat'), events.map(e => ({ts: e.created_at || e.timestamp})));
+
+        // Region concentration
+        const reg = {};
+        for (const e of events) {
+          const r = e.country || e.region || 'GLOBAL';
+          reg[r] = (reg[r] || 0) + 1;
+        }
+        const top = Object.entries(reg).sort((a,b) => b[1]-a[1]).slice(0, 8);
+        Widgets.histogram(document.getElementById('mapRegHist'),
+          top.map(([l, v]) => ({label: l.slice(0,6), value: v, color: '#5b6cff'})),
+          {height: 90}
+        );
+      } catch(e) { console.warn('map studio:', e); }
+    })();
+    </script>
+    <!-- ============ END MAP INSIGHT STUDIO ============ -->
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+// ── Global state ─────────────────────────────────────────
+let map = null;
+let markers = [];
+let connections = [];
+let heatLayer = null;
+let allEvents = [];
+let activeFilters = new Set(['high', 'medium', 'low']);
+
+const INDIA = [20.5937, 78.9629];
+
+const IMPACT_STYLES = {
+    high:   { color: '#ff6b6b', size: 28, glow: 'rgba(255,107,107,0.45)', iconSize: 12 },
+    medium: { color: '#adc6ff', size: 20, glow: 'rgba(173,198,255,0.35)', iconSize: 10 },
+    low:    { color: '#4edea3', size: 14, glow: 'rgba(78,222,163,0.3)',  iconSize: 9  }
+};
+
+// ── Comprehensive global base events ─────────────────────
+// These always display even when the DB has few geo events.
+// Covers every major macro theme that impacts Indian equities.
+const BASE_EVENTS = [
+    // ── INDIA ────────────────────────────────────────────
+    { country:'India',         lat:28.6139, lng:77.2090, impact:'high',   type:'monetary',  desc:'RBI Monetary Policy Committee rate decision — repo rate & liquidity',   assets:'BANKBARODA,HDFC,ICICIBANK,KOTAKBANK' },
+    { country:'India',         lat:17.3850, lng:78.4867, impact:'high',   type:'policy',    desc:'SEBI tightens F&O margin norms for retail derivatives',                assets:'NSE listed equities' },
+    { country:'India',         lat:19.0760, lng:72.8777, impact:'medium', type:'earnings',  desc:'Nifty 50 Q1 earnings season — broad market results',                   assets:'RELIANCE,TCS,INFY,HDFCBANK' },
+    { country:'India',         lat:12.9716, lng:77.5946, impact:'medium', type:'trade',     desc:'India–EU Free Trade Agreement talks resume in Bengaluru',               assets:'IT,PHARMA' },
+    { country:'India',         lat:22.5726, lng:88.3639, impact:'low',    type:'policy',    desc:'West Bengal state budget — infrastructure & capex allocation',           assets:'INFRA' },
+
+    // ── UNITED STATES ────────────────────────────────────
+    { country:'United States', lat:38.8951, lng:-77.0369, impact:'high',  type:'monetary',  desc:'Federal Reserve FOMC meeting — US rate decision & dot plot',           assets:'USD/INR,USDINR' },
+    { country:'United States', lat:40.7128, lng:-74.0060, impact:'high',  type:'markets',   desc:'S&P 500 quarterly rebalancing — large-cap weight shifts',               assets:'FIIs,global funds' },
+    { country:'United States', lat:37.7749, lng:-122.4194,impact:'high',  type:'tech',      desc:'US Big Tech earnings (Apple, Microsoft, Nvidia) — AI capex cycle',      assets:'TCS,INFY,WIPRO,TECHM,HCLTECH' },
+    { country:'United States', lat:38.9072, lng:-77.0369, impact:'high',  type:'policy',    desc:'US Treasury sanctions on Iranian oil exports — crude supply disruption', assets:'RELIANCE,BPCL,HINDPETRO,IOC' },
+    { country:'United States', lat:38.8951, lng:-77.1200, impact:'medium',type:'trade',     desc:'US–India trade review: IT visa quotas and tariff concessions',           assets:'INFY,TCS,WIPRO' },
+    { country:'United States', lat:33.4484, lng:-112.074, impact:'medium',type:'policy',    desc:'US CHIPS Act subsidies — semiconductor capex boosts Asian suppliers',    assets:'DIXON,KAYNES,AMBER' },
+
+    // ── CHINA ────────────────────────────────────────────
+    { country:'China',         lat:39.9042, lng:116.4074, impact:'high',  type:'policy',    desc:'PBoC cuts 7-day repo rate — China stimulus & yuan depreciation',         assets:'USD/INR,metals,imports' },
+    { country:'China',         lat:31.2304, lng:121.4737, impact:'high',  type:'trade',     desc:'China imposes export controls on rare earth processing chemicals',        assets:'VEDL,HINDZINC,NALCO' },
+    { country:'China',         lat:22.5431, lng:114.0579, impact:'medium',type:'tech',      desc:'Shenzhen EV market: BYD global expansion impacts Indian EV plays',       assets:'TATAMOTORS,MAHINDRA,OLECTRA' },
+    { country:'China',         lat:30.5728, lng:104.0668, impact:'medium',type:'supply',    desc:'Sichuan floods disrupt lithium production — battery supply chain alert',  assets:'TATAMOTORS,battery makers' },
+    { country:'China',         lat:39.9042, lng:116.3000, impact:'low',   type:'trade',     desc:'China PMI manufacturing dips below 50 — global demand slowdown signal',  assets:'METALS,IT outsourcing' },
+
+    // ── MIDDLE EAST ──────────────────────────────────────
+    { country:'Saudi Arabia',  lat:24.7136, lng:46.6753, impact:'high',  type:'oil',       desc:'OPEC+ emergency meeting — Saudi Arabia extends 1 mb/d voluntary cuts',    assets:'RELIANCE,BPCL,HINDPETRO,IOC,ONGC' },
+    { country:'Iran',          lat:35.6892, lng:51.3890, impact:'high',  type:'oil',       desc:'US–Iran nuclear tensions escalate — Strait of Hormuz shipping risk',      assets:'RELIANCE,BPCL,IOC,shipping' },
+    { country:'UAE',           lat:25.2048, lng:55.2708, impact:'medium',type:'trade',     desc:'India–UAE CEPA: $100B trade target — pharma, IT, jewellery exports',     assets:'SUNPHARMA,DRREDDY,TITAN,TCS' },
+    { country:'Israel',        lat:32.0853, lng:34.7818, impact:'high',  type:'conflict',  desc:'Middle East conflict: oil shipping routes under pressure via Red Sea',    assets:'shipping,ONGC,oil importers' },
+    { country:'Iraq',          lat:33.3152, lng:44.3661, impact:'medium',type:'oil',       desc:'Iraq oil field production disruption — OPEC quota compliance issue',      assets:'BPCL,HINDPETRO,ONGC' },
+
+    // ── EUROPE ───────────────────────────────────────────
+    { country:'Germany',       lat:52.5200, lng:13.4050, impact:'medium',type:'monetary',  desc:'ECB rate cut cycle continues — euro weakness vs USD',                    assets:'USD/INR,FIIs,export cos' },
+    { country:'United Kingdom',lat:51.5074, lng:-0.1278,  impact:'medium',type:'monetary',  desc:'Bank of England rate decision — UK inflation & sterling move',           assets:'INFOSYS UK,TCS UK revenues' },
+    { country:'Russia',        lat:55.7558, lng:37.6173, impact:'high',  type:'conflict',  desc:'Russia–Ukraine war: wheat & fertilizer supply disruption continues',      assets:'CHAMBAL,COROMANDEL,UPL' },
+    { country:'Russia',        lat:59.9311, lng:30.3609, impact:'medium',type:'oil',       desc:'Russia crude discounts to India widen — BPCL/IOC margin improvement',    assets:'BPCL,IOC,HINDPETRO' },
+    { country:'Netherlands',   lat:52.3676, lng:4.9041,  impact:'medium',type:'tech',      desc:'ASML export controls: EUV lithography machines banned to China',          assets:'DIXON,KAYNES,semiconductor plays' },
+
+    // ── JAPAN / SOUTH KOREA ──────────────────────────────
+    { country:'Japan',         lat:35.6762, lng:139.6503, impact:'medium',type:'monetary',  desc:'Bank of Japan ends negative rate era — yen surge, carry trade unwind',   assets:'FIIs,IT sector' },
+    { country:'Japan',         lat:35.4478, lng:136.7213, impact:'low',   type:'trade',     desc:'Japan–India infrastructure fund: ¥5T committed for Indian rail/ports',   assets:'IRFC,L&T,SIEMENS' },
+    { country:'South Korea',   lat:37.5665, lng:126.9780, impact:'medium',type:'tech',      desc:'Samsung memory chip price surge — DRAM supply tightening',               assets:'DIXON,KAYNES,electronics' },
+
+    // ── ASIA-PACIFIC ─────────────────────────────────────
+    { country:'Singapore',     lat:1.3521,  lng:103.8198, impact:'medium',type:'markets',   desc:'SGX Nifty futures indicate gap-up open — overnight global sentiment',    assets:'Nifty futures,BANKNIFTY' },
+    { country:'Australia',     lat:-33.8688,lng:151.2093, impact:'medium',type:'commodity', desc:'Iron ore price surge on China stimulus — Austr. exports up',             assets:'TATATSTEEL,SAIL,HINDALCO' },
+    { country:'Indonesia',     lat:-6.2088, lng:106.8456, impact:'medium',type:'commodity', desc:'Indonesia palm oil export ban lifted — edible oil prices fall',           assets:'KRBL,RUCHI,ADANI WILMAR' },
+
+    // ── AFRICA ───────────────────────────────────────────
+    { country:'South Africa',  lat:-26.2041,lng:28.0473,  impact:'low',   type:'commodity', desc:'SA gold mine strike — global gold production output risk',               assets:'Gold ETFs,jewelry stocks' },
+    { country:'Nigeria',       lat:6.5244,  lng:3.3792,   impact:'low',   type:'oil',       desc:'Nigeria OPEC production quota miss — crude market imbalance',            assets:'ONGC,BPCL' },
+
+    // ── GLOBAL / MULTILATERAL ────────────────────────────
+    { country:'Switzerland',   lat:47.5596, lng:7.5886,   impact:'medium',type:'policy',    desc:'BIS quarterly review: global banking system leverage warnings',           assets:'BANKBARODA,SBI,financial system' },
+    { country:'United States', lat:41.8781, lng:-87.6298, impact:'medium',type:'commodity', desc:'CME crude oil futures: WTI options expiry — high volatility alert',      assets:'RELIANCE,ONGC,oil companies' },
+    { country:'India',         lat:26.9124, lng:75.7873,  impact:'low',   type:'policy',    desc:'PM Modi infrastructure push: Rajasthan highway & logistics corridor',    assets:'KNRCON,PNCINFRA,IRB' },
+    { country:'United States', lat:43.0481, lng:-76.1474, impact:'low',   type:'tech',      desc:'US AI regulation: Senate committee proposes LLM disclosure norms',        assets:'INFY,TCS AI revenue' },
+    { country:'France',        lat:48.8566, lng:2.3522,   impact:'low',   type:'policy',    desc:'G7 finance ministers summit — global minimum tax implementation',         assets:'Multinationals, IT exports' },
+    { country:'Brazil',        lat:-23.5505,lng:-46.6333, impact:'low',   type:'commodity', desc:'Brazil soybean harvest record — agri commodity glut, lower edible oils', assets:'MARICO,HUL,edible oil cos' },
+    { country:'Canada',        lat:43.7001, lng:-79.4163, impact:'low',   type:'commodity', desc:'Canadian wildfire disrupts Alberta oil sands — global crude supply risk',  assets:'ONGC,RELIANCE,BPCL' },
+    { country:'Mexico',        lat:19.4326, lng:-99.1332, impact:'low',   type:'trade',     desc:'US–Mexico nearshoring boom draws IT/BPO contracts from India',           assets:'INFY,TCS,WIPRO' },
+];
+
+// ── Event type categorisation ────────────────────────────
+const TYPE_META = {
+    monetary:  { icon: '📊', label: 'Central Bank' },
+    policy:    { icon: '🏛', label: 'Policy' },
+    earnings:  { icon: '📈', label: 'Earnings' },
+    trade:     { icon: '🚢', label: 'Trade' },
+    oil:       { icon: '🛢', label: 'Energy' },
+    tech:      { icon: '💻', label: 'Technology' },
+    conflict:  { icon: '⚔', label: 'Geopolitical' },
+    commodity: { icon: '⚙', label: 'Commodities' },
+    markets:   { icon: '📉', label: 'Markets' },
+    supply:    { icon: '🏭', label: 'Supply Chain' },
+    default:   { icon: '📡', label: 'Global Event' }
+};
+
+function getTypeMeta(type) {
+    return TYPE_META[type] || TYPE_META.default;
+}
+
+function getTypeFromDesc(desc) {
+    const d = (desc || '').toLowerCase();
+    if (d.match(/rate|rbi|fed|ecb|boj|monetary|repo|interest/)) return 'monetary';
+    if (d.match(/oil|crude|opec|brent|wti|petroleum/)) return 'oil';
+    if (d.match(/war|conflict|military|sanction|geopolit|attack/)) return 'conflict';
+    if (d.match(/earnings|results|profit|revenue|q[1-4]/)) return 'earnings';
+    if (d.match(/trade|export|import|tariff|cepa|fta/)) return 'trade';
+    if (d.match(/tech|chip|semicond|ai|software|it |infosys|wipro/)) return 'tech';
+    if (d.match(/gold|iron|copper|lithium|palm|soy|wheat|commodity/)) return 'commodity';
+    if (d.match(/nifty|s&p|dow|market|futures/)) return 'markets';
+    if (d.match(/supply|production|flood|disruption|factory/)) return 'supply';
+    return 'policy';
+}
+
+// ── Map init ──────────────────────────────────────────────
+function initMap() {
+    map = L.map('map', {
+        center: [25, 55],
+        zoom: 3,
+        minZoom: 2,
+        maxZoom: 10,
+        zoomControl: true
+    });
+
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OSM</a>',
+        maxZoom: 20
+    }).addTo(map);
+
+    // India highlight
+    L.circle(INDIA, {
+        radius: 900000,
+        color: '#adc6ff',
+        fillColor: '#adc6ff',
+        fillOpacity: 0.04,
+        weight: 0.8,
+        opacity: 0.25
+    }).addTo(map);
+
+    // Mumbai financial center
+    L.circle([18.9388, 72.8354], {
+        radius: 200000,
+        color: '#4edea3',
+        fillColor: '#4edea3',
+        fillOpacity: 0.06,
+        weight: 0.5,
+        opacity: 0.3
+    }).addTo(map);
+}
+
+// ── Filter toggle ─────────────────────────────────────────
+function toggleFilter(level) {
+    if (activeFilters.has(level)) {
+        if (activeFilters.size === 1) return; // keep at least one
+        activeFilters.delete(level);
+        document.getElementById(`filter-${level}`).classList.remove('active');
+    } else {
+        activeFilters.add(level);
+        document.getElementById(`filter-${level}`).classList.add('active');
+    }
+    renderMapEvents(allEvents);
+}
+
+// ── Merge DB + base events ────────────────────────────────
+function mergeEvents(dbEvents) {
+    const now = new Date().toISOString();
+    // Convert base events to the same schema
+    const base = BASE_EVENTS.map((e, i) => ({
+        id: `base_${i}`,
+        country: e.country,
+        event_description: e.desc,
+        impact: e.impact,
+        latitude: e.lat,
+        longitude: e.lng,
+        event_type: e.type,
+        related_assets: e.assets || '',
+        created_at: now,
+        source: 'Context'
+    }));
+
+    // DB events take priority (they're real scraped events)
+    // Deduplicate by approximate lat/lng to avoid overlap with base events
+    const result = [...(dbEvents || [])];
+    const usedCoords = new Set(result.map(e => `${Math.round(e.latitude)},${Math.round(e.longitude)}`));
+
+    for (const b of base) {
+        const key = `${Math.round(b.latitude)},${Math.round(b.longitude)}`;
+        if (!usedCoords.has(key)) {
+            result.push(b);
+            usedCoords.add(key);
+        }
+    }
+
+    return result;
+}
+
+// ── Render markers + heat ─────────────────────────────────
+function renderMapEvents(events) {
+    // Clear
+    markers.forEach(m => map.removeLayer(m));
+    connections.forEach(c => map.removeLayer(c));
+    if (heatLayer) map.removeLayer(heatLayer);
+    markers = [];
+    connections = [];
+
+    const visible = events.filter(e => activeFilters.has(e.impact || 'medium'));
+
+    const heatPoints = [];
+
+    visible.forEach(e => {
+        const lat = parseFloat(e.latitude || 0);
+        const lng = parseFloat(e.longitude || 0);
+        if (!lat && !lng) return;
+
+        const impact = e.impact || 'medium';
+        const style  = IMPACT_STYLES[impact];
+        const type   = e.event_type || getTypeFromDesc(e.event_description);
+        const meta   = getTypeMeta(type);
+        const desc   = e.event_description || '';
+        const assets = e.related_assets || '';
+        const src    = e.source || '';
+
+        heatPoints.push([lat, lng, impact === 'high' ? 1.0 : impact === 'medium' ? 0.55 : 0.25]);
+
+        const markerHtml = `
+            <div class="pulse-marker pulse-${impact}" style="
+                width:${style.size}px;height:${style.size}px;
+                background:radial-gradient(circle,${style.color}cc,${style.color}33);
+                border:1.5px solid ${style.color}99;
+                box-shadow:0 0 14px ${style.glow};
+                display:flex;align-items:center;justify-content:center;
+                border-radius:50%;font-size:${style.iconSize}px;line-height:1;
+            ">${meta.icon}</div>`;
+
+        const markerIcon = L.divIcon({
+            className: '',
+            html: markerHtml,
+            iconSize: [style.size, style.size],
+            iconAnchor: [style.size / 2, style.size / 2]
+        });
+
+        const impactColor = impact === 'high' ? '#ff6b6b' : impact === 'medium' ? '#adc6ff' : '#4edea3';
+        const popup = `
+            <div style="min-width:230px;max-width:280px;font-family:'DM Sans',sans-serif;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                    <span style="font-size:14px;">${meta.icon}</span>
+                    <span style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">${e.country || '?'} · ${meta.label}</span>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:#dfe2eb;line-height:1.35;margin-bottom:8px;">${desc}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                    <span style="font-size:8px;padding:2px 7px;border-radius:4px;background:${impactColor}22;color:${impactColor};font-weight:800;text-transform:uppercase;">${impact} impact</span>
+                    ${src ? `<span style="font-size:8px;color:#424754;font-weight:600;">${src}</span>` : ''}
+                </div>
+                ${assets ? `<div style="font-size:9px;color:#8c909f;border-top:1px solid #262a31;padding-top:6px;margin-top:4px;">
+                    <span style="color:#adc6ff;font-weight:700;">Affected stocks:</span><br/>
+                    <span style="color:#c2c6d6;">${assets}</span>
+                </div>` : ''}
+            </div>`;
+
+        const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(map).bindPopup(popup, { maxWidth: 300 });
+        markers.push(marker);
+
+        // Flow lines to India for non-India events
+        const isIndia = Math.abs(lat - INDIA[0]) < 8 && Math.abs(lng - INDIA[1]) < 15;
+        if (!isIndia && impact !== 'low') {
+            const opacity = impact === 'high' ? 0.4 : 0.18;
+            const weight  = impact === 'high' ? 1.5 : 0.9;
+            const line = L.polyline([[lat, lng], INDIA], {
+                color: style.color,
+                weight,
+                opacity,
+                dashArray: '6,5',
+            }).addTo(map);
+            connections.push(line);
+        }
+    });
+
+    // Heat layer
+    if (heatPoints.length > 0) {
+        heatLayer = L.heatLayer(heatPoints, {
+            radius: 45,
+            blur: 35,
+            maxZoom: 8,
+            max: 1.0,
+            gradient: {
+                0.0: 'transparent',
+                0.2: '#0d1020',
+                0.4: '#1a2050',
+                0.6: '#2d4080',
+                0.8: '#4d6ec9',
+                0.95: '#adc6ff',
+                1.0: '#ff6b6b'
+            }
+        }).addTo(map);
+    }
+
+    updateSidebar(visible, events.length);
+}
+
+// ── Sidebar ───────────────────────────────────────────────
+function updateSidebar(visible, total) {
+    document.getElementById('eventCount').textContent = `${total} events`;
+    document.getElementById('feedCount').textContent = `${visible.length} shown`;
+
+    // Region hotspot bar chart
+    const regions = {};
+    visible.forEach(e => { const c = e.country || 'Unknown'; regions[c] = (regions[c] || 0) + 1; });
+    const sorted = Object.entries(regions).sort((a, b) => b[1] - a[1]);
+    const maxCount = sorted[0]?.[1] || 1;
+
+    document.getElementById('regionStats').innerHTML = sorted.slice(0, 8).map(([country, count]) => {
+        const pct = Math.round(count / maxCount * 100);
+        const impactColor = '#adc6ff';
+        return `
+        <div class="flex items-center gap-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity group" onclick="flyToCountry('${country}')">
+            <span class="text-[10px] text-on-surface font-medium w-28 truncate group-hover:text-primary transition-colors">${country}</span>
+            <div class="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full bg-primary/50 rounded-full transition-all" style="width:${pct}%"></div>
+            </div>
+            <span class="text-[9px] font-mono text-on-surface-variant/60 w-4 text-right">${count}</span>
+        </div>`;
+    }).join('');
+
+    // Event feed — all events, no hard limit
+    const container = document.getElementById('map-events');
+    if (visible.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-on-surface-variant/40 text-xs">No events match current filters</div>';
+        return;
+    }
+
+    // Sort by impact priority then country
+    const sorted_ev = [...visible].sort((a, b) => {
+        const iPri = { high: 0, medium: 1, low: 2 };
+        return (iPri[a.impact] || 1) - (iPri[b.impact] || 1);
+    });
+
+    container.innerHTML = sorted_ev.map(e => {
+        const impact = e.impact || 'medium';
+        const style  = IMPACT_STYLES[impact];
+        const type   = e.event_type || getTypeFromDesc(e.event_description);
+        const meta   = getTypeMeta(type);
+        const desc   = e.event_description || '';
+        const lat    = parseFloat(e.latitude || 0);
+        const lng    = parseFloat(e.longitude || 0);
+        const isLive = !e.source || e.source !== 'Context';
+        return `
+        <div class="p-2.5 rounded-lg cursor-pointer transition-all hover:bg-surface-container border border-transparent hover:border-outline-variant/10"
+             style="background:#10141a55;"
+             onclick="flyToEvent(${lat},${lng})">
+            <div class="flex items-start gap-2">
+                <span class="text-sm mt-0.5 flex-shrink-0">${meta.icon}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                        <span class="text-[9px] font-bold" style="color:${style.color};">${e.country || '?'}</span>
+                        <span class="w-1 h-1 rounded-full flex-shrink-0" style="background:${style.color};opacity:0.6;"></span>
+                        <span class="text-[8px] text-on-surface-variant/50 uppercase">${meta.label}</span>
+                        ${isLive ? '<span class="text-[7px] px-1 py-0.5 rounded bg-secondary/10 text-secondary border border-secondary/20 font-bold">LIVE</span>' : ''}
+                    </div>
+                    <p class="text-[10px] text-on-surface-variant leading-tight">${desc}</p>
+                </div>
+                <span class="w-2 h-2 rounded-full flex-shrink-0 mt-1" style="background:${style.color};opacity:0.8;min-width:8px;"></span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Fly helpers ───────────────────────────────────────────
+function flyToEvent(lat, lng) {
+    if (map && lat && lng) {
+        map.flyTo([lat, lng], 5, { duration: 1.1 });
+        SoundFX.pop();
+    }
+}
+
+function flyToCountry(country) {
+    const ev = allEvents.find(e => e.country === country);
+    if (ev) flyToEvent(parseFloat(ev.latitude), parseFloat(ev.longitude));
+}
+
+// ── Exchange status ───────────────────────────────────────
+function updateExchangeStatus() {
+    const now = new Date();
+    const utcH = now.getUTCHours();
+    const utcM = now.getUTCMinutes();
+    const utcTime = utcH * 60 + utcM;
+    const day = now.getUTCDay();
+    const isWeekday = day >= 1 && day <= 5;
+
+    const status = [
+        { name: 'NSE',   open: isWeekday && utcTime >= 225 && utcTime <= 600 },
+        { name: 'NYSE',  open: isWeekday && utcTime >= 810 && utcTime <= 1200 },
+        { name: 'LSE',   open: isWeekday && utcTime >= 480 && utcTime <= 960 },
+        { name: 'SGX',   open: isWeekday && utcTime >= 60  && utcTime <= 540 },
+    ];
+
+    document.getElementById('exchangeStatus').innerHTML = status.map(ex =>
+        `<span class="exchange-badge ${ex.open ? 'exchange-open' : 'exchange-closed'}">
+            <span class="w-1.5 h-1.5 rounded-full ${ex.open ? 'bg-secondary animate-pulse' : 'bg-outline-variant'}"></span>
+            ${ex.name}
+        </span>`
+    ).join('');
+}
+
+// ── Load ──────────────────────────────────────────────────
+async function loadMapPage() {
+    const dbEvents = await LiveData.getGeoEvents();
+    allEvents = mergeEvents(dbEvents);
+    renderMapEvents(allEvents);
+    updateExchangeStatus();
+}
+
+// ── Boot ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    SoundFX.init();
+    initMap();
+    DataRefresher.start(loadMapPage, 90000);
+    Auth.updateAuthUI();
+    setInterval(updateExchangeStatus, 60000);
+});
+</script>
+</body>
+</html>

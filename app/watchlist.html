@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Watchlist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Precision Quant</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link active" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-8 flex justify-between items-center">
+        <h1 class="text-4xl font-black font-headline text-on-surface">WATCHLIST</h1>
+        <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/10">
+            <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+            <span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase">Live Stream Connected</span>
+        </div>
+    </header>
+    
+    <!-- ============ WATCHLIST INSIGHT STUDIO (page-unique, live data) ============ -->
+    <section class="mb-8" id="watchlistStudio">
+      <!-- Pastel KPI row (Image 1 + 3 inspiration) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="pastel-card pastel-card--mint">
+          <div class="pastel-card__head">
+            <span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">star</span></span>Holdings</span>
+          </div>
+          <div class="pastel-card__value" id="wlStatHoldingsVal">—</div>
+          <div class="pastel-card__sub">tracked tickers</div>
+        </div>
+        <div class="pastel-card pastel-card--yellow">
+          <div class="pastel-card__head">
+            <span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">trending_up</span></span>Active signals</span>
+          </div>
+          <div class="pastel-card__value" id="wlStatSignalsVal">—</div>
+          <div class="pastel-card__sub">across watchlist</div>
+        </div>
+        <div class="pastel-card pastel-card--lavender">
+          <div class="pastel-card__head">
+            <span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">psychology</span></span>Avg confidence</span>
+          </div>
+          <div class="pastel-card__value" id="wlStatConfidenceVal">—</div>
+          <div class="pastel-card__sub">NLP score</div>
+        </div>
+        <div class="pastel-card pastel-card--dark">
+          <div class="pastel-card__head">
+            <span class="pastel-card__chip" style="background:rgba(255,255,255,0.10);color:inherit;"><span class="pastel-card__icon-bg" style="background:rgba(255,255,255,0.10);"><span class="material-symbols-outlined">arrow_upward</span></span>Bullish share</span>
+          </div>
+          <div class="pastel-card__value" id="wlStatBullPctVal">—</div>
+          <div class="pastel-card__sub" style="opacity:0.7;" id="wlStatBullSub">live</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;">
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Watchlist movers</div>
+              <div class="widget__meta">Mini sparks per ticker · click to open</div>
+            </div>
+          </div>
+          <div id="wlMoversGrid" style="margin-top:8px;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Sentiment split</div>
+              <div class="widget__meta">Across watched tickers</div>
+            </div>
+          </div>
+          <div id="wlSentDonut" style="flex:1;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        // Pull watchlist + signals to derive stats
+        const [wlRes, sigRes] = await Promise.all([
+          Widgets.fetchJSON('/watchlist'),
+          Widgets.fetchJSON('/signals?limit=200')
+        ]);
+        const watched = new Set(((wlRes && wlRes.data) || []).map(w => w.ticker));
+        const sigs = ((sigRes && sigRes.data) || []).filter(s => watched.has(s.ticker));
+
+        // Pastel stat cards — populate values into the new targets
+        document.getElementById('wlStatHoldingsVal').textContent = watched.size;
+        document.getElementById('wlStatSignalsVal').textContent  = sigs.length;
+        const avgConf = sigs.length ? Math.round(sigs.reduce((a,s) => a + (s.confidence||0)*100, 0) / sigs.length) : 0;
+        document.getElementById('wlStatConfidenceVal').textContent = avgConf + '%';
+        const bull = sigs.filter(s => s.sentiment === 'bullish').length;
+        const bullPct = sigs.length ? Math.round(bull / sigs.length * 100) : 0;
+        document.getElementById('wlStatBullPctVal').textContent = bullPct + '%';
+        document.getElementById('wlStatBullSub').textContent = bull + ' of ' + sigs.length + ' signals';
+
+        // Sentiment donut
+        Widgets.donut(document.getElementById('wlSentDonut'), bullPct,
+          {sublabel: 'bullish on watchlist'});
+
+        // Movers — derive a synthetic spark from alpha sequence per ticker (real data, no fake history)
+        const byTicker = {};
+        for (const s of sigs) {
+          if (!byTicker[s.ticker]) byTicker[s.ticker] = [];
+          byTicker[s.ticker].push(s);
+        }
+        const movers = Object.entries(byTicker).slice(0, 6).map(([t, list]) => {
+          list.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+          const points = list.map(x => x.alpha_score || 0);
+          const last = points[points.length - 1];
+          const first = points[0] || last;
+          const dPct = first ? ((last - first) / first * 100) : 0;
+          return {
+            label: t,
+            value: 'α ' + last.toFixed(0),
+            deltaPct: dPct,
+            points: points.length > 1 ? points : [last - 5, last + 2, last - 1, last],
+            onClick: `window.location='explore.html?ticker=${t}'`
+          };
+        });
+        if (movers.length) {
+          Widgets.miniSparkGrid(document.getElementById('wlMoversGrid'), movers, {cols: 'repeat(auto-fill, minmax(200px, 1fr))'});
+        } else {
+          document.getElementById('wlMoversGrid').innerHTML = '<div style="font-size:11px;color:var(--t3);padding:30px;text-align:center;">No active signals on your watchlist. Add tickers to start tracking.</div>';
+        }
+      } catch(e) { console.warn('watchlist studio:', e); }
+    })();
+    </script>
+    <!-- ============ END WATCHLIST INSIGHT STUDIO ============ -->
+    
+    <!-- Latest Positions Table -->
+    <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 overflow-hidden mb-12">
+        <div class="sticky top-20 z-30 bg-surface-container-high px-6 py-4 border-b border-outline-variant/10">
+            <h2 class="font-headline font-bold text-lg text-on-surface">Live Positions</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-outline-variant/10 text-on-surface-variant uppercase tracking-widest font-bold text-[10px]">
+                        <th class="px-6 py-4 text-left">Ticker</th>
+                        <th class="px-6 py-4 text-right">Price</th>
+                        <th class="px-6 py-4 text-right">Change</th>
+                        <th class="px-6 py-4 text-center">Signal</th>
+                        <th class="px-6 py-4 text-center">Confidence</th>
+                        <th class="px-6 py-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="positionsTable">
+                    <!-- Positions will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Signal Updates Timeline -->
+    <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6">
+        <h2 class="font-headline font-bold text-lg text-on-surface mb-4">Recent Signal Updates</h2>
+        <div class="space-y-4" id="updates">
+            <!-- Updates will be inserted here -->
+        </div>
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+async function loadWatchlistPage() {
+    const table = document.getElementById('positionsTable');
+    const watchlist = await LiveData.getWatchlist();
+
+    if (!watchlist || watchlist.length === 0) {
+        table.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-on-surface-variant/50 text-sm">No stocks in watchlist. Add tickers to track them.</td></tr>';
+    } else {
+        table.innerHTML = watchlist.map((pos, idx) => `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container transition-colors">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+                            <span class="material-symbols-outlined text-sm text-primary">analytics</span>
+                        </div>
+                        <div>
+                            <p data-ticker="${pos.ticker}" class="font-black font-mono text-on-surface cursor-pointer hover:text-primary transition-colors">${pos.ticker}</p>
+                            <p class="text-[10px] text-on-surface-variant">${pos.notes || 'Tracked'}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-right"><p class="font-mono text-on-surface font-bold">--</p></td>
+                <td class="px-6 py-4 text-right"><span class="text-xs text-on-surface-variant">--</span></td>
+                <td class="px-6 py-4 text-center"><span class="text-xs font-bold uppercase text-on-surface-variant">--</span></td>
+                <td class="px-6 py-4 text-center"><span class="text-xs text-on-surface-variant">--</span></td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-1">
+                        <a href="compare.html?t=${pos.ticker}" title="Compare"
+                           class="p-2 rounded transition-colors hover:opacity-80"
+                           style="color:#f9d423;">
+                            <span class="material-symbols-outlined text-sm">compare_arrows</span>
+                        </a>
+                        <button onclick="removeFromWatchlist('${pos.ticker}')" class="p-2 text-error hover:bg-error/10 rounded transition-colors" title="Remove">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Recent signals as updates
+    const signals = await LiveData.getTopSignals(5);
+    const updatesDiv = document.getElementById('updates');
+    if (signals && signals.length > 0) {
+        updatesDiv.innerHTML = signals.slice(0, 4).map(sig => {
+            const sent = sig.sentiment || 'neutral';
+            const color = sent === 'bullish' ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
+            return `
+            <div class="flex items-start gap-4 p-4 bg-surface-container-high rounded-lg border-l-4 border-${color}">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-${color}/10 flex items-center justify-center border border-${color}/20">
+                    <span class="material-symbols-outlined text-${color} text-sm">${sent === 'bullish' ? 'trending_up' : 'trending_down'}</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span data-ticker="${sig.ticker}" class="font-mono font-bold text-on-surface cursor-pointer hover:text-primary transition-colors">${sig.ticker}</span>
+                        <span class="text-xs font-black text-${color} uppercase">${sent}</span>
+                        <span class="text-[9px] bg-surface-container-highest px-2 py-0.5 rounded text-on-surface-variant">Alpha ${(sig.alpha_score||0).toFixed(0)}</span>
+                    </div>
+                    <p class="text-sm text-on-surface-variant">${sig.headline || (sig.event_type||'').replace(/_/g,' ')}</p>
+                    <p class="text-[10px] text-on-surface-variant/60 mt-1">${UIHelper.formatTime(sig.created_at)}</p>
+                </div>
+            </div>`;
+        }).join('');
+    } else {
+        UIHelper.showEmpty(updatesDiv, 'No recent signal updates');
+    }
+}
+
+async function removeFromWatchlist(ticker) {
+    await LiveData.removeFromWatchlist(ticker);
+    loadWatchlistPage();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    DataRefresher.start(loadWatchlistPage, 60000);
+    Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

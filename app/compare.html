@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Compare Signals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Signal Compare</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link active" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-0" style="overflow:visible;">
+        <div class="flex items-center gap-3 mb-1">
+            <span class="material-symbols-outlined text-3xl" style="color:#f9d423;">compare_arrows</span>
+            <h1 class="text-4xl font-black font-headline" style="color:#f9d423;">COMPARE SIGNALS</h1>
+        </div>
+        <p class="text-on-surface-variant text-sm mb-4">Add up to 3 stocks — alpha, predictions, price history, and a verdict on who wins.</p>
+
+        <!-- Stock Adder with pill chips -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <!-- Active stock chips -->
+            <div id="stockChips" class="flex items-center gap-2 flex-wrap"></div>
+            <!-- Input -->
+            <div class="flex items-center gap-2 flex-1 min-w-[200px] relative">
+                <input id="addTicker" type="text" autocomplete="off" placeholder="Type ticker to add (e.g. TCS, RELIANCE)…"
+                    class="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none"
+                    style="border-color:rgba(249,212,35,0.25);focus:border-color:#f9d423;">
+                <div id="acDropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-surface-container-high border border-outline-variant/20 rounded-lg shadow-2xl max-h-48 overflow-y-auto z-50"></div>
+            </div>
+            <button onclick="addStock()" class="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider hover:opacity-80 transition-colors"
+                    style="background:#f9d423;color:#0a0e14;">Add</button>
+            <button onclick="clearAll()" class="px-4 py-2.5 bg-surface-container border border-outline-variant/20 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-bright transition-colors">Clear</button>
+        </div>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'compare'}); });</script>
+
+    <!-- Quick-pick popular pairs -->
+    <div class="px-6 py-3 mb-4 flex items-center gap-2 overflow-x-auto" style="border-bottom:1px solid #42475415;">
+        <span class="text-[9px] text-on-surface-variant/40 font-bold uppercase tracking-widest flex-shrink-0">Quick compare:</span>
+        <button onclick="quickCompare(['RELIANCE','TCS','INFY'])" class="quick-pair flex-shrink-0 px-3 py-1 rounded-full text-[9px] font-bold hover:opacity-80" style="background:rgba(249,212,35,0.08);border:1px solid rgba(249,212,35,0.2);color:#f9d423;">RELIANCE vs TCS vs INFY</button>
+        <button onclick="quickCompare(['HDFCBANK','ICICIBANK'])" class="quick-pair flex-shrink-0 px-3 py-1 rounded-full text-[9px] font-bold hover:opacity-80" style="background:rgba(249,212,35,0.08);border:1px solid rgba(249,212,35,0.2);color:#f9d423;">HDFCBANK vs ICICIBANK</button>
+        <button onclick="quickCompare(['TATAMOTORS','MARUTI','BAJAJ-AUTO'])" class="quick-pair flex-shrink-0 px-3 py-1 rounded-full text-[9px] font-bold hover:opacity-80" style="background:rgba(249,212,35,0.08);border:1px solid rgba(249,212,35,0.2);color:#f9d423;">Auto Sector</button>
+        <button onclick="quickCompare(['ONGC','BPCL'])" class="quick-pair flex-shrink-0 px-3 py-1 rounded-full text-[9px] font-bold hover:opacity-80" style="background:rgba(249,212,35,0.08);border:1px solid rgba(249,212,35,0.2);color:#f9d423;">ONGC vs BPCL</button>
+        <button onclick="quickCompare(['WIPRO','HCLTECH','TECHM'])" class="quick-pair flex-shrink-0 px-3 py-1 rounded-full text-[9px] font-bold hover:opacity-80" style="background:rgba(249,212,35,0.08);border:1px solid rgba(249,212,35,0.2);color:#f9d423;">IT Mid-Caps</button>
+    </div>
+
+    <!-- ============ COMPARE INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-6 mx-2" id="compareStudio">
+      <div id="compareGauges" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
+        <div class="widget" style="min-height:200px;display:flex;align-items:center;justify-content:center;">
+          <div style="font-size:11px;color:var(--t3);text-align:center;padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:32px;color:#f9d42355;">compare_arrows</span><br>
+            Add stocks above to see side-by-side alpha gauges
+          </div>
+        </div>
+      </div>
+    </section>
+    <script>
+    // Render gauges whenever compareList changes — hook into existing addStock flow
+    (function(){
+      let lastJSON = '';
+      function renderGauges() {
+        const list = window.compareList || [];
+        const sig = JSON.stringify(list.map(c => c.ticker || ''));
+        if (sig === lastJSON) return;
+        lastJSON = sig;
+        const root = document.getElementById('compareGauges');
+        if (!root) return;
+        if (!list.length) return;
+        root.innerHTML = '';
+        list.forEach((c, i) => {
+          const data = c.data || {};
+          const sig0 = data.signal || data;
+          const alpha = sig0.alpha_score || sig0.alpha || 0;
+          const sent = sig0.sentiment || 'neutral';
+          const conf = (sig0.confidence || 0) * 100;
+          const color = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#5b6cff';
+          const card = document.createElement('div');
+          card.className = 'widget';
+          card.style.cssText = 'min-height:240px;';
+          card.innerHTML = `
+            <div class="widget__head">
+              <div>
+                <div class="widget__title" style="color:${color};">${c.ticker}</div>
+                <div class="widget__meta">${(sig0.sector || '').replace(/_/g,' ').toLowerCase() || sent}</div>
+              </div>
+              <span class="widget__year-pill">α ${alpha.toFixed(0)}</span>
+            </div>
+            <div id="gauge_${i}_${c.ticker}" style="flex:1;"></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t2);margin-top:8px;">
+              <span>Confidence</span><span style="color:${color};font-weight:700;">${conf.toFixed(0)}%</span>
+            </div>
+          `;
+          root.appendChild(card);
+          Widgets.donut(card.querySelector(`#gauge_${i}_${c.ticker}`), Math.min(100, alpha),
+            {label: alpha.toFixed(0), sublabel: 'alpha', color, color2: color});
+        });
+      }
+      // Poll for compareList changes (lightweight)
+      setInterval(renderGauges, 800);
+    })();
+    </script>
+    <!-- ============ END COMPARE INSIGHT STUDIO ============ -->
+
+    <!-- Comparison Table -->
+    <div id="compareView" class="px-2">
+        <div class="text-center py-16 text-on-surface-variant/30">
+            <span class="material-symbols-outlined text-6xl mb-4 block" style="color:#f9d42322;">compare_arrows</span>
+            <p class="text-sm font-bold mb-1" style="color:#f9d42355;">Pick stocks to compare</p>
+            <p class="text-xs text-on-surface-variant/30">Type a ticker above or choose a quick-compare pair</p>
+        </div>
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+let compareList = [];  // [{ticker, data}]
+let stockList = [];
+
+function metricRow(label, values, format = 'text', highlight = 'max') {
+    let best = -Infinity, bestIdx = -1;
+    if (highlight === 'max') {
+        values.forEach((v, i) => { if (typeof v === 'number' && v > best) { best = v; bestIdx = i; } });
+    } else if (highlight === 'min') {
+        best = Infinity;
+        values.forEach((v, i) => { if (typeof v === 'number' && v < best) { best = v; bestIdx = i; } });
+    }
+
+    const cells = values.map((v, i) => {
+        let display = v;
+        if (format === 'price') display = v ? '₹' + Number(v).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+        else if (format === 'pct') display = v != null ? `${v >= 0 ? '+' : ''}${Number(v).toFixed(2)}%` : '—';
+        else if (format === 'alpha') display = v != null ? Number(v).toFixed(1) : '—';
+        else if (format === 'int') display = v != null ? Math.round(v) : '—';
+        else if (v == null) display = '—';
+
+        const isBest = i === bestIdx;
+        const color = isBest ? (format === 'pct' && v < 0 ? '#ffb4ab' : '#4edea3') : '#c2c6d6';
+        const weight = isBest ? '800' : '500';
+        return `<td style="padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:${color};font-weight:${weight};text-align:center;">${display}</td>`;
+    }).join('');
+
+    return `<tr style="border-bottom:1px solid #42475415;">
+        <td style="padding:10px 16px;font-size:11px;color:#8c909f;font-weight:600;">${label}</td>
+        ${cells}
+    </tr>`;
+}
+
+async function renderComparison() {
+    const view = document.getElementById('compareView');
+    if (compareList.length === 0) {
+        view.innerHTML = `<div class="text-center py-20 text-on-surface-variant/30">
+            <span class="material-symbols-outlined text-5xl mb-4 block">compare_arrows</span>
+            <p class="text-sm">Add stocks above to start comparing</p>
+        </div>`;
+        return;
+    }
+
+    const cols = compareList.length;
+    const maxAlpha = Math.max(...compareList.map(c => c.data.signal?.alpha_score || 0), 1);
+
+    // Visual hero cards
+    const heroCards = compareList.map(c => {
+        const d = c.data;
+        const p = d.price || {};
+        const sig = d.signal;
+        const alpha = sig?.alpha_score || 0;
+        const alphaPct = Math.round((alpha / 100) * 100);
+        const sent = sig?.sentiment || 'neutral';
+        const sentColor = sent === 'bullish' ? '#4edea3' : sent === 'bearish' ? '#ffb4ab' : '#adc6ff';
+        const price = p.price || sig?.entry_price || 0;
+        const changePct = p.change_pct || 0;
+        const changeColor = changePct >= 0 ? '#4edea3' : '#ffb4ab';
+        const pred20d = d.predictions?.['20D']?.predicted_return_pct || 0;
+        const pred20Color = pred20d >= 0 ? '#4edea3' : '#ffb4ab';
+
+        return `
+        <div style="flex:1;min-width:200px;background:#181c22;border-radius:14px;border:1px solid ${sentColor}22;padding:20px;position:relative;overflow:hidden;">
+            <!-- Glow background -->
+            <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,${sentColor}15,transparent);border-radius:50%;"></div>
+
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+                <div>
+                    <span data-ticker="${c.ticker}" style="font-size:22px;font-weight:900;font-family:'Space Grotesk',sans-serif;color:#dfe2eb;cursor:pointer;">${c.ticker}</span>
+                    <div style="font-size:9px;color:#8c909f;margin-top:1px;">${(d.company || '').split(/\s+/).slice(0, 3).join(' ')}</div>
+                </div>
+                <span style="padding:3px 10px;border-radius:6px;background:${sentColor}18;color:${sentColor};font-size:9px;font-weight:800;text-transform:uppercase;">${sent}</span>
+            </div>
+
+            <!-- Price -->
+            <div style="margin-bottom:14px;">
+                <div style="font-size:24px;font-weight:800;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">${price ? '₹' + price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—'}</div>
+                <span style="font-size:11px;font-weight:700;color:${changeColor};">${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%</span>
+            </div>
+
+            <!-- Alpha gauge -->
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:9px;color:#8c909f;font-weight:700;">ALPHA SCORE</span>
+                    <span style="font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;color:${UIHelper.alphaColor(alpha)};">${alpha.toFixed(1)}</span>
+                </div>
+                <div style="width:100%;height:6px;background:#0a0e14;border-radius:3px;overflow:hidden;">
+                    <div style="width:${alphaPct}%;height:100%;background:linear-gradient(90deg,${UIHelper.alphaColor(alpha)}88,${UIHelper.alphaColor(alpha)});border-radius:3px;transition:width 0.5s;"></div>
+                </div>
+            </div>
+
+            <!-- 20D Prediction -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#0a0e14;border-radius:8px;">
+                <span style="font-size:9px;color:#8c909f;">20D Expected</span>
+                <span style="font-size:13px;font-weight:800;font-family:'JetBrains Mono',monospace;color:${pred20Color};">${pred20d >= 0 ? '+' : ''}${pred20d.toFixed(2)}%</span>
+            </div>
+
+            <!-- Mini chart placeholder -->
+            <canvas id="miniChart_${c.ticker}" width="200" height="50" style="width:100%;height:50px;margin-top:10px;display:block;border-radius:6px;"></canvas>
+        </div>`;
+    }).join('');
+
+    const headers = compareList.map(c => {
+        const d = c.data;
+        return `<th style="padding:12px;text-align:center;min-width:140px;font-size:13px;font-weight:800;color:#dfe2eb;">${c.ticker}</th>`;
+    }).join('');
+
+    const getVal = (idx, path) => {
+        const d = compareList[idx]?.data;
+        return path.split('.').reduce((o, k) => o?.[k], d);
+    };
+
+    const vals = (path) => compareList.map((_, i) => getVal(i, path));
+
+    view.innerHTML = `
+    <!-- Hero Cards -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;">${heroCards}</div>
+
+    <!-- Detail Table -->
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;background:#181c22;border-radius:12px;overflow:hidden;">
+        <thead>
+            <tr style="border-bottom:1px solid #42475433;">
+                <th style="padding:16px;text-align:left;font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;width:140px;">Metric</th>
+                ${headers}
+            </tr>
+        </thead>
+        <tbody>
+            ${metricRow('Price', vals('price.price'), 'price', 'none')}
+            ${metricRow('Change %', vals('price.change_pct'), 'pct', 'max')}
+            ${metricRow('Alpha Score', vals('signal.alpha_score'), 'alpha', 'max')}
+            ${metricRow('Confidence', vals('signal.confidence').map(v => v ? v * 100 : null), 'int', 'max')}
+            ${metricRow('52W High', vals('price.fifty_two_week_high'), 'price', 'none')}
+            ${metricRow('52W Low', vals('price.fifty_two_week_low'), 'price', 'none')}
+            ${metricRow('Day High', vals('price.day_high'), 'price', 'none')}
+            ${metricRow('Day Low', vals('price.day_low'), 'price', 'none')}
+            <tr><td colspan="${cols+1}" style="padding:8px 16px;font-size:9px;color:#42475488;text-transform:uppercase;letter-spacing:0.15em;font-weight:800;">Predictions</td></tr>
+            ${metricRow('1D Return', compareList.map((_, i) => getVal(i, 'predictions.1D.predicted_return_pct')), 'pct', 'max')}
+            ${metricRow('3D Return', compareList.map((_, i) => getVal(i, 'predictions.3D.predicted_return_pct')), 'pct', 'max')}
+            ${metricRow('20D Return', compareList.map((_, i) => getVal(i, 'predictions.20D.predicted_return_pct')), 'pct', 'max')}
+            ${metricRow('1D Target', compareList.map((_, i) => getVal(i, 'predictions.1D.target_price')), 'price', 'max')}
+            ${metricRow('3D Target', compareList.map((_, i) => getVal(i, 'predictions.3D.target_price')), 'price', 'max')}
+            ${metricRow('20D Target', compareList.map((_, i) => getVal(i, 'predictions.20D.target_price')), 'price', 'max')}
+            <tr><td colspan="${cols+1}" style="padding:8px 16px;font-size:9px;color:#42475488;text-transform:uppercase;letter-spacing:0.15em;font-weight:800;">Signal Details</td></tr>
+            ${metricRow('Event Type', compareList.map(c => (c.data.signal?.event_type || '—').replace(/_/g, ' ')), 'text', 'none')}
+            ${metricRow('Regime', compareList.map(c => (c.data.signal?.regime || '—').replace(/_/g, ' ')), 'text', 'none')}
+            ${metricRow('Entry Price', vals('signal.entry_price'), 'price', 'none')}
+        </tbody>
+    </table>
+    </div>
+
+    <!-- Verdict -->
+    <div style="margin-top:20px;padding:16px;background:#10141a;border-radius:12px;border:1px solid #42475422;">
+        <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Verdict</div>
+        ${(() => {
+            const ranked = compareList.map(c => ({
+                ticker: c.ticker,
+                score: (c.data.signal?.alpha_score || 0) + ((c.data.predictions?.['20D']?.predicted_return_pct || 0) * 2),
+                alpha: c.data.signal?.alpha_score || 0,
+                ret20d: c.data.predictions?.['20D']?.predicted_return_pct || 0,
+                sent: c.data.signal?.sentiment || 'neutral',
+            })).sort((a, b) => b.score - a.score);
+            const winner = ranked[0];
+            const sentColor = winner.sent === 'bullish' ? '#4edea3' : winner.sent === 'bearish' ? '#ffb4ab' : '#adc6ff';
+            return `<div style="font-size:14px;color:#dfe2eb;font-weight:700;">
+                <span style="color:${sentColor};font-size:18px;font-family:'Space Grotesk',sans-serif;">${winner.ticker}</span>
+                has the strongest signal — alpha ${winner.alpha.toFixed(1)}, ${winner.sent}, 20D expected return ${winner.ret20d >= 0 ? '+' : ''}${winner.ret20d.toFixed(2)}%.
+            </div>`;
+        })()}
+    </div>`;
+
+    // Load mini charts for each stock
+    setTimeout(async () => {
+        for (const c of compareList) {
+            const canvas = document.getElementById(`miniChart_${c.ticker}`);
+            if (!canvas) continue;
+            const chartRes = await API.get(`/stock/${c.ticker}/chart?period=1mo`);
+            if (chartRes?.data?.length > 2) {
+                const ctx = canvas.getContext('2d');
+                const pts = chartRes.data.map(d => d.close);
+                const min = Math.min(...pts), max = Math.max(...pts), range = max - min || 1;
+                const W = canvas.width, H = canvas.height;
+                const isUp = pts[pts.length - 1] >= pts[0];
+                const color = isUp ? '#4edea3' : '#ffb4ab';
+
+                // Gradient fill
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, (isUp ? 'rgba(78,222,163,' : 'rgba(255,180,171,') + '0.2)');
+                grad.addColorStop(1, (isUp ? 'rgba(78,222,163,' : 'rgba(255,180,171,') + '0.0)');
+
+                const coords = pts.map((v, i) => ({ x: (i / (pts.length - 1)) * W, y: H - ((v - min) / range) * (H - 4) - 2 }));
+
+                ctx.beginPath();
+                ctx.moveTo(coords[0].x, coords[0].y);
+                for (let i = 1; i < coords.length; i++) {
+                    const cp = (coords[i].x - coords[i-1].x) * 0.3;
+                    ctx.bezierCurveTo(coords[i-1].x + cp, coords[i-1].y, coords[i].x - cp, coords[i].y, coords[i].x, coords[i].y);
+                }
+                ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+                ctx.fillStyle = grad; ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(coords[0].x, coords[0].y);
+                for (let i = 1; i < coords.length; i++) {
+                    const cp = (coords[i].x - coords[i-1].x) * 0.3;
+                    ctx.bezierCurveTo(coords[i-1].x + cp, coords[i-1].y, coords[i].x - cp, coords[i].y, coords[i].x, coords[i].y);
+                }
+                ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+            }
+        }
+    }, 100);
+}
+
+// ---- CHIPS ----
+function renderChips() {
+    const chips = document.getElementById('stockChips');
+    if (!chips) return;
+    const colors = ['#4edea3', '#adc6ff', '#ffb2b7'];
+    chips.innerHTML = compareList.map((c, i) => `
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold"
+             style="background:${colors[i] || '#adc6ff'}18;border:1px solid ${colors[i] || '#adc6ff'}40;color:${colors[i] || '#adc6ff'};">
+            <span>${c.ticker}</span>
+            <button onclick="removeStock('${c.ticker}')" class="hover:opacity-60 transition-opacity ml-1" style="font-size:14px;line-height:1;">&times;</button>
+        </div>
+    `).join('');
+}
+
+function removeStock(ticker) {
+    compareList = compareList.filter(c => c.ticker !== ticker);
+    SoundFX.pop();
+    renderChips();
+    renderComparison();
+}
+
+async function addStock() {
+    const input = document.getElementById('addTicker');
+    const ticker = (input.value || '').trim().toUpperCase();
+    if (!ticker) return;
+    if (compareList.length >= 3) { SoundFX.pop(); return; }
+    if (compareList.find(c => c.ticker === ticker)) return;
+
+    input.value = '';
+    document.getElementById('acDropdown').classList.add('hidden');
+
+    const res = await API.get(`/stock/${ticker}`);
+    if (!res?.success) { alert(`Could not load ${ticker}`); return; }
+
+    compareList.push({ ticker, data: res.data });
+    SoundFX.success();
+    renderChips();
+    renderComparison();
+}
+
+async function quickCompare(tickers) {
+    compareList = [];
+    for (const t of tickers.slice(0, 3)) {
+        const r = await API.get(`/stock/${t}`);
+        if (r?.success) compareList.push({ ticker: t, data: r.data });
+    }
+    SoundFX.success();
+    renderChips();
+    renderComparison();
+}
+
+function clearAll() {
+    compareList = [];
+    SoundFX.pop();
+    renderChips();
+    renderComparison();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    SoundFX.init();
+    Auth.updateAuthUI();
+
+    // Load stock list for autocomplete
+    const res = await API.get('/stocks/list');
+    if (res?.data) stockList = res.data;
+
+    const input = document.getElementById('addTicker');
+    const dd = document.getElementById('acDropdown');
+
+    input.addEventListener('input', () => {
+        const q = input.value.trim();
+        if (q.length < 1 || !stockList.length) { dd.classList.add('hidden'); return; }
+        const qu = q.toUpperCase(), ql = q.toLowerCase();
+        const matches = stockList.filter(s => s.ticker.includes(qu) || s.company.toLowerCase().includes(ql)).slice(0, 6);
+        if (!matches.length) { dd.classList.add('hidden'); return; }
+        dd.innerHTML = matches.map(s => `
+            <div class="px-4 py-2 hover:bg-surface-container cursor-pointer flex justify-between border-b border-outline-variant/5"
+                 onmousedown="document.getElementById('addTicker').value='${s.ticker}'; document.getElementById('acDropdown').classList.add('hidden'); addStock();">
+                <div><span class="font-mono font-bold text-sm text-primary">${s.ticker}</span>
+                <span class="text-xs text-on-surface-variant ml-2">${s.company}</span></div>
+                <span class="text-[9px] text-on-surface-variant/50">${s.sector}</span>
+            </div>
+        `).join('');
+        dd.classList.remove('hidden');
+    });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') addStock(); });
+    input.addEventListener('blur', () => setTimeout(() => dd.classList.add('hidden'), 200));
+
+    // Check URL params for pre-loaded tickers
+    const params = new URLSearchParams(window.location.search);
+    const tickers = (params.get('t') || '').split(',').filter(Boolean);
+    for (const t of tickers.slice(0, 3)) {
+        const r = await API.get(`/stock/${t.trim().toUpperCase()}`);
+        if (r?.success) compareList.push({ ticker: t.trim().toUpperCase(), data: r.data });
+    }
+    renderChips();
+    if (compareList.length > 0) renderComparison();
+});
+</script>
+</body>
+</html>

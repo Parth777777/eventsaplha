@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Alerts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        /* Direction glow borders */
+        .alert-row-bull {
+            border-left: 3px solid #4edea3;
+            box-shadow: inset 3px 0 12px -4px rgba(78, 222, 163, 0.18);
+        }
+        .alert-row-bear {
+            border-left: 3px solid #ffb4ab;
+            box-shadow: inset 3px 0 12px -4px rgba(255, 180, 171, 0.18);
+        }
+        .alert-row-neutral {
+            border-left: 3px solid #424754;
+        }
+
+        /* Tier accent strips */
+        .tier-critical { border-top: 1px solid rgba(255, 82, 82, 0.35); background: linear-gradient(90deg, rgba(255,82,82,0.05) 0%, transparent 60%); }
+        .tier-high     { border-top: 1px solid rgba(173, 198, 255, 0.25); background: linear-gradient(90deg, rgba(173,198,255,0.04) 0%, transparent 60%); }
+        .tier-watch    { border-top: 1px solid rgba(66, 71, 84, 0.4); }
+
+        /* Expandable detail panel */
+        .alert-detail { max-height: 0; overflow: hidden; transition: max-height 0.28s ease, opacity 0.22s ease; opacity: 0; }
+        .alert-detail.open { max-height: 300px; opacity: 1; }
+
+        /* Filter tab active state */
+        .filter-tab.active { background: #adc6ff; color: #002e6a; box-shadow: 0 1px 6px rgba(173,198,255,0.25); }
+        .filter-tab:not(.active) { color: #c2c6d6; }
+
+        /* Signal row hover */
+        .signal-row { cursor: pointer; transition: background 0.15s ease, transform 0.1s ease; }
+        .signal-row:hover { background: #262a31; transform: translateX(2px); }
+
+        /* Badge pulse for critical */
+        .badge-critical { background: rgba(255,82,82,0.15); color: #ff5252; border: 1px solid rgba(255,82,82,0.35); }
+        .badge-high     { background: rgba(173,198,255,0.12); color: #adc6ff; border: 1px solid rgba(173,198,255,0.3); }
+        .badge-watch    { background: rgba(66,71,84,0.35); color: #8c909f; border: 1px solid rgba(66,71,84,0.5); }
+
+        .dir-badge-bull { background: rgba(78,222,163,0.12); color: #4edea3; border: 1px solid rgba(78,222,163,0.3); }
+        .dir-badge-bear { background: rgba(255,180,171,0.12); color: #ffb4ab; border: 1px solid rgba(255,180,171,0.3); }
+        .dir-badge-neutral { background: rgba(173,198,255,0.08); color: #adc6ff; border: 1px solid rgba(173,198,255,0.2); }
+
+        /* Critical alpha score glow */
+        .alpha-critical { color: #ff5252; text-shadow: 0 0 8px rgba(255,82,82,0.5); }
+        .alpha-high     { color: #adc6ff; }
+        .alpha-watch    { color: #8c909f; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Precision Quant</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link active" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
+        <div class="engine-status p-4 rounded-lg">
+            <p class="text-[10px] text-on-surface-variant mb-2 uppercase tracking-widest font-bold">Engine Status</p>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="text-xs font-bold text-on-surface uppercase">Active</span>
+                </div>
+                <span class="text-[10px] text-on-surface-variant/60 font-mono">v4.2.9</span>
+            </div>
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center text-[9px] text-on-surface-variant">
+                    <span>Latency</span>
+                    <span class="text-secondary font-mono">14ms</span>
+                </div>
+                <div class="w-full bg-surface-container-lowest h-1 rounded-full overflow-hidden">
+                    <div class="bg-secondary/40 h-full w-[88%]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-8 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <h1 class="text-4xl font-black font-headline text-on-surface">ALERTS CENTER</h1>
+            <!-- Critical count badge — updated dynamically -->
+            <span id="criticalCountBadge" class="hidden items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black badge-critical uppercase tracking-wider">
+                <span class="material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1,'wght' 700;">warning</span>
+                <span id="criticalCountLabel">0</span> CRITICAL
+            </span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center px-3 py-1 bg-surface-container rounded-full border border-outline-variant/10">
+                <span class="w-2 h-2 rounded-full bg-secondary mr-2"></span>
+                <span class="text-[10px] font-bold text-on-surface-variant">SYNCED</span>
+            </div>
+            <button id="settingsToggleBtn" class="p-2 text-on-surface-variant hover:bg-surface-container rounded transition-colors">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+        </div>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'alerts'}); });</script>
+
+    <!-- ============ ALERTS INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-8" id="alertsStudio">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:14px;">
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Alert intensity · 24h × 7d</div>
+              <div class="widget__meta">When do alerts fire? hover any cell</div>
+            </div>
+            <span class="widget__year-pill" id="alertsHeatTotal">— alerts</span>
+          </div>
+          <div id="alertsHourMatrix" style="margin-top:10px;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Direction</div>
+              <div class="widget__meta">Bull share</div>
+            </div>
+          </div>
+          <div id="alertsDonut" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Tier mix</div>
+              <div class="widget__meta">Critical · High · Watch</div>
+            </div>
+          </div>
+          <div id="alertsTierRings" style="flex:1;display:flex;align-items:center;justify-content:center;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Top alerted</div>
+              <div class="widget__meta">By signal count</div>
+            </div>
+          </div>
+          <div id="alertsTopFeed" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-top:6px;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        const res = await Widgets.fetchJSON('/signals?limit=200');
+        const sigs = (res && res.data) || [];
+        document.getElementById('alertsHeatTotal').textContent = sigs.length + ' alerts';
+
+        // Build 7d × 24h matrix
+        const cells = [];
+        const today = new Date(); today.setHours(0,0,0,0);
+        for (const s of sigs) {
+          const ts = s.created_at; if (!ts) continue;
+          const d = new Date(ts); if (isNaN(d)) continue;
+          const day0 = new Date(d); day0.setHours(0,0,0,0);
+          const day = Math.floor((today - day0) / 86400000);
+          if (day >= 0 && day < 7) cells.push({day, hour: d.getHours(), value: 1});
+        }
+        // Aggregate cells (count per hour-day pair)
+        const agg = {};
+        cells.forEach(c => { const k = c.day + '_' + c.hour; agg[k] = (agg[k]||0) + 1; });
+        const matrixCells = Object.entries(agg).map(([k, v]) => {
+          const [day, hour] = k.split('_').map(Number);
+          return {day, hour, value: v};
+        });
+        Widgets.hourMatrix(document.getElementById('alertsHourMatrix'), matrixCells, {rows: 7});
+
+        // Direction donut
+        const bull = sigs.filter(s => s.sentiment === 'bullish').length;
+        const bear = sigs.filter(s => s.sentiment === 'bearish').length;
+        const neut = sigs.length - bull - bear;
+        const pct = sigs.length ? Math.round(bull / sigs.length * 100) : 0;
+        Widgets.donut(document.getElementById('alertsDonut'), pct, {sublabel: 'bullish · ' + bull + 'B / ' + bear + 'S'});
+
+        // Tier rings
+        const critical = sigs.filter(s => (s.alpha_score||0) >= 80).length;
+        const high     = sigs.filter(s => (s.alpha_score||0) >= 60 && (s.alpha_score||0) < 80).length;
+        const watch    = sigs.filter(s => (s.alpha_score||0) < 60).length;
+        Widgets.rings(document.getElementById('alertsTierRings'), [
+          {label: 'Watch',    value: watch},
+          {label: 'High',     value: high},
+          {label: 'Critical', value: critical},
+        ]);
+
+        // Top alerted tickers
+        const counts = {};
+        for (const s of sigs) counts[s.ticker] = (counts[s.ticker]||0) + 1;
+        const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 6);
+        const feedEl = document.getElementById('alertsTopFeed');
+        feedEl.innerHTML = top.map(([t, c]) => `
+          <div class="activity-row" style="padding:8px 10px;">
+            <div class="activity-row__avatar" style="width:26px;height:26px;font-size:9px;">${t.slice(0,2)}</div>
+            <div class="activity-row__main">
+              <div class="activity-row__title" style="font-size:11px;">${t}</div>
+              <div class="activity-row__sub" style="font-size:9px;">${c} alerts</div>
+            </div>
+            <div class="activity-row__alpha high" style="font-size:11px;">${c}</div>
+          </div>`).join('');
+      } catch(e) { console.warn('alerts studio:', e); }
+    })();
+    </script>
+    <!-- ============ END ALERTS INSIGHT STUDIO ============ -->
+
+    <!-- Summary -->
+    <div class="mb-8 bg-gradient-to-r from-surface-container to-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <h3 class="text-[10px] font-black tracking-[0.3em] uppercase text-primary mb-2">Alpha Summary • Today</h3>
+        <p class="text-on-surface text-lg font-headline font-medium leading-tight mb-4">
+            Aggregated market sentiment shows a <span class="text-secondary font-bold">+12.4% bullish delta</span>.
+            <span class="text-on-surface-variant/80">Proprietary engines flagged 14 high-confidence opportunities.</span>
+        </p>
+        <div class="flex gap-4 items-center">
+            <div class="h-12 w-[1px] bg-outline-variant/20 hidden md:block"></div>
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Sentiment Delta</span>
+                <div class="flex items-center gap-2 text-secondary">
+                    <span class="material-symbols-outlined text-lg">trending_up</span>
+                    <span class="text-2xl font-headline font-bold">+12.4%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-outline-variant/10">
+        <div id="filterTabGroup" class="flex gap-1 bg-surface-container-lowest p-1 rounded-xl border border-outline-variant/5">
+            <button class="filter-tab active px-5 py-2 text-xs font-bold rounded transition-all" data-filter="all">All Sources</button>
+            <button class="filter-tab px-5 py-2 text-xs font-bold rounded transition-all hover:bg-surface-container-highest" data-filter="critical">Critical Only</button>
+            <button class="filter-tab px-5 py-2 text-xs font-bold rounded transition-all hover:bg-surface-container-highest" data-filter="high">High Priority</button>
+            <button class="filter-tab px-5 py-2 text-xs font-bold rounded transition-all hover:bg-surface-container-highest" data-filter="watch">Watch</button>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Sort by Intensity:</span>
+            <select id="intensitySort" class="bg-surface-container border-outline-variant/10 rounded text-xs font-bold py-1.5 pl-3 pr-8 focus:ring-0 text-on-surface">
+                <option value="alpha_desc">Highest Alpha First</option>
+                <option value="alpha_asc">Lowest Alpha First</option>
+                <option value="newest">Newest First</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Notification Settings Panel -->
+    <div id="notifSettings" class="mb-8 bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 hidden">
+        <h3 class="font-headline font-bold text-lg text-on-surface mb-4">Notification Settings</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Discord Webhook URL</label>
+                <input id="discordUrl" type="text" placeholder="https://discord.com/api/webhooks/..." class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:border-primary focus:ring-0">
+                <p class="text-[9px] text-on-surface-variant/50 mt-1">Server Settings > Integrations > Webhooks > Copy URL</p>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telegram Bot Token</label>
+                <input id="tgToken" type="text" placeholder="123456:ABC-DEF..." class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:border-primary focus:ring-0">
+                <p class="text-[9px] text-on-surface-variant/50 mt-1">Get from @BotFather on Telegram</p>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Telegram Chat ID</label>
+                <input id="tgChatId" type="text" placeholder="123456789" class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:border-primary focus:ring-0">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Min Alpha Score</label>
+                <input id="minAlpha" type="number" value="70" min="0" max="100" class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface focus:border-primary focus:ring-0">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Sentiment Filter</label>
+                <select id="sentFilter" class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface focus:border-primary focus:ring-0">
+                    <option value="all">All Sentiments</option>
+                    <option value="bullish">Bullish Only</option>
+                    <option value="bearish">Bearish Only</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Cooldown (min)</label>
+                <input id="cooldown" type="number" value="30" min="1" max="1440" class="w-full bg-surface-container border border-outline-variant/20 rounded px-3 py-2 text-sm text-on-surface focus:border-primary focus:ring-0">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveNotifConfig()" class="bg-primary text-[#002e6a] px-6 py-2 rounded text-xs font-bold uppercase tracking-wider hover:bg-primary/80 transition-colors">Save Config</button>
+            <button onclick="testNotif()" class="bg-surface-container-highest text-on-surface px-6 py-2 rounded text-xs font-bold uppercase tracking-wider hover:bg-surface-bright transition-colors">Test Notification</button>
+            <span id="notifStatus" class="text-xs text-on-surface-variant self-center ml-2"></span>
+        </div>
+    </div>
+
+    <!-- Alerts Feed -->
+    <div class="space-y-8" id="alertsFeed">
+        <!-- Alerts will be inserted here -->
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+// ─── Settings toggle ───────────────────────────────────────────────────────
+document.getElementById('settingsToggleBtn').addEventListener('click', () => {
+    document.getElementById('notifSettings').classList.toggle('hidden');
+});
+
+// ─── Notification config handlers (unchanged) ──────────────────────────────
+async function saveNotifConfig() {
+    const config = {
+        discord_webhook_url: document.getElementById('discordUrl').value,
+        telegram_bot_token:  document.getElementById('tgToken').value,
+        telegram_chat_id:    document.getElementById('tgChatId').value,
+        min_alpha_score:     parseFloat(document.getElementById('minAlpha').value) || 70,
+        sentiment_filter:    document.getElementById('sentFilter').value,
+        cooldown_minutes:    parseInt(document.getElementById('cooldown').value) || 30,
+        enabled: true
+    };
+    const res = await LiveData.saveNotificationConfig(config);
+    document.getElementById('notifStatus').textContent = res?.success ? 'Saved!' : 'Failed to save';
+    setTimeout(() => document.getElementById('notifStatus').textContent = '', 3000);
+}
+
+async function testNotif() {
+    document.getElementById('notifStatus').textContent = 'Sending test...';
+    const res = await LiveData.testNotification();
+    if (res?.success) {
+        document.getElementById('notifStatus').textContent = 'Test sent! Check Discord/Telegram.';
+    } else {
+        document.getElementById('notifStatus').textContent = res?.error || 'Test failed';
+    }
+    setTimeout(() => document.getElementById('notifStatus').textContent = '', 5000);
+}
+
+// ─── Filter state ───────────────────────────────────────────────────────────
+let _activeFilter = 'all';
+
+document.getElementById('filterTabGroup').addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-tab');
+    if (!btn) return;
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _activeFilter = btn.dataset.filter;
+    applySignalFilter();
+});
+
+document.getElementById('intensitySort').addEventListener('change', () => {
+    applySignalFilter();
+});
+
+function getTier(alphaScore) {
+    if (alphaScore >= 80) return 'critical';
+    if (alphaScore >= 65) return 'high';
+    return 'watch';
+}
+
+function applySignalFilter() {
+    const rows = document.querySelectorAll('.signal-row[data-tier]');
+    const sort  = document.getElementById('intensitySort').value;
+
+    // Show/hide by filter
+    rows.forEach(row => {
+        const tier = row.dataset.tier;
+        let visible = false;
+        if (_activeFilter === 'all')      visible = true;
+        else if (_activeFilter === 'critical') visible = tier === 'critical';
+        else if (_activeFilter === 'high')     visible = tier === 'high';
+        else if (_activeFilter === 'watch')    visible = tier === 'watch';
+        row.style.display = visible ? '' : 'none';
+    });
+
+    // Sort visible rows in their containers
+    document.querySelectorAll('.signal-list').forEach(list => {
+        const visibleRows = [...list.querySelectorAll('.signal-row[data-tier]')]
+            .filter(r => r.style.display !== 'none');
+
+        visibleRows.sort((a, b) => {
+            const aAlpha = parseFloat(a.dataset.alpha || 0);
+            const bAlpha = parseFloat(b.dataset.alpha || 0);
+            const aTime  = parseInt(a.dataset.ts || 0);
+            const bTime  = parseInt(b.dataset.ts || 0);
+            if (sort === 'alpha_desc') return bAlpha - aAlpha;
+            if (sort === 'alpha_asc')  return aAlpha - bAlpha;
+            return bTime - aTime;
+        });
+
+        visibleRows.forEach(r => list.appendChild(r));
+    });
+
+    // Hide tier sections that have no visible rows
+    document.querySelectorAll('.tier-section').forEach(section => {
+        const anyVisible = [...section.querySelectorAll('.signal-row[data-tier]')]
+            .some(r => r.style.display !== 'none');
+        section.style.display = anyVisible ? '' : 'none';
+    });
+}
+
+// ─── Row toggle (expand/collapse detail) ───────────────────────────────────
+function toggleAlertDetail(rowEl) {
+    const detail = rowEl.nextElementSibling;
+    if (!detail || !detail.classList.contains('alert-detail')) return;
+    const isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    const chevron = rowEl.querySelector('.chevron-icon');
+    if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+// ─── Cause → Impact headline builder ────────────────────────────────────────
+function buildCauseImpact(sig) {
+    const eventLabel = (sig.event_type || 'Signal').replace(/_/g, ' ');
+    const sentLabel  = sig.sentiment === 'bullish' ? 'bullish move expected'
+                     : sig.sentiment === 'bearish' ? 'bearish pressure expected'
+                     : 'neutral drift expected';
+
+    if (sig.headline && sig.headline.length > 10) {
+        // Split at a conjunction if possible
+        const parts = sig.headline.split(/\s*[–—;:|→]\s*/);
+        if (parts.length >= 2) {
+            return { cause: parts[0].trim(), impact: parts.slice(1).join(' → ').trim() };
+        }
+        return { cause: sig.headline.trim(), impact: sentLabel };
+    }
+    return {
+        cause: `${eventLabel} detected on ${sig.ticker || '—'}`,
+        impact: sentLabel
+    };
+}
+
+// ─── Render a single signal row + its collapsed detail panel ────────────────
+function renderSignalRow(sig, idx) {
+    const alpha     = sig.alpha_score || 0;
+    const tier      = getTier(alpha);
+    const sent      = (sig.sentiment || 'neutral').toLowerCase();
+    const isBull    = sent === 'bullish';
+    const isBear    = sent === 'bearish';
+    const dirClass  = isBull ? 'alert-row-bull' : isBear ? 'alert-row-bear' : 'alert-row-neutral';
+    const tierClass = tier === 'critical' ? 'tier-critical' : tier === 'high' ? 'tier-high' : 'tier-watch';
+    const alphaClass = tier === 'critical' ? 'alpha-critical' : tier === 'high' ? 'alpha-high' : 'alpha-watch';
+    const dirBadgeClass = isBull ? 'dir-badge-bull' : isBear ? 'dir-badge-bear' : 'dir-badge-neutral';
+    const dirLabel  = isBull ? 'BULL' : isBear ? 'BEAR' : 'NEUT';
+    const dirIcon   = isBull ? 'trending_up' : isBear ? 'trending_down' : 'trending_flat';
+
+    const expected  = sig.expected_return || sig.sentiment_delta || '—';
+    const horizon   = sig.time_horizon || sig.horizon || '—';
+    const eventLabel = (sig.event_type || 'Signal').replace(/_/g, ' ');
+    const ageStr    = UIHelper.formatTime(sig.created_at);
+    const tsMs      = sig.created_at ? new Date(sig.created_at).getTime() : 0;
+    const confPct   = sig.confidence != null
+        ? ((sig.confidence <= 1 ? sig.confidence * 100 : sig.confidence).toFixed(0) + '%')
+        : '—';
+    const regime    = (sig.regime || '').replace(/_/g, ' ') || '—';
+    const entryStr  = sig.entry_price != null ? UIHelper.formatPrice(sig.entry_price) : '—';
+    const { cause, impact } = buildCauseImpact(sig);
+
+    return `
+    <div class="signal-row ${dirClass} ${tierClass} bg-surface-container rounded-r-lg mb-px select-none"
+         data-tier="${tier}" data-alpha="${alpha}" data-ts="${tsMs}"
+         onclick="toggleAlertDetail(this)"
+         role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleAlertDetail(this)">
+        <div class="flex items-center gap-3 px-4 py-3 min-w-0">
+
+            <!-- Direction badge -->
+            <span class="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black tracking-widest ${dirBadgeClass}">
+                <span class="material-symbols-outlined text-[11px]">${dirIcon}</span>
+                ${dirLabel}
+            </span>
+
+            <!-- Ticker -->
+            <span class="flex-shrink-0 w-20 font-headline font-black text-sm text-on-surface tracking-tight truncate">
+                ${sig.ticker || '—'}
+            </span>
+
+            <!-- Alpha score -->
+            <span class="flex-shrink-0 w-14 font-mono text-sm font-bold ${alphaClass} tabular-nums" title="Alpha Score">
+                α&thinsp;${alpha.toFixed(1)}
+            </span>
+
+            <!-- Event type -->
+            <span class="flex-shrink-0 hidden sm:block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider w-28 truncate">
+                ${eventLabel}
+            </span>
+
+            <!-- Cause → Impact (headline) — takes remaining space -->
+            <span class="flex-1 min-w-0 text-xs text-on-surface-variant truncate hidden md:block">
+                <span class="text-on-surface/70">Cause:</span>
+                <span class="text-on-surface">${cause}</span>
+                <span class="text-outline mx-1">→</span>
+                <span class="text-on-surface/70">Impact:</span>
+                <span class="${isBull ? 'text-secondary' : isBear ? 'text-error' : 'text-primary'}">${impact}</span>
+            </span>
+
+            <!-- 3D predicted return -->
+            <span class="flex-shrink-0 w-16 text-right font-mono text-xs font-bold tabular-nums ${isBull ? 'text-secondary' : isBear ? 'text-error' : 'text-on-surface-variant'}" title="Predicted return (${horizon})">
+                ${expected}
+            </span>
+
+            <!-- Age -->
+            <span class="flex-shrink-0 w-16 text-right text-[9px] text-on-surface-variant/50 font-mono hidden sm:block">
+                ${ageStr}
+            </span>
+
+            <!-- Chevron -->
+            <span class="chevron-icon flex-shrink-0 material-symbols-outlined text-[16px] text-on-surface-variant/40 transition-transform duration-200">
+                expand_more
+            </span>
+        </div>
+    </div>
+    <!-- Expandable detail -->
+    <div class="alert-detail bg-surface-container-low border-l-[3px] ${isBull ? 'border-l-[#4edea3]' : isBear ? 'border-l-[#ffb4ab]' : 'border-l-outline-variant'} rounded-b-lg mb-2 overflow-hidden">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-5 py-4">
+            <div>
+                <p class="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-bold mb-1">Confidence</p>
+                <p class="text-sm font-mono font-bold text-on-surface">${confPct}</p>
+            </div>
+            <div>
+                <p class="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-bold mb-1">Regime</p>
+                <p class="text-sm font-bold text-on-surface capitalize">${regime}</p>
+            </div>
+            <div>
+                <p class="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-bold mb-1">Entry Price</p>
+                <p class="text-sm font-mono font-bold text-on-surface">${entryStr}</p>
+            </div>
+            <div>
+                <p class="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-bold mb-1">Horizon</p>
+                <p class="text-sm font-mono font-bold text-on-surface">${horizon}</p>
+            </div>
+        </div>
+        <div class="px-5 pb-4">
+            <p class="text-[9px] text-on-surface-variant/50 uppercase tracking-widest font-bold mb-1">Full Signal</p>
+            <p class="text-xs text-on-surface-variant leading-relaxed">
+                <span class="text-on-surface font-semibold">Cause:</span> ${cause}
+                <span class="text-outline mx-1">→</span>
+                <span class="text-on-surface font-semibold">Impact:</span> ${impact}
+            </p>
+        </div>
+    </div>`;
+}
+
+// ─── Render active price alerts as a clean table ─────────────────────────────
+function renderAlertsTable(alerts) {
+    const rows = alerts.map(a => {
+        const statusColor = a.active ? 'text-secondary' : 'text-on-surface-variant/50';
+        const statusLabel = a.active ? 'Active' : 'Inactive';
+        return `
+        <tr class="border-b border-outline-variant/10 hover:bg-surface-container transition-colors">
+            <td class="px-4 py-3 font-headline font-black text-sm text-on-surface">${a.ticker || '—'}</td>
+            <td class="px-4 py-3 text-xs text-on-surface-variant capitalize">${(a.alert_type || a.condition || '—').replace(/_/g, ' ')}</td>
+            <td class="px-4 py-3 font-mono text-xs text-on-surface">${a.condition || ''} ${a.threshold ?? '—'}</td>
+            <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${statusColor}">
+                    <span class="w-1.5 h-1.5 rounded-full ${a.active ? 'bg-secondary' : 'bg-on-surface-variant/30'}"></span>
+                    ${statusLabel}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-[10px] text-on-surface-variant/50 font-mono">${UIHelper.formatTime(a.created_at)}</td>
+        </tr>`;
+    }).join('');
+
+    return `
+    <section>
+        <div class="flex items-center gap-4 mb-5">
+            <span class="px-3 py-1 bg-primary/10 border border-primary/30 rounded text-[10px] font-black tracking-widest text-primary uppercase">
+                Price Alerts
+            </span>
+            <div class="h-[1px] flex-1 bg-primary/10"></div>
+            <span class="text-[10px] text-on-surface-variant/50 font-mono">${alerts.length} configured</span>
+        </div>
+        <div class="rounded-xl overflow-hidden border border-outline-variant/10">
+            <table class="w-full text-left">
+                <thead class="bg-surface-container-lowest">
+                    <tr>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Ticker</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Type</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Threshold</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Age</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-surface-container-low">
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+    </section>`;
+}
+
+// ─── Update critical count badge in header ───────────────────────────────────
+function updateCriticalBadge(count) {
+    const badge = document.getElementById('criticalCountBadge');
+    const label = document.getElementById('criticalCountLabel');
+    if (!badge || !label) return;
+    label.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+    badge.classList.toggle('flex', count > 0);
+}
+
+// ─── Main page loader ─────────────────────────────────────────────────────────
+async function loadAlertsPage() {
+    const feed = document.getElementById('alertsFeed');
+
+    // Load notification config into settings form
+    const config = await LiveData.getNotificationConfig();
+    if (config) {
+        if (config.discord_webhook_url) document.getElementById('discordUrl').value = config.discord_webhook_url;
+        if (config.telegram_bot_token)  document.getElementById('tgToken').value    = config.telegram_bot_token;
+        if (config.telegram_chat_id)    document.getElementById('tgChatId').value   = config.telegram_chat_id;
+        if (config.min_alpha_score)     document.getElementById('minAlpha').value   = config.min_alpha_score;
+        if (config.sentiment_filter)    document.getElementById('sentFilter').value = config.sentiment_filter;
+        if (config.cooldown_minutes)    document.getElementById('cooldown').value   = config.cooldown_minutes;
+    }
+
+    // Fetch data
+    const [signals, alerts] = await Promise.all([
+        LiveData.getTopSignals(30),
+        LiveData.getAlerts(20)
+    ]);
+
+    // Bucket signals into tiers
+    const allSignals = (signals || []).filter(s => (s.alpha_score || 0) >= 60);
+    const critical   = allSignals.filter(s => s.alpha_score >= 80);
+    const high       = allSignals.filter(s => s.alpha_score >= 65 && s.alpha_score < 80);
+    const watch      = allSignals.filter(s => s.alpha_score >= 60 && s.alpha_score < 65);
+
+    // Update header badge
+    updateCriticalBadge(critical.length);
+
+    let html = '';
+
+    // ── Tier: CRITICAL ──────────────────────────────────────────────
+    if (critical.length > 0) {
+        html += `
+        <section class="tier-section">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-black tracking-widest badge-critical uppercase">
+                    <span class="material-symbols-outlined text-[13px]" style="font-variation-settings:'FILL' 1,'wght' 700;">warning</span>
+                    CRITICAL
+                </span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">α ≥ 80 &bull; ${critical.length} signal${critical.length !== 1 ? 's' : ''}</span>
+                <div class="h-[1px] flex-1 bg-critical/20"></div>
+            </div>
+            <div class="signal-list rounded-xl overflow-hidden border border-critical/15">
+                ${critical.map((s, i) => renderSignalRow(s, i)).join('')}
+            </div>
+        </section>`;
+    }
+
+    // ── Tier: HIGH PRIORITY ──────────────────────────────────────────
+    if (high.length > 0) {
+        html += `
+        <section class="tier-section">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-black tracking-widest badge-high uppercase">
+                    <span class="material-symbols-outlined text-[13px]">bolt</span>
+                    HIGH PRIORITY
+                </span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">α 65–80 &bull; ${high.length} signal${high.length !== 1 ? 's' : ''}</span>
+                <div class="h-[1px] flex-1 bg-primary/15"></div>
+            </div>
+            <div class="signal-list rounded-xl overflow-hidden border border-primary/10">
+                ${high.map((s, i) => renderSignalRow(s, i)).join('')}
+            </div>
+        </section>`;
+    }
+
+    // ── Tier: WATCH ──────────────────────────────────────────────────
+    if (watch.length > 0) {
+        html += `
+        <section class="tier-section">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-black tracking-widest badge-watch uppercase">
+                    <span class="material-symbols-outlined text-[13px]">visibility</span>
+                    WATCH
+                </span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">α 60–65 &bull; ${watch.length} signal${watch.length !== 1 ? 's' : ''}</span>
+                <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            </div>
+            <div class="signal-list rounded-xl overflow-hidden border border-outline-variant/20">
+                ${watch.map((s, i) => renderSignalRow(s, i)).join('')}
+            </div>
+        </section>`;
+    }
+
+    // ── Active price alerts ──────────────────────────────────────────
+    if (alerts && alerts.length > 0) {
+        html += renderAlertsTable(alerts);
+    }
+
+    // ── Empty state ──────────────────────────────────────────────────
+    if (!html) {
+        html = `
+        <div class="flex flex-col items-center justify-center py-20 text-center gap-4">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant/20">notifications_off</span>
+            <p class="text-on-surface-variant/50 text-sm max-w-xs">No alerts yet. Configure notifications above to receive signal alerts via Discord or Telegram.</p>
+        </div>`;
+    }
+
+    feed.innerHTML = html;
+
+    // Re-apply any active filter/sort after render
+    applySignalFilter();
+}
+
+// ─── Bootstrap ───────────────────────────────────────────────────────────────
+let _prevAlertCount = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    SoundFX.init();
+    document.getElementById('notifSettings').classList.remove('hidden');
+
+    DataRefresher.start(async () => {
+        await loadAlertsPage();
+
+        // Sound on new critical signals
+        const signals    = await LiveData.getTopSignals(50);
+        const highAlpha  = (signals || []).filter(s => (s.alpha_score || 0) >= 70);
+        if (_prevAlertCount > 0 && highAlpha.length > _prevAlertCount) {
+            SoundFX.alertHigh();
+        }
+        _prevAlertCount = highAlpha.length;
+    }, 60000);
+
+    Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

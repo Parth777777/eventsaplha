@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Portfolio Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#5b6cff", "secondary": "#4ee6b8", "tertiary": "#ff7a8a",
+                "background": "#0e1124", "surface": "#181d40",
+                "surface-container": "#181d40", "surface-container-low": "#181d40",
+                "surface-container-high": "#1f2550", "surface-container-highest": "#262d63",
+                "on-surface": "#eef0ff", "on-surface-variant": "#9aa0c8",
+                "outline-variant": "rgba(255,255,255,0.08)",
+                "bull": "#4ee6b8", "bear": "#ff7a8a"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Simulator</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link active" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant">
+        <div class="flex items-start justify-between mb-2">
+            <div>
+                <h1 class="text-4xl font-black font-headline text-on-surface mb-0.5">PORTFOLIO SIMULATOR</h1>
+                <p class="text-on-surface-variant text-sm">If you'd followed EventAlpha's top signals — historical equity curve, win rate, and live positions.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Min Alpha</span>
+                <select id="minAlpha" onchange="loadSimulator()" class="bg-surface-container border border-outline-variant rounded-full px-4 py-1.5 text-xs font-bold text-on-surface">
+                    <option value="30">α≥30</option>
+                    <option value="40" selected>α≥40</option>
+                    <option value="50">α≥50</option>
+                    <option value="60">α≥60</option>
+                    <option value="70">α≥70 (high conv.)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Pastel KPI strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px;">
+        <div class="pastel-card pastel-card--mint">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">check_circle</span></span>Win rate</span></div>
+            <div class="pastel-card__value" id="simWinPct">—</div>
+            <div class="pastel-card__sub" id="simWinSub">— of — trades</div>
+        </div>
+        <div class="pastel-card pastel-card--yellow">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">show_chart</span></span>Cumulative return</span></div>
+            <div class="pastel-card__value" id="simTotalRet">—</div>
+            <div class="pastel-card__sub">sum of resolved trades</div>
+        </div>
+        <div class="pastel-card pastel-card--lavender">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">savings</span></span>Avg per trade</span></div>
+            <div class="pastel-card__value" id="simAvgRet">—</div>
+            <div class="pastel-card__sub">mean return</div>
+        </div>
+        <div class="pastel-card pastel-card--coral">
+            <div class="pastel-card__head"><span class="pastel-card__chip"><span class="pastel-card__icon-bg"><span class="material-symbols-outlined">trending_down</span></span>Max drawdown</span></div>
+            <div class="pastel-card__value" id="simMDD">—</div>
+            <div class="pastel-card__sub">peak to trough</div>
+        </div>
+        <div class="pastel-card pastel-card--dark">
+            <div class="pastel-card__head"><span class="pastel-card__chip" style="background:rgba(255,255,255,0.10);color:inherit;"><span class="pastel-card__icon-bg" style="background:rgba(255,255,255,0.10);"><span class="material-symbols-outlined">pending</span></span>Open positions</span><span class="delta" style="background:rgba(200,245,98,0.20);color:var(--accent-lime);">live</span></div>
+            <div class="pastel-card__value" id="simOpenCount">—</div>
+            <div class="pastel-card__sub" style="opacity:0.7;">awaiting outcome</div>
+        </div>
+    </div>
+
+    <!-- Equity curve + drawdown -->
+    <div class="widget" style="margin-bottom:14px;">
+        <div class="widget__head">
+            <div>
+                <div class="widget__title">Cumulative PnL curve</div>
+                <div class="widget__meta">Each bar = one resolved 3-day signal · green=hit, red=miss</div>
+            </div>
+            <span class="widget__year-pill" id="curveBadge">—</span>
+        </div>
+        <canvas id="equityCanvas" height="160" style="width:100%;display:block;border-radius:8px;background:var(--s0);"></canvas>
+        <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.07em;margin:8px 0 4px;font-weight:700;">Drawdown</div>
+        <canvas id="drawdownCanvas" height="50" style="width:100%;display:block;border-radius:6px;background:var(--s0);opacity:0.85;"></canvas>
+        <div id="equityEmpty" class="hidden" style="text-align:center;padding:32px;color:var(--t3);font-size:12px;">
+            No resolved trades yet — drawdown and PnL curves appear once trades complete.
+        </div>
+    </div>
+
+    <!-- Completed + Current -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Completed trades</div>
+                    <div class="widget__meta">Prediction horizon expired · actual return known</div>
+                </div>
+            </div>
+            <div id="completedTrades" style="display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto;"></div>
+        </div>
+        <div class="widget">
+            <div class="widget__head">
+                <div>
+                    <div class="widget__title">Current positions</div>
+                    <div class="widget__meta">Active signals within their prediction horizon</div>
+                </div>
+            </div>
+            <div id="currentPositions" style="display:flex;flex-direction:column;gap:6px;max-height:380px;overflow-y:auto;"></div>
+        </div>
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script>
+function fmtPct(v, sign) {
+    if (v == null || isNaN(v)) return '—';
+    const s = sign && v >= 0 ? '+' : '';
+    return s + Number(v).toFixed(2) + '%';
+}
+
+function tradeRow(t) {
+    const ret = t.actual_return_pct;
+    const pred = t.predicted_return_pct;
+    const hit = t.hit_target;
+    const color = (ret == null) ? '#ffc266' : (ret >= 0 ? '#4ee6b8' : '#ff7a8a');
+    const date = t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN', {month:'short',day:'numeric'}) : '';
+    return `
+    <div style="background:var(--s1);border:1px solid var(--b1);border-left:3px solid ${color};border-radius:var(--r-md);padding:8px 12px;display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;">
+        <div style="min-width:0;">
+            <div style="display:flex;align-items:baseline;gap:6px;">
+                <span class="font-headline" style="font-weight:700;font-size:12px;color:var(--t1);">${t.ticker}</span>
+                <span style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.05em;">${(t.event_type||'').replace(/_/g,' ')}</span>
+                <span style="font-size:9px;color:var(--t3);">${date}</span>
+            </div>
+            <div style="font-size:10px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.company || ''}</div>
+        </div>
+        <div style="text-align:right;font-family:var(--font-head);">
+            <div style="font-size:11px;font-weight:700;color:var(--t2);">α ${(t.alpha_score||0).toFixed(0)}</div>
+            <div style="font-size:9px;color:var(--t3);">pred ${pred != null ? fmtPct(pred,true) : '—'}</div>
+        </div>
+        <div style="text-align:right;font-family:var(--font-head);">
+            <div style="font-size:13px;font-weight:800;color:${color};letter-spacing:-0.02em;">${ret != null ? fmtPct(ret, true) : 'open'}</div>
+            <div style="font-size:9px;color:${hit?'var(--bull)':ret==null?'var(--caution)':'var(--bear)'};font-weight:700;">${hit ? '✓ hit' : ret == null ? '⏳ open' : '✗ miss'}</div>
+        </div>
+    </div>`;
+}
+
+function drawEquityCurve(points) {
+    const eq = document.getElementById('equityCanvas');
+    const dd = document.getElementById('drawdownCanvas');
+    const empty = document.getElementById('equityEmpty');
+    const badge = document.getElementById('curveBadge');
+
+    if (!points || points.length < 2) {
+        eq.style.display = 'none'; dd.style.display = 'none';
+        empty.classList.remove('hidden');
+        return;
+    }
+    eq.style.display = ''; dd.style.display = ''; empty.classList.add('hidden');
+
+    const dpr = window.devicePixelRatio || 1;
+    const W = eq.clientWidth, H = 160;
+    eq.width = W * dpr; eq.height = H * dpr;
+    eq.style.height = H + 'px';
+    const ctx = eq.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, W, H);
+
+    const cums = points.map(p => p.cumulative || 0);
+    const minC = Math.min(0, ...cums), maxC = Math.max(0, ...cums);
+    const range = (maxC - minC) || 1;
+    const barW = Math.max(2, (W / points.length) - 1.5);
+    const yZero = H - ((0 - minC) / range) * (H - 16) - 8;
+
+    // Zero line
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, yZero); ctx.lineTo(W, yZero); ctx.stroke();
+
+    // Bars
+    points.forEach((p, i) => {
+        const ret = p.return || 0;
+        const x = i * (W / points.length);
+        const y = H - ((ret > 0 ? ret : 0) - minC) / range * (H - 16) - 8;
+        const barH = Math.max(2, Math.abs(ret) / range * (H - 16));
+        ctx.fillStyle = ret >= 0 ? '#4ee6b8' : '#ff7a8a';
+        ctx.globalAlpha = 0.85;
+        ctx.fillRect(x, ret >= 0 ? y : yZero, barW, barH);
+    });
+    ctx.globalAlpha = 1;
+
+    // Cumulative line
+    ctx.strokeStyle = '#5b6cff'; ctx.lineWidth = 2; ctx.beginPath();
+    points.forEach((p, i) => {
+        const x = i * (W / points.length) + barW/2;
+        const y = H - ((p.cumulative - minC) / range) * (H - 16) - 8;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Drawdown
+    const ddW = dd.clientWidth, ddH = 50;
+    dd.width = ddW * dpr; dd.height = ddH * dpr; dd.style.height = ddH + 'px';
+    const dctx = dd.getContext('2d'); dctx.scale(dpr, dpr); dctx.clearRect(0, 0, ddW, ddH);
+    const dds = points.map(p => Math.abs(p.drawdown || 0));
+    const maxDD = Math.max(0.01, ...dds);
+    dctx.fillStyle = '#ff7a8a'; dctx.globalAlpha = 0.7;
+    points.forEach((p, i) => {
+        const x = i * (ddW / points.length);
+        const h = (Math.abs(p.drawdown || 0) / maxDD) * (ddH - 4);
+        dctx.fillRect(x, ddH - h, Math.max(1, ddW/points.length - 1), h);
+    });
+
+    badge.textContent = points.length + ' resolved · max DD ' + maxDD.toFixed(1) + '%';
+}
+
+async function loadSimulator() {
+    const minAlpha = document.getElementById('minAlpha').value;
+    let simRes, eqRes;
+    try {
+        [simRes, eqRes] = await Promise.all([
+            fetch('/api/simulator?min_alpha=' + minAlpha + '&top=15').then(r => r.json()),
+            fetch('/api/simulator/equity-curve?min_alpha=' + minAlpha).then(r => r.json())
+        ]);
+    } catch (e) { console.error('sim fetch failed:', e); return; }
+
+    const sim = (simRes && simRes.data) || {};
+    const eq = (eqRes && eqRes.data) || {};
+    const summary = sim.summary || {};
+    const trades = sim.completed_trades || [];
+    const open = sim.current_positions || [];
+
+    document.getElementById('simWinPct').textContent = (summary.win_rate||0).toFixed(1) + '%';
+    document.getElementById('simWinSub').textContent = (summary.wins||0) + ' of ' + (summary.total_trades||0) + ' trades';
+    const tot = summary.total_return;
+    document.getElementById('simTotalRet').textContent = tot != null ? (tot>=0?'+':'') + tot.toFixed(2) + '%' : '—';
+    const avg = summary.avg_return_per_trade;
+    document.getElementById('simAvgRet').textContent = avg != null ? (avg>=0?'+':'') + avg.toFixed(2) + '%' : '—';
+
+    const points = eq.points || [];
+    let mdd = 0;
+    for (const p of points) mdd = Math.min(mdd, p.drawdown || 0);
+    document.getElementById('simMDD').textContent = mdd ? mdd.toFixed(1) + '%' : '—';
+    document.getElementById('simOpenCount').textContent = open.length;
+
+    document.getElementById('completedTrades').innerHTML = trades.length
+        ? trades.map(tradeRow).join('')
+        : '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;">No completed trades yet at this α threshold.</div>';
+    document.getElementById('currentPositions').innerHTML = open.length
+        ? open.map(tradeRow).join('')
+        : '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;">No open positions.</div>';
+
+    drawEquityCurve(points);
+}
+
+let _resizeT;
+window.addEventListener('resize', () => {
+    clearTimeout(_resizeT);
+    _resizeT = setTimeout(() => loadSimulator(), 200);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSimulator();
+    if (window.Auth) Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

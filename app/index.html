@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Alpha Terminal</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
+        <div class="engine-status p-4 rounded-lg">
+            <p class="text-[10px] text-on-surface-variant mb-2 uppercase tracking-widest font-bold">Engine Status</p>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="text-xs font-bold text-on-surface uppercase">Active</span>
+                </div>
+                <span class="text-[10px] text-on-surface-variant/60 font-mono">v4.2.9</span>
+            </div>
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center text-[9px] text-on-surface-variant">
+                    <span>Latency</span>
+                    <span class="text-secondary font-mono">14ms</span>
+                </div>
+                <div class="w-full bg-surface-container-lowest h-1 rounded-full overflow-hidden">
+                    <div class="bg-secondary/40 h-full w-[88%]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-8">
+        <h1 class="text-4xl font-black font-headline text-on-surface mb-2">ALPHA TERMINAL</h1>
+        <div class="flex items-center justify-between">
+            <p class="text-on-surface-variant text-sm">Real-time market intelligence and quantitative signal processing.</p>
+            <button onclick="const on = SoundFX.toggle(); this.querySelector('span').textContent = on ? 'volume_up' : 'volume_off'" class="p-2 text-on-surface-variant hover:bg-surface-container rounded transition-colors" title="Toggle alert sounds">
+                <span class="material-symbols-outlined text-sm">volume_up</span>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Dynamic Market Summary -->
+    <div class="mb-8 bg-gradient-to-r from-surface-container to-surface-container-low p-6 rounded-xl border border-outline-variant/10 shadow-lg" id="marketSummaryCard">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <h3 class="text-[10px] font-black tracking-[0.3em] uppercase text-primary mb-2">Market Summary • Today</h3>
+                <p class="text-on-surface text-lg font-headline font-medium leading-tight" id="summaryText">
+              <span class="skeleton" style="height:20px;width:90%;margin-bottom:8px;"></span>
+              <span class="skeleton" style="height:20px;width:65%;"></span>
+            </p>
+            </div>
+            <div class="flex gap-6 items-center">
+                <div class="h-14 w-[1px] bg-outline-variant/15 hidden md:block"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest">Sentiment</span>
+                    <div class="flex items-center gap-1" id="sentimentIcon">
+                        <span class="skeleton" style="width:24px;height:24px;border-radius:4px;"></span>
+                    </div>
+                    <span class="text-xl font-headline font-bold" id="sentimentDelta">
+                        <span class="skeleton" style="width:48px;height:24px;display:inline-block;border-radius:4px;"></span>
+                    </span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest">Regime</span>
+                    <span class="text-sm font-headline font-bold text-primary mt-1" id="regimeLabel">
+                        <span class="skeleton" style="width:64px;height:18px;display:inline-block;border-radius:4px;"></span>
+                    </span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest">Signals</span>
+                    <span class="text-xl font-headline font-bold text-on-surface mt-1" id="signalCount">
+                        <span class="skeleton" style="width:36px;height:28px;display:inline-block;border-radius:4px;"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Live Market Pulse Panel -->
+    <div class="mb-8" id="marketPulsePanel">
+        <div class="flex items-center gap-2 mb-3">
+            <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+            <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live Market Pulse</h3>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="pulseUpdated">fetching...</span>
+        </div>
+        <div id="pulseIndices" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <!-- skeleton -->
+            <div class="skeleton rounded-xl" style="height:80px;"></div>
+            <div class="skeleton rounded-xl" style="height:80px;"></div>
+            <div class="skeleton rounded-xl" style="height:80px;"></div>
+            <div class="skeleton rounded-xl" style="height:80px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:80px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:80px;"></div>
+        </div>
+        <!-- Derived market trend bar -->
+        <div id="pulseTrendBar" class="mt-3 rounded-lg border border-outline-variant/10 px-4 py-2.5 flex items-center justify-between text-xs" style="background:rgba(28,32,38,0.6)">
+            <span class="skeleton" style="width:200px;height:14px;border-radius:4px;display:inline-block;"></span>
+            <span class="skeleton" style="width:80px;height:14px;border-radius:4px;display:inline-block;"></span>
+        </div>
+    </div>
+
+    <!-- Key Metrics Grid — pastel cards inspired by reference dashboards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="pastel-card pastel-card--mint">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">speed</span></span>
+                    India VIX
+                </span>
+                <span class="delta" id="metricVIXDelta" style="display:none;">—</span>
+            </div>
+            <div class="pastel-card__value" id="metricVIX">—</div>
+            <div class="pastel-card__sub" id="metricVIXLabel">fear gauge</div>
+        </div>
+
+        <div class="pastel-card pastel-card--yellow">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">bolt</span></span>
+                    Live Signals
+                </span>
+                <span class="delta">+24h</span>
+            </div>
+            <div class="pastel-card__value" id="metricSignals">—</div>
+            <div class="pastel-card__sub">active signals on the book</div>
+        </div>
+
+        <div class="pastel-card pastel-card--lavender">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">psychology</span></span>
+                    Avg Confidence
+                </span>
+            </div>
+            <div class="pastel-card__value" id="metricConfidence">—</div>
+            <div class="pastel-card__sub">NLP confidence score</div>
+        </div>
+
+        <div class="pastel-card pastel-card--dark">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip" style="background:rgba(255,255,255,0.10);color:inherit;">
+                    <span class="pastel-card__icon-bg" style="background:rgba(255,255,255,0.10);"><span class="material-symbols-outlined">bar_chart</span></span>
+                    Events Today
+                </span>
+                <span class="delta" style="background:rgba(200,245,98,0.20);color:var(--accent-lime);">live</span>
+            </div>
+            <div class="pastel-card__value" id="metricEvents">—</div>
+            <div class="pastel-card__sub" style="opacity:0.7;">events processed in last 24h</div>
+        </div>
+    </div>
+    
+    <!-- ============ INSIGHTS STUDIO (mounted from shared/js/widgets.js) ============ -->
+    <div id="insightsRoot" class="mb-8"></div>
+
+    <!-- Sector Concentration Warning -->
+    <div id="concentrationWarning" class="hidden mb-6 px-4 py-3 rounded-xl border flex items-center gap-3" style="background:rgba(255,178,183,0.06);border-color:rgba(255,178,183,0.2);">
+        <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#ffb2b7;">warning</span>
+        <div class="flex-1">
+            <span class="text-xs font-bold" style="color:#ffb2b7;">Sector Concentration Risk</span>
+            <span id="concentrationText" class="text-xs text-on-surface-variant ml-2"></span>
+        </div>
+        <a href="analytics.html" class="text-[9px] px-2 py-1 rounded font-bold hover:opacity-80 transition-opacity flex-shrink-0" style="background:rgba(255,178,183,0.12);color:#ffb2b7;border:1px solid rgba(255,178,183,0.2);">View Analytics →</a>
+    </div>
+
+    <!-- Quant Tools CTA Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 px-2">
+        <a href="portfolio.html" class="flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:scale-[1.01]"
+           style="background:linear-gradient(135deg,rgba(78,222,163,0.08),rgba(78,222,163,0.03));border:1px solid rgba(78,222,163,0.20);">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(78,222,163,0.15);">
+                    <span class="material-symbols-outlined" style="color:#4edea3;font-size:22px;">account_balance_wallet</span>
+                </div>
+                <div>
+                    <div class="font-headline font-black text-sm" style="color:#4edea3;">QUANT PORTFOLIO</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Z-score ranking · Long-short · Vol-adjusted sizing</div>
+                </div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
+        </a>
+        <a href="compare.html" class="flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:scale-[1.01]"
+           style="background:linear-gradient(135deg,rgba(249,212,35,0.08),rgba(249,212,35,0.03));border:1px solid rgba(249,212,35,0.25);">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(249,212,35,0.15);">
+                    <span class="material-symbols-outlined" style="color:#f9d423;font-size:22px;">compare_arrows</span>
+                </div>
+                <div>
+                    <div class="font-headline font-black text-sm" style="color:#f9d423;">COMPARE STOCKS</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Stack up to 3 stocks side-by-side with verdict</div>
+                </div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
+        </a>
+    </div>
+
+    <!-- Prediction Accuracy -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="accuracySection" style="display:none;">
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">1D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-secondary" id="accuracy1D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy1DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">3D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-primary" id="accuracy3D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy3DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">20D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-on-surface" id="accuracy20D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy20DCount">0 predictions</p>
+        </div>
+    </div>
+
+    <!-- Suggested Stocks -->
+    <div class="mb-8" id="suggestedSection" style="display:none;">
+        <h2 class="font-headline font-bold text-lg text-on-surface mb-4">Suggested Stocks</h2>
+        <div id="suggestedStocks" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- Main Grid: Events + Signals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Latest Events (2 columns) -->
+        <div class="lg:col-span-2 space-y-4">
+            <h2 class="font-headline font-bold text-lg text-on-surface">Latest Events</h2>
+            <div id="latestEvents" class="space-y-4">
+                <!-- Skeleton placeholders — replaced by real data on load -->
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:25%;"></span>
+                        <span class="skeleton" style="height:14px;width:70%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:55%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:30%;"></span>
+                        <span class="skeleton" style="height:14px;width:80%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:45%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:20%;"></span>
+                        <span class="skeleton" style="height:14px;width:65%;"></span>
+                        <span class="skeleton" style="height:10px;width:95%;"></span>
+                        <span class="skeleton" style="height:10px;width:60%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:28%;"></span>
+                        <span class="skeleton" style="height:14px;width:75%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:50%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Signals Sidebar -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 h-fit sticky top-80">
+            <h2 class="font-headline font-bold text-lg text-on-surface mb-4">Top Signals</h2>
+            <div id="topSignals" class="space-y-3">
+                <!-- Skeleton placeholders -->
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:66%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:50%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:75%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:60%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:80%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+// ============ RICH SIGNAL REASONING ============
+function buildSignalReasoning(sig, pulse) {
+    const evType  = (sig.event_type || 'news').replace(/_/g, ' ');
+    const rawType = (sig.event_type || 'news');
+    const sent    = sig.sentiment || 'neutral';
+    const alpha   = sig.alpha_score || 0;
+    const conf    = ((sig.confidence || 0) <= 1 ? (sig.confidence || 0) * 100 : (sig.confidence || 0));
+    const sector  = (sig.sector || '').replace(/_/g, ' ');
+    const regime  = (sig.regime || '').replace(/_/g, ' ');
+    const headline = sig.headline || '';
+    const pred1d  = sig.predictions?.['1D']?.return_pct;
+    const pred3d  = sig.predictions?.['3D']?.return_pct;
+
+    // 1. News trigger line
+    let triggerLine = '';
+    if (headline && headline.length > 12) {
+        const hl = headline.length > 90 ? headline.substring(0, 90) + '…' : headline;
+        triggerLine = `<span style="font-style:italic;opacity:0.75;">"${hl}"</span><br>`;
+    }
+
+    // 2. Event-type specific core narrative
+    const eventNarrative = {
+        earnings:  `Strong quarterly results signal fundamental momentum. Market typically re-prices ${sent === 'bullish' ? 'earnings beats' : 'earnings misses'} over 3-5 trading sessions as institutions adjust positions.`,
+        merger:    `M&A activity signals strategic value unlock. ${sent === 'bullish' ? 'Target premium or acquirer synergies expected to drive re-rating.' : 'Deal uncertainty or dilution risk may weigh on stock.'}`,
+        order_win: `New order win directly adds revenue visibility for the next 12-18 months, reducing analyst forecast risk and improving book-to-bill ratio.`,
+        dividend:  `Dividend announcement indicates strong free cash flow and management confidence in sustained earnings power.`,
+        policy:    `Regulatory/policy shift creates sector-wide impact. ${sig.ticker} is ${sent === 'bullish' ? 'positioned to benefit' : 'exposed to regulatory headwinds'} from this development.`,
+        supply:    `Supply chain event affects operating margins and production cadence. ${sent === 'bullish' ? 'Improved supply = cost advantage.' : 'Supply disruption = margin pressure.'}`,
+        insider:   `Insider ${sent === 'bullish' ? 'buying' : 'selling'} is a high-conviction signal — management has material non-public context. Insider ${sent === 'bullish' ? 'accumulation at current levels' : 'distribution'} is a strong directional cue.`,
+        news:      `Market catalyst identified with ${sent} implications. NLP confidence: ${conf.toFixed(0)}%.`,
+    };
+    const core = eventNarrative[rawType] || eventNarrative.news;
+
+    // 3. Sector context
+    let sectorLine = '';
+    if (sector) {
+        sectorLine = ` Operating in the <strong>${sector}</strong> sector${regime ? ` under a <strong>${regime}</strong> market regime` : ''}.`;
+    }
+
+    // 4. Market condition context from live indices
+    const mktLine = pulse ? MarketPulse.forSignal(pulse, sent) : '';
+
+    // 5. Prediction line
+    let predLine = '';
+    if (pred1d != null || pred3d != null) {
+        const p1 = pred1d != null ? `1D: <strong>${pred1d >= 0 ? '+' : ''}${pred1d.toFixed(1)}%</strong>` : '';
+        const p3 = pred3d != null ? `3D: <strong>${pred3d >= 0 ? '+' : ''}${pred3d.toFixed(1)}%</strong>` : '';
+        predLine = ` Model forecasts: ${[p1, p3].filter(Boolean).join(', ')}.`;
+    }
+
+    // 6. Alpha strength label
+    let alphaLine = '';
+    if      (alpha >= 80) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — top-tier signal, all scoring factors aligned.`;
+    else if (alpha >= 65) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — high-conviction, ${conf.toFixed(0)}% NLP confidence.`;
+    else if (alpha >= 50) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — moderate conviction, worth monitoring.`;
+    else                  alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — speculative; size positions conservatively.`;
+
+    return `${triggerLine}${core}${sectorLine}${predLine} ${mktLine ? mktLine + ' ' : ''}${alphaLine}`;
+}
+
+// ============ MARKET PULSE RENDERER ============
+function renderMarketPulse(indices) {
+    const pulse = MarketPulse.analyze(indices);
+    if (!pulse) return;
+
+    // Update VIX metric card
+    const vixEl = document.getElementById('metricVIX');
+    if (vixEl) {
+        vixEl.innerHTML = `<span style="color:${pulse.fearColor}">${pulse.vixVal}</span>`;
+    }
+    const vixLbl = document.getElementById('metricVIXLabel');
+    if (vixLbl) {
+        vixLbl.textContent = pulse.fearLabel;
+        vixLbl.style.color = pulse.fearColor;
+    }
+
+    // Render index mini-cards
+    const grid = document.getElementById('pulseIndices');
+    if (grid) {
+        const items = [
+            { label: 'NIFTY 50',    price: pulse.niftyPrice,  chg: pulse.niftyChg  },
+            { label: 'SENSEX',      price: pulse.sensexPrice, chg: pulse.sensexChg },
+            { label: 'BANK NIFTY',  price: pulse.bankPrice,   chg: pulse.bankChg   },
+            { label: 'NIFTY IT',    price: pulse.itPrice,     chg: pulse.itChg     },
+            { label: 'INDIA VIX',   price: pulse.vixVal,      chg: pulse.vixChg,   isVIX: true },
+            { label: 'USD / INR',   price: (indices.find(i=>i.short==='USD/INR')?.price||0), chg: pulse.usdChg, isRupee: true },
+        ];
+        grid.innerHTML = items.map(item => {
+            const pos  = item.isVIX ? item.chg < 0 : item.chg >= 0; // VIX down = good
+            const color = item.isRupee ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : item.isVIX  ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : (item.chg >= 0 ? '#4edea3' : '#ffb4ab');
+            const arrow = item.chg >= 0 ? '▲' : '▼';
+            const priceFmt = item.price > 1000
+                ? item.price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                : item.price.toFixed(2);
+            return `<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-3 hover:border-outline-variant/30 transition-all">
+                <p class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest mb-1">${item.label}</p>
+                <p class="text-lg font-black font-mono leading-tight" style="color:${color}">${item.isRupee ? '₹' : ''}${priceFmt}</p>
+                <p class="text-[10px] font-bold mt-0.5" style="color:${color}">${arrow} ${Math.abs(item.chg).toFixed(2)}%</p>
+            </div>`;
+        }).join('');
+    }
+
+    // Render trend bar
+    const trendBar = document.getElementById('pulseTrendBar');
+    if (trendBar) {
+        const breadthLabel = pulse.greenCount === 4 ? 'All indices advancing' :
+                             pulse.greenCount === 3 ? '3/4 indices advancing' :
+                             pulse.greenCount === 2 ? 'Mixed — split market' :
+                             pulse.greenCount === 1 ? 'Broad selling pressure' :
+                             'All indices declining';
+        const fiiNote = pulse.fiiSell ? ' • Possible FII outflows detected' : '';
+        trendBar.style.borderColor = pulse.trendColor + '44';
+        trendBar.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="font-black font-headline text-sm" style="color:${pulse.trendColor}">${pulse.trendEmoji} ${pulse.trendLabel}</span>
+                <span class="text-[10px] text-on-surface-variant">|</span>
+                <span class="text-[10px] text-on-surface-variant">${breadthLabel}${fiiNote}</span>
+                <span class="text-[10px] text-on-surface-variant">|</span>
+                <span class="text-[10px]" style="color:${pulse.fearColor}">VIX ${pulse.vixVal} — ${pulse.fearLabel}</span>
+            </div>
+            <span class="text-[10px] text-on-surface-variant/50 font-mono">Rupee ${pulse.rupeeDir}</span>`;
+    }
+
+    const updEl = document.getElementById('pulseUpdated');
+    if (updEl) updEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+
+    return pulse;
+}
+
+// ============ INSIGHTS STUDIO RENDERERS ============
+// Pure-render functions that consume already-loaded dashboard / signals / indices
+// data and populate the Insights Studio widgets. No new API calls.
+
+function renderInsightsStudio(dashboard, signals, indices) {
+    renderSectorRings(signals);
+    renderSignalDonut(dashboard);
+    renderActivityHeatmap(signals);
+    renderTopMoverSpark(indices);
+    renderActivityFeed(signals);
+}
+
+function renderSectorRings(signals) {
+    const stage = document.getElementById('ringsStage');
+    const totalPill = document.getElementById('ringsTotalPill');
+    if (!stage) return;
+
+    if (!signals || !signals.length) {
+        stage.innerHTML = '<span style="font-size:11px;color:var(--t3);">No signals yet</span>';
+        if (totalPill) totalPill.textContent = '0 signals';
+        return;
+    }
+
+    // Group by sector
+    const buckets = {};
+    for (const s of signals) {
+        const sec = (s.sector || 'OTHER').replace(/_/g, ' ');
+        buckets[sec] = (buckets[sec] || 0) + 1;
+    }
+    const top = Object.entries(buckets)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4);
+
+    if (totalPill) totalPill.textContent = `${signals.length} signals`;
+
+    // Render 4 nested rings, biggest = largest sector, innermost = top
+    // Reverse so largest sits on the outside.
+    const ordered = [...top].reverse();
+    stage.innerHTML = ordered.map((entry, i) => {
+        const [sector, count] = entry;
+        const ringIdx = i + 1; // 1..4 maps to ring--1..ring--4
+        if (ringIdx === 4) {
+            return `<div class="ring ring--${ringIdx}">
+                <div class="ring__value">${count}</div>
+                <div class="ring__label">${sector.slice(0,8)}</div>
+            </div>`;
+        }
+        return `<div class="ring ring--${ringIdx}">${sector} · ${count}</div>`;
+    }).join('');
+}
+
+function renderSignalDonut(dashboard) {
+    const fillEl = document.getElementById('donutFill');
+    const pctEl  = document.getElementById('donutPct');
+    if (!fillEl || !pctEl || !dashboard) return;
+
+    const bull = dashboard.bullish_count || 0;
+    const bear = dashboard.bearish_count || 0;
+    const neut = dashboard.neutral_count || 0;
+    const total = bull + bear + neut;
+    const pct = total ? Math.round((bull / total) * 100) : 0;
+
+    pctEl.textContent = pct + '%';
+
+    // Circumference = 2 * π * r, r=42 → 263.89
+    const C = 2 * Math.PI * 42;
+    const offset = C * (1 - pct / 100);
+    fillEl.setAttribute('stroke-dasharray', C.toFixed(2));
+    fillEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
+}
+
+function renderActivityHeatmap(signals) {
+    const grid = document.getElementById('heatmapGrid');
+    const bigDays = document.getElementById('heatmapBigDays');
+    const bigSignals = document.getElementById('heatmapBigSignals');
+    if (!grid) return;
+
+    // 30-day window ending today
+    const days = 30;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const buckets = new Array(days).fill(0);
+
+    if (signals) {
+        for (const s of signals) {
+            const ts = s.created_at || s.timestamp || s.ts;
+            if (!ts) continue;
+            const d = new Date(ts);
+            if (isNaN(d)) continue;
+            d.setHours(0, 0, 0, 0);
+            const diff = Math.floor((today - d) / 86400000);
+            if (diff >= 0 && diff < days) {
+                buckets[days - 1 - diff]++;  // oldest leftmost, today rightmost
+            }
+        }
+    }
+
+    const max = Math.max(1, ...buckets);
+    const dots = buckets.map((count, i) => {
+        let level = 0;
+        if (count > 0) {
+            const ratio = count / max;
+            level = ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+        }
+        const daysAgo = days - 1 - i;
+        return `<div class="heatmap-dot" data-level="${level}" title="${count} signal${count!==1?'s':''} · ${daysAgo}d ago"></div>`;
+    }).join('');
+    grid.innerHTML = dots;
+
+    const activeDays = buckets.filter(c => c > 0).length;
+    const totalSignals = buckets.reduce((a, b) => a + b, 0);
+    if (bigDays) bigDays.textContent = activeDays;
+    if (bigSignals) bigSignals.textContent = totalSignals;
+}
+
+function renderTopMoverSpark(indices) {
+    const lineEl  = document.getElementById('sparkLine');
+    const areaEl  = document.getElementById('sparkArea');
+    const labelEl = document.getElementById('sparkLabel');
+    const subEl   = document.getElementById('sparkSub');
+    const valEl   = document.getElementById('sparkValue');
+    const pctEl   = document.getElementById('sparkPct');
+    if (!lineEl || !indices || !indices.length) return;
+
+    // Pick the index with the largest |% change| (biggest mover) — exclude USD/INR
+    const candidates = indices.filter(i => i.short !== 'USD/INR' && i.short !== 'INDIA VIX');
+    if (!candidates.length) return;
+    const top = candidates.reduce((best, cur) =>
+        Math.abs(cur.change_pct || 0) > Math.abs(best.change_pct || 0) ? cur : best
+    );
+
+    const up = (top.change_pct || 0) >= 0;
+    const color = up ? '#4ee6b8' : '#ff7a8a';
+
+    // Build a synthetic intraday-style spark that ENDS at the live close.
+    // We don't have intra-day data on this endpoint, so we draw a smooth
+    // walk between previous close and current price (real anchors).
+    const start = (top.price || 0) - (top.change || 0);
+    const end   = top.price || 0;
+    const N = 22;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+        const t = i / (N - 1);
+        // ease-in-out + small jitter for visual rhythm
+        const ease = t * t * (3 - 2 * t);
+        const noise = (Math.sin(i * 1.3) + Math.cos(i * 2.1)) * Math.abs(end - start) * 0.04;
+        pts.push(start + (end - start) * ease + noise);
+    }
+    pts[N - 1] = end; // anchor exact close
+
+    const min = Math.min(...pts), max = Math.max(...pts);
+    const range = (max - min) || 1;
+    const W = 200, H = 90, pad = 6;
+    const x = i => (i / (N - 1)) * W;
+    const y = v => H - pad - ((v - min) / range) * (H - 2 * pad);
+
+    let dLine = '';
+    pts.forEach((v, i) => { dLine += (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; });
+    const dArea = dLine + `L ${W} ${H} L 0 ${H} Z`;
+
+    lineEl.setAttribute('d', dLine.trim());
+    lineEl.setAttribute('stroke', color);
+    areaEl.setAttribute('d', dArea.trim());
+    areaEl.setAttribute('fill', up ? 'url(#sparkGradientUp)' : 'url(#sparkGradientDown)');
+
+    if (labelEl) labelEl.textContent = top.short;
+    if (subEl)   subEl.textContent   = 'live close';
+    if (valEl)   valEl.textContent   = (top.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
+    if (pctEl) {
+        pctEl.textContent = (up ? '▲ +' : '▼ ') + (top.change_pct || 0).toFixed(2) + '%';
+        pctEl.className = 'spark-pct ' + (up ? 'up' : 'down');
+    }
+}
+
+function renderActivityFeed(signals) {
+    const feed   = document.getElementById('activityFeed');
+    const pills  = document.getElementById('activityPills');
+    const count  = document.getElementById('activityCount');
+    if (!feed) return;
+
+    const list = (signals || []).slice(0, 30);
+    if (count) count.textContent = list.length + ' events';
+
+    const renderRows = (filter) => {
+        let rows = list;
+        if (filter === 'bullish') rows = rows.filter(s => s.sentiment === 'bullish');
+        else if (filter === 'bearish') rows = rows.filter(s => s.sentiment === 'bearish');
+        else if (filter === 'high')    rows = rows.filter(s => (s.alpha_score || 0) >= 70);
+
+        if (!rows.length) {
+            feed.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:20px;text-align:center;">No matching activity</div>';
+            return;
+        }
+
+        feed.innerHTML = rows.slice(0, 12).map(s => {
+            const alpha = s.alpha_score || 0;
+            const tier  = alpha >= 70 ? 'high' : alpha >= 50 ? 'mid' : 'low';
+            const ticker = (s.ticker || '?').slice(0, 4).toUpperCase();
+            const company = s.company || s.ticker || '—';
+            const sector  = (s.sector || '').replace(/_/g, ' ').toLowerCase();
+            const evType  = (s.event_type || 'signal').replace(/_/g, ' ');
+            const t       = s.created_at ? UIHelper.formatTime(s.created_at) : '';
+            return `<div class="activity-row" data-ticker="${s.ticker}">
+                <div class="activity-row__avatar">${ticker.slice(0,2)}</div>
+                <div class="activity-row__main">
+                    <div class="activity-row__title">${s.ticker} · ${company}</div>
+                    <div class="activity-row__sub">${evType}${sector ? ' · ' + sector : ''}${t ? ' · ' + t : ''}</div>
+                </div>
+                <div class="activity-row__alpha ${tier}">${alpha.toFixed(0)}</div>
+            </div>`;
+        }).join('');
+    };
+
+    renderRows('all');
+
+    if (pills && !pills.dataset.bound) {
+        pills.dataset.bound = '1';
+        pills.addEventListener('click', (e) => {
+            const pill = e.target.closest('.activity-pill');
+            if (!pill) return;
+            pills.querySelectorAll('.activity-pill').forEach(p => p.classList.remove('is-active'));
+            pill.classList.add('is-active');
+            renderRows(pill.dataset.filter);
+        });
+    }
+}
+
+async function loadHomePage() {
+    // Load market indices + dashboard in parallel
+    const [dashboard, indices] = await Promise.all([
+        LiveData.getDashboard(),
+        LiveData.getMarketIndices()
+    ]);
+
+    // Render live market pulse panel first
+    const activePulse = indices && indices.length ? renderMarketPulse(indices) : null;
+
+    if (dashboard) {
+        document.getElementById('metricSignals').textContent = dashboard.active_signals || 0;
+        document.getElementById('metricConfidence').textContent = (dashboard.avg_confidence || 0) + '%';
+        document.getElementById('metricEvents').textContent = dashboard.events_today || 0;
+
+        const bullish = dashboard.bullish_count || 0;
+        const bearish = dashboard.bearish_count || 0;
+        const neutral = dashboard.neutral_count || 0;
+        const total   = bullish + bearish + neutral || 1;
+        const delta   = ((bullish - bearish) / total * 100).toFixed(1);
+        const signals = dashboard.active_signals || 0;
+
+        // Regime label — prefer index-derived trend over DB regime
+        const regime = activePulse ? activePulse.trendLabel : (dashboard.current_regime || 'unknown').replace(/_/g, ' ');
+        const regimeColor = activePulse ? activePulse.trendColor : '#adc6ff';
+
+        // Sentiment delta display
+        const deltaEl = document.getElementById('sentimentDelta');
+        const iconEl  = document.getElementById('sentimentIcon');
+        deltaEl.textContent = (delta > 0 ? '+' : '') + delta + '%';
+        if (delta > 10) {
+            deltaEl.style.color = '#4edea3';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#4edea3;">trending_up</span>';
+        } else if (delta < -10) {
+            deltaEl.style.color = '#ffb4ab';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#ffb4ab;">trending_down</span>';
+        } else {
+            deltaEl.style.color = '#adc6ff';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#adc6ff;">trending_flat</span>';
+        }
+
+        // Regime + signal count — use live index trend
+        const regimeLabelEl = document.getElementById('regimeLabel');
+        regimeLabelEl.textContent = regime;
+        regimeLabelEl.style.color  = regimeColor;
+        document.getElementById('signalCount').textContent = signals;
+
+        // Build dynamic summary sentence incorporating live index data
+        const sentimentWord = delta > 20 ? 'strongly bullish' : delta > 5 ? 'bullish' : delta < -20 ? 'strongly bearish' : delta < -5 ? 'bearish' : 'mixed';
+        const sentColor = delta > 5 ? '#4edea3' : delta < -5 ? '#ffb4ab' : '#adc6ff';
+        const regimeDesc = activePulse ? MarketPulse.headline(activePulse) : (
+            regime.includes('bull') ? 'Uptrend in progress.' :
+            regime.includes('bear') ? 'Downtrend pressure.' :
+            regime.includes('spike') ? 'High volatility detected.' :
+            regime.includes('crisis') ? 'Crisis mode — extreme caution.' : 'Sideways consolidation.'
+        );
+        const highAlpha = signals > 0 ? `${signals} active signals detected` : 'No strong signals right now';
+        const summaryHtml = `Signal sentiment is <span style="color:${sentColor};font-weight:700;">${sentimentWord}</span> — ${bullish} bullish vs ${bearish} bearish. <span style="opacity:0.7;">${regimeDesc} ${highAlpha}. ${dashboard.events_today || 0} events processed today.</span>`;
+        document.getElementById('summaryText').innerHTML = summaryHtml;
+    }
+
+    // Load events + signals together so we can cross-reference
+    const events  = await LiveData.getLatestEvents(10);
+    const signals = await LiveData.getTopSignals(50);
+
+    // Build signal lookup: ticker -> best signal
+    const sigByTicker = {};
+    if (signals) {
+        for (const s of signals) {
+            if (!sigByTicker[s.ticker] || (s.alpha_score || 0) > (sigByTicker[s.ticker].alpha_score || 0)) {
+                sigByTicker[s.ticker] = s;
+            }
+        }
+    }
+
+    const eventsDiv = document.getElementById('latestEvents');
+    if (!events || events.length === 0) {
+        UIHelper.showEmpty(eventsDiv, 'No events yet. Scraper will populate data automatically.');
+    } else {
+        eventsDiv.innerHTML = events.slice(0, 5).map(event => {
+            const sent = event.sentiment || 'neutral';
+            const isBull = sent === 'bullish';
+            const color = isBull ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
+            const title = event.title || event.company || event.ticker || 'Event';
+            const summary = event.summary || event.insights || '';
+            const score = event.impact_score || 50;
+            const evType = (event.event_type || 'news').replace(/_/g, ' ');
+
+            // Find matching signals for this event's companies
+            const companies = typeof event.companies === 'string' ? event.companies.split(',').filter(Boolean) : [];
+            const matchedSignals = companies.map(t => sigByTicker[t.trim()]).filter(Boolean);
+            const bestAlpha = matchedSignals.length > 0 ? Math.max(...matchedSignals.map(s => s.alpha_score || 0)) : null;
+
+            // Build suggested stocks chips
+            let stockChips = '';
+            if (matchedSignals.length > 0) {
+                stockChips = `
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    ${matchedSignals.sort((a,b) => (b.alpha_score||0) - (a.alpha_score||0)).slice(0, 4).map(sig => {
+                        const sc = sig.sentiment === 'bullish' ? 'secondary' : sig.sentiment === 'bearish' ? 'error' : 'primary';
+                        return `<span class="inline-flex items-center gap-1 px-2 py-1 bg-${sc}/10 border border-${sc}/20 rounded text-[9px] font-bold text-${sc}">
+                            <span data-ticker="${sig.ticker}" class="cursor-pointer hover:underline">${sig.ticker}</span>
+                            <span class="text-[7px] opacity-50">${(sig.company || '').split(' ')[0]}</span>
+                            <span class="text-[8px] opacity-70">${(sig.alpha_score||0).toFixed(0)}</span>
+                        </span>`;
+                    }).join('')}
+                </div>`;
+            } else if (companies.length > 0) {
+                stockChips = `
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    ${companies.slice(0, 4).map(t => `<span class="px-2 py-1 bg-surface-container-highest rounded text-[9px] font-bold text-on-surface-variant">${t.trim()}</span>`).join('')}
+                </div>`;
+            }
+
+            return `
+            <div class="bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all p-4 flex gap-4">
+                <div class="flex-shrink-0 flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 rounded-lg bg-${color}/10 flex items-center justify-center border border-${color}/20">
+                        <span class="material-symbols-outlined text-${color}">${isBull ? 'trending_up' : 'trending_down'}</span>
+                    </div>
+                    ${bestAlpha !== null ? `<div class="text-center">
+                        <div class="text-xs font-black font-mono" style="color:${UIHelper.alphaColor(bestAlpha)}">${bestAlpha.toFixed(0)}</div>
+                        <div class="text-[7px] text-on-surface-variant/50 uppercase">alpha</div>
+                    </div>` : ''}
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-start justify-between mb-1">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-${color} uppercase">${evType}</span>
+                                <span class="text-[9px] text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5 rounded">${score}/100</span>
+                            </div>
+                            <h3 class="font-headline font-bold text-on-background text-sm">${title}</h3>
+                        </div>
+                        <span class="text-[10px] text-${color} font-black uppercase">${sent}</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant mb-1 line-clamp-2">${summary}</p>
+                    ${stockChips}
+                    <div class="flex items-center justify-between text-[9px] mt-2">
+                        <span class="text-on-surface-variant/50">${UIHelper.formatTime(event.created_at || event.timestamp)}</span>
+                        <span class="text-on-surface-variant/50">${(event.source || '').replace(/_/g, ' ')}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Render top signals sidebar (reuse already-loaded signals)
+    const sidebarSignals = signals || [];
+    const signalsDiv = document.getElementById('topSignals');
+    if (!sidebarSignals || sidebarSignals.length === 0) {
+        UIHelper.showEmpty(signalsDiv, 'No signals yet.');
+    } else {
+        signalsDiv.innerHTML = sidebarSignals.slice(0, 5).map((sig, idx) => {
+            const alpha = sig.alpha_score || 0;
+            const conf = sig.confidence || 0;
+            const confPct = conf <= 1 ? Math.round(conf * 100) : Math.round(conf);
+            const pred1d = sig.predictions?.['1D']?.return_pct;
+            const retStr = pred1d != null ? UIHelper.formatPercent(pred1d) : '--';
+            return `
+            <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <span class="text-[10px] font-black text-on-surface-variant uppercase">#${idx + 1}</span>
+                        <span data-ticker="${sig.ticker}" class="text-base font-black font-mono text-primary cursor-pointer hover:underline">${sig.ticker}</span>
+                    </div>
+                    <span class="text-xs font-black text-secondary bg-secondary/10 px-2 py-1 rounded">${alpha.toFixed(1)}</span>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[9px]"><span class="text-on-surface-variant">Alpha Score</span><span class="text-on-surface font-bold">${alpha.toFixed(1)}</span></div>
+                    <div class="flex justify-between text-[9px]"><span class="text-on-surface-variant">1D Return</span><span class="text-secondary font-bold">${retStr}</span></div>
+                    <div class="flex justify-between items-center text-[9px]">
+                        <span class="text-on-surface-variant">Confidence</span>
+                        <div class="flex gap-0.5">${Array(3).fill(0).map((_, i) => '<div class="w-1 h-2 rounded-full ' + (i < Math.ceil(confPct / 34) ? 'bg-secondary' : 'bg-outline-variant/30') + '"></div>').join('')}</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Load suggested stocks (top 3 valid signals with reasoning)
+    const allSigs = signals || [];
+    if (allSigs.length > 0) {
+        // Deduplicate by ticker, take top 3
+        const seen = new Set();
+        const top = [];
+        for (const s of allSigs) {
+            if (!seen.has(s.ticker) && (s.alpha_score || 0) >= 40) {
+                seen.add(s.ticker);
+                top.push(s);
+                if (top.length >= 3) break;
+            }
+        }
+        if (top.length > 0) {
+            document.getElementById('suggestedSection').style.display = 'block';
+            document.getElementById('suggestedStocks').innerHTML = top.map(sig => {
+                const sent   = sig.sentiment || 'neutral';
+                const color  = sent === 'bullish' ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
+                const evType = (sig.event_type || 'news').replace(/_/g, ' ');
+                const alpha  = sig.alpha_score || 0;
+                const pred1d = sig.predictions?.['1D']?.return_pct;
+                const pred3d = sig.predictions?.['3D']?.return_pct;
+
+                // Prediction badges
+                const predBadges = [pred1d, pred3d].map((p, i) => p != null
+                    ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold" style="background:${p>=0?'rgba(78,222,163,0.1)':'rgba(255,180,171,0.1)'};color:${p>=0?'#4edea3':'#ffb4ab'}">${['1D','3D'][i]} ${p>=0?'+':''}${p.toFixed(1)}%</span>`
+                    : ''
+                ).filter(Boolean).join('');
+
+                // Alpha quality tier
+                const alphaTier = alpha >= 80 ? 'TOP PICK' : alpha >= 65 ? 'HIGH CONV.' : alpha >= 50 ? 'MODERATE' : 'WATCHLIST';
+                const alphaColor = UIHelper.alphaColor(alpha);
+                const reasoningSlot = `sugReason_${sig.event_id}`;
+
+                return `
+                <div class="bg-surface-container-low rounded-xl border border-${color}/20 p-5 hover:border-${color}/40 transition-all group">
+                    <!-- Header row -->
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span data-ticker="${sig.ticker}" class="text-xl font-black font-headline text-on-surface cursor-pointer hover:text-primary transition-colors">${sig.ticker}</span>
+                                <span class="text-[9px] px-1.5 py-0.5 bg-${color}/10 text-${color} rounded font-bold uppercase">${sent}</span>
+                                <span class="text-[8px] px-1 py-0.5 bg-surface-container-highest rounded text-on-surface-variant font-bold uppercase">${evType}</span>
+                            </div>
+                            <p class="text-[11px] text-on-surface-variant truncate">${sig.company || sig.ticker}${sig.sector ? ' · ' + (sig.sector||'').replace(/_/g,' ') : ''}</p>
+                        </div>
+                        <div class="text-right ml-3 flex-shrink-0">
+                            <div class="text-2xl font-black font-mono leading-none" style="color:${alphaColor}">${alpha.toFixed(0)}</div>
+                            <div class="text-[8px] font-bold uppercase mt-0.5" style="color:${alphaColor};opacity:0.7">${alphaTier}</div>
+                        </div>
+                    </div>
+
+                    <!-- Prediction badges -->
+                    ${predBadges ? `<div class="flex gap-1.5 mb-3">${predBadges}</div>` : ''}
+
+                    <!-- Reasoning block (loaded async from backend reasoning_engine) -->
+                    <div class="p-3 rounded-lg border border-outline-variant/10" style="background:rgba(10,14,20,0.5)">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <span class="material-symbols-outlined text-[14px] text-${color}">psychology</span>
+                            <span class="text-[9px] font-bold uppercase tracking-widest text-${color}">Why this stock</span>
+                        </div>
+                        <div id="${reasoningSlot}" class="text-[11px] text-on-surface-variant/85 leading-relaxed">
+                            <span class="opacity-50">loading reasoning…</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="mt-3 pt-2.5 border-t border-outline-variant/10 flex items-center justify-between">
+                        <span class="text-[9px] text-on-surface-variant/50 font-mono">${UIHelper.formatPrice(sig.entry_price)}</span>
+                        <span class="text-[9px] text-on-surface-variant/40">${UIHelper.formatTime(sig.created_at)}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Hydrate reasoning blocks in parallel from the backend.
+            // Falls back to client-side template only if the API fails.
+            top.forEach(sig => {
+                const slot = document.getElementById(`sugReason_${sig.event_id}`);
+                if (!slot) return;
+                API.get(`/signal/${encodeURIComponent(sig.event_id)}/reasoning`)
+                    .then(res => {
+                        const r = res?.data || res;
+                        if (!r || !r.primary_driver) throw new Error('empty reasoning');
+                        const facts = (r.headline_facts || []).length
+                            ? `<div class="mt-1 text-[10px] opacity-70">Figures: ${r.headline_facts.join(' · ')}</div>` : '';
+                        const risks = (r.risk_factors || []).slice(0, 2)
+                            .map(x => `<li>${x}</li>`).join('');
+                        slot.innerHTML = `
+                            <div class="font-semibold text-on-surface mb-1">${r.primary_driver}</div>
+                            <div class="opacity-80 mb-1">${r.why_direction || ''}</div>
+                            <div class="opacity-70 text-[10px]">${r.why_magnitude || ''}</div>
+                            ${facts}
+                            ${risks ? `<ul class="mt-1.5 text-[10px] opacity-70 list-disc list-inside text-error/80">${risks}</ul>` : ''}
+                        `;
+                    })
+                    .catch(() => {
+                        slot.innerHTML = buildSignalReasoning(sig, activePulse);
+                    });
+            });
+        }
+    }
+
+    // Load prediction accuracy
+    const accuracy = await LiveData.getAccuracy();
+    if (accuracy && Object.keys(accuracy).length > 0) {
+        document.getElementById('accuracySection').style.display = 'grid';
+        for (const [horizon, stats] of Object.entries(accuracy)) {
+            const el = document.getElementById(`accuracy${horizon}`);
+            if (el) el.textContent = `${(stats.hit_rate * 100).toFixed(1)}%`;
+            const countEl = document.getElementById(`accuracy${horizon}Count`);
+            if (countEl) countEl.textContent = `${stats.total} predictions`;
+        }
+    }
+
+    // ============ INSIGHTS STUDIO renderers (shared module) ============
+    try { await InsightsStudio.mount('insightsRoot', { dashboard, signals, indices }); }
+    catch(e) { console.warn('insights studio:', e); }
+
+    // Sector concentration warning — fetch analytics and warn if top sector >40%
+    try {
+        const analyticsRes = await API.get('/analytics');
+        const conc = analyticsRes?.data?.concentration;
+        const risk = analyticsRes?.data?.summary?.concentration_risk;
+        if (conc && conc.length && conc[0].pct >= 40) {
+            const warn = document.getElementById('concentrationWarning');
+            const txt  = document.getElementById('concentrationText');
+            if (warn && txt) {
+                txt.textContent = `${conc[0].pct}% of active signals are in ${conc[0].sector} — consider diversifying across sectors.`;
+                warn.classList.remove('hidden');
+            }
+        }
+    } catch(e) { /* non-critical */ }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    SoundFX.init();
+    DataRefresher.start(async () => {
+        await loadHomePage();
+        // Check for new signals and play sound
+        const dashboard = await LiveData.getDashboard();
+        if (dashboard) SoundFX.checkForNewSignals(dashboard.active_signals || 0);
+    }, 60000);
+    Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

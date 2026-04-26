@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Sector Heatmap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sector-tile { transition: all 0.3s; cursor: pointer; }
+        .sector-tile:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Sector Intelligence</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link active" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-6">
+        <h1 class="text-4xl font-black font-headline text-on-surface mb-1">SECTOR HEATMAP</h1>
+        <p class="text-on-surface-variant text-sm">Real-time sector sentiment from event analysis. Click any sector to drill down.</p>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'sectors'}); });</script>
+
+    <!-- ============ SECTORS INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-8" id="sectorsStudio">
+      <div style="display:grid;grid-template-columns:1.1fr 1fr 1.4fr;gap:14px;">
+        <div class="widget" style="min-height:280px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Top sectors by signal flow</div>
+              <div class="widget__meta">Click a ring to drill in</div>
+            </div>
+            <span class="widget__year-pill" id="sectorsTotal">— sectors</span>
+          </div>
+          <div id="sectorsRingsStage" style="flex:1;"></div>
+        </div>
+
+        <div class="widget" style="min-height:280px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Net sentiment</div>
+              <div class="widget__meta">Bull − bear / total</div>
+            </div>
+          </div>
+          <div id="sectorsNetDonut" style="flex:1;"></div>
+        </div>
+
+        <div class="widget" style="min-height:280px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Sector signal distribution</div>
+              <div class="widget__meta">Each bar = one sector</div>
+            </div>
+          </div>
+          <div id="sectorsHist" style="margin-top:10px;flex:1;"></div>
+        </div>
+      </div>
+
+      <div class="widget" style="margin-top:14px;min-height:auto;">
+        <div class="widget__head">
+          <div>
+            <div class="widget__title">Sector composition · stacked share</div>
+            <div class="widget__meta">Click a segment to filter the heatmap below</div>
+          </div>
+        </div>
+        <div id="sectorsStacked"></div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        const res = await Widgets.fetchJSON('/sectors');
+        const sectors = (res && res.data) || [];
+        document.getElementById('sectorsTotal').textContent = sectors.length + ' sectors';
+        if (!sectors.length) return;
+        const sorted = [...sectors].sort((a,b) => (b.total_signals||0) - (a.total_signals||0));
+        // Rings (top 4)
+        Widgets.rings(document.getElementById('sectorsRingsStage'),
+          sorted.slice(0,4).map(s => ({label: (s.sector||'').replace(/_/g,' '), value: s.total_signals||0})),
+          {onClick: 'sectorRingClick'}
+        );
+        // Net sentiment donut
+        const tBull = sectors.reduce((a,s) => a + (s.bullish||0), 0);
+        const tBear = sectors.reduce((a,s) => a + (s.bearish||0), 0);
+        const tNeut = sectors.reduce((a,s) => a + (s.neutral||0), 0);
+        const total = tBull + tBear + tNeut;
+        const net = total ? Math.round((tBull - tBear) / total * 100) : 0;
+        Widgets.donut(document.getElementById('sectorsNetDonut'), Math.max(0, net),
+          {label: (net >= 0 ? '+' : '') + net + '%', sublabel: 'net bullish'});
+        // Histogram
+        Widgets.histogram(document.getElementById('sectorsHist'),
+          sorted.slice(0, 10).map(s => ({
+            label: (s.sector||'').replace(/_/g,' ').slice(0,6),
+            value: s.total_signals||0,
+            color: (s.sentiment_score||0) > 10 ? '#4ee6b8' : (s.sentiment_score||0) < -10 ? '#ff7a8a' : '#5b6cff'
+          })),
+          {height: 110}
+        );
+        // Stacked bar
+        Widgets.stackedBar(document.getElementById('sectorsStacked'),
+          sorted.slice(0, 8).map((s, i) => ({
+            label: (s.sector||'').replace(/_/g,' '),
+            value: s.total_signals||0,
+            color: ['#5b6cff','#4ee6b8','#ff7a8a','#ffc266','#8458ff','#4ec5e6','#ff9466','#b6c2ff'][i % 8]
+          })),
+          {height: 18}
+        );
+      } catch(e) { console.warn('sectors studio:', e); }
+    })();
+    function sectorRingClick(label) {
+      // Scroll to sector tile in heatmap below
+      const grid = document.getElementById('heatmapGrid');
+      const tiles = grid?.querySelectorAll('.sector-tile') || [];
+      for (const t of tiles) {
+        if (t.textContent.toLowerCase().includes(label.toLowerCase())) {
+          t.scrollIntoView({behavior:'smooth', block:'center'});
+          t.style.outline = '2px solid var(--info)';
+          setTimeout(() => { t.style.outline = ''; }, 2000);
+          break;
+        }
+      }
+    }
+    </script>
+    <!-- ============ END SECTORS INSIGHT STUDIO ============ -->
+
+    <!-- Heatmap Grid -->
+    <div id="heatmapGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 px-2">
+        <div class="col-span-full text-center py-12 text-on-surface-variant/40">Loading sectors...</div>
+    </div>
+
+    <!-- Sector Detail Drawer -->
+    <div id="sectorDetail" class="hidden mb-8">
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-headline font-bold text-xl text-on-surface" id="detailTitle">Sector</h2>
+                <button onclick="closeSectorDetail()" class="p-2 text-on-surface-variant hover:bg-surface-container rounded">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div id="detailStocks" class="space-y-3"></div>
+        </div>
+    </div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script>
+function getSentimentColor(score) {
+    // score: -100 (max bearish) to +100 (max bullish)
+    if (score > 30) return { bg: 'rgba(78,222,163,0.15)', border: 'rgba(78,222,163,0.3)', text: '#4edea3', icon: 'trending_up' };
+    if (score > 10) return { bg: 'rgba(78,222,163,0.08)', border: 'rgba(78,222,163,0.15)', text: '#4edea388', icon: 'trending_up' };
+    if (score < -30) return { bg: 'rgba(255,180,171,0.15)', border: 'rgba(255,180,171,0.3)', text: '#ffb4ab', icon: 'trending_down' };
+    if (score < -10) return { bg: 'rgba(255,180,171,0.08)', border: 'rgba(255,180,171,0.15)', text: '#ffb4ab88', icon: 'trending_down' };
+    return { bg: 'rgba(173,198,255,0.06)', border: 'rgba(173,198,255,0.12)', text: '#adc6ff88', icon: 'trending_flat' };
+}
+
+const SECTOR_ICONS = {
+    'IT': 'computer', 'BFSI': 'account_balance', 'ENERGY': 'bolt', 'METALS': 'hardware',
+    'PHARMA': 'medication', 'AUTO': 'directions_car', 'FMCG': 'shopping_cart',
+    'INFRA': 'construction', 'TELECOM': 'cell_tower', 'REALESTATE': 'apartment',
+    'CHEMICALS': 'science', 'CEMENT': 'foundation', 'DEFENCE': 'shield',
+    'CONSUMER': 'storefront', 'RETAIL': 'store', 'TECH': 'devices',
+    'OTHER': 'category', 'TEXTILE': 'checkroom', 'AVIATION': 'flight',
+    'LOGISTICS': 'local_shipping', 'TRAVEL': 'luggage', 'HOSPITALITY': 'hotel',
+    'HEALTHCARE': 'local_hospital', 'ELECTRONICS': 'memory', 'CONGLOMERATE': 'hub',
+};
+
+async function loadHeatmap() {
+    const grid = document.getElementById('heatmapGrid');
+    const res = await API.get('/sectors');
+    const sectors = res?.data || [];
+
+    if (sectors.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-on-surface-variant/40 text-sm">No sector data yet. Wait for scraper to populate signals.</div>';
+        return;
+    }
+
+    grid.innerHTML = sectors.map(sec => {
+        const c = getSentimentColor(sec.sentiment_score);
+        const icon = SECTOR_ICONS[sec.sector] || 'category';
+        const topStock = sec.top_stock;
+        const bullPct = sec.total_signals > 0 ? Math.round(sec.bullish / sec.total_signals * 100) : 0;
+        const bearPct = sec.total_signals > 0 ? Math.round(sec.bearish / sec.total_signals * 100) : 0;
+
+        return `
+        <div class="sector-tile rounded-xl p-5" onclick="openSectorDetail('${sec.sector}')"
+             style="background:${c.bg};border:1px solid ${c.border};">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:${c.border};">
+                        <span class="material-symbols-outlined text-lg" style="color:${c.text};">${icon}</span>
+                    </div>
+                    <div>
+                        <h3 class="font-headline font-bold text-base text-on-surface">${sec.sector}</h3>
+                        <span class="text-[10px] text-on-surface-variant">${sec.total_signals} signals</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm" style="color:${c.text};">${c.icon}</span>
+                        <span class="font-mono font-bold text-lg" style="color:${c.text};">${sec.sentiment_score > 0 ? '+' : ''}${sec.sentiment_score}%</span>
+                    </div>
+                    <span class="text-[9px] text-on-surface-variant/50">sentiment</span>
+                </div>
+            </div>
+
+            <!-- Sentiment Bar -->
+            <div class="flex h-1.5 rounded-full overflow-hidden mb-3" style="background:#10141a;">
+                <div style="width:${bullPct}%;background:#4edea3;" class="rounded-l-full"></div>
+                <div style="width:${100 - bullPct - bearPct}%;background:#adc6ff33;"></div>
+                <div style="width:${bearPct}%;background:#ffb4ab;" class="rounded-r-full"></div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex gap-3 text-[9px]">
+                    <span style="color:#4edea3;">${sec.bullish} bullish</span>
+                    <span style="color:#ffb4ab;">${sec.bearish} bearish</span>
+                </div>
+                <span class="text-[10px] font-mono" style="color:${UIHelper.alphaColor(sec.avg_alpha)};">avg α ${sec.avg_alpha}</span>
+            </div>
+
+            ${topStock ? `
+            <div class="mt-3 pt-3 flex items-center justify-between" style="border-top:1px solid ${c.border};">
+                <div>
+                    <span data-ticker="${topStock.ticker}" class="text-xs font-mono font-bold text-primary cursor-pointer hover:underline">${topStock.ticker}</span>
+                    <span class="text-[9px] text-on-surface-variant ml-1">${(topStock.company || '').split(' ')[0]}</span>
+                </div>
+                <span class="text-xs font-bold font-mono" style="color:${UIHelper.alphaColor(topStock.alpha)};">α ${topStock.alpha}</span>
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+async function openSectorDetail(sector) {
+    SoundFX.pop();
+    const detail = document.getElementById('sectorDetail');
+    const title = document.getElementById('detailTitle');
+    const stocks = document.getElementById('detailStocks');
+
+    title.textContent = sector + ' Sector Stocks';
+    stocks.innerHTML = '<div class="text-center py-4 text-on-surface-variant/40 text-sm">Loading...</div>';
+    detail.classList.remove('hidden');
+    detail.scrollIntoView({ behavior: 'smooth' });
+
+    const res = await API.get(`/sectors/${sector}/stocks`);
+    const data = res?.data || [];
+
+    if (data.length === 0) {
+        stocks.innerHTML = '<div class="text-center py-4 text-on-surface-variant/40 text-sm">No signals for this sector</div>';
+        return;
+    }
+
+    // Deduplicate by ticker
+    const seen = new Set();
+    const unique = data.filter(s => { if (seen.has(s.ticker)) return false; seen.add(s.ticker); return true; });
+
+    stocks.innerHTML = unique.slice(0, 15).map(sig => {
+        const sent = sig.sentiment || 'neutral';
+        const sentColor = sent === 'bullish' ? '#4edea3' : sent === 'bearish' ? '#ffb4ab' : '#adc6ff';
+        const alpha = sig.alpha_score || 0;
+        return `
+        <div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-container transition-colors" style="background:#10141a44;">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded flex items-center justify-center" style="background:${sentColor}15;border:1px solid ${sentColor}22;">
+                    <span class="material-symbols-outlined text-sm" style="color:${sentColor};">${sent === 'bullish' ? 'trending_up' : sent === 'bearish' ? 'trending_down' : 'trending_flat'}</span>
+                </div>
+                <div>
+                    <span data-ticker="${sig.ticker}" class="font-mono font-bold text-sm text-primary cursor-pointer hover:underline">${sig.ticker}</span>
+                    <span class="text-[10px] text-on-surface-variant ml-1">${(sig.company || '').split(/\s+/).slice(0, 2).join(' ')}</span>
+                    <div class="text-[9px] text-on-surface-variant/50">${(sig.event_type || '').replace(/_/g, ' ')} • ${UIHelper.formatPrice(sig.entry_price)}</div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-lg font-black font-mono" style="color:${UIHelper.alphaColor(alpha)};">${alpha.toFixed(1)}</div>
+                <div class="text-[8px] text-on-surface-variant/40">alpha</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function closeSectorDetail() {
+    document.getElementById('sectorDetail').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    SoundFX.init();
+    DataRefresher.start(loadHeatmap, 60000);
+    Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

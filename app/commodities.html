@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventAlpha | Commodities</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        /* Market hours timeline */
+        .hours-track {
+            position: relative;
+            height: 28px;
+            background: var(--s1);
+            border: 1px solid var(--b1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .hours-segment {
+            position: absolute;
+            top: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .hours-now-marker {
+            position: absolute;
+            top: -4px; bottom: -4px;
+            width: 2px;
+            background: var(--caution);
+            border-radius: 1px;
+            z-index: 10;
+        }
+        .hours-now-marker::after {
+            content: 'NOW';
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 7px;
+            font-weight: 800;
+            color: var(--caution);
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+        }
+
+        /* Commodity card */
+        .comm-card {
+            background: var(--s1);
+            border: 1px solid var(--b1);
+            border-radius: 6px;
+            transition: border-color 120ms ease, background 120ms ease;
+            cursor: default;
+        }
+        .comm-card:hover { background: var(--s2); border-color: var(--b2); }
+        .comm-card.up   { border-left: 2px solid var(--bull); }
+        .comm-card.down { border-left: 2px solid var(--bear); }
+
+        /* Category tabs */
+        .cat-tab {
+            padding: 4px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--t2);
+            border: 1px solid transparent;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 100ms ease;
+            background: transparent;
+        }
+        .cat-tab.active {
+            background: var(--s3);
+            border-color: var(--b2);
+            color: var(--t1);
+        }
+        .cat-tab:hover:not(.active) { color: var(--t1); }
+
+        /* Impact row */
+        .impact-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--b0);
+            font-size: 12px;
+        }
+        .impact-row:last-child { border-bottom: none; }
+        .impact-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        .impact-chip.pos { background: var(--bull-dim); color: var(--bull); }
+        .impact-chip.neg { background: var(--bear-dim); color: var(--bear); }
+        .impact-chip.neu { background: rgba(255,255,255,0.05); color: var(--t2); }
+
+        /* Insight card */
+        .insight-card {
+            background: var(--s1);
+            border: 1px solid var(--b1);
+            border-radius: 6px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        /* Clickable commodity card */
+        .comm-card { cursor: pointer; }
+        .comm-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+
+        /* ── Commodity Popup ── */
+        .comm-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.78);
+            backdrop-filter: blur(6px);
+            z-index: 9000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 200ms ease;
+        }
+        .comm-backdrop.open { opacity: 1; pointer-events: all; }
+        .comm-modal {
+            background: #0d1118;
+            border: 1px solid rgba(61,74,92,0.5);
+            border-radius: 16px;
+            width: 100%; max-width: 820px;
+            max-height: 92vh;
+            overflow: hidden; display: flex; flex-direction: column;
+            transform: translateY(16px) scale(0.97);
+            transition: transform 220ms cubic-bezier(0.16,1,0.3,1);
+        }
+        .comm-backdrop.open .comm-modal { transform: translateY(0) scale(1); }
+        .popup-tab-bar { display: flex; border-bottom: 1px solid rgba(61,74,92,0.3); padding: 0 20px; gap: 2px; }
+        .popup-tab {
+            padding: 10px 14px; font-size: 10px; font-weight: 700; cursor: pointer;
+            border-bottom: 2px solid transparent; color: #8a94a8;
+            transition: all 150ms; text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .popup-tab.active { color: #8eb4e0; border-bottom-color: #8eb4e0; }
+        .popup-tab-panel { display: none; }
+        .popup-tab-panel.active { display: block; }
+
+        /* Event cards in feed */
+        .ev-feed-card {
+            background: #111720;
+            border: 1px solid rgba(61,74,92,0.25);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 150ms;
+            margin: 10px 12px;
+        }
+        .ev-feed-card:hover { border-color: rgba(142,180,224,0.3); }
+        .ev-news-item {
+            display: flex; align-items: flex-start; gap: 8px;
+            padding: 7px 12px; border-top: 1px solid rgba(61,74,92,0.15);
+            font-size: 11px;
+        }
+        .ev-news-item:first-child { border-top: none; }
+
+        /* 52W range bar */
+        .range-track { position: relative; height: 4px; background: #1c2435; border-radius: 2px; }
+        .range-fill { position: absolute; height: 100%; border-radius: 2px; }
+        .range-dot  { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0d1118; }
+
+        /* Popup chart */
+        svg.popup-chart text { font-family: 'DM Sans', sans-serif; fill: #5a6478; font-size: 9px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">EventAlpha</h1>
+        <p class="sidebar-brand-sub">Precision Quant</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link active" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    </nav>
+    <div id="authStatus" style="margin-top:auto;padding:12px 20px;border-top:1px solid var(--b0);font-size:10px;color:var(--t3);letter-spacing:0.04em;"></div>
+</aside>
+
+<main class="main-content">
+
+    <!-- Page Header -->
+    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-3xl font-black font-headline text-on-surface">COMMODITIES</h1>
+            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">MCX · NCDEX · COMEX</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- IST Live Clock -->
+            <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded border border-outline-variant/10">
+                <span class="material-symbols-outlined text-sm text-on-surface-variant">schedule</span>
+                <span id="istClock" class="font-mono text-xs font-bold text-on-surface">--:--:--</span>
+                <span class="text-[9px] text-on-surface-variant uppercase tracking-wider">IST</span>
+            </div>
+            <!-- Market Status Badge -->
+            <div id="marketStatusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-bold uppercase tracking-wider">
+                <span id="marketStatusDot" class="w-2 h-2 rounded-full"></span>
+                <span id="marketStatusText">Checking...</span>
+            </div>
+        </div>
+    </header>
+    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'commodities'}); });</script>
+
+    <!-- Market Status Cards Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 px-0">
+        <!-- NSE/BSE Hours -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+            <p class="text-[9px] uppercase tracking-widest text-on-surface-variant/60 mb-1 font-bold">NSE / BSE (Equity)</p>
+            <div id="nseStatus" class="text-sm font-bold text-on-surface mb-1">—</div>
+            <p class="text-[10px] text-on-surface-variant">9:15 AM – 3:30 PM IST</p>
+            <p class="text-[9px] text-on-surface-variant/50 mt-0.5">Pre-market: 9:00–9:15 AM</p>
+        </div>
+        <!-- MCX Hours -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+            <p class="text-[9px] uppercase tracking-widest text-on-surface-variant/60 mb-1 font-bold">MCX (Commodities)</p>
+            <div id="mcxStatus" class="text-sm font-bold text-on-surface mb-1">—</div>
+            <p class="text-[10px] text-on-surface-variant">9:00 AM – 11:55 PM IST</p>
+            <p class="text-[9px] text-on-surface-variant/50 mt-0.5">Mon–Fri (excl. holidays)</p>
+        </div>
+        <!-- Rising count -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+            <p class="text-[9px] uppercase tracking-widest text-on-surface-variant/60 mb-1 font-bold">Rising Today</p>
+            <div id="risingCount" class="text-2xl font-black font-mono text-secondary">—</div>
+            <p class="text-[10px] text-on-surface-variant" id="risingLabel">of tracked commodities</p>
+        </div>
+        <!-- MCX Gold quick -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
+            <p class="text-[9px] uppercase tracking-widest text-on-surface-variant/60 mb-1 font-bold">MCX Gold</p>
+            <div id="goldQuick" class="text-2xl font-black font-mono text-on-surface">—</div>
+            <div id="goldQuickChg" class="text-xs font-bold mt-0.5">—</div>
+        </div>
+    </div>
+
+    <!-- ============ COMMODITIES INSIGHT STUDIO (page-unique) ============ -->
+    <section class="mb-6 mx-2" id="commStudio">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;">
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Commodity movers</div>
+              <div class="widget__meta">Live MCX & global · sparks</div>
+            </div>
+          </div>
+          <div id="commMoversGrid" style="margin-top:8px;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Up vs down</div>
+              <div class="widget__meta">Daily breadth</div>
+            </div>
+          </div>
+          <div id="commBreadthDonut" style="flex:1;"></div>
+        </div>
+        <div class="widget" style="min-height:240px;">
+          <div class="widget__head">
+            <div>
+              <div class="widget__title">Move magnitude</div>
+              <div class="widget__meta">|% change| histogram</div>
+            </div>
+          </div>
+          <div id="commMagHist" style="margin-top:10px;flex:1;"></div>
+        </div>
+      </div>
+    </section>
+    <script>
+    (async function(){
+      try {
+        const res = await Widgets.fetchJSON('/commodities');
+        const list = (res && res.data) || [];
+        if (!list.length) return;
+
+        // Movers — top 6 by |% change|
+        const movers = [...list].sort((a,b) => Math.abs(b.change_pct||0) - Math.abs(a.change_pct||0)).slice(0, 6);
+        Widgets.miniSparkGrid(document.getElementById('commMoversGrid'),
+          movers.map(c => ({
+            label: c.name || c.symbol,
+            value: '₹' + (c.price || 0).toLocaleString('en-IN'),
+            deltaPct: c.change_pct || 0,
+            // Generate 8-point spark from prev → current with smooth ease
+            points: (() => {
+              const start = (c.price || 0) - (c.change || 0);
+              const end = c.price || 0;
+              return Array.from({length: 8}, (_, i) => {
+                const t = i / 7; const e = t*t*(3-2*t);
+                return start + (end - start) * e;
+              });
+            })()
+          })),
+          {cols: 'repeat(auto-fill, minmax(170px, 1fr))'}
+        );
+
+        // Breadth donut
+        const up = list.filter(c => (c.change_pct || 0) > 0).length;
+        const upPct = list.length ? Math.round(up / list.length * 100) : 0;
+        Widgets.donut(document.getElementById('commBreadthDonut'), upPct,
+          {label: up + ' / ' + list.length, sublabel: 'rising commodities',
+           color: upPct >= 50 ? '#4ee6b8' : '#ff7a8a',
+           color2: upPct >= 50 ? '#4ec5e6' : '#ff9466'});
+
+        // Magnitude histogram — bucket by 1% bins
+        const buckets = [
+          {label: '<0.5%', value: list.filter(c => Math.abs(c.change_pct||0) < 0.5).length, color: '#5b6cff'},
+          {label: '0.5-1%', value: list.filter(c => Math.abs(c.change_pct||0) >= 0.5 && Math.abs(c.change_pct||0) < 1).length, color: '#4ee6b8'},
+          {label: '1-2%', value: list.filter(c => Math.abs(c.change_pct||0) >= 1 && Math.abs(c.change_pct||0) < 2).length, color: '#ffc266'},
+          {label: '2-3%', value: list.filter(c => Math.abs(c.change_pct||0) >= 2 && Math.abs(c.change_pct||0) < 3).length, color: '#ff9466'},
+          {label: '3%+',  value: list.filter(c => Math.abs(c.change_pct||0) >= 3).length, color: '#ff7a8a'},
+        ];
+        Widgets.histogram(document.getElementById('commMagHist'), buckets, {height: 110});
+      } catch(e) { console.warn('commodities studio:', e); }
+    })();
+    </script>
+    <!-- ============ END COMMODITIES INSIGHT STUDIO ============ -->
+
+    <!-- Market Hours Timeline -->
+    <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 mb-6">
+        <h2 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/60 mb-3">Market Hours — Today (IST)</h2>
+        <!-- NSE/BSE Timeline -->
+        <div class="mb-3">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-[10px] font-bold text-on-surface-variant uppercase">NSE / BSE</span>
+                <span class="text-[9px] text-on-surface-variant/50">9:00 AM → 4:00 PM</span>
+            </div>
+            <div class="hours-track mb-1" id="nseTimeline">
+                <!-- Injected by JS -->
+            </div>
+            <div class="flex justify-between text-[8px] text-on-surface-variant/40 font-mono px-0.5">
+                <span>9:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span>
+            </div>
+        </div>
+        <!-- MCX Timeline -->
+        <div>
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-[10px] font-bold text-on-surface-variant uppercase">MCX</span>
+                <span class="text-[9px] text-on-surface-variant/50">9:00 AM → 11:55 PM</span>
+            </div>
+            <div class="hours-track" id="mcxTimeline">
+                <!-- Injected by JS -->
+            </div>
+            <div class="flex justify-between text-[8px] text-on-surface-variant/40 font-mono px-0.5">
+                <span>9:00</span><span>12:00</span><span>15:00</span><span>17:00</span><span>20:00</span><span>23:55</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="flex items-center gap-1 mb-4">
+        <button class="cat-tab active" onclick="switchCategory('metals', this)">Metals</button>
+        <button class="cat-tab" onclick="switchCategory('energy', this)">Energy</button>
+        <button class="cat-tab" onclick="switchCategory('agri', this)">Agri</button>
+        <div class="ml-auto flex items-center gap-2 text-[10px] text-on-surface-variant">
+            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span>Rising</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span>Falling</span>
+        </div>
+    </div>
+
+    <!-- Commodities Grid -->
+    <div id="commodityGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Commodity Events Feed -->
+    <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 overflow-hidden mb-8">
+        <div class="px-4 py-3 border-b border-outline-variant/10 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-caution">event_note</span>
+                <h2 class="font-bold text-sm text-on-surface">Commodity-Moving Events</h2>
+            </div>
+            <span class="text-[9px] text-on-surface-variant uppercase tracking-wider">Scheduled & Breaking</span>
+        </div>
+        <div id="commEventsFeed" class="divide-y divide-outline-variant/10">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- 2-column layout: Impact + Personalized -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+        <!-- Commodity → Stock Impact -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 overflow-hidden">
+            <div class="px-4 py-3 border-b border-outline-variant/10 flex items-center justify-between">
+                <h2 class="font-bold text-sm text-on-surface">Commodity → Stock Impact</h2>
+                <span class="text-[9px] text-on-surface-variant uppercase tracking-wider">Today's moves</span>
+            </div>
+            <div id="impactMatrix" class="divide-y divide-outline-variant/10">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+
+        <!-- Personalized Insights -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 overflow-hidden">
+            <div class="px-4 py-3 border-b border-outline-variant/10 flex items-center justify-between">
+                <h2 class="font-bold text-sm text-on-surface">Your Watchlist Impact</h2>
+                <span class="text-[9px] text-on-surface-variant uppercase tracking-wider">Personalized</span>
+            </div>
+            <div id="watchlistInsights" class="p-4 space-y-2">
+                <div class="text-xs text-on-surface-variant/50 text-center py-4">Loading watchlist...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Bar Chart -->
+    <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 mb-8">
+        <h2 class="font-bold text-sm text-on-surface mb-4">Today's Performance — All Commodities</h2>
+        <div id="changeChart" class="space-y-2">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+</main>
+
+<!-- ── Commodity Detail Popup ─────────────────────────────── -->
+<div id="commBackdrop" class="comm-backdrop" onclick="closePopupOnBackdrop(event)">
+    <div class="comm-modal">
+
+        <!-- Popup Header -->
+        <div id="popupHeader" class="px-5 py-4 border-b border-outline-variant/15 flex items-start justify-between gap-4 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div id="popupIconWrap" class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(45,212,170,0.1);">
+                    <span id="popupIcon" class="material-symbols-outlined text-xl text-secondary">workspace_premium</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 id="popupName" class="font-black text-xl font-headline text-on-surface">Gold</h2>
+                        <span id="popupBadge" class="text-[9px] px-1.5 py-0.5 rounded font-bold border">MCX</span>
+                    </div>
+                    <div class="flex items-center gap-3 mt-0.5">
+                        <span id="popupPrice" class="font-mono font-black text-2xl text-on-surface">₹92,450</span>
+                        <span id="popupChange" class="font-mono text-sm font-bold text-secondary">▲ +0.35%</span>
+                        <span id="popupAbsChange" class="font-mono text-xs text-on-surface-variant/50">+₹320</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="closePopup()" class="text-on-surface-variant hover:text-on-surface p-1 rounded transition-colors flex-shrink-0">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="popup-tab-bar flex-shrink-0">
+            <button class="popup-tab active" onclick="switchPopupTab('overview', this)">Overview</button>
+            <button class="popup-tab" onclick="switchPopupTab('events', this)">Events</button>
+            <button class="popup-tab" onclick="switchPopupTab('news', this)">News</button>
+            <button class="popup-tab" onclick="switchPopupTab('stocks', this)">Stocks Impact</button>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="overflow-y-auto flex-1">
+
+            <!-- ── Tab: Overview ── -->
+            <div id="tab-overview" class="popup-tab-panel active p-5 space-y-5">
+                <!-- Price Chart -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold">30-Day Price Chart</span>
+                        <div id="popupChgBadges" class="flex gap-3 text-[10px]"></div>
+                    </div>
+                    <div id="popupChartWrap">
+                        <svg id="popupChart" class="popup-chart" style="width:100%;height:140px;display:block;"></svg>
+                    </div>
+                </div>
+
+                <!-- 52W Range -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5 text-[10px] text-on-surface-variant/60">
+                        <span id="popup52Low" class="font-mono">—</span>
+                        <span class="uppercase tracking-widest font-bold">52-Week Range</span>
+                        <span id="popup52High" class="font-mono">—</span>
+                    </div>
+                    <div class="range-track">
+                        <div id="rangeBar" class="range-fill" style="left:0;right:0;background:linear-gradient(90deg,#f26b6b,#e6b84a,#2dd4aa);opacity:0.4;"></div>
+                        <div id="rangeDot" class="range-dot" style="left:50%;background:#2dd4aa;"></div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-surface-container rounded-lg p-3">
+                        <div class="text-[9px] text-on-surface-variant/50 uppercase tracking-wider mb-1">Today</div>
+                        <div id="metToday" class="font-mono font-black text-sm text-on-surface">—</div>
+                    </div>
+                    <div class="bg-surface-container rounded-lg p-3">
+                        <div class="text-[9px] text-on-surface-variant/50 uppercase tracking-wider mb-1">7-Day</div>
+                        <div id="metWeek" class="font-mono font-black text-sm">—</div>
+                    </div>
+                    <div class="bg-surface-container rounded-lg p-3">
+                        <div class="text-[9px] text-on-surface-variant/50 uppercase tracking-wider mb-1">30-Day</div>
+                        <div id="metMonth" class="font-mono font-black text-sm">—</div>
+                    </div>
+                    <div class="bg-surface-container rounded-lg p-3">
+                        <div class="text-[9px] text-on-surface-variant/50 uppercase tracking-wider mb-1">Signal</div>
+                        <div id="metSignal" class="font-mono font-black text-sm">—</div>
+                    </div>
+                </div>
+
+                <!-- Trading Info -->
+                <div class="bg-surface-container rounded-xl p-4">
+                    <div class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold mb-3">Trading Specifications</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[11px]">
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Exchange</div><div id="infoExchange" class="font-bold text-on-surface">—</div></div>
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Lot Size</div><div id="infoLot" class="font-mono font-bold text-on-surface">—</div></div>
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Margin Req.</div><div id="infoMargin" class="font-mono font-bold text-caution">—</div></div>
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Expiry</div><div id="infoExpiry" class="font-bold text-on-surface">—</div></div>
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Segment</div><div id="infoSegment" class="font-bold text-on-surface">—</div></div>
+                        <div><div class="text-on-surface-variant/50 mb-0.5">Contract Value</div><div id="infoContVal" class="font-mono font-bold text-primary">—</div></div>
+                    </div>
+                    <p id="infoAbout" class="text-xs text-on-surface-variant/60 mt-3 leading-relaxed border-t border-outline-variant/15 pt-3"></p>
+                </div>
+            </div>
+
+            <!-- ── Tab: Events ── -->
+            <div id="tab-events" class="popup-tab-panel">
+                <div id="popupEventsList" class="divide-y divide-outline-variant/10 p-4 space-y-3"></div>
+            </div>
+
+            <!-- ── Tab: News ── -->
+            <div id="tab-news" class="popup-tab-panel p-4 space-y-3">
+                <div id="popupNewsList"></div>
+            </div>
+
+            <!-- ── Tab: Stocks Impact ── -->
+            <div id="tab-stocks" class="popup-tab-panel p-4 space-y-4">
+                <div id="popupBeneficiaries"></div>
+                <div id="popupHeadwinds"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Phase 1.5 live data: inject commodities-impact card before the mock catalog -->
+<div data-alpha="commodities-impact" class="jargon-scan" style="padding:16px;margin:16px 0;border:1px solid #2a3142;border-radius:10px;background:#0f1420"></div>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/phase_1_5.js"></script>
+<script>
+// ── Commodity Data ─────────────────────────────────────────
+const COMMODITY_CATALOG = {
+    metals: [
+        { id: 'GOLD',      name: 'Gold',      unit: '/10g',    icon: 'workspace_premium', impactStocks: ['TITAN', 'KALYAN', 'PVRINOX', 'GOLDBEES'],   headwindStocks: [] },
+        { id: 'SILVER',    name: 'Silver',    unit: '/kg',     icon: 'star_rate',         impactStocks: ['BATAINDIA', 'HEG'],                           headwindStocks: [] },
+        { id: 'COPPER',    name: 'Copper',    unit: '/kg',     icon: 'electrical_services',impactStocks: ['HINDALCO', 'VEDL', 'NATIONALUM'],             headwindStocks: ['MARUTI', 'TATAMOTORS', 'M&M'] },
+        { id: 'ALUMINIUM', name: 'Aluminium', unit: '/kg',     icon: 'construction',      impactStocks: ['HINDALCO', 'NATIONALUM'],                     headwindStocks: ['TATAMOTORS', 'APOLLOTYRE'] },
+        { id: 'ZINC',      name: 'Zinc',      unit: '/kg',     icon: 'science',           impactStocks: ['VEDL', 'HINDZINC'],                           headwindStocks: [] },
+        { id: 'NICKEL',    name: 'Nickel',    unit: '/kg',     icon: 'bolt',              impactStocks: ['TATASTEEL', 'JSPL', 'SAIL'],                  headwindStocks: [] },
+        { id: 'LEAD',      name: 'Lead',      unit: '/kg',     icon: 'battery_0_bar',     impactStocks: ['VEDL', 'EXIDEIND', 'AMARA RAJA'],             headwindStocks: [] },
+    ],
+    energy: [
+        { id: 'CRUDEOIL',    name: 'Crude Oil',    unit: '/bbl',   icon: 'local_gas_station', impactStocks: ['ONGC', 'OIL', 'RELIANCE', 'BPCL', 'HPCL'], headwindStocks: ['INDIGO', 'SPICEJET', 'ULTRATECH'] },
+        { id: 'NATURALGAS',  name: 'Natural Gas',  unit: '/mmBtu', icon: 'local_fire_department', impactStocks: ['GAIL', 'IGL', 'MGL', 'GSPL'],          headwindStocks: ['ONGC'] },
+    ],
+    agri: [
+        { id: 'CRUDPALMOIL', name: 'Palm Oil',    unit: '/10kg',  icon: 'eco',     impactStocks: ['VBL', 'KANSAINER'],  headwindStocks: [] },
+        { id: 'COTTON',      name: 'Cotton',      unit: '/bale',  icon: 'ac_unit', impactStocks: ['ARVIND', 'TRIDENT'], headwindStocks: [] },
+        { id: 'CHANA',       name: 'Chana',       unit: '/qtl',   icon: 'grain',   impactStocks: [],                    headwindStocks: [] },
+        { id: 'MENTHAOIL',   name: 'Mentha Oil',  unit: '/kg',    icon: 'spa',     impactStocks: ['DABUR', 'EMAMI'],    headwindStocks: [] },
+    ]
+};
+
+// Mock prices (backend fallback)
+const MOCK_COMMODITY_PRICES = {
+    GOLD:        { price: 92450, change: 320,   change_pct: 0.35,  week_pct: 2.1,  month_pct: 5.4,  history: [91200,91500,91800,92100,91900,92300,92450] },
+    SILVER:      { price: 95800, change: -320,  change_pct: -0.33, week_pct: -0.8, month_pct: 3.2,  history: [96800,96400,96100,95900,96200,95900,95800] },
+    COPPER:      { price: 830,   change: 9.5,   change_pct: 1.16,  week_pct: 3.2,  month_pct: 8.1,  history: [795,802,808,815,820,823,830] },
+    ALUMINIUM:   { price: 218,   change: -1.8,  change_pct: -0.82, week_pct: -1.4, month_pct: 2.1,  history: [222,221,220,219,218,218,218] },
+    ZINC:        { price: 252,   change: 2.1,   change_pct: 0.84,  week_pct: 1.8,  month_pct: 4.5,  history: [244,246,248,250,250,252,252] },
+    NICKEL:      { price: 1485,  change: -12,   change_pct: -0.80, week_pct: -2.3, month_pct: -1.1, history: [1510,1505,1498,1492,1490,1488,1485] },
+    LEAD:        { price: 178,   change: 0.9,   change_pct: 0.51,  week_pct: 0.9,  month_pct: 1.8,  history: [175,176,176,177,177,178,178] },
+    CRUDEOIL:    { price: 6320,  change: -95,   change_pct: -1.48, week_pct: -3.2, month_pct: -5.8, history: [6650,6590,6540,6490,6440,6380,6320] },
+    NATURALGAS:  { price: 218,   change: 4.2,   change_pct: 1.96,  week_pct: 5.1,  month_pct: 12.3, history: [200,205,208,210,214,215,218] },
+    CRUDPALMOIL: { price: 855,   change: 6.5,   change_pct: 0.77,  week_pct: 1.5,  month_pct: 3.4,  history: [828,832,838,842,848,851,855] },
+    COTTON:      { price: 58200, change: -200,  change_pct: -0.34, week_pct: -0.6, month_pct: 1.2,  history: [58800,58700,58500,58400,58300,58200,58200] },
+    CHANA:       { price: 5450,  change: 40,    change_pct: 0.74,  week_pct: 1.2,  month_pct: 2.8,  history: [5350,5380,5400,5410,5430,5440,5450] },
+    MENTHAOIL:   { price: 945,   change: -8,    change_pct: -0.84, week_pct: -2.1, month_pct: -0.5, history: [968,962,958,954,950,948,945] },
+};
+
+let allPrices = {};
+let currentCategory = 'metals';
+let watchlistTickers = new Set();
+
+// ── Commodity Events Catalog (enriched) ────────────────────
+const COMM_EVENTS = [
+    { title: 'OPEC+ Joint Ministerial Monitoring Committee', type: 'scheduled', impact: 'high',
+      commodities: ['CRUDEOIL'], date: 'May 3, 2025', nextDate: 'May 3, 2025', sector: 'Energy',
+      impactScore: 88,
+      detail: 'OPEC+ decides output quotas and compliance. A supply cut lifts MCX Crude above ₹6,500; output hike pushes it toward ₹5,800. Saudi Arabia\'s floor price target of $80/bbl is the key reference.',
+      reasoning: 'Current compliance stands at 94% — any improvement bullish. Watch for Saudi unilateral cuts or UAE/Iraq dissent as bearish signals.',
+      news: [
+          { title: 'Saudi Arabia signals production discipline ahead of May JMMC', source: 'Reuters', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'Iraq crude exports hit 4-month high, raising compliance concerns', source: 'Bloomberg', time: 'Apr 14, 2025', sentiment: 'bear' },
+          { title: 'OPEC+ unlikely to ease cuts before Q3 2025, delegates say', source: 'FT', time: 'Apr 12, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'US EIA Weekly Crude & Natural Gas Inventory Report', type: 'report', impact: 'high',
+      commodities: ['CRUDEOIL', 'NATURALGAS'], date: 'Every Wednesday 8:00 PM IST', nextDate: 'Apr 23, 2025',
+      impactScore: 82,
+      detail: 'EIA releases US crude oil and natural gas storage data weekly. Unexpected inventory build = bearish for crude. Draw = bullish. MCX Crude moves 1–2% within minutes of release.',
+      reasoning: 'Consensus expects a draw of 1.2mn barrels. If actual draw > 2mn, bullish spike. If build > 0.5mn, bearish drop. Current 5-year average is -0.8mn.',
+      news: [
+          { title: 'US crude inventories fall 3.8mn bbls — largest draw in 6 weeks', source: 'EIA', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'Natural gas storage build beats expectations; prices retreat', source: 'Reuters', time: 'Apr 11, 2025', sentiment: 'bear' },
+          { title: 'Gasoline demand at 8-month high ahead of US driving season', source: 'Bloomberg', time: 'Apr 9, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'US Federal Reserve FOMC Interest Rate Decision', type: 'scheduled', impact: 'high',
+      commodities: ['GOLD', 'SILVER', 'CRUDEOIL'], date: 'May 7, 2025', nextDate: 'May 7, 2025',
+      impactScore: 95,
+      detail: 'Fed rate decision is the single biggest macro driver for gold. Rate hike → stronger USD → gold falls 1–3%. Rate cut or dovish pause → gold rallies 2–4%. Silver amplifies gold moves by 1.5–2x.',
+      reasoning: 'Market pricing 68% probability of hold. If cut signaled, gold could test ₹95,000. Dot plot and Powell press conference matter more than the rate itself.',
+      news: [
+          { title: 'Fed minutes show majority favor keeping rates higher for longer', source: 'Bloomberg', time: 'Apr 10, 2025', sentiment: 'bear' },
+          { title: 'Core PCE comes in at 2.8% — Fed\'s preferred inflation gauge stays sticky', source: 'WSJ', time: 'Apr 4, 2025', sentiment: 'bear' },
+          { title: 'Gold holds $3,200 as traders await Fed clarity on rate path', source: 'Kitco', time: 'Apr 16, 2025', sentiment: 'neut' },
+      ]
+    },
+    { title: 'RBI Monetary Policy Committee (MPC) Rate Decision', type: 'scheduled', impact: 'high',
+      commodities: ['GOLD', 'CRUDEOIL', 'SILVER'], date: 'Jun 4, 2025', nextDate: 'Jun 4, 2025',
+      impactScore: 80,
+      detail: 'RBI rate decisions move INR, which directly affects MCX commodity prices (priced in INR). Rate cut → INR weakens → MCX gold rises even if COMEX gold is flat. Rate hike → INR strengthens → MCX falls.',
+      reasoning: 'RBI cut 25bps in February. Next cut expected in June if food inflation stays below 5%. INR/USD at 83.8 — a cut could push toward 84.5, adding ~₹400 to MCX Gold per 10g.',
+      news: [
+          { title: 'RBI MPC minutes show split vote on neutral policy stance', source: 'Economic Times', time: 'Apr 5, 2025', sentiment: 'neut' },
+          { title: 'India CPI inflation eases to 3.34% — clears path for RBI cut', source: 'Mint', time: 'Apr 14, 2025', sentiment: 'bull' },
+          { title: 'INR touches 83.8 on FII outflows; commodity importers hedge aggressively', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear' },
+      ]
+    },
+    { title: 'MCX Gold-Silver Ratio Signal', type: 'breaking', impact: 'medium',
+      commodities: ['GOLD', 'SILVER'], date: 'Live — Ratio at 96.5x', nextDate: 'Live',
+      impactScore: 62,
+      detail: 'Gold/Silver ratio is currently at 96.5x, historically extreme. Ratio > 80 suggests silver is undervalued relative to gold. Mean reversion historically favors silver outperformance in the next 6–18 months.',
+      reasoning: '2020 peak ratio was 125x. Historical average is ~68x. Current 96.5x suggests silver has 30–40% catch-up potential if industrial demand holds. A ratio compression trade: short gold/long silver.',
+      news: [
+          { title: 'Gold-silver ratio at 96x signals silver undervalued, analysts say', source: 'Kitco', time: 'Apr 15, 2025', sentiment: 'bull' },
+          { title: 'Silver industrial demand from solar panels hits record in 2024', source: 'Silver Institute', time: 'Apr 8, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'China NBS Manufacturing & Caixin PMI Data', type: 'report', impact: 'high',
+      commodities: ['COPPER', 'ALUMINIUM', 'ZINC', 'NICKEL', 'LEAD'], date: 'May 1, 2025', nextDate: 'May 1, 2025',
+      impactScore: 85,
+      detail: 'China consumes 50–55% of global base metals. PMI > 50 = expansion → metals rally. PMI < 50 = contraction → metals fall. Each 1-point PMI surprise moves copper 1.5–2.5% on MCX.',
+      reasoning: 'April NBS PMI came in at 50.4 (vs 50.2 expected) — modestly bullish. Property sector remains weak but infrastructure spending is supporting metals demand. Watch Caixin PMI for private sector signal.',
+      news: [
+          { title: 'China PMI hits 50.4 in April — expansion continues for 2nd month', source: 'NBS China', time: 'Apr 30, 2025', sentiment: 'bull' },
+          { title: 'Copper surges 2.1% on MCX after China property sector rescue package', source: 'Bloomberg', time: 'Apr 17, 2025', sentiment: 'bull' },
+          { title: 'LME copper warehouse stocks fall to 3-year low; backwardation deepens', source: 'Reuters', time: 'Apr 13, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'US Dollar Index (DXY) Trend Watch', type: 'breaking', impact: 'high',
+      commodities: ['GOLD', 'SILVER', 'CRUDEOIL', 'COPPER'], date: 'Live — DXY at 99.8', nextDate: 'Live',
+      impactScore: 90,
+      detail: 'All dollar-denominated commodities move inversely to DXY. DXY above 105 = structurally bearish; below 100 = tailwind. Current DXY at 99.8 — near 2-year lows, providing a strong tailwind to commodities.',
+      reasoning: 'DXY has broken below 100 for the first time since 2023. This technical level is significant. If DXY falls to 97, gold could add ₹2,000–3,000/10g on MCX from currency alone. Watch 10-year US yield.',
+      news: [
+          { title: 'DXY breaks below 100 — biggest dollar decline since 2022', source: 'Reuters', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'Gold climbs to record ₹92,450 as weak dollar boosts metals', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'US trade deficit widens; dollar remains under pressure', source: 'FT', time: 'Apr 14, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'India IMD Monsoon Forecast & Weekly Progress', type: 'report', impact: 'high',
+      commodities: ['CHANA', 'COTTON', 'CRUDPALMOIL'], date: 'Weekly Jun–Sep; Forecast: May 15', nextDate: 'May 15, 2025',
+      impactScore: 78,
+      detail: 'IMD\'s long-range forecast for the southwest monsoon drives agri commodity prices 3–6 months ahead. Below-normal monsoon → kharif crop loss → chana, cotton prices surge. Above-normal → bearish.',
+      reasoning: 'IMD\'s preliminary forecast shows normal monsoon (96–104% of LPA). Chana could see 8–12% upside if monsoon disappoints. Cotton at 58,200/bale may fall 15% if rains are good.',
+      news: [
+          { title: 'IMD forecasts normal monsoon in 2025; La Nina conditions to support', source: 'IMD', time: 'Apr 15, 2025', sentiment: 'bear' },
+          { title: 'Chana futures near contract highs on rabi crop damage concerns', source: 'NCDEX Alert', time: 'Apr 12, 2025', sentiment: 'bull' },
+          { title: 'Malaysia palm oil inventory falls; CPO gains support Indian prices', source: 'Bloomberg', time: 'Apr 11, 2025', sentiment: 'bull' },
+      ]
+    },
+    { title: 'LME Base Metals Inventory Report', type: 'report', impact: 'medium',
+      commodities: ['COPPER', 'ALUMINIUM', 'ZINC', 'NICKEL', 'LEAD'], date: 'Daily (LME Warrant Data)', nextDate: 'Apr 22, 2025',
+      impactScore: 65,
+      detail: 'LME warehouse stocks are a real-time supply indicator. Low inventories → tight physical market → backwardation → prices rise. Rising inventories → surplus → contango → prices fall.',
+      reasoning: 'LME copper stocks at 112,000 tonnes — lowest in 3 years. Backwardation at $12/tonne signals real tightness. Zinc and aluminium still in contango (ample supply). Lead tightening seasonally.',
+      news: [
+          { title: 'LME copper stocks fall to 3-year low; cash-3month spread flips to $12 backwardation', source: 'Bloomberg', time: 'Apr 15, 2025', sentiment: 'bull' },
+          { title: 'Aluminium inventories rise 8% — China exports remain elevated', source: 'Reuters', time: 'Apr 14, 2025', sentiment: 'bear' },
+      ]
+    },
+    { title: 'Russia-Ukraine Conflict — Energy Supply Risk', type: 'breaking', impact: 'high',
+      commodities: ['CRUDEOIL', 'NATURALGAS'], date: 'Ongoing Escalation', nextDate: 'Ongoing',
+      impactScore: 75,
+      detail: 'Russia is the world\'s 2nd largest oil producer and top natural gas exporter to Europe. Conflict escalation → sanctions tightening → European gas crunch → crude supply uncertainty.',
+      reasoning: 'Ukraine drone strikes on Russian refineries have reduced Urals export capacity by ~8%. If Black Sea shipping disrupted, Brent could spike to $95. MCX Crude follows Brent with ~6-8 hour lag.',
+      news: [
+          { title: 'Ukraine drones hit Saratov refinery; Urals output drops 400kbbl/d', source: 'Reuters', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'Russia-Ukraine ceasefire talks stall; energy markets on edge', source: 'FT', time: 'Apr 13, 2025', sentiment: 'bull' },
+          { title: 'Europe natural gas storage at 58% capacity — above 5-year avg', source: 'ENTSOG', time: 'Apr 10, 2025', sentiment: 'bear' },
+      ]
+    },
+    { title: 'India-US Trade Tariff Developments', type: 'breaking', impact: 'medium',
+      commodities: ['COPPER', 'ALUMINIUM', 'CRUDEOIL'], date: 'Ongoing', nextDate: 'Ongoing',
+      impactScore: 60,
+      detail: 'Trump tariffs on steel (25%) and aluminium (10%) affect global metal trade flows. Tariff on Indian exports → rupee pressure → MCX commodity prices rise. US reciprocal tariffs under negotiation.',
+      reasoning: 'India secured 90-day tariff pause (until Jul 9, 2025). If negotiations fail, aluminium and copper importers face 10–25% cost rise. Domestic MCX prices may diverge from COMEX.',
+      news: [
+          { title: 'India-US trade talks advance; 90-day tariff pause extended', source: 'Economic Times', time: 'Apr 15, 2025', sentiment: 'bull' },
+          { title: 'US aluminium tariffs redirect Chinese exports to Asia, pressuring prices', source: 'Bloomberg', time: 'Apr 12, 2025', sentiment: 'bear' },
+      ]
+    },
+    { title: 'Akshaya Tritiya Gold Demand Season', type: 'scheduled', impact: 'medium',
+      commodities: ['GOLD', 'SILVER'], date: 'Apr 30, 2025', nextDate: 'Apr 30, 2025',
+      impactScore: 70,
+      detail: 'Akshaya Tritiya is India\'s biggest gold-buying festival. Physical gold demand surges — bullion imports jump 30–50%. MCX Gold often rises 1–2% in the 10 days before the date and corrects slightly after.',
+      reasoning: 'World Gold Council expects 40–45 tonnes of physical demand around Akshaya Tritiya 2025. This pre-festival buying is typically a short-term bullish catalyst, not structural.',
+      news: [
+          { title: 'India jewellers see 35% surge in gold bookings ahead of Akshaya Tritiya', source: 'Economic Times', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'MCX Gold at record high as festive demand meets weak dollar', source: 'Moneycontrol', time: 'Apr 16, 2025', sentiment: 'bull' },
+          { title: 'Digital gold and sovereign bonds see record inflows before Akshaya Tritiya', source: 'Mint', time: 'Apr 15, 2025', sentiment: 'bull' },
+      ]
+    },
+];
+
+// ── Commodity-specific news ────────────────────────────────
+const COMMODITY_NEWS = {
+    GOLD: [
+        { title: 'Gold hits all-time high ₹92,450/10g on MCX amid weak dollar, central bank buying', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Bullion surged on combination of DXY breaking 100, Akshaya Tritiya demand, and Fed rate-cut expectations.' },
+        { title: 'Central banks add 290 tonnes of gold in Q1 2025 — WGC data', source: 'World Gold Council', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'China, Poland, and India lead buying; structural demand supports prices above $3,000/oz on COMEX.' },
+        { title: 'India gold imports surge 42% YoY in March on wedding season demand', source: 'Economic Times', time: 'Apr 10, 2025', sentiment: 'bull', snippet: 'Jewellery demand picking up; trade sources expect April-May imports to remain elevated.' },
+        { title: 'Gold-silver ratio at 96x — silver historically undervalued, may play catch-up', source: 'Kitco', time: 'Apr 8, 2025', sentiment: 'neut', snippet: 'Analysts suggest silver underperformance is unusual given record industrial demand from solar sector.' },
+    ],
+    SILVER: [
+        { title: 'Silver industrial demand hits record 1.2 billion oz in 2024 — Silver Institute', source: 'Silver Institute', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'Solar panel manufacturing accounts for 232mn oz — up 64% in 5 years. India solar installations driving demand.' },
+        { title: 'MCX Silver falls 0.33% as gold-silver ratio widens to 96x', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'Silver underperforms gold for 3rd consecutive week; traders await industrial demand catalyst.' },
+        { title: 'India silver imports jump 140% in 2024 on solar and EV battery demand', source: 'Mint', time: 'Apr 11, 2025', sentiment: 'bull', snippet: 'India surpassed China as top silver importer in H2 2024. EV battery manufacturers driving structural demand.' },
+    ],
+    COPPER: [
+        { title: 'LME copper at 3-year inventory low; cash-3M spread in $12 backwardation', source: 'Bloomberg', time: 'Apr 15, 2025', sentiment: 'bull', snippet: 'Physical tightness most acute since 2022. Traders scrambling for spot material as mine supply disappoints.' },
+        { title: 'MCX Copper surges 1.16% on China PMI beat and DXY weakness', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'China PMI at 50.4 + DXY at 99.8 = double tailwind for copper. Next resistance at ₹840/kg.' },
+        { title: 'Codelco Chile copper output falls 8% — worst quarter in a decade', source: 'Reuters', time: 'Apr 12, 2025', sentiment: 'bull', snippet: 'World\'s largest copper producer hit by labor disputes and ore grade decline. Supply deficit to widen.' },
+        { title: 'India copper demand to grow 9% annually through 2030 — CII report', source: 'Economic Times', time: 'Apr 8, 2025', sentiment: 'bull', snippet: 'Infrastructure, EVs, and renewables to drive 3x copper consumption by 2030. Hindalco, Vedanta key beneficiaries.' },
+    ],
+    ALUMINIUM: [
+        { title: 'MCX Aluminium falls 0.82% on China export surge and LME surplus', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'Chinese smelters running at record capacity; LME inventories up 8% this week.' },
+        { title: 'India Aluminium demand to double by 2030 on solar and packaging growth', source: 'Mint', time: 'Apr 10, 2025', sentiment: 'bull', snippet: 'Hindalco and NALCO best positioned. Aluminium is the key metal for solar frame manufacturing.' },
+        { title: 'US aluminium tariffs of 10% redirect trade flows — Asia prices soften', source: 'Bloomberg', time: 'Apr 12, 2025', sentiment: 'bear', snippet: 'Chinese aluminium diverted from US to Asia. Indian importers face competition from cheaper material.' },
+    ],
+    ZINC: [
+        { title: 'MCX Zinc rises 0.84% on tight mine supply and galvanizing sector demand', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Teck Resources Antamina mine output disrupted; zinc mine supply to fall 3% in 2025.' },
+        { title: 'Hindalco-Hindustan Zinc guided higher FY26 volumes; stock reacts positively', source: 'Economic Times', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'HZL FY25 results beat; management guides 1.2mn tonne zinc volumes in FY26 vs 1.05mn in FY25.' },
+    ],
+    NICKEL: [
+        { title: 'MCX Nickel falls 0.80% on Indonesia NPI output surge and EV demand slowdown', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'Indonesia nickel pig iron production at record; LME nickel in deep contango. Bear market continues.' },
+        { title: 'EV battery chemistry shift to LFP hurts nickel demand outlook', source: 'Bloomberg', time: 'Apr 13, 2025', sentiment: 'bear', snippet: 'Tesla, BYD moving to lithium-iron-phosphate batteries that use no nickel. Structural demand headwind.' },
+        { title: 'Stainless steel production in India grows 12% — nickel demand bright spot', source: 'Mint', time: 'Apr 9, 2025', sentiment: 'bull', snippet: 'Domestic stainless steel demand up; JSW and JSPL to increase SS capacity. Partial offset to EV headwind.' },
+    ],
+    LEAD: [
+        { title: 'MCX Lead rises on seasonal battery replacement demand ahead of summer', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Summer heat accelerates lead-acid battery degradation; replacement cycle drives MCX demand.' },
+        { title: 'Exide Industries Q4 results beat — lead battery demand strong from auto sector', source: 'Economic Times', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'Lead-acid batteries still dominate two-wheeler and telecom tower backup segments.' },
+    ],
+    CRUDEOIL: [
+        { title: 'MCX Crude falls 1.48% on EIA inventory build fears and OPEC uncertainty', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'Trade desk expects 0.5mn bbl build; Brent slips to $74.3 on concerns about May JMMC outcome.' },
+        { title: 'Ukraine drone strike hits Russian Saratov refinery; Urals output cut 400kbbl/d', source: 'Reuters', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Geopolitical risk premium returns to crude; WTI recovers $1.2 on supply disruption news.' },
+        { title: 'India crude imports at 5.2mn bbl/day in March — record for any month', source: 'PPAC India', time: 'Apr 12, 2025', sentiment: 'neut', snippet: 'Russia still India\'s top crude supplier at 37% of imports despite Western sanctions.' },
+        { title: 'OPEC+ likely to maintain voluntary cuts at May JMMC — delegates', source: 'Reuters', time: 'Apr 11, 2025', sentiment: 'bull', snippet: 'Saudi Arabia pushing for $80/bbl floor; unlikely to ease cuts before demand season.' },
+    ],
+    NATURALGAS: [
+        { title: 'MCX Natural Gas rises 1.96% on cooling demand forecasts and LNG export surge', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'NOAA forecasts above-average heat in May; US LNG exports at record 14.8 bcf/day.' },
+        { title: 'India city gas distribution sector expanding — GAIL, IGL, MGL at multi-year highs', source: 'Mint', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'CNG vehicle penetration surging; CGD sector capex to double by FY27. Domestic gas demand up 18% YoY.' },
+        { title: 'Europe nat gas storage at 58% — above 5-year average; LNG spot prices fall', source: 'ENTSOG', time: 'Apr 10, 2025', sentiment: 'bear', snippet: 'Mild European winter left storage well-stocked; bearish for spot LNG prices heading into summer.' },
+    ],
+    CRUDPALMOIL: [
+        { title: 'MCX Crude Palm Oil rises 0.77% on Malaysia inventory decline and India import duty cut', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Malaysia MPOB inventory at 1.72mn tonnes — 2-year low; India raised import duty on soyoil, making CPO relatively cheaper.' },
+        { title: 'IMD normal monsoon forecast supportive for Indian oilseed crop; limiting CPO upside', source: 'Bloomberg', time: 'Apr 15, 2025', sentiment: 'bear', snippet: 'Good monsoon → better sunflower, soybean crop → domestic edible oil supply rises → CPO imports moderate.' },
+    ],
+    COTTON: [
+        { title: 'MCX Cotton falls 0.34% on US forecast for record acreage planting', source: 'Business Standard', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'USDA projects 11.5mn acres of US cotton — highest in 5 years; global supply surplus to widen.' },
+        { title: 'India cotton exports near zero as domestic prices above international levels', source: 'Economic Times', time: 'Apr 13, 2025', sentiment: 'bear', snippet: 'CCI support price scheme keeping domestic prices above global; export competitiveness lost.' },
+        { title: 'Arvind Ltd sees textile export recovery in FY26; cotton demand may firm up', source: 'Mint', time: 'Apr 10, 2025', sentiment: 'bull', snippet: 'India textile exports to US recovering as Bangladesh competitiveness falls on tariff hike.' },
+    ],
+    CHANA: [
+        { title: 'MCX Chana rises 0.74% on rabi crop damage in Madhya Pradesh', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bull', snippet: 'Unseasonal rains and hailstorms damaged standing rabi chana crop in MP and Rajasthan. Output to fall 8%.' },
+        { title: 'India pulse imports to double in FY26 amid domestic production shortfall', source: 'Economic Times', time: 'Apr 14, 2025', sentiment: 'bull', snippet: 'Government to fast-track chana imports from Australia and Canada to control retail prices.' },
+    ],
+    MENTHAOIL: [
+        { title: 'MCX Mentha Oil falls 0.84% as production from UP main crop improves', source: 'MCX Trader', time: 'Apr 16, 2025', sentiment: 'bear', snippet: 'Barabanki farmers report good mentha crop this season; early harvest pressuring futures prices.' },
+        { title: 'Dabur, Emami see rising menthol cost in H2FY25; margins under pressure', source: 'Mint', time: 'Apr 8, 2025', sentiment: 'bear', snippet: 'FMCG companies with menthol-heavy products (ORS, pain balms) saw input cost rise 12% in FY25.' },
+    ],
+};
+
+// ── Trading Specifications ──────────────────────────────────
+const COMM_INFO = {
+    GOLD:        { exchange: 'MCX', lotSize: '100g', margin: '~₹46,000', expiry: '5th of expiry month', segment: 'Precious Metals', contractVal: '~₹9,24,500', about: 'MCX Gold is India\'s most liquid commodity contract. It tracks COMEX gold (USD/oz) translated to INR/10g. Akshaya Tritiya, Diwali, and wedding seasons drive seasonal demand spikes. Inversely correlated with USD and positively with INR weakness.' },
+    SILVER:      { exchange: 'MCX', lotSize: '30kg', margin: '~₹28,500', expiry: '5th of expiry month', segment: 'Precious Metals', contractVal: '~₹28,74,000', about: 'MCX Silver is more volatile than gold — typically moving 1.5–2x gold\'s percentage move. Industrial demand (solar, electronics, EVs) makes it sensitive to global manufacturing data. Gold-Silver ratio above 80 historically signals silver undervaluation.' },
+    COPPER:      { exchange: 'MCX', lotSize: '250kg', margin: '~₹20,750', expiry: 'Last Wednesday of month', segment: 'Base Metals', contractVal: '~₹2,07,500', about: 'Called "Dr. Copper" for its ability to predict economic health. China consumes 55% of global copper; PMI data from China is the primary driver. MCX Copper closely tracks LME Copper (USD/tonne) converted to INR/kg.' },
+    ALUMINIUM:   { exchange: 'MCX', lotSize: '5 MT', margin: '~₹10,900', expiry: 'Last Wednesday of month', segment: 'Base Metals', contractVal: '~₹1,09,000', about: 'Aluminium is the metal of choice for solar frames, EVs, packaging, and aircraft. China produces 60% of global aluminium — making its export policy a key price driver. Energy costs (power) are the biggest production cost input.' },
+    ZINC:        { exchange: 'MCX', lotSize: '5 MT', margin: '~₹12,600', expiry: 'Last Wednesday of month', segment: 'Base Metals', contractVal: '~₹1,26,000', about: 'Zinc is primarily used in galvanizing steel (rust prevention). Hindustan Zinc (HZL) is the world\'s largest integrated zinc-lead producer. Mine supply and galvanizing demand from auto and construction sectors are key drivers.' },
+    NICKEL:      { exchange: 'MCX', lotSize: '250kg', margin: '~₹37,125', expiry: 'Last Wednesday of month', segment: 'Base Metals', contractVal: '~₹3,71,250', about: 'Nickel is essential for stainless steel (67% of demand) and EV batteries (nickel-manganese-cobalt). Indonesia\'s surge in NPI (nickel pig iron) production has fundamentally changed the supply picture, keeping prices structurally suppressed.' },
+    LEAD:        { exchange: 'MCX', lotSize: '5 MT', margin: '~₹8,900', expiry: 'Last Wednesday of month', segment: 'Base Metals', contractVal: '~₹89,000', about: 'Lead is primarily used in lead-acid batteries for automotive and telecom backup. Despite lithium-ion growth, lead-acid batteries retain dominance in two-wheelers, ICE vehicles, and telecom towers. Seasonal demand peaks in summer (battery replacement).' },
+    CRUDEOIL:    { exchange: 'MCX', lotSize: '100 bbl', margin: '~₹63,200', expiry: '19th of expiry month', segment: 'Energy', contractVal: '~₹6,32,000', about: 'MCX Crude Oil tracks Brent Crude (with 1–2% basis to WTI). OPEC+ decisions, US EIA inventory reports, and geopolitical events in Middle East/Russia are primary drivers. INR/USD also matters — a 1% rupee depreciation adds ~₹65/bbl.' },
+    NATURALGAS:  { exchange: 'MCX', lotSize: '1,250 mmBtu', margin: '~₹27,250', expiry: '24th of expiry month', segment: 'Energy', contractVal: '~₹2,72,500', about: 'MCX Natural Gas tracks US Henry Hub prices. Primary drivers: US weather (heating/cooling demand), LNG export volumes, EIA weekly storage reports, and NOAA seasonal forecasts. India natural gas price is separately regulated by government.' },
+    CRUDPALMOIL: { exchange: 'MCX', lotSize: '10 MT', margin: '~₹8,550', expiry: '15th of expiry month', segment: 'Agriculture', contractVal: '~₹85,500', about: 'Crude Palm Oil (CPO) is the world\'s most consumed edible oil. MCX CPO follows Malaysia BMD Bursa futures. Key drivers: Malaysia and Indonesia production, China import demand, and Indian import duty changes.' },
+    COTTON:      { exchange: 'MCX', lotSize: '25 bales', margin: '~₹14,550', expiry: 'Last day of contract month', segment: 'Agriculture', contractVal: '~₹14,55,000', about: 'MCX Cotton (28.5mm Shankar-6 variety) is the benchmark for India\'s textile sector. Key drivers: US cotton acreage/crop reports, India kharif cotton output, China textile demand, and CCI procurement prices.' },
+    CHANA:       { exchange: 'NCDEX', lotSize: '10 MT', margin: '~₹54,500', expiry: '20th of expiry month', segment: 'Agriculture', contractVal: '~₹54,50,000', about: 'Chana (chickpea) is India\'s most important pulse crop. Traded on NCDEX. Key drivers: rabi crop output (Madhya Pradesh, Rajasthan key states), government MSP and procurement, and import policy (Australia, Canada are main sources).' },
+    MENTHAOIL:   { exchange: 'MCX', lotSize: '360kg', margin: '~₹17,010', expiry: 'Last day of expiry month', segment: 'Agriculture', contractVal: '~₹3,40,200', about: 'Mentha Oil (peppermint oil) is produced in Uttar Pradesh (Barabanki belt). India supplies 80% of global mentha. Key drivers: UP crop output, post-harvest selling by farmers, and demand from pharma/FMCG companies (Dabur, Emami, Patanjali).' },
+};
+
+// ── 52-Week High/Low ───────────────────────────────────────
+const COMM_52W = {
+    GOLD:        { low: 72800,  high: 93400  },
+    SILVER:      { low: 71200,  high: 102400 },
+    COPPER:      { low: 710,    high: 880    },
+    ALUMINIUM:   { low: 198,    high: 238    },
+    ZINC:        { low: 218,    high: 275    },
+    NICKEL:      { low: 1380,   high: 1820   },
+    LEAD:        { low: 161,    high: 195    },
+    CRUDEOIL:    { low: 5640,   high: 7180   },
+    NATURALGAS:  { low: 172,    high: 298    },
+    CRUDPALMOIL: { low: 780,    high: 925    },
+    COTTON:      { low: 54200,  high: 62800  },
+    CHANA:       { low: 4980,   high: 5680   },
+    MENTHAOIL:   { low: 880,    high: 1180   },
+};
+
+// ── Render Events Feed (events.html style) ─────────────────
+function renderEventsFeed() {
+    const el = document.getElementById('commEventsFeed');
+    if (!el) return;
+
+    const typeColors = { scheduled: '#6ba3d6', breaking: '#f26b6b', report: '#e6b84a' };
+    const typeBg    = { scheduled: 'rgba(107,163,214,0.12)', breaking: 'rgba(242,107,107,0.12)', report: 'rgba(230,184,74,0.12)' };
+    const typeLabels = { scheduled: 'Scheduled', breaking: 'Breaking', report: 'Report' };
+    const impactColors = { high: '#f26b6b', medium: '#e6b84a', low: '#8a94a8' };
+    const sentColors   = { bull: '#2dd4aa', bear: '#f26b6b', neut: '#8a94a8' };
+    const sentIcons    = { bull: '▲', bear: '▼', neut: '→' };
+
+    el.innerHTML = COMM_EVENTS.map((ev, idx) => {
+        const tc  = typeColors[ev.type]  || '#8a94a8';
+        const tbg = typeBg[ev.type]      || 'rgba(138,148,168,0.1)';
+        const ic  = impactColors[ev.impact] || '#8a94a8';
+        const commPills = ev.commodities.map(c => {
+            const found = Object.values(COMMODITY_CATALOG).flat().find(x => x.id === c);
+            return `<span onclick="openPopup('${c}')" style="cursor:pointer;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(142,180,224,0.1);color:#8eb4e0;border:1px solid rgba(142,180,224,0.2);" title="View ${found?.name || c}">${found?.name || c}</span>`;
+        }).join('');
+
+        const newsHtml = (ev.news || []).map(n => {
+            const sc = sentColors[n.sentiment] || '#8a94a8';
+            return `<div class="ev-news-item">
+                <span style="color:${sc};font-size:10px;font-weight:900;flex-shrink:0;margin-top:1px;">${sentIcons[n.sentiment] || '→'}</span>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] text-on-surface leading-snug">${n.title}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[9px] font-bold text-on-surface-variant/50">${n.source}</span>
+                        <span class="text-[8px] text-on-surface-variant/35">${n.time}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        return `
+        <div class="ev-feed-card">
+            <!-- Card Header -->
+            <div class="flex flex-col sm:flex-row">
+                <!-- Impact score column -->
+                <div class="sm:w-20 flex sm:flex-col items-center sm:justify-center p-3 sm:p-4 gap-2 sm:gap-1" style="background:rgba(255,255,255,0.025);border-right:1px solid rgba(61,74,92,0.2);">
+                    <span class="text-[8px] font-black text-on-surface-variant/60 uppercase tracking-wider">Impact</span>
+                    <span class="text-2xl font-black font-headline" style="color:${ic};">${ev.impactScore}</span>
+                    <span style="font-size:7px;background:${tbg};color:${tc};border:1px solid ${tc}30;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;padding:1px 5px;border-radius:3px;white-space:nowrap;">${typeLabels[ev.type]}</span>
+                </div>
+                <!-- Main content -->
+                <div class="flex-1 p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span style="font-size:9px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:${ic};">${ev.impact.toUpperCase()} IMPACT</span>
+                                ${ev.sector ? `<span class="text-[9px] text-on-surface-variant/50 bg-surface-container px-1.5 py-0.5 rounded">${ev.sector}</span>` : ''}
+                            </div>
+                            <h3 class="font-bold text-sm text-on-surface leading-snug">${ev.title}</h3>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-[9px] font-mono text-on-surface-variant/60">Next: <span class="font-bold text-caution">${ev.nextDate}</span></div>
+                        </div>
+                    </div>
+                    <!-- Commodity pills -->
+                    <div class="flex flex-wrap gap-1 mb-2">${commPills}</div>
+                    <!-- Detail text -->
+                    <p class="text-xs text-on-surface-variant/70 leading-relaxed mb-2">${ev.detail}</p>
+                    <!-- Reasoning (collapsible) -->
+                    <div class="bg-surface-container-lowest/60 rounded-lg p-2.5 border-l-2 border-caution/40">
+                        <p class="text-[10px] text-on-surface-variant/60 leading-relaxed"><span class="text-caution font-bold text-[9px] uppercase tracking-wider">Trading Reasoning → </span>${ev.reasoning}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- News strip -->
+            ${newsHtml ? `
+            <div style="border-top:1px solid rgba(61,74,92,0.2);padding:6px 0;background:rgba(6,10,15,0.5);">
+                <div class="px-4 py-1">
+                    <span class="text-[8px] uppercase tracking-widest text-on-surface-variant/40 font-black">📰 Related News</span>
+                </div>
+                ${newsHtml}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+// ── Market Hours Logic ─────────────────────────────────────
+function getIST() {
+    const now = new Date();
+    // Get IST offset: UTC+5:30
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    return new Date(utc + 5.5 * 3600000);
+}
+
+function isWeekday(d) { return d.getDay() >= 1 && d.getDay() <= 5; }
+
+function getMarketStatus() {
+    const ist = getIST();
+    const h = ist.getHours();
+    const m = ist.getMinutes();
+    const mins = h * 60 + m;
+    const weekday = isWeekday(ist);
+
+    const nseOpen  = 9 * 60 + 15;   // 9:15
+    const nseClose = 15 * 60 + 30;  // 15:30
+    const nsePre   = 9 * 60;        // 9:00
+    const nsePost  = 16 * 60;       // 16:00
+    const mcxOpen  = 9 * 60;        // 9:00
+    const mcxClose = 23 * 60 + 55;  // 23:55
+
+    let nseStatus, nseColor;
+    if (!weekday) {
+        nseStatus = 'WEEKEND'; nseColor = 'var(--t3)';
+    } else if (mins < nsePre) {
+        nseStatus = 'Pre-Open Soon'; nseColor = 'var(--caution)';
+    } else if (mins < nseOpen) {
+        nseStatus = 'Pre-Market'; nseColor = 'var(--caution)';
+    } else if (mins < nseClose) {
+        nseStatus = 'OPEN'; nseColor = 'var(--bull)';
+    } else if (mins < nsePost) {
+        nseStatus = 'Closing Session'; nseColor = 'var(--caution)';
+    } else {
+        nseStatus = 'CLOSED'; nseColor = 'var(--bear)';
+    }
+
+    let mcxStatus, mcxColor;
+    if (!weekday) {
+        mcxStatus = 'WEEKEND'; mcxColor = 'var(--t3)';
+    } else if (mins < mcxOpen) {
+        mcxStatus = 'Opening Soon'; mcxColor = 'var(--caution)';
+    } else if (mins < mcxClose) {
+        mcxStatus = 'OPEN'; mcxColor = 'var(--bull)';
+    } else {
+        mcxStatus = 'CLOSED'; mcxColor = 'var(--bear)';
+    }
+
+    const isOpen = weekday && mins >= nseOpen && mins < nseClose;
+    return { nseStatus, nseColor, mcxStatus, mcxColor, isOpen, mins, weekday };
+}
+
+function updateClock() {
+    const ist = getIST();
+    const s = ist.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const clockEl = document.getElementById('istClock');
+    if (clockEl) clockEl.textContent = s;
+
+    const ms = getMarketStatus();
+    const badge = document.getElementById('marketStatusBadge');
+    const dot   = document.getElementById('marketStatusDot');
+    const text  = document.getElementById('marketStatusText');
+    if (badge && ms.isOpen) {
+        badge.style.cssText = `background:var(--bull-dim);border-color:var(--bull-border);color:var(--bull)`;
+        dot.style.background = 'var(--bull)';
+        text.textContent = 'Markets Open';
+    } else if (badge) {
+        badge.style.cssText = `background:var(--s1);border-color:var(--b1);color:var(--t2)`;
+        dot.style.background = 'var(--t3)';
+        text.textContent = ms.weekday ? 'Markets Closed' : 'Weekend';
+    }
+
+    document.getElementById('nseStatus').textContent = ms.nseStatus;
+    document.getElementById('nseStatus').style.color = ms.nseColor;
+    document.getElementById('mcxStatus').textContent = ms.mcxStatus;
+    document.getElementById('mcxStatus').style.color = ms.mcxColor;
+}
+
+// ── Timeline Renderer ──────────────────────────────────────
+function renderTimeline(containerId, segments, totalMins, nowMins) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    let html = '';
+    for (const seg of segments) {
+        const left  = ((seg.start - segments[0].start) / totalMins) * 100;
+        const width = ((seg.end - seg.start) / totalMins) * 100;
+        html += `<div class="hours-segment" style="left:${left}%;width:${width}%;background:${seg.bg};color:${seg.color};">${seg.label}</div>`;
+    }
+    // Now marker
+    const nowPct = Math.max(0, Math.min(100, ((nowMins - segments[0].start) / totalMins) * 100));
+    html += `<div class="hours-now-marker" style="left:${nowPct}%;"></div>`;
+    el.innerHTML = html;
+}
+
+function drawTimelines() {
+    const ist = getIST();
+    const nowMins = ist.getHours() * 60 + ist.getMinutes();
+
+    // NSE/BSE: 9:00 to 16:00 = 420 mins total
+    const nseStart = 540, nseEnd = 960; // 9:00 to 16:00
+    renderTimeline('nseTimeline', [
+        { start: 540, end: 555, bg: 'rgba(230,184,74,0.15)', color: 'var(--caution)', label: 'Pre' },
+        { start: 555, end: 930, bg: 'rgba(45,212,170,0.12)', color: 'var(--bull)',    label: 'OPEN (9:15–15:30)' },
+        { start: 930, end: 960, bg: 'rgba(255,255,255,0.04)', color: 'var(--t3)',     label: 'Close' },
+    ], 420, nowMins);
+
+    // MCX: 9:00 to 23:55 = 895 mins total
+    renderTimeline('mcxTimeline', [
+        { start: 540, end: 930, bg: 'rgba(45,212,170,0.12)',  color: 'var(--bull)',    label: 'Day Session' },
+        { start: 930, end: 1175, bg:'rgba(107,163,214,0.10)', color: 'var(--info)',    label: 'Evening Session (15:30–23:55)' },
+    ], 895, nowMins);
+}
+
+// ── Sparkline SVG ──────────────────────────────────────────
+function sparkline(data, color, w = 72, h = 28) {
+    if (!data || data.length < 2) return '';
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const pts = data.map((v, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = h - ((v - min) / range) * (h - 2) - 1;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible;">
+        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${(data.length-1)/(data.length-1)*w}" cy="${(h - ((data[data.length-1]-min)/range)*(h-2)-1).toFixed(1)}" r="2.5" fill="${color}"/>
+    </svg>`;
+}
+
+// ── Bar Chart ──────────────────────────────────────────────
+function renderBarChart(prices) {
+    const el = document.getElementById('changeChart');
+    if (!el) return;
+
+    const allItems = [];
+    for (const cat of ['metals', 'energy', 'agri']) {
+        for (const comm of COMMODITY_CATALOG[cat]) {
+            const p = prices[comm.id];
+            if (p) allItems.push({ name: comm.name, pct: p.change_pct });
+        }
+    }
+    allItems.sort((a, b) => b.pct - a.pct);
+
+    const maxAbs = Math.max(...allItems.map(i => Math.abs(i.pct)), 1);
+    el.innerHTML = allItems.map(item => {
+        const pos = item.pct >= 0;
+        const color = pos ? 'var(--bull)' : 'var(--bear)';
+        const barW  = (Math.abs(item.pct) / maxAbs) * 100;
+        return `
+        <div class="flex items-center gap-3">
+            <div class="w-28 text-[11px] text-on-surface-variant text-right flex-shrink-0 truncate">${item.name}</div>
+            <div class="flex-1 flex items-center gap-2">
+                <div style="width:${barW}%;height:8px;background:${color};border-radius:2px;min-width:2px;opacity:0.85;transition:width 600ms ease;"></div>
+            </div>
+            <div class="w-14 text-right font-mono text-xs font-bold flex-shrink-0" style="color:${color}">
+                ${pos ? '+' : ''}${item.pct.toFixed(2)}%
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Commodity Card ─────────────────────────────────────────
+function renderCommodityCard(comm, price) {
+    if (!price) return '';
+    const pos = price.change_pct >= 0;
+    const color = pos ? 'var(--bull)' : 'var(--bear)';
+    const arrow = pos ? '▲' : '▼';
+    const cls   = pos ? 'up' : 'down';
+    const spark  = sparkline(price.history, color);
+    const impactTickers = [...comm.impactStocks.slice(0, 3)].map(t =>
+        `<span class="text-[9px] font-mono font-bold" style="color:${color};">${t}</span>`
+    ).join(' · ');
+
+    // Format price nicely
+    const fmt = (n) => n >= 10000
+        ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+        : '₹' + n.toFixed(1);
+
+    return `
+    <div class="comm-card ${cls}" onclick="openPopup('${comm.id}')" title="Click for detailed view">
+        <div class="p-3">
+            <div class="flex items-start justify-between mb-2">
+                <div>
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                        <span class="material-symbols-outlined text-sm" style="color:${color};">${comm.icon}</span>
+                        <span class="text-xs font-bold text-on-surface">${comm.name}</span>
+                    </div>
+                    <div class="text-[9px] text-on-surface-variant/60 uppercase tracking-wider">MCX · ${comm.unit}</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-mono font-bold text-base text-on-surface leading-none">${fmt(price.price)}</div>
+                    <div class="font-mono text-xs font-bold mt-0.5" style="color:${color};">${arrow} ${Math.abs(price.change_pct).toFixed(2)}%</div>
+                </div>
+            </div>
+            <!-- Sparkline -->
+            <div class="flex items-end justify-between mt-2">
+                <div class="space-y-1">
+                    <div class="flex gap-3 text-[9px]">
+                        <span class="text-on-surface-variant">7D <span class="font-mono font-bold" style="color:${price.week_pct >= 0 ? 'var(--bull)' : 'var(--bear)'}">${price.week_pct >= 0 ? '+' : ''}${price.week_pct}%</span></span>
+                        <span class="text-on-surface-variant">30D <span class="font-mono font-bold" style="color:${price.month_pct >= 0 ? 'var(--bull)' : 'var(--bear)'}">${price.month_pct >= 0 ? '+' : ''}${price.month_pct}%</span></span>
+                    </div>
+                    ${comm.impactStocks.length > 0 ? `<div class="text-[9px] text-on-surface-variant/50">→ ${impactTickers}</div>` : ''}
+                </div>
+                <div>${spark}</div>
+            </div>
+            <!-- Click hint -->
+            <div class="mt-2 pt-2 border-t border-outline-variant/10 flex items-center justify-between">
+                <span class="text-[8px] text-on-surface-variant/30 italic">Click for detail view</span>
+                <span class="material-symbols-outlined text-xs text-on-surface-variant/30">open_in_full</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ── Render Grid ────────────────────────────────────────────
+function renderGrid() {
+    const grid = document.getElementById('commodityGrid');
+    const items = COMMODITY_CATALOG[currentCategory] || [];
+    grid.innerHTML = items.map(comm => renderCommodityCard(comm, allPrices[comm.id])).join('');
+}
+
+function switchCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+}
+
+// ── Impact Matrix ──────────────────────────────────────────
+function renderImpactMatrix(prices) {
+    const el = document.getElementById('impactMatrix');
+    const rows = [];
+
+    const allComms = [...COMMODITY_CATALOG.metals, ...COMMODITY_CATALOG.energy, ...COMMODITY_CATALOG.agri];
+    const significant = allComms
+        .filter(c => prices[c.id] && Math.abs(prices[c.id].change_pct) >= 0.5)
+        .sort((a, b) => Math.abs(prices[b.id].change_pct) - Math.abs(prices[a.id].change_pct))
+        .slice(0, 8);
+
+    if (significant.length === 0) {
+        el.innerHTML = '<div class="p-6 text-center text-xs text-on-surface-variant/50">No significant moves today (&lt;0.5%)</div>';
+        return;
+    }
+
+    el.innerHTML = significant.map(comm => {
+        const p = prices[comm.id];
+        const pos = p.change_pct >= 0;
+        const color = pos ? 'var(--bull)' : 'var(--bear)';
+        const beneficiaries = pos ? comm.impactStocks.slice(0, 3) : comm.headwindStocks.slice(0, 3);
+        const headwinds      = pos ? comm.headwindStocks.slice(0, 2) : comm.impactStocks.slice(0, 2);
+
+        return `
+        <div class="impact-row">
+            <div class="flex-shrink-0 w-24">
+                <div class="text-xs font-bold text-on-surface">${comm.name.split(' ')[0]}</div>
+                <div class="font-mono text-xs font-bold" style="color:${color};">${pos ? '+' : ''}${p.change_pct.toFixed(2)}%</div>
+            </div>
+            <div class="flex flex-wrap gap-1 flex-1">
+                ${beneficiaries.map(t => `<span class="impact-chip pos">↑ ${t}</span>`).join('')}
+                ${headwinds.map(t => `<span class="impact-chip neg">↓ ${t}</span>`).join('')}
+                ${beneficiaries.length === 0 && headwinds.length === 0 ? '<span class="text-[10px] text-on-surface-variant/40">No mapped stocks</span>' : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Personalized Insights ──────────────────────────────────
+function renderWatchlistInsights(prices, watchlist) {
+    const el = document.getElementById('watchlistInsights');
+    if (!watchlist || watchlist.length === 0) {
+        el.innerHTML = `<div class="text-center py-6">
+            <span class="material-symbols-outlined text-2xl text-on-surface-variant/30">star</span>
+            <p class="text-xs text-on-surface-variant/50 mt-2">Add stocks to your watchlist to see personalized commodity insights</p>
+            <a href="watchlist.html" class="inline-flex items-center gap-1 mt-3 px-3 py-1.5 bg-surface-container-highest border border-outline-variant/20 rounded text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined" style="font-size:13px;">star</span>Manage Watchlist
+            </a>
+        </div>`;
+        return;
+    }
+
+    const wlSet = new Set(watchlist.map(w => w.ticker.toUpperCase()));
+    const insights = [];
+    const allComms = [...COMMODITY_CATALOG.metals, ...COMMODITY_CATALOG.energy, ...COMMODITY_CATALOG.agri];
+
+    for (const comm of allComms) {
+        const p = prices[comm.id];
+        if (!p || Math.abs(p.change_pct) < 0.3) continue;
+        const pos = p.change_pct >= 0;
+
+        const matchBen = comm.impactStocks.filter(t => wlSet.has(t.toUpperCase()));
+        const matchHead = comm.headwindStocks.filter(t => wlSet.has(t.toUpperCase()));
+
+        for (const t of matchBen) {
+            insights.push({ comm: comm.name, ticker: t, pct: p.change_pct, effect: pos ? 'tailwind' : 'headwind', strength: Math.abs(p.change_pct) });
+        }
+        for (const t of matchHead) {
+            insights.push({ comm: comm.name, ticker: t, pct: p.change_pct, effect: pos ? 'headwind' : 'tailwind', strength: Math.abs(p.change_pct) });
+        }
+    }
+
+    if (insights.length === 0) {
+        el.innerHTML = `<div class="text-center py-6">
+            <span class="material-symbols-outlined text-2xl text-on-surface-variant/30">check_circle</span>
+            <p class="text-xs text-on-surface-variant/50 mt-2">No significant commodity moves affecting your watchlist stocks today</p>
+        </div>`;
+        return;
+    }
+
+    insights.sort((a, b) => b.strength - a.strength);
+    el.innerHTML = insights.slice(0, 8).map(ins => {
+        const isTail = ins.effect === 'tailwind';
+        const color = isTail ? 'var(--bull)' : 'var(--bear)';
+        const icon  = isTail ? 'trending_up' : 'trending_down';
+        const effLabel = isTail ? '↑ Tailwind' : '↓ Headwind';
+        return `
+        <div class="insight-card">
+            <span class="material-symbols-outlined text-base flex-shrink-0 mt-0.5" style="color:${color};">${icon}</span>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="font-mono font-bold text-sm text-on-surface">${ins.ticker}</span>
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded" style="background:${isTail ? 'var(--bull-dim)' : 'var(--bear-dim)'};color:${color};">${effLabel}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant">${ins.comm} is <span class="font-bold" style="color:${color};">${ins.pct >= 0 ? '+' : ''}${ins.pct.toFixed(2)}%</span> today — ${isTail ? 'positive' : 'negative'} for ${ins.ticker}</p>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Summary Stats ──────────────────────────────────────────
+function updateSummary(prices) {
+    const allComms = [...COMMODITY_CATALOG.metals, ...COMMODITY_CATALOG.energy, ...COMMODITY_CATALOG.agri];
+    const rising = allComms.filter(c => prices[c.id] && prices[c.id].change_pct > 0).length;
+    document.getElementById('risingCount').textContent = rising;
+    document.getElementById('risingLabel').textContent = `of ${allComms.length} tracked commodities`;
+
+    const gold = prices['GOLD'];
+    if (gold) {
+        document.getElementById('goldQuick').textContent = '₹' + gold.price.toLocaleString('en-IN');
+        const gEl = document.getElementById('goldQuickChg');
+        gEl.textContent = (gold.change_pct >= 0 ? '▲ +' : '▼ ') + Math.abs(gold.change_pct).toFixed(2) + '%';
+        gEl.style.color = gold.change_pct >= 0 ? 'var(--bull)' : 'var(--bear)';
+    }
+}
+
+// ── Main Load ──────────────────────────────────────────────
+async function loadPage() {
+    // Try API first
+    let prices = MOCK_COMMODITY_PRICES;
+    const res = await API.get('/commodities');
+    if (res?.success && res.data) {
+        prices = { ...MOCK_COMMODITY_PRICES, ...res.data };
+    }
+    allPrices = prices;
+
+    updateSummary(prices);
+    renderGrid();
+    renderEventsFeed();
+    renderImpactMatrix(prices);
+    renderBarChart(prices);
+
+    // Personalized
+    const wl = await LiveData.getWatchlist();
+    renderWatchlistInsights(prices, wl);
+}
+
+// ── Popup Chart ────────────────────────────────────────────
+function seededRng(seed) {
+    let s = seed;
+    return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+function buildHistory30D(baseHistory, id) {
+    // Extend 7-point history to 30 days using seeded random
+    const rng = seededRng(id.split('').reduce((a, c) => a + c.charCodeAt(0), 0));
+    const last = baseHistory[baseHistory.length - 1];
+    const first = baseHistory[0];
+    const trend = (last - first) / 6;
+    const vol   = last * 0.008;
+    let pts = [first];
+    for (let i = 1; i < 30; i++) {
+        const base = pts[pts.length - 1];
+        pts.push(+(base + (rng() - 0.46) * vol + trend * 0.15).toFixed(2));
+    }
+    // Replace last 7 with actual history
+    pts.splice(23, 7, ...baseHistory);
+    return pts;
+}
+
+function drawPopupChart(data, color) {
+    const svgEl = document.getElementById('popupChart');
+    if (!svgEl) return;
+    const w = svgEl.parentElement.clientWidth || 680;
+    const h = 140;
+    svgEl.setAttribute('width', w);
+    svgEl.setAttribute('height', h);
+    svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+    const pad = { top: 12, right: 12, bottom: 22, left: 60 };
+    const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+    const n = data.length;
+    const mn = Math.min(...data), mx = Math.max(...data);
+    const range = mx - mn || 1;
+
+    function px(i) { return pad.left + (i / (n - 1)) * cw; }
+    function py(v) { return pad.top + ch - ((v - mn) / range) * ch; }
+
+    let svg = '';
+    // Grid lines
+    const ticks = 4;
+    for (let t = 0; t <= ticks; t++) {
+        const v = mn + (range / ticks) * t;
+        const y = py(v);
+        svg += `<line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${pad.left + cw}" y2="${y.toFixed(1)}" stroke="#1c2435" stroke-width="0.5"/>`;
+        const fmt = v >= 10000 ? '₹' + Math.round(v / 1000) + 'k' : '₹' + v.toFixed(v < 100 ? 1 : 0);
+        svg += `<text x="${pad.left - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="8" fill="#5a6478">${fmt}</text>`;
+    }
+    // X axis ticks
+    [0, 6, 13, 20, 29].forEach(i => {
+        const label = i === 29 ? 'Today' : `D-${29 - i}`;
+        svg += `<text x="${px(i).toFixed(1)}" y="${(pad.top + ch + 14).toFixed(1)}" text-anchor="middle" font-size="8" fill="#5a6478">${label}</text>`;
+    });
+
+    // Area
+    const pts = data.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+    const areaD = `M${px(0)},${py(data[0])} ` + data.slice(1).map((v, i) => `L${px(i + 1).toFixed(1)},${py(v).toFixed(1)}`).join(' ') +
+        ` L${px(n - 1)},${pad.top + ch} L${pad.left},${pad.top + ch} Z`;
+    svg += `<path d="${areaD}" fill="${color}" opacity="0.07"/>`;
+    // Line
+    svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    // Last point
+    const lx = px(n - 1), ly = py(data[n - 1]);
+    svg += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3.5" fill="${color}"/>`;
+    // Today price label
+    svg += `<text x="${(lx - 4).toFixed(1)}" y="${(ly - 8).toFixed(1)}" text-anchor="end" font-size="8" fill="${color}" font-weight="700">${data[n - 1] >= 10000 ? '₹' + data[n - 1].toLocaleString('en-IN') : '₹' + data[n - 1]}</text>`;
+
+    svgEl.innerHTML = svg;
+}
+
+// ── Popup State ────────────────────────────────────────────
+let currentPopupId = null;
+
+function openPopup(commId) {
+    // Find the commodity data
+    const allComms = Object.values(COMMODITY_CATALOG).flat();
+    const comm = allComms.find(c => c.id === commId);
+    if (!comm) return;
+
+    const price = allPrices[commId] || MOCK_COMMODITY_PRICES[commId];
+    if (!price) return;
+
+    currentPopupId = commId;
+    SoundFX.pop && SoundFX.pop();
+
+    // Reset to overview tab
+    switchPopupTab('overview', document.querySelector('.popup-tab'));
+
+    const pos = price.change_pct >= 0;
+    const color = pos ? '#2dd4aa' : '#f26b6b';
+    const fmt = (n) => n >= 10000 ? '₹' + n.toLocaleString('en-IN') : '₹' + n.toFixed(2);
+
+    // Header
+    document.getElementById('popupName').textContent = comm.name;
+    document.getElementById('popupPrice').textContent = fmt(price.price);
+    document.getElementById('popupChange').textContent = `${pos ? '▲ +' : '▼ '}${Math.abs(price.change_pct).toFixed(2)}%`;
+    document.getElementById('popupChange').style.color = color;
+    document.getElementById('popupAbsChange').textContent = `${pos ? '+' : ''}${fmt(price.change)}`;
+    document.getElementById('popupIcon').textContent = comm.icon;
+    document.getElementById('popupIcon').style.color = color;
+    document.getElementById('popupIconWrap').style.background = pos ? 'rgba(45,212,170,0.1)' : 'rgba(242,107,107,0.1)';
+    document.getElementById('popupBadge').textContent = COMM_INFO[commId]?.exchange || 'MCX';
+    document.getElementById('popupBadge').style.cssText = `background:rgba(142,180,224,0.1);color:#8eb4e0;border:1px solid rgba(142,180,224,0.2);border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;`;
+
+    // Change badges
+    document.getElementById('popupChgBadges').innerHTML = [
+        { label: '7D', val: price.week_pct },
+        { label: '30D', val: price.month_pct },
+    ].map(b => {
+        const c2 = b.val >= 0 ? '#2dd4aa' : '#f26b6b';
+        return `<span style="font-size:10px;font-weight:700;color:${c2};">${b.label}: ${b.val >= 0 ? '+' : ''}${b.val}%</span>`;
+    }).join('');
+
+    // Metrics
+    document.getElementById('metToday').textContent = `${pos ? '+' : ''}${price.change_pct.toFixed(2)}%`;
+    document.getElementById('metToday').style.color = color;
+    document.getElementById('metWeek').textContent = `${price.week_pct >= 0 ? '+' : ''}${price.week_pct}%`;
+    document.getElementById('metWeek').style.color = price.week_pct >= 0 ? '#2dd4aa' : '#f26b6b';
+    document.getElementById('metMonth').textContent = `${price.month_pct >= 0 ? '+' : ''}${price.month_pct}%`;
+    document.getElementById('metMonth').style.color = price.month_pct >= 0 ? '#2dd4aa' : '#f26b6b';
+
+    // Signal
+    const allTrend = [price.change_pct, price.week_pct, price.month_pct];
+    const bullCount = allTrend.filter(x => x > 0).length;
+    const sig = bullCount >= 2 ? '↑ Bullish' : bullCount === 1 ? '→ Mixed' : '↓ Bearish';
+    const sigColor = bullCount >= 2 ? '#2dd4aa' : bullCount === 1 ? '#e6b84a' : '#f26b6b';
+    document.getElementById('metSignal').textContent = sig;
+    document.getElementById('metSignal').style.color = sigColor;
+
+    // 52W range
+    const w52 = COMM_52W[commId] || { low: price.price * 0.85, high: price.price * 1.08 };
+    document.getElementById('popup52Low').textContent = fmt(w52.low) + ' L';
+    document.getElementById('popup52High').textContent = 'H ' + fmt(w52.high);
+    const pct52 = ((price.price - w52.low) / (w52.high - w52.low) * 100).toFixed(0);
+    document.getElementById('rangeDot').style.left = pct52 + '%';
+    document.getElementById('rangeDot').style.background = color;
+
+    // Trading info
+    const info = COMM_INFO[commId] || {};
+    document.getElementById('infoExchange').textContent  = info.exchange  || 'MCX';
+    document.getElementById('infoLot').textContent       = info.lotSize   || '—';
+    document.getElementById('infoMargin').textContent    = info.margin    || '—';
+    document.getElementById('infoExpiry').textContent    = info.expiry    || '—';
+    document.getElementById('infoSegment').textContent   = info.segment   || '—';
+    document.getElementById('infoContVal').textContent   = info.contractVal || '—';
+    document.getElementById('infoAbout').textContent     = info.about     || '';
+
+    // Chart
+    const history30 = buildHistory30D(price.history, commId);
+    setTimeout(() => drawPopupChart(history30, color), 50);
+
+    // Events tab
+    const relEvents = COMM_EVENTS.filter(e => e.commodities.some(c => c === commId || c.includes(comm.name)));
+    const typeColors = { scheduled: '#6ba3d6', breaking: '#f26b6b', report: '#e6b84a' };
+    const typeLabels = { scheduled: 'Scheduled', breaking: 'Breaking', report: 'Report' };
+    const sentColors = { bull: '#2dd4aa', bear: '#f26b6b', neut: '#8a94a8' };
+    document.getElementById('popupEventsList').innerHTML = relEvents.length ? relEvents.map(ev => {
+        const tc = typeColors[ev.type] || '#8a94a8';
+        const newsHtml = (ev.news || []).slice(0, 2).map(n =>
+            `<div class="flex items-start gap-2 mt-2 pt-2 border-t border-outline-variant/10">
+                <span style="color:${sentColors[n.sentiment]};font-size:10px;font-weight:900;">${n.sentiment === 'bull' ? '▲' : n.sentiment === 'bear' ? '▼' : '→'}</span>
+                <div>
+                    <p class="text-[10px] text-on-surface">${n.title}</p>
+                    <p class="text-[8px] text-on-surface-variant/50 mt-0.5">${n.source} · ${n.time}</p>
+                </div>
+            </div>`).join('');
+        return `<div class="bg-surface-container rounded-xl p-3 border border-outline-variant/15">
+            <div class="flex items-start justify-between gap-2 mb-1">
+                <div>
+                    <span style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;padding:1px 5px;border-radius:3px;background:${tc}18;color:${tc};border:1px solid ${tc}30;">${typeLabels[ev.type]}</span>
+                    <h4 class="font-bold text-xs text-on-surface mt-1">${ev.title}</h4>
+                </div>
+                <span class="text-[9px] font-mono text-caution font-bold flex-shrink-0">${ev.nextDate}</span>
+            </div>
+            <p class="text-[10px] text-on-surface-variant/70 leading-relaxed">${ev.detail}</p>
+            <div class="mt-2 p-2 rounded bg-surface-container-highest/50 border-l-2 border-caution/30">
+                <p class="text-[9px] text-on-surface-variant/60"><span class="text-caution font-bold uppercase text-[8px]">Reasoning → </span>${ev.reasoning}</p>
+            </div>
+            ${newsHtml}
+        </div>`;
+    }).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No specific events mapped to ${comm.name} yet.</div>`;
+
+    // News tab
+    const news = COMMODITY_NEWS[commId] || [];
+    const sentBg = { bull: 'rgba(45,212,170,0.1)', bear: 'rgba(242,107,107,0.1)', neut: 'rgba(138,148,168,0.1)' };
+    document.getElementById('popupNewsList').innerHTML = news.length ? news.map(n => {
+        const sc = sentColors[n.sentiment] || '#8a94a8';
+        return `<div class="bg-surface-container rounded-xl p-3 border border-outline-variant/15">
+            <div class="flex items-center gap-2 mb-1.5">
+                <span style="font-size:9px;font-weight:800;padding:1px 7px;border-radius:4px;background:${sentBg[n.sentiment]};color:${sc};border:1px solid ${sc}25;">
+                    ${n.sentiment === 'bull' ? '▲ Bullish' : n.sentiment === 'bear' ? '▼ Bearish' : '→ Neutral'}
+                </span>
+                <span class="text-[9px] font-bold text-on-surface-variant/50">${n.source}</span>
+                <span class="ml-auto text-[8px] text-on-surface-variant/35">${n.time}</span>
+            </div>
+            <p class="text-xs text-on-surface font-medium leading-snug mb-1">${n.title}</p>
+            ${n.snippet ? `<p class="text-[10px] text-on-surface-variant/60 leading-relaxed">${n.snippet}</p>` : ''}
+        </div>`;
+    }).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news articles for ${comm.name}.</div>`;
+
+    // Stocks tab
+    const ben = comm.impactStocks;
+    const head = comm.headwindStocks;
+    const stockCard = (tickers, dir, col) => tickers.length ? `
+        <div>
+            <div class="text-[9px] uppercase tracking-widest font-bold mb-2" style="color:${col};">${dir === 'tail' ? '↑ Benefits (Tailwind) — rises when ' + comm.name + ' rises' : '↓ Headwind — suffers when ' + comm.name + ' rises'}</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                ${tickers.map(t => `<div class="bg-surface-container rounded-lg p-2.5 border border-outline-variant/15 flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${col};"></div>
+                    <div>
+                        <div class="font-mono font-black text-xs text-on-surface">${t}</div>
+                        <div class="text-[8px] text-on-surface-variant/50">${dir === 'tail' ? 'Beneficiary' : 'Headwind'}</div>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>` : '';
+
+    document.getElementById('popupBeneficiaries').innerHTML = stockCard(ben, 'tail', '#2dd4aa');
+    document.getElementById('popupHeadwinds').innerHTML     = stockCard(head, 'head', '#f26b6b');
+    if (!ben.length && !head.length) {
+        document.getElementById('popupBeneficiaries').innerHTML = `<div class="text-center py-6 text-on-surface-variant/40 text-xs">No stock mappings for ${comm.name} yet.</div>`;
+    }
+
+    // Open
+    document.getElementById('commBackdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePopup() {
+    document.getElementById('commBackdrop').classList.remove('open');
+    document.body.style.overflow = '';
+    currentPopupId = null;
+}
+
+function closePopupOnBackdrop(e) {
+    if (e.target === document.getElementById('commBackdrop')) closePopup();
+}
+
+function switchPopupTab(tab, btn) {
+    document.querySelectorAll('.popup-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.popup-tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab)?.classList.add('active');
+    if (btn) btn.classList.add('active');
+    else document.querySelector(`.popup-tab[onclick*="${tab}"]`)?.classList.add('active');
+}
+
+// Keyboard ESC to close
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Clock + market status — update every second
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Draw timelines
+    drawTimelines();
+    setInterval(drawTimelines, 60000); // Redraw every minute for NOW marker
+
+    DataRefresher.start(loadPage, 60000);
+    Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>
