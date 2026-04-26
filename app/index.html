@@ -75,7 +75,10 @@
 
 <main class="main-content">
     <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-8">
-        <h1 class="text-4xl font-black font-headline text-on-surface mb-2">ALPHA TERMINAL</h1>
+        <div class="flex items-center justify-between mb-1">
+            <h1 class="text-4xl font-black font-headline text-on-surface">ALPHA TERMINAL</h1>
+            <div id="statusBanner" style="min-width:160px;text-align:right;"></div>
+        </div>
         <div class="flex items-center justify-between">
             <p class="text-on-surface-variant text-sm">Real-time market intelligence and quantitative signal processing.</p>
             <button onclick="const on = SoundFX.toggle(); this.querySelector('span').textContent = on ? 'volume_up' : 'volume_off'" class="p-2 text-on-surface-variant hover:bg-surface-container rounded transition-colors" title="Toggle alert sounds">
@@ -376,7 +379,12 @@
 
 <script src="./shared/js/app.js"></script>
 <script src="./shared/js/theme.js"></script>
+<script src="./shared/js/realtime.js"></script>
 <script>
+// Mount the always-on status banner (last-updated chip + live count) ASAP.
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.Realtime) Realtime.mountStatusBanner('statusBanner', 30);
+});
 // ============ RICH SIGNAL REASONING ============
 function buildSignalReasoning(sig, pulse) {
     const evType  = (sig.event_type || 'news').replace(/_/g, ' ');
@@ -1049,10 +1057,108 @@ async function loadHomePage() {
     } catch(e) { /* non-critical */ }
 }
 
+// "Today's 5 things you'd regret missing" — curated from /api/news/fast.
+// Picks the top 5 events by composite score (alpha + freshness + tier + cluster size),
+// dedups by ticker, surfaces an action line per card.
+async function renderTodaysFive() {
+    const host = document.getElementById('todaysFive');
+    if (!host) return;
+    let items = [];
+    try {
+        const r = await fetch('/api/news/fast?limit=60');
+        const j = await r.json();
+        items = (j && j.data) || [];
+    } catch (e) { return; }
+
+    // Score: alpha (0..100) + cluster confidence (tier1/confirmed = +20) - age penalty
+    const scored = items.map(it => {
+        const alpha = Number(it.alpha_score || 0);
+        const tier = Number(it.source_tier || 4);
+        const confBonus = it.confirmation === 'tier1' ? 25 : it.confirmation === 'confirmed' ? 18 : it.confirmation === 'single' ? 5 : -10;
+        const tierBonus = tier === 1 ? 15 : tier === 2 ? 8 : 0;
+        const ageHrs = Number(it.age_hours || 0);
+        const ageDecay = Math.exp(-ageHrs / 6) * 20;
+        const fb = it.forensic_band;
+        const fbPenalty = fb === 'likely_manipulated' ? -40 : fb === 'suspicious' ? -15 : 0;
+        return { ...it, _score: alpha + confBonus + tierBonus + ageDecay + fbPenalty };
+    });
+
+    // Dedup by primary ticker (or event_id if no ticker)
+    const seen = new Set();
+    const top = [];
+    scored.sort((a, b) => b._score - a._score);
+    for (const it of scored) {
+        const key = (it.tickers && it.tickers[0]) || it.ticker || it.event_id;
+        if (key && seen.has(key)) continue;
+        if (key) seen.add(key);
+        top.push(it);
+        if (top.length >= 5) break;
+    }
+
+    if (!top.length) {
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for fresh events…</div>';
+        return;
+    }
+
+    host.innerHTML = top.map((it, i) => {
+        const ticker = (it.tickers && it.tickers[0]) || it.ticker || '';
+        const sent = it.sentiment || 'neutral';
+        const sentColor = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#9aa0c8';
+        const alpha = Number(it.alpha_score || 0);
+        const fresh = window.Realtime ? Realtime.freshness(it.published_at || it.created_at) : { label: '', color: '#9aa0c8' };
+        const conf = it.confirmation;
+        const confBadge = window.Realtime && conf ? Realtime.sourceConfirmationBadge(conf) : null;
+        const fb = it.forensic_band;
+        const fbBadge = window.Realtime && fb ? Realtime.forensicBadge(fb) : null;
+
+        // Action line: "Buy/Watch/Avoid" based on alpha + sentiment + forensic
+        let action = 'Watch';
+        let actionColor = '#9aa0c8';
+        if (fb === 'likely_manipulated') { action = 'Avoid'; actionColor = '#ff7a8a'; }
+        else if (alpha >= 70 && sent === 'bullish') { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
+        else if (alpha >= 70 && sent === 'bearish') { action = 'Short / hedge'; actionColor = '#ff9466'; }
+        else if (alpha >= 60) { action = 'Watch closely'; actionColor = '#f9d423'; }
+
+        return `
+        <div onclick="window.location='${ticker ? 'compare.html?t=' + ticker : 'events.html'}'"
+             style="cursor:pointer;background:#0d1118;border:1px solid ${sentColor}22;border-left:4px solid ${sentColor};border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:start;transition:all 0.2s;"
+             onmouseover="this.style.background='#111720';" onmouseout="this.style.background='#0d1118';">
+            <div style="font-size:24px;font-weight:900;color:${sentColor};font-family:'JetBrains Mono',monospace;min-width:36px;">${i+1}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">
+                    ${ticker ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:900;color:#dde3ef;">${ticker}</span>` : ''}
+                    ${alpha ? `<span style="font-size:10px;font-weight:800;color:${sentColor};">α ${alpha.toFixed(0)}</span>` : ''}
+                    ${fresh.label ? Realtime.badgeChip(fresh.label, fresh.color) : ''}
+                    ${confBadge ? Realtime.badgeChip(confBadge.label, confBadge.color) : ''}
+                    ${fbBadge ? Realtime.badgeChip(fbBadge.label, fbBadge.color) : ''}
+                </div>
+                <div style="font-size:13px;color:#dde3ef;font-weight:600;line-height:1.3;margin-bottom:4px;">${(it.title || '').slice(0, 140)}</div>
+                <div style="font-size:10px;color:${actionColor};font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">→ ${action}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     SoundFX.init();
+    // Inject "Today's 5" panel right after the market summary card
+    const msc = document.getElementById('marketSummaryCard');
+    if (msc) {
+        const panel = document.createElement('section');
+        panel.className = 'mb-8';
+        panel.innerHTML = `
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-[10px] font-black tracking-widest uppercase" style="color:#f9d423;">TODAY'S 5</span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">things you'd regret missing — curated by alpha + freshness + source trust</span>
+                <div class="h-[1px] flex-1 bg-primary/10"></div>
+                <span id="slaChip" class="text-[10px] font-mono" style="color:#4ee6b8;">SLA · breaking ≤60s</span>
+            </div>
+            <div id="todaysFive" class="space-y-2"></div>`;
+        msc.parentNode.insertBefore(panel, msc.nextSibling);
+    }
     DataRefresher.start(async () => {
         await loadHomePage();
+        await renderTodaysFive();
         // Check for new signals and play sound
         const dashboard = await LiveData.getDashboard();
         if (dashboard) SoundFX.checkForNewSignals(dashboard.active_signals || 0);

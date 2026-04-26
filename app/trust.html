@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventAlpha | Trust & Track Record</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
+.metric-card { background:#0d1118;border:1px solid #1f2336;border-radius:12px;padding:18px; }
+.metric-num { font-family:'JetBrains Mono',monospace;font-weight:900; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body" style="background:#080c12;color:#dde3ef;">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header">
+    <h1 class="sidebar-brand">EventAlpha</h1>
+    <p class="sidebar-brand-sub">Trust & Track Record</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+    <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+    <a class="sidebar-link active" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+  </nav>
+  <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content" style="padding:32px;max-width:1200px;">
+
+<header style="margin-bottom:32px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+    <span class="material-symbols-outlined" style="color:#4ee6b8;font-size:34px;">verified</span>
+    <h1 style="font-family:'Plus Jakarta Sans';font-weight:900;font-size:34px;color:#dde3ef;">TRUST & TRACK RECORD</h1>
+  </div>
+  <p style="color:#9aa0c8;font-size:13px;">Every prediction we publish is logged. Once the horizon passes, we mark it hit or miss against the actual price. Numbers below are 90-day rolling — re-computed daily, no cherry-picking.</p>
+</header>
+
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:32px;" id="topMetrics">
+  <div class="metric-card"><div style="font-size:10px;color:#5a5d6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Status</div><div id="mStatus" class="metric-num" style="font-size:22px;color:#9aa0c8;margin-top:6px;">…</div></div>
+  <div class="metric-card"><div style="font-size:10px;color:#5a5d6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Last scrape</div><div id="mScrape" class="metric-num" style="font-size:22px;color:#9aa0c8;margin-top:6px;">…</div></div>
+  <div class="metric-card"><div style="font-size:10px;color:#5a5d6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Events / hour</div><div id="mEvents" class="metric-num" style="font-size:22px;color:#9aa0c8;margin-top:6px;">…</div></div>
+  <div class="metric-card"><div style="font-size:10px;color:#5a5d6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Live subscribers</div><div id="mSubs" class="metric-num" style="font-size:22px;color:#9aa0c8;margin-top:6px;">…</div></div>
+</section>
+
+<section style="margin-bottom:32px;">
+  <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:#dde3ef;margin-bottom:12px;">90-day prediction hit rate by horizon</h2>
+  <p style="color:#9aa0c8;font-size:12px;margin-bottom:14px;">Direction-correct rate (predicted up + actual up, or predicted down + actual down) on resolved predictions.</p>
+  <div id="hitGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;"></div>
+</section>
+
+<section style="margin-bottom:32px;">
+  <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:#dde3ef;margin-bottom:12px;">Hit rate by alpha bucket (3D horizon)</h2>
+  <p style="color:#9aa0c8;font-size:12px;margin-bottom:14px;">Higher-alpha signals should hit more often. If they don't, the engine needs recalibration.</p>
+  <div class="metric-card" id="bucketHost">
+    <div style="font-size:11px;color:#5a5d6a;text-align:center;padding:20px;">Loading bucket analysis…</div>
+  </div>
+</section>
+
+<section style="margin-bottom:32px;">
+  <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:#dde3ef;margin-bottom:12px;">How we compute trust</h2>
+  <div class="metric-card" style="font-size:13px;color:#9aa0c8;line-height:1.7;">
+    <ol style="list-style:decimal;margin-left:20px;">
+      <li><b style="color:#dde3ef;">Source tiering.</b> BSE/NSE/SEBI filings → 1.0 weight. ET/Mint/Reuters → 0.85. Aggregators → 0.6. Unknown blogs → 0.3.</li>
+      <li><b style="color:#dde3ef;">Cross-source confirmation.</b> A signal can't fire above α=65 unless ≥2 independent Tier-1/2 sources confirm within 6 hours, or it's a direct exchange filing.</li>
+      <li><b style="color:#dde3ef;">Forensic gate.</b> Every event is scored across 7 fingerprints (anonymous sourcing, contradictions, pressure language, recycled phrasing, etc.). Bands: clean / unverified / suspicious / likely_manipulated.</li>
+      <li><b style="color:#dde3ef;">Prediction tracker.</b> Every signal logs a forecast for 1D/3D/20D. After the horizon passes, the actual return is fetched from yfinance and the prediction is marked hit or miss — immutably.</li>
+      <li><b style="color:#dde3ef;">No retroactive editing.</b> Predictions are append-only. We can't go back and change what we said.</li>
+    </ol>
+  </div>
+</section>
+
+<section style="margin-bottom:32px;">
+  <h2 style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:#dde3ef;margin-bottom:12px;">Disclaimers</h2>
+  <div class="metric-card" style="font-size:12px;color:#9aa0c8;line-height:1.7;">
+    <p><b style="color:#ff9466;">Not investment advice.</b> EventAlpha publishes statistical signals derived from public news + market data. It is research tooling, not registered advisory. Do your own diligence and consult a SEBI-registered investment advisor before trading.</p>
+    <p style="margin-top:10px;"><b style="color:#dde3ef;">Data sources.</b> NSE/BSE corporate filings (public), SEBI disclosures (public), RBI press releases (public), 20+ Indian financial RSS feeds, yfinance market data. Every event card links back to its primary source — click through to verify.</p>
+    <p style="margin-top:10px;"><b style="color:#dde3ef;">Manipulation reporting.</b> If a signal here looks fake or coordinated, click the forensics badge on its card and submit feedback. False positives + false negatives are reviewed weekly.</p>
+  </div>
+</section>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/realtime.js"></script>
+<script>
+async function loadTrust() {
+  try {
+    const r = await fetch('/api/status');
+    const j = await r.json();
+    const d = (j && j.data) || {};
+    const sc = d.scraper || {};
+    const stream = d.stream || {};
+    const db = d.db || {};
+    const hr = d.hit_rate_90d || {};
+
+    document.getElementById('mStatus').textContent = d.ok ? 'LIVE' : 'DEGRADED';
+    document.getElementById('mStatus').style.color = d.ok ? '#4ee6b8' : '#ff7a8a';
+    document.getElementById('mScrape').textContent = sc.last_run_age_min != null ? Math.round(sc.last_run_age_min) + 'm ago' : '—';
+    document.getElementById('mEvents').textContent = (db.events_1h || 0) + '/hr';
+    document.getElementById('mSubs').textContent = stream.subscribers || 0;
+
+    const grid = document.getElementById('hitGrid');
+    const horizons = ['1D', '3D', '20D'];
+    grid.innerHTML = horizons.map(h => {
+      const stat = hr[h] || {};
+      const pct = stat.hit_rate_pct;
+      const color = pct >= 60 ? '#4ee6b8' : pct >= 50 ? '#f9d423' : pct != null ? '#ff7a8a' : '#5a5d6a';
+      return `<div class="metric-card">
+        <div style="font-size:10px;color:#5a5d6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">${h} horizon</div>
+        <div class="metric-num" style="font-size:34px;color:${color};">${pct != null ? pct.toFixed(1) + '%' : '—'}</div>
+        <div style="font-size:10px;color:#5a5d6a;font-family:monospace;margin-top:4px;">resolved: ${stat.resolved || 0}</div>
+        <div style="height:6px;background:#1f2336;border-radius:3px;margin-top:10px;overflow:hidden;">
+          <div style="width:${Math.min(100, pct || 0)}%;height:100%;background:${color};"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Bucket analysis (3D)
+    try {
+      const br = await fetch('/api/analytics?bucket=alpha&horizon=3D');
+      const bj = await br.json();
+      const buckets = (bj && bj.data && bj.data.alpha_buckets) || (bj && bj.data && bj.data.buckets) || [];
+      const host = document.getElementById('bucketHost');
+      if (buckets.length) {
+        host.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">' +
+          buckets.map(b => {
+            const pct = b.hit_rate_pct ?? b.win_rate ?? 0;
+            const color = pct >= 60 ? '#4ee6b8' : pct >= 50 ? '#f9d423' : '#ff7a8a';
+            return `<div style="background:#1f2336;border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;color:#9aa0c8;font-weight:700;">α ${b.bucket || b.range || ''}</div>
+              <div class="metric-num" style="font-size:20px;color:${color};margin-top:4px;">${pct.toFixed(0)}%</div>
+              <div style="font-size:9px;color:#5a5d6a;font-family:monospace;">n=${b.n || b.count || 0}</div>
+            </div>`;
+          }).join('') + '</div>';
+      } else {
+        host.innerHTML = '<div style="font-size:11px;color:#5a5d6a;text-align:center;padding:20px;">Not enough resolved signals yet for bucket analysis.</div>';
+      }
+    } catch(e) {
+      document.getElementById('bucketHost').innerHTML = '<div style="font-size:11px;color:#5a5d6a;text-align:center;padding:20px;">Bucket analysis unavailable.</div>';
+    }
+  } catch(e) {
+    document.getElementById('mStatus').textContent = 'OFFLINE';
+    document.getElementById('mStatus').style.color = '#ff7a8a';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  loadTrust();
+  if (window.Auth) Auth.updateAuthUI();
+});
+</script>
+</body>
+</html>

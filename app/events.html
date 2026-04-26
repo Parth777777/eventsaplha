@@ -217,10 +217,12 @@
 <script src="./shared/js/app.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/phase_1_5.js"></script>
+<script src="./shared/js/realtime.js"></script>
 <script>
 let allEvents = [];
 let sigByTicker = {};
 let currentFilter = 'all';
+let sseSub = null;
 
 function filterEvents(type) {
     SoundFX.pop();
@@ -299,9 +301,31 @@ function renderEvents() {
                 <div class="flex-1 p-5">
                     <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
                         <div>
-                            <div class="flex items-center gap-2 mb-1">
+                            <div class="flex items-center flex-wrap gap-2 mb-1">
                                 <span class="text-[10px] font-black tracking-widest text-${color} uppercase">${evType}</span>
                                 <span class="text-[9px] text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5 rounded">${(event.source || '').replace(/_/g, ' ')}</span>
+                                ${(() => {
+                                    if (!window.Realtime) return '';
+                                    const out = [];
+                                    const fresh = Realtime.freshness(event.published_at || event.created_at || event.timestamp);
+                                    if (fresh.label) out.push(Realtime.badgeChip(fresh.label, fresh.color));
+                                    if (event.source_tier) {
+                                        const tb = Realtime.tierBadge(event.source_tier);
+                                        if (tb.label) out.push(Realtime.badgeChip(tb.label, tb.color));
+                                    }
+                                    if (event.confirmation) {
+                                        const cb = Realtime.sourceConfirmationBadge(event.confirmation);
+                                        if (cb) out.push(Realtime.badgeChip(cb.label, cb.color));
+                                    }
+                                    if (event.forensic_band) {
+                                        const fb = Realtime.forensicBadge(event.forensic_band);
+                                        if (fb) out.push(Realtime.badgeChip(fb.label, fb.color));
+                                    }
+                                    if (event.high_velocity) {
+                                        out.push(Realtime.badgeChip('HOT ' + (event.news_velocity_per_hour||0).toFixed(0) + '/h', '#ff7a8a'));
+                                    }
+                                    return out.join(' ');
+                                })()}
                             </div>
                             <h3 class="font-headline text-base font-bold text-on-background leading-snug">${title}</h3>
                         </div>
@@ -378,7 +402,57 @@ async function loadEventsPage() {
 document.addEventListener('DOMContentLoaded', () => {
     DataRefresher.start(loadEventsPage, 60000);
     Auth.updateAuthUI();
+
+    // Live SSE subscription: push new events into the feed without polling.
+    // Stage-1 ('news') prepends a placeholder; stage-2 ('scored') upgrades it.
+    if (window.Realtime) {
+        sseSub = Realtime.subscribe({
+            channels: ['news', 'scored', 'alert'],
+            replay: 10,
+            onEvent: (ev) => {
+                if (ev.channel === 'news' && ev.event_id) {
+                    const idx = allEvents.findIndex(e => e.event_id === ev.event_id);
+                    const enriched = {
+                        event_id: ev.event_id,
+                        title: ev.title,
+                        summary: ev.summary,
+                        source: ev.source_name || ev.source,
+                        link: ev.link,
+                        event_type: ev.event_type || 'news',
+                        sentiment: ev.sentiment,
+                        magnitude: ev.magnitude,
+                        impact_score: (ev.magnitude || 5) * 10,
+                        companies: (ev.tickers || []).join(','),
+                        published_at: ev.published_at,
+                        timestamp: ev.published_at,
+                        source_tier: ev.source_tier,
+                        confirmation: ev.confirmation,
+                        freshness_label: ev.freshness_label,
+                    };
+                    if (idx >= 0) allEvents[idx] = { ...allEvents[idx], ...enriched };
+                    else allEvents.unshift(enriched);
+                    renderEvents();
+                } else if (ev.channel === 'scored' && ev.event_id) {
+                    const idx = allEvents.findIndex(e => e.event_id === ev.event_id);
+                    if (idx >= 0) {
+                        allEvents[idx].forensic_band = ev.forensic_band || allEvents[idx].forensic_band;
+                        allEvents[idx].alpha_score = ev.alpha_score || allEvents[idx].alpha_score;
+                        renderEvents();
+                    }
+                    if (ev.ticker) {
+                        sigByTicker[ev.ticker] = {
+                            ticker: ev.ticker, company: ev.company,
+                            alpha_score: ev.alpha_score, sentiment: ev.sentiment,
+                            event_type: ev.event_type,
+                        };
+                    }
+                }
+            },
+        });
+    }
 });
+
+window.addEventListener('beforeunload', () => { try { sseSub && sseSub.close(); } catch(e){} });
 </script>
 </body>
 </html>

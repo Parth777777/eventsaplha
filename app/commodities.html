@@ -1288,13 +1288,40 @@ function updateSummary(prices) {
 
 // ── Main Load ──────────────────────────────────────────────
 async function loadPage() {
-    // Try API first
-    let prices = MOCK_COMMODITY_PRICES;
-    const res = await API.get('/commodities');
-    if (res?.success && res.data) {
-        prices = { ...MOCK_COMMODITY_PRICES, ...res.data };
+    // Live first: try the new /commodities/prices endpoint, fall back to /commodities
+    // (api_ext), and last resort show the catalog with stale-state markers so
+    // users always know whether they're seeing real prices or a placeholder.
+    let prices = {};
+    let stale = true;
+    let asOf = null;
+    let liveRes = await API.get('/commodities/prices');
+    if (liveRes?.success && liveRes.data) {
+        prices = liveRes.data;
+        stale = !!liveRes.stale;
+        asOf = liveRes.as_of || null;
+    } else {
+        const res = await API.get('/commodities');
+        if (res?.success && res.data) {
+            prices = res.data;
+            stale = false;
+        }
+    }
+    // Final fallback: old mock catalog so the page renders, but flag it.
+    if (!prices || Object.keys(prices).length === 0) {
+        prices = MOCK_COMMODITY_PRICES;
+        stale = true;
     }
     allPrices = prices;
+    window.__commoditiesStale = stale;
+    window.__commoditiesAsOf = asOf;
+    // Drop a small banner near the top so the user knows.
+    const banner = document.createElement('div');
+    banner.style.cssText = 'margin:8px 12px;padding:8px 12px;border-radius:8px;font-size:11px;font-family:monospace;' +
+        (stale ? 'background:#3a1f1f;color:#ff9466;border:1px solid #ff946655;' : 'background:#1f3a2c;color:#4ee6b8;border:1px solid #4ee6b855;');
+    banner.textContent = stale ? 'LIVE FEED UNAVAILABLE — showing last-known catalog. Prices may be stale.'
+                                : ('LIVE · prices as of ' + (asOf || 'now'));
+    const main = document.querySelector('main') || document.body;
+    main.insertBefore(banner, main.firstChild);
 
     updateSummary(prices);
     renderGrid();

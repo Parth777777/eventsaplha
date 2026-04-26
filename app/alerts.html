@@ -732,12 +732,155 @@ async function loadAlertsPage() {
 
     feed.innerHTML = html;
 
+    // Smart-alerts panel: render after the price-alerts table.
+    await renderSmartAlerts();
+
     // Re-apply any active filter/sort after render
     applySignalFilter();
 }
 
+// ─── Smart Alerts (volume / news velocity / forensic flip / alpha threshold) ─
+async function renderSmartAlerts() {
+    let feed = document.getElementById('alertsFeed');
+    let panel = document.getElementById('smartAlertsPanel');
+    if (!panel) {
+        panel = document.createElement('section');
+        panel.id = 'smartAlertsPanel';
+        panel.className = 'mt-8';
+        feed.appendChild(panel);
+    }
+
+    const [kindsRes, listRes] = await Promise.all([
+        API.get('/alerts/smart/kinds'),
+        API.get('/alerts/smart'),
+    ]);
+    const kinds = (kindsRes && kindsRes.data) || [];
+    const alerts = (listRes && listRes.data) || [];
+
+    const kindOptions = kinds.map(k => `<option value="${k.kind}">${k.label}</option>`).join('');
+    const rows = alerts.map(a => {
+        const ago = a.last_fired_at ? (window.Realtime ? Realtime.ageLabel(a.last_fired_at) : a.last_fired_at) : 'never';
+        return `<tr style="border-top:1px solid #1f2336;">
+            <td style="padding:8px 12px;font-size:11px;font-family:monospace;color:#9aa0c8;">${a.kind}</td>
+            <td style="padding:8px 12px;font-size:11px;color:#dde3ef;">${a.ticker || '<i style="color:#5a5d6a;">market-wide</i>'}</td>
+            <td style="padding:8px 12px;font-size:10px;color:#9aa0c8;font-family:monospace;">${escapeHtml(JSON.stringify(a.params || {}))}</td>
+            <td style="padding:8px 12px;font-size:10px;color:#9aa0c8;">${ago}</td>
+            <td style="padding:8px 12px;text-align:right;">
+                <button onclick="deleteSmartAlert(${a.id})" style="background:#3a1f1f;color:#ff7a8a;border:1px solid #ff7a8a33;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">Delete</button>
+            </td>
+        </tr>`;
+    }).join('') || `<tr><td colspan="5" style="padding:14px;text-align:center;color:#5a5d6a;font-size:11px;">No smart alerts. Create one below.</td></tr>`;
+
+    panel.innerHTML = `
+        <div class="flex items-center gap-3 mb-3">
+            <span class="px-3 py-1 rounded text-[10px] font-black tracking-widest uppercase" style="background:#2c3a55;color:#adc6ff;">SMART ALERTS</span>
+            <span class="text-[10px] text-on-surface-variant/50 font-mono">volume · news velocity · forensic flip · pledge · bulk-deal · alpha cross</span>
+            <div class="h-[1px] flex-1 bg-primary/10"></div>
+            <span class="text-[10px] text-on-surface-variant/50 font-mono">${alerts.length} configured</span>
+        </div>
+        <div class="rounded-xl overflow-hidden border border-outline-variant/10">
+            <table class="w-full text-left" style="border-collapse:collapse;">
+                <thead class="bg-surface-container-lowest">
+                    <tr>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Kind</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Ticker</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Params</th>
+                        <th class="px-4 py-2.5 text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Last fired</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-surface-container-low" id="smartAlertRows">${rows}</tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 p-4 rounded-xl border border-outline-variant/10 bg-surface-container-low">
+            <div class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-3">Create smart alert</div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                <select id="saKind" onchange="updateSmartAlertParams()" class="px-3 py-2 text-xs bg-surface-container-highest border border-outline-variant/20 rounded">${kindOptions}</select>
+                <input id="saTicker" placeholder="Ticker (optional)" class="px-3 py-2 text-xs bg-surface-container-highest border border-outline-variant/20 rounded uppercase" />
+                <div id="saParamsBox" class="md:col-span-2 grid grid-cols-2 gap-2"></div>
+                <button onclick="createSmartAlert()" class="px-4 py-2 text-xs font-black uppercase tracking-widest rounded" style="background:#5b6cff;color:#fff;">+ Create</button>
+            </div>
+            <div id="saMsg" class="mt-2 text-[10px] font-mono text-on-surface-variant/60"></div>
+        </div>
+
+        <div class="mt-6">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-[10px] font-black tracking-widest uppercase" style="color:#4ee6b8;">LIVE FEED</span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">smart-alert hits, pushed in real-time</span>
+                <div class="h-[1px] flex-1 bg-secondary/10"></div>
+            </div>
+            <div id="liveAlertHits" class="space-y-1 text-xs font-mono"></div>
+        </div>
+    `;
+
+    window.__saKinds = kinds;
+    updateSmartAlertParams();
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function updateSmartAlertParams() {
+    const sel = document.getElementById('saKind');
+    const box = document.getElementById('saParamsBox');
+    const tickerInput = document.getElementById('saTicker');
+    if (!sel || !box) return;
+    const kinds = window.__saKinds || [];
+    const def = kinds.find(k => k.kind === sel.value);
+    if (!def) { box.innerHTML = ''; return; }
+    tickerInput.placeholder = def.needs_ticker ? 'Ticker (required)' : 'Ticker (optional, blank = market-wide)';
+    box.innerHTML = (def.params || []).map(p => {
+        const id = 'saParam_' + p.name;
+        if (p.type === 'select') {
+            const opts = (p.options || []).map(o => `<option value="${o}">${o || '(any)'}</option>`).join('');
+            return `<label class="flex flex-col text-[10px] text-on-surface-variant/60 font-mono">${p.name}<select id="${id}" class="mt-1 px-2 py-1.5 text-xs bg-surface-container-highest border border-outline-variant/20 rounded">${opts}</select></label>`;
+        }
+        return `<label class="flex flex-col text-[10px] text-on-surface-variant/60 font-mono">${p.name}<input id="${id}" type="number" step="0.1" value="${p.default ?? ''}" class="mt-1 px-2 py-1.5 text-xs bg-surface-container-highest border border-outline-variant/20 rounded" /></label>`;
+    }).join('');
+}
+
+async function createSmartAlert() {
+    const kind = document.getElementById('saKind').value;
+    const ticker = (document.getElementById('saTicker').value || '').toUpperCase().trim() || null;
+    const def = (window.__saKinds || []).find(k => k.kind === kind) || { params: [] };
+    const params = {};
+    for (const p of def.params) {
+        const el = document.getElementById('saParam_' + p.name);
+        if (!el) continue;
+        const v = el.value;
+        if (v === '' || v == null) continue;
+        params[p.name] = (p.type === 'select') ? v : Number(v);
+    }
+    if (def.needs_ticker && !ticker) {
+        document.getElementById('saMsg').textContent = 'This alert kind requires a ticker.';
+        return;
+    }
+    const res = await API.post('/alerts/smart', { kind, ticker, params, cooldown_minutes: 60 });
+    document.getElementById('saMsg').textContent = res?.success ? `Created (id ${res.id}).` : `Failed: ${res?.error || 'unknown'}`;
+    if (res?.success) { renderSmartAlerts(); }
+}
+
+async function deleteSmartAlert(id) {
+    if (!confirm('Delete this alert?')) return;
+    const res = await fetch('/api/alerts/smart/' + id, { method: 'DELETE' });
+    if (res.ok) renderSmartAlerts();
+}
+
+function appendLiveAlertHit(hit) {
+    const box = document.getElementById('liveAlertHits');
+    if (!box) return;
+    const row = document.createElement('div');
+    row.className = 'p-2 rounded';
+    row.style.cssText = 'background:#1f2336;border-left:3px solid #ff9466;';
+    const time = new Date().toLocaleTimeString('en-IN', { hour12: false });
+    row.innerHTML = `<span style="color:#5a5d6a;">[${time}]</span> <span style="color:#ff9466;font-weight:700;">${(hit.kind || '').toUpperCase()}</span> · <span style="color:#dde3ef;">${escapeHtml(hit.headline || JSON.stringify(hit))}</span>`;
+    box.insertBefore(row, box.firstChild);
+    while (box.children.length > 30) box.removeChild(box.lastChild);
+}
+
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 let _prevAlertCount = 0;
+let _alertsSseSub = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     SoundFX.init();
@@ -756,7 +899,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 60000);
 
     Auth.updateAuthUI();
+
+    // SSE: live smart-alert hits
+    if (window.Realtime) {
+        _alertsSseSub = Realtime.subscribe({
+            channels: ['alert'],
+            replay: 20,
+            onEvent: (ev) => {
+                if (ev.channel === 'alert') {
+                    appendLiveAlertHit(ev);
+                    SoundFX && SoundFX.alertHigh && SoundFX.alertHigh();
+                }
+            },
+        });
+    }
 });
+
+window.addEventListener('beforeunload', () => { try { _alertsSseSub && _alertsSseSub.close(); } catch(e){} });
 </script>
+<script src="./shared/js/realtime.js"></script>
 </body>
 </html>
