@@ -273,6 +273,32 @@ SECTOR_MAP = {
         'trading', 'traders', 'commodities trading', 'brokerage',
         'mmtc', 'stc', 'angel one', 'iifl', 'motilal oswal', 'edelweiss',
     ],
+    # Glass / ceramics / building materials sub-bucket
+    'BUILDING_MATERIAL': [
+        'glass', 'tile', 'tiles', 'ceramic', 'ceramics', 'sanitaryware',
+        'granito', 'plyboard', 'plywood', 'laminate', 'mdf', 'particle board',
+        'asahi', 'somany', 'kajaria', 'nitco', 'cera sanit', 'hsil',
+        'astral', 'finolex pipes', 'prince pipe', 'apl apollo', 'supreme ind',
+    ],
+}
+
+# Generic patterns appended after main map — caught only if nothing more specific matched.
+# Allows us to bucket stocks whose names contain weak hints.
+GENERIC_SECTOR_FALLBACKS = {
+    'TEXTILE': ['spintex', 'cotspin', 'spinning', 'mills', 'fab '],
+    'INFRA':   ['contractors', 'contract', 'foundation', 'project'],
+    'HEALTHCARE': ['medicare', 'wellness'],
+    'CHEMICALS': ['rasayan', 'minechem', 'colors', 'colours', 'organic', 'speciality', 'specialty', 'lubricants'],
+    'ENGINEERING': ['welding', 'gears', 'precision', 'fabricat', 'forg'],
+    'ENERGY': ['exploration', 'energy services', 'energy transition'],
+    'MINING': ['minerals', 'minechem', 'ores'],
+    'BFSI': ['wam', 'wealth', 'investments', 'capitals'],
+    'REALESTATE': ['realtech', 'realtors', 'projects & infrastructure', 'lifespace'],
+    'AGRI': ['agritech', 'plantations', 'farms', 'feeds'],
+    'FMCG': ['breweries', 'alcohol', 'distilleries', 'bottling'],
+    'ELECTRONICS': ['cables', 'wires', 'optifibre'],
+    'IT': ['solutions', 'softech', 'webtech', 'erp'],
+    'TECH': ['affle', '3i ', 'edutech'],
 }
 
 # Explicit ticker → sector overrides for the 200+ most-traded NSE names.
@@ -434,16 +460,27 @@ TICKER_SECTOR_OVERRIDE = {
 
 
 def _classify_sector(company_name, ticker=None):
-    """Determine sector — explicit ticker override wins over keyword matching."""
+    """Determine sector — explicit ticker override wins, then primary keywords,
+    then generic fallback patterns. Drastically reduces 'OTHER' bucket."""
     if ticker:
         t = ticker.strip().upper()
         if t in TICKER_SECTOR_OVERRIDE:
             return TICKER_SECTOR_OVERRIDE[t]
     name_lower = (company_name or '').lower()
+    # Primary specific keywords
     for sector, keywords in SECTOR_MAP.items():
         for kw in keywords:
             if kw in name_lower:
                 return sector
+    # Generic fallback patterns
+    for sector, keywords in GENERIC_SECTOR_FALLBACKS.items():
+        for kw in keywords:
+            if kw in name_lower:
+                return sector
+    # Last-ditch: bucket "Industries"/"Limited" generic names as CONGLOMERATE
+    # so they don't all fall into OTHER.
+    if 'industries' in name_lower or 'industrial' in name_lower:
+        return 'CONGLOMERATE'
     return 'OTHER'
 
 
