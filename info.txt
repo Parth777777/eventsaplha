@@ -1,0 +1,374 @@
+  # EventAlpha – Full Documentation Suite (Expanded)
+
+---
+
+# 1. PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+## 1.1 Product Vision
+
+EventAlpha is a real-time event intelligence platform that converts unstructured news, filings, and geopolitical developments into quantified stock signals across short-term (1–3 day) and medium-term (20 day) horizons.
+
+---
+
+## 1.2 Core Capabilities
+
+* Event detection (earnings, orders, policy, war, flows)
+* NLP-based sentiment + magnitude extraction
+* Event → stock + sector mapping
+* Dynamic alpha scoring (regime-based weights)
+* Geo-intelligence visualization (map layer)
+* Real-time alerts (Telegram/Discord)
+
+---
+
+## 1.3 Target Users
+
+* Retail traders (active)
+* Semi-pro swing traders
+* Finance + tech learners
+
+---
+
+## 1.4 Key Differentiation
+
+* Event-first (not price-first)
+* India-first but globally aware
+* Dynamic scoring (not static filters)
+* Geo-political + macro integration
+
+---
+
+# 2. SYSTEM DESIGN DOCUMENT
+
+## 2.1 High-Level Architecture
+
+DATA SOURCES → INGESTION → NLP PIPELINE → EVENT ENGINE → SIGNAL ENGINE → API → UI + ALERTS
+
+---
+
+## 2.2 Components
+
+### A. Data Ingestion Layer
+
+* Scrapers (NSE, BSE, news)
+* APIs (market + macro)
+* Scheduler (cron / Airflow)
+
+### B. NLP Engine
+
+* Entity extraction (company, sector)
+* Event classification
+* Sentiment scoring
+* Magnitude detection
+
+### C. Event Engine
+
+* Normalizes events into schema:
+
+  * type
+  * strength
+  * timestamp
+  * entities
+
+### D. Signal Engine
+
+* Applies weighted scoring
+* Uses regime detection
+* Outputs expected return + confidence
+
+### E. Storage
+
+* PostgreSQL (structured)
+* Redis (real-time cache)
+
+### F. API Layer
+
+* FastAPI endpoints:
+
+  * /events
+  * /signals
+  * /stocks
+  * /alerts
+
+### G. Frontend
+
+* React dashboard
+* Real-time feed
+* Map visualization
+
+---
+
+# 3. UI/UX WIREFRAME (BASED ON YOUR DESIGN)
+
+## 3.1 Home – Live Feed
+
+* Card-based events
+* Each card includes:
+
+  * Company
+  * Event type
+  * Impact score
+  * Expected move
+  * Confidence
+
+---
+
+## 3.2 Explore Page
+
+* Ranked signals
+* Filters:
+
+  * Sector
+  * Event type
+  * Time horizon
+
+---
+
+## 3.3 Stock Detail Page
+
+* Price chart
+* Event timeline
+* Sentiment trend
+* Promoter holding changes
+* Institutional flows
+
+---
+
+## 3.4 Map View
+
+* India + Global overlay
+* Event clusters
+* Click → impacted stocks
+
+---
+
+## 3.5 Watchlist
+
+* Custom stocks
+* Live signals
+* Alerts tracking
+
+---
+
+## 3.6 Alerts Panel
+
+* Telegram/Discord integration
+* Event-triggered notifications
+
+---
+
+# 4. FEATURE BREAKDOWN DOCUMENT
+
+## Core Features (MVP)
+
+* Event ingestion (NSE filings)
+* Basic NLP classification
+* Event feed UI
+* Backtesting engine (1d/3d/20d)
+* Alerts system
+
+## Advanced Features
+
+* Geo-political mapping
+* Regime detection
+* Dynamic weighting
+* Historical analog engine
+
+## Future Features
+
+* Options flow integration
+* Portfolio builder
+* AI assistant
+
+---
+
+# 5. MASTER PROMPT DOCUMENT (FOR NLP + AI PIPELINE)
+
+## 5.1 Event Extraction Prompt
+
+"Extract structured financial events from the following text. Identify:
+
+* Event type
+* Company name
+* Sector
+* Sentiment (positive/negative/neutral)
+* Magnitude (low/medium/high)
+* Time relevance"
+
+---
+
+## 5.2 Sentiment + Impact Prompt
+
+"Given this financial event, estimate:
+
+* Expected stock impact (bullish/bearish)
+* Strength (0–1)
+* Likely duration (intraday / short-term / medium-term)"
+
+---
+
+## 5.3 Mapping Prompt
+
+"Map this event to:
+
+* Directly impacted companies
+* Indirect sector beneficiaries
+* Losers from this event"
+
+---
+
+## 5.4 Geo-Event Prompt
+
+"Identify geographic relevance of this event and infer economic impact on commodities, sectors, and Indian equities."
+
+---
+
+# 6. MASTER PROMPT – ANTIGRAVITY ENGINE (CORE INTELLIGENCE)
+
+"You are an event-driven financial intelligence engine.
+
+Input:
+
+* Structured event
+* Market regime
+* Historical analogs
+
+Tasks:
+
+1. Assign dynamic weights based on regime
+2. Compute alpha score
+3. Estimate expected return (1d, 3d, 20d)
+4. Output confidence score
+5. Explain reasoning clearly
+
+Constraints:
+
+* Avoid static thresholds
+* Use relative ranking
+* Consider macro + liquidity context"
+
+---
+
+# 6.1 GEO-INTELLIGENCE MAP ENGINE (INTEGRATED)
+
+## Purpose
+
+A spatial intelligence layer that converts global and domestic events into actionable sector and stock-level signals.
+
+---
+
+## Core Pipeline
+
+Event → Geo Tag → Economic Variable → Sector Impact → Stock Mapping → Alpha Score Injection
+
+---
+
+## Geo Tagging Layer
+
+* Extract country/region using NLP
+* Map to coordinates (lat/lng)
+* Assign event scope:
+
+  * Local (India-specific)
+  * Regional (Asia, Middle East)
+  * Global
+
+---
+
+## Economic Variable Mapping
+
+Each geography is linked to key economic drivers:
+
+Example:
+
+* Middle East → Crude Oil
+* India → Policy, Interest Rates
+* China → Manufacturing, Metals
+
+---
+
+## Sector Impact Engine
+
+Translate economic movement into sectoral impact:
+
+* Oil ↑ → Oil & Gas ↑, Aviation ↓, Paint ↓
+* Interest Rate ↑ → Banking ↑, NBFC ↓, Real Estate ↓
+
+---
+
+## Stock Mapping Engine
+
+Maps sectors to tradable equities:
+
+* Oil & Gas → ONGC, Oil India
+* Aviation → Indigo, SpiceJet
+
+---
+
+## Impact Scoring
+
+Each mapped stock receives:
+
+* Direction (Bullish/Bearish)
+* Confidence Score
+* Time Horizon (1d / 3d / 20d)
+
+This feeds into:
+
+Alpha Score += Geo Impact Weight × Event Strength
+
+---
+
+## UI Integration (Map Layer)
+
+### Layers
+
+1. Event Layer (color-coded markers)
+2. Economic Layer (oil, inflation, policy toggles)
+3. Sector Heatmap
+
+### Interaction
+
+Click Event → View:
+
+* Economic impact
+* Affected sectors
+* Top impacted stocks
+* Confidence score
+
+---
+
+## Alerts Integration
+
+Geo-events trigger alerts when:
+
+* High-impact macro events occur
+* Sector-wide shifts are detected
+
+Example:
+"Middle East conflict → Oil bullish → Aviation bearish"
+
+---
+
+## MVP Scope
+
+* Geo tagging (country-level)
+* 5 economic mappings (Oil, Rates, Inflation, Trade, War)
+* 10–20 stock mappings
+* Basic map UI (Mapbox)
+
+---
+
+# 7. FINAL NOTE
+
+This system is designed to evolve from:
+MVP → Signal Engine → Intelligence Terminal
+
+You now have:
+
+* Product clarity
+* System architecture
+* UI mapping
+* AI prompts
+
+Next step: begin backend ingestion + event detection immediately.
