@@ -42,9 +42,28 @@ from config import (
     LOG_FILE, LOG_LEVEL, REQUEST_TIMEOUT, MAX_ARTICLES_PER_SOURCE,
     NEWSAPI_KEY, NEWSAPI_QUERY, GOOGLE_NEWS_QUERIES,
     GEO_KEYWORDS, LARGE_CAP, MID_CAP, SMALL_CAP,
-    MACRO_SECTOR_MAP, SECTOR_STOCKS
+    MACRO_SECTOR_MAP, SECTOR_STOCKS,
+    SECTOR_ROTATION_QUERIES, GOOGLE_NEWS_SECTOR_PER_CYCLE,
+    TICKER_NEWS_ROTATION, TICKERS_PER_CYCLE,
+    GOOGLE_NEWS_ENTRIES_PER_QUERY,
 )
 from stock_universe import STOCK_UNIVERSE, UNIVERSE_TICKERS, UNIVERSE_SHORT_NAMES
+
+# Module-level rotation state — persists across scrape cycles within a process
+_ROTATION_STATE = {'sector_idx': 0, 'ticker_idx': 0}
+
+def _next_rotation_slice(items, count, key):
+    """Return next `count` items from `items` starting at the rotation cursor for `key`,
+    wrapping around. Updates the cursor."""
+    if not items:
+        return []
+    n = len(items)
+    start = _ROTATION_STATE.get(key, 0) % n
+    out = []
+    for i in range(min(count, n)):
+        out.append(items[(start + i) % n])
+    _ROTATION_STATE[key] = (start + count) % n
+    return out
 
 # Alpha Scoring Engine
 from alpha_scoring_engine import (
@@ -410,21 +429,47 @@ class RSSFeedCollector:
                 logger.warning(f"  Failed to fetch {source_name}: {e}")
 
         # 2. Google News RSS (free, no API key)
-        for query in GOOGLE_NEWS_QUERIES:
+        # Build the query plan for this cycle:
+        #   (a) all generic broad queries  — every cycle
+        #   (b) rotating slice of SECTOR_ROTATION_QUERIES — broadens sector coverage
+        #   (c) rotating slice of TICKER_NEWS_ROTATION — explicit small/mid cap focus
+        #       sorted last past 2 days (Google News supports `when:2d`)
+        sector_slice = _next_rotation_slice(SECTOR_ROTATION_QUERIES,
+                                             GOOGLE_NEWS_SECTOR_PER_CYCLE, 'sector_idx')
+        ticker_slice = _next_rotation_slice(TICKER_NEWS_ROTATION,
+                                             TICKERS_PER_CYCLE, 'ticker_idx')
+
+        # Per-ticker queries — use the company short-name + "stock" hint.
+        # `when:2d` filter forces Google to return news from the last 2 days only,
+        # which keeps recency tight. Falls back to all-time if Google ignores the
+        # operator (rare).
+        ticker_queries = []
+        for tk in ticker_slice:
+            company = STOCK_UNIVERSE.get(tk, {}).get('name', tk)
+            short = company.split(' ')[0] if company else tk
+            ticker_queries.append((f'tk:{tk}', f'"{short}" {tk} stock NSE when:2d'))
+
+        plan = (
+            [('broad', q) for q in GOOGLE_NEWS_QUERIES] +
+            [('sector', q) for q in sector_slice] +
+            ticker_queries
+        )
+
+        for kind, query in plan:
             try:
                 url = f"https://news.google.com/rss/search?q={requests.utils.quote(query)}&hl=en-IN&gl=IN&ceid=IN:en"
                 feed = feedparser.parse(url)
                 count = 0
-                for entry in feed.entries[:10]:
+                for entry in feed.entries[:GOOGLE_NEWS_ENTRIES_PER_QUERY]:
                     article = self._parse_entry(entry, f'google_news')
                     if article and not self.db.is_article_seen(article['link'], article['title']):
                         all_articles.append(article)
                         self.db.mark_article_seen(article['link'], article['title'], 'google_news', article.get('summary'))
                         count += 1
                 if count > 0:
-                    logger.info(f"  Google News ({query[:30]}): {count} new articles")
+                    logger.info(f"  Google News [{kind}] ({query[:32]}): {count} new")
             except Exception as e:
-                logger.warning(f"  Google News query failed: {e}")
+                logger.warning(f"  Google News query failed [{kind}] {query[:32]}: {e}")
 
         # 3. NewsAPI (optional, free tier: 100 req/day)
         if NEWSAPI_KEY:

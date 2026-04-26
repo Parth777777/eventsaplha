@@ -56,9 +56,21 @@ RSS_SOURCES = {
     'bloombergquint': 'https://www.bqprime.com/stories.rss',
     'reuters_india_business': 'https://feeds.reuters.com/reuters/INbusinessNews',
     'thehindu_business': 'https://www.thehindu.com/business/feeder/default.rss',
+    # --- Small / mid cap focused feeds (these often surface obscure tickers) ---
+    'mc_smallcap': 'https://www.moneycontrol.com/rss/smallcap.xml',
+    'mc_midcap': 'https://www.moneycontrol.com/rss/midcap.xml',
+    'mc_ipo': 'https://www.moneycontrol.com/rss/iponews.xml',
+    'et_smallcap': 'https://economictimes.indiatimes.com/markets/stocks/news/rssfeeds/2146843.cms',
+    'mc_buzzing_stocks': 'https://www.moneycontrol.com/rss/buzzingstocks.xml',
+    'mc_recommendations': 'https://www.moneycontrol.com/rss/recommendations.xml',
+    'fe_market_cap': 'https://www.financialexpress.com/market/cafeinvest/feed/',
+    # --- Stock-specific aggregators ---
+    'mc_latest_news': 'https://www.moneycontrol.com/rss/latestnews.xml',
+    'mc_corp_action': 'https://www.moneycontrol.com/rss/results.xml',
 }
 
 # Google News RSS - per-sector (free, no API key)
+# Generic broad queries (run every cycle)
 GOOGLE_NEWS_QUERIES = [
     'Indian stock market NSE',
     'BSE Sensex Nifty',
@@ -66,7 +78,93 @@ GOOGLE_NEWS_QUERIES = [
     'RBI SEBI policy India',
     'India merger acquisition deal',
     'India IPO listing',
+    # Small/mid cap focused — catches names that mainstream broad queries miss
+    'BSE smallcap rally',
+    'Nifty smallcap 250 stocks',
+    'Nifty midcap 100 movers',
+    'multibagger stocks India',
+    'India smallcap earnings beat',
+    'India microcap result',
+    'NSE corporate announcement',
+    'India SME IPO listing',
+    'Indian stock 52 week high',
+    'Indian stock upper circuit',
 ]
+
+# Sector-rotation queries — broaden coverage to non-largecap-dominated sectors.
+# Each cycle picks a few of these on rotation so we don't hit Google rate limits.
+SECTOR_ROTATION_QUERIES = [
+    'India auto ancillary stocks news',
+    'India textile garment exporters NSE',
+    'India chemical specialty stocks',
+    'India agro chemical fertilizer NSE',
+    'India defence aerospace stocks',
+    'India hospitality hotels stocks',
+    'India real estate developers NSE',
+    'India logistics shipping stocks',
+    'India paper packaging stocks',
+    'India sugar mills NSE',
+    'India footwear retail stocks',
+    'India electronics EMS stocks',
+    'India renewable energy solar wind stocks',
+    'India healthcare diagnostics hospital NSE',
+    'India media entertainment stocks',
+    'India fintech NBFC stocks',
+    'India microcap IPO listing recent',
+    'India SME platform listing',
+    'India sugar exporter quarterly result',
+    'India railway PSU stocks',
+    'India shipbuilder defence stocks',
+]
+GOOGLE_NEWS_SECTOR_PER_CYCLE = int(os.getenv('SECTOR_QUERIES_PER_CYCLE', '5'))
+
+# Per-ticker rotation: each cycle, pull news for N rotating small/mid cap tickers
+# This is the biggest fix for "small/mid cap focus" — we explicitly query for
+# specific tickers in 60+ name rotation rather than relying on broad queries to
+# bubble them up.
+TICKER_NEWS_ROTATION = [
+    # Mid-cap industrials/cap goods
+    'POLYCAB','KEI','HAVELLS','CROMPTON','SUPRIYA','SUPREMEIND','ASTRAL','FINOLEXIND',
+    'SCHAEFFLER','TIINDIA','BHARATFORG','KIRLOSENG','AIAENG','TIMKEN','SKFINDIA',
+    # Mid-cap pharma/healthcare
+    'MANKIND','ALKEM','TORNTPHARM','GLAND','SYNGENE','LAURUSLABS','GRANULES',
+    'IPCALAB','AJANTPHARM','NATCOPHARM','METROPOLIS','THYROCARE','RAINBOW','KIMS',
+    # Mid-cap chemicals/agri
+    'PIIND','SRF','AARTIIND','NAVINFLUOR','DEEPAKNTR','VINATIORGA','FINEORG',
+    'COROMANDEL','RALLIS','CHAMBLFERT','GNFC','KAVERISEED','GODREJAGRO',
+    # Mid-cap banks/NBFC
+    'AUBANK','BANDHANBNK','CSBBANK','RBLBANK','POONAWALLA','SBFC','HOMEFIRST',
+    'CHOLAFIN','MASFIN','UJJIVANSFB','EQUITAS',
+    # Mid-cap consumer/retail
+    'HONASA','GOPAL','BIKAJI','JUBLFOOD','DEVYANI','SAPPHIRE','VBL','RADICO',
+    'METROBRAND','CAMPUS','GOFASHION','ETHOS','MANYAVAR','VEDANT','TRENT',
+    # Mid-cap IT/tech
+    'PERSISTENT','COFORGE','LTTS','MPHASIS','BIRLASOFT','HAPPSTMNDS','TATAELXSI',
+    'KPITTECH','CYIENT','NEWGEN','SAKSOFT','MASTEK','OFSS',
+    # Small/mid cap auto ancil + EVs
+    'ENDURANCE','MINDA','UNOMINDA','SONACOMS','MOTHERSON','CRAFTSMAN','RACL','EXIDE',
+    'AMARARAJA','SAMVRDHANA','TVSSCS',
+    # Small/mid cap defence/PSU
+    'BEL','HAL','BDL','MAZAGON','COCHINSHIP','GRSE','PARAS','DATAPATTNS','ASTRAMICRO',
+    'KAYNES','MTAR','TANEJA','PARASDEFEN',
+    # Mid-cap power/renewable
+    'TORNTPOWER','CESC','NHPC','SJVN','PFC','RECLTD','IREDA','SUZLON','INOXWIND',
+    'WAAREE','BORORENEW','ADANIGREEN','JSWENERGY',
+    # Mid-cap infra/real estate/cement
+    'PRESTIGE','SOBHA','OBEROIRLTY','GODREJPROP','MACROTECH','BRIGADE','SUNTECK',
+    'PHOENIXLTD','RVNL','IRCON','RITES','HGINFRA','PNCINFRA','NCC','ASHOKA',
+    'ULTRACEMCO','SHREECEM','RAMCOCEM','DALBHARAT','JKCEMENT','HEIDELBERG',
+    # Small caps frequently moving
+    'CYIENTDLM','APARINDS','NETWEB','SYRMA','TARC','RAILTEL','ITDC','HUDCO',
+    'GMDCLTD','MOIL','NLCINDIA','BSE','MCX','CDSL','IEX','ANGELONE','MOTILALOFS',
+    # Recent listings
+    'JIOFIN','TATATECH','IREDA','MAMAEARTH','HONASA','YATHARTH','CELLO','RKEC',
+    'PROTEAN','UTIAMC','UPDATER','RAILTEL','CONCORDBIO','DOMS','NEXUSSELECT',
+]
+TICKERS_PER_CYCLE = int(os.getenv('TICKERS_PER_CYCLE', '12'))
+
+# Per-feed entries cap — was 10, doubled for fresher catches
+GOOGLE_NEWS_ENTRIES_PER_QUERY = int(os.getenv('GOOGLE_NEWS_ENTRIES', '20'))
 
 # NewsAPI (optional, free tier: 100 req/day)
 NEWSAPI_KEY = os.getenv('NEWSAPI_KEY', '')
