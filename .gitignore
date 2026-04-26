@@ -1,0 +1,59 @@
+# ============ Environment & Secrets ============
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+credentials*.json
+secrets*.json
+
+# ============ Python ============
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.sqlite
+*.sqlite3
+
+# ============ Node / JS (just in case) ============
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============ Data & runtime artifacts ============
+data/
+logs/
+*.log
+*.db
+*.bak
+
+# ============ Local-only / scratch ============
+.ai-codex/
+source/
+scratch/
+tmp/
+*.swp
+*.swo
+
+# ============ IDE / Editor ============
+.vscode/
+.idea/
+*.code-workspace
+
+# ============ OS ============
+.DS_Store
+Thumbs.db
+desktop.ini
