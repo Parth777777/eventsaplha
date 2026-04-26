@@ -1,0 +1,67 @@
+# EventAlpha - Production Dependencies
+# Unified requirements for backend + scraper
+
+# Web Framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+gunicorn==21.2.0
+
+# Auth
+PyJWT==2.8.0
+bcrypt==4.1.2
+
+# Database
+psycopg2-binary==2.9.9
+
+# Environment
+python-dotenv==1.0.0
+
+# Scheduler
+APScheduler==3.10.4
+
+# LLM Cross-Verification (Groq free tier)
+groq==0.11.0
+
+# Scraper - News Collection
+feedparser==6.0.10
+requests==2.31.0
+
+# Scraper - Market Data
+yfinance==0.2.32
+pandas==2.0.3
+numpy==1.24.3
+
+# Scraper - HTML Parsing
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# ============================================================
+# Phase 1.5 — Social / Forensics / Observability
+# ============================================================
+
+# Social collectors (all optional — collectors degrade gracefully if absent)
+praw==7.7.1
+telethon==1.36.0
+# snscrape is install-from-git for recent Python; pinning a stable version
+snscrape==0.7.0.20230622
+
+# Forensics — PDF text extraction + optional OCR
+pdfplumber==0.11.4
+# OCR fallbacks are optional; install separately if needed:
+#   pytesseract==0.3.10
+#   Pillow==10.4.0
+
+# Observability / caching
+structlog==24.4.0
+cachetools==5.5.0
+# redis is optional — falls back to in-proc cache if not installed
+redis==5.0.8
+prometheus-client==0.20.0
+
+# Tests
+pytest==8.3.3
+pytest-asyncio==0.24.0
