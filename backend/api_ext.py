@@ -45,6 +45,14 @@ def _err(msg: str, code: int = 500) -> Response:
 def register_routes(app: Flask, get_db: Callable) -> None:
     """Attach all new endpoints to the Flask app."""
 
+    # Pull the centralized admin gate from api.py. Falls back to a no-op
+    # decorator if the symbol moves so this module never crashes the boot.
+    try:
+        from api import require_admin
+    except Exception:  # pragma: no cover
+        def require_admin(f):  # type: ignore[no-redef]
+            return f
+
     # ---- Glossary ----
     from jargon.loader import get_glossary, llm_define
 
@@ -407,9 +415,8 @@ def register_routes(app: Flask, get_db: Callable) -> None:
         return _ok(out)
 
     @app.route("/api/admin/calibrate", methods=["POST"])
+    @require_admin
     def admin_calibrate():
-        if request.headers.get("X-Admin-Secret") != os.getenv("ADMIN_SECRET", "change-me-admin"):
-            return _err("forbidden", 403)
         from calibration import run_calibration
         from alpha_scoring_engine import set_magnitude_multipliers
 
@@ -421,24 +428,21 @@ def register_routes(app: Flask, get_db: Callable) -> None:
         return _ok(summary)
 
     @app.route("/api/admin/resolve_predictions", methods=["POST"])
+    @require_admin
     def admin_resolve_predictions():
         """Force-run the batch resolver. Body: {"max_tickers": 50} (optional)."""
-        if request.headers.get("X-Admin-Secret") != os.getenv("ADMIN_SECRET", "change-me-admin"):
-            return _err("forbidden", 403)
         from batch_resolver import resolve_all
 
         body = request.get_json(silent=True) or {}
         max_tickers = body.get("max_tickers")
         summary = resolve_all(get_db(), max_tickers=max_tickers)
-        # Drop per-ticker detail from response (noisy)
         slim = {k: v for k, v in summary.items() if k != "per_ticker"}
         return _ok(slim)
 
     @app.route("/api/admin/backfill_forensics", methods=["POST"])
+    @require_admin
     def admin_backfill_forensics():
         """Re-enrich existing signals with forensics (intent, manipulation_score, pump_score)."""
-        if request.headers.get("X-Admin-Secret") != os.getenv("ADMIN_SECRET", "change-me-admin"):
-            return _err("forbidden", 403)
         from backfill_forensics import run
 
         body = request.get_json(silent=True) or {}
@@ -449,9 +453,8 @@ def register_routes(app: Flask, get_db: Callable) -> None:
         return _ok(result)
 
     @app.route("/api/admin/seed_promoter", methods=["POST"])
+    @require_admin
     def admin_seed_promoter():
-        if request.headers.get("X-Admin-Secret") != os.getenv("ADMIN_SECRET", "change-me-admin"):
-            return _err("forbidden", 403)
         from fundamentals.promoter_seed import seed_all
 
         count = seed_all(get_db())
@@ -602,6 +605,24 @@ def register_routes(app: Flask, get_db: Callable) -> None:
             body += f'scraper_tokens_available{{source="{src}"}} {data["tokens"]}\n'
         for src, data in get_breaker().status().items():
             body += f'scraper_circuit_open{{source="{src}"}} {1 if data["open"] else 0}\n'
+        # Process-level gauges (CPU/RAM/threads). Best-effort — psutil
+        # absence shouldn't blank the whole metrics page.
+        try:
+            import psutil  # type: ignore
+            p = psutil.Process()
+            with p.oneshot():
+                body += f'process_cpu_percent {p.cpu_percent(interval=0.05)}\n'
+                body += f'process_resident_memory_bytes {p.memory_info().rss}\n'
+                body += f'process_threads {p.num_threads()}\n'
+                body += f'process_uptime_seconds {int(time.time() - p.create_time())}\n'
+                if hasattr(p, "num_fds"):
+                    body += f'process_open_fds {p.num_fds()}\n'
+            body += f'system_cpu_percent {psutil.cpu_percent(interval=None)}\n'
+            vm = psutil.virtual_memory()
+            body += f'system_memory_used_bytes {vm.used}\n'
+            body += f'system_memory_total_bytes {vm.total}\n'
+        except Exception:
+            pass
         return Response(body, mimetype="text/plain; version=0.0.4")
 
     @app.route("/api/health/ext", methods=["GET"])
@@ -609,9 +630,27 @@ def register_routes(app: Flask, get_db: Callable) -> None:
         from ratelimit import get_bucket
         from net import get_breaker
 
+        proc: Dict = {}
+        try:
+            import psutil  # type: ignore
+            p = psutil.Process()
+            with p.oneshot():
+                proc = {
+                    "cpu_pct_proc": round(p.cpu_percent(interval=0.05), 2),
+                    "cpu_pct_system": round(psutil.cpu_percent(interval=None), 2),
+                    "rss_mb": round(p.memory_info().rss / (1024 * 1024), 1),
+                    "open_fds": p.num_fds() if hasattr(p, "num_fds") else None,
+                    "threads": p.num_threads(),
+                    "uptime_secs": int(time.time() - p.create_time()),
+                    "load_avg": list(getattr(psutil, 'getloadavg', lambda: [None, None, None])()),
+                }
+        except Exception as exc:
+            proc = {"error": f"psutil unavailable: {exc}"}
+
         return _ok({
             "ratelimits": get_bucket().status(),
             "circuit_breakers": get_breaker().status(),
+            "process": proc,
             "timestamp": datetime.utcnow().isoformat(),
         })
 
@@ -773,10 +812,8 @@ def register_routes(app: Flask, get_db: Callable) -> None:
 
     # ---- Schema init (operational) ----
     @app.route("/api/admin/init_ext_schema", methods=["POST"])
+    @require_admin
     def init_ext_schema():
-        # Require a simple shared secret so this isn't public
-        if request.headers.get("X-Admin-Secret") != os.getenv("ADMIN_SECRET", "change-me-admin"):
-            return _err("forbidden", 403)
         from schema_ext import apply
 
         apply(get_db().conn)

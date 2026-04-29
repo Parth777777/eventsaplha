@@ -42,6 +42,8 @@ logger = logging.getLogger(__name__)
 GLOBAL_TICKERS = {
     "sp500": "^GSPC",
     "nasdaq": "^IXIC",
+    "dow": "^DJI",
+    "dax": "^GDAXI",
     "ftse": "^FTSE",
     "nikkei": "^N225",
     "shanghai": "000001.SS",
@@ -79,15 +81,62 @@ def _history(yt: str, days: int = 90) -> Optional["pd.DataFrame"]:
         return None
 
 
-def snapshot_indices() -> Dict[str, Dict]:
-    """Return latest close + overnight %change for each tracked ticker."""
+def _bulk_history(yt_list: List[str], days: int = 90) -> Dict[str, "pd.DataFrame"]:
+    """Fetch history for many tickers in a single yfinance request.
+
+    Avoids ~N sequential per-ticker calls; ~10x faster and avoids the slow
+    rate-limited path that was causing most tickers to time out.
+    Returns a dict keyed by yfinance ticker; missing tickers are simply absent.
+    """
+    if not YF_OK or not yt_list:
+        return {}
+    try:
+        # period_days a bit above `days` to cover weekends/holidays.
+        period_days = int(days * 1.6) + 10
+        data = yf.download(yt_list, period=f"{period_days}d", interval="1d",
+                           group_by="ticker", progress=False, threads=True,
+                           auto_adjust=False)
+    except Exception as exc:
+        logger.warning("bulk yfinance download failed: %s", exc)
+        return {}
+
+    out: Dict[str, "pd.DataFrame"] = {}
+    for yt in yt_list:
+        try:
+            df = data[yt] if len(yt_list) > 1 else data
+            if df is None or df.empty or "Close" not in df.columns:
+                continue
+            # Drop rows where Close is NaN
+            df = df.dropna(subset=["Close"])
+            if df.empty:
+                continue
+            out[yt] = df
+        except Exception as exc:
+            logger.debug("bulk slice missing for %s: %s", yt, exc)
+            continue
+    return out
+
+
+def snapshot_indices(bulk: Optional[Dict[str, "pd.DataFrame"]] = None) -> Dict[str, Dict]:
+    """Return latest close + overnight %change for each tracked ticker.
+
+    If `bulk` is supplied (pre-fetched dict from `_bulk_history`), uses that
+    instead of issuing per-ticker requests.
+    """
+    if bulk is None:
+        bulk = _bulk_history(list(GLOBAL_TICKERS.values()), days=10)
     out: Dict[str, Dict] = {}
     for name, yt in GLOBAL_TICKERS.items():
-        hist = _history(yt, days=10)
+        hist = bulk.get(yt) if bulk else None
         if hist is None or len(hist) < 2:
-            continue
+            # Fall back to per-ticker for any straggler missing from the bulk.
+            hist = _history(yt, days=10)
+            if hist is None or len(hist) < 2:
+                continue
         close_today = float(hist["Close"].iloc[-1])
         close_prev = float(hist["Close"].iloc[-2])
+        if not close_prev:
+            continue
         pct = (close_today - close_prev) / close_prev * 100.0
         out[name] = {
             "yf_ticker": yt,
@@ -98,30 +147,40 @@ def snapshot_indices() -> Dict[str, Dict]:
     return out
 
 
-def rolling_correlations_to_nifty(days: int = 60) -> Dict[str, float]:
-    """60-day rolling correlation of each ticker to Nifty daily returns."""
+def rolling_correlations_to_nifty(days: int = 60,
+                                   bulk: Optional[Dict[str, "pd.DataFrame"]] = None
+                                   ) -> Dict[str, float]:
+    """60-day rolling correlation of each ticker to Nifty daily returns.
+
+    If `bulk` is supplied, reuses it. Otherwise issues a single bulk request.
+    """
     if not (YF_OK and NP_OK):
         return {}
+    if bulk is None:
+        bulk = _bulk_history(list(GLOBAL_TICKERS.values()), days=days + 10)
+
+    nifty = bulk.get(GLOBAL_TICKERS["nifty"]) if bulk else None
+    if nifty is None or len(nifty) < 5:
+        return {}
     try:
-        nifty = _history(GLOBAL_TICKERS["nifty"], days=days + 10)
-        if nifty is None:
-            return {}
         nifty_ret = nifty["Close"].pct_change().dropna().tail(days)
     except Exception:
         return {}
+
     out: Dict[str, float] = {}
     for name, yt in GLOBAL_TICKERS.items():
         if name == "nifty":
             continue
-        hist = _history(yt, days=days + 10)
-        if hist is None:
+        hist = bulk.get(yt)
+        if hist is None or len(hist) < 5:
             continue
         try:
             ret = hist["Close"].pct_change().dropna()
             joined = pd.concat([nifty_ret, ret], axis=1, join="inner").dropna()
             if len(joined) >= 20:
                 corr = float(joined.iloc[:, 0].corr(joined.iloc[:, 1]))
-                out[name] = round(corr, 3)
+                if not (corr != corr):  # NaN guard
+                    out[name] = round(corr, 3)
         except Exception:
             continue
     return out
@@ -154,8 +213,12 @@ def predict_nifty_bias(snapshot: Dict[str, Dict],
 
 
 def compose_overnight(db) -> Dict:
-    snap = snapshot_indices()
-    corrs = rolling_correlations_to_nifty()
+    # Single bulk fetch covers both the snapshot (needs ~5 days for pct_change)
+    # and the 60-day correlations. ~10x faster than the previous per-ticker
+    # path and avoids rate-limit-induced gaps in the correlation table.
+    bulk = _bulk_history(list(GLOBAL_TICKERS.values()), days=70)
+    snap = snapshot_indices(bulk=bulk)
+    corrs = rolling_correlations_to_nifty(bulk=bulk)
     pred = predict_nifty_bias(snap)
     payload = {
         "asof": datetime.now(timezone.utc).isoformat(),

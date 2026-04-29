@@ -35,20 +35,26 @@
         <p class="sidebar-brand-sub">Alpha Terminal</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+      <a class="sidebar-link" href="policy.html"><span class="material-symbols-outlined sidebar-icon">gavel</span>Policy</a>
+      <a class="sidebar-link" href="premover.html"><span class="material-symbols-outlined sidebar-icon">trending_up</span>Pre-mover</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+      <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
+      <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
         <div class="engine-status p-4 rounded-lg">
@@ -267,6 +273,263 @@
         <div id="suggestedStocks" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
     </div>
 
+    <!-- ============ LIVE NEWS WIRE — covers everything: macro, mid/small caps, policy ============ -->
+    <section class="mb-6" id="liveNewsWire">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></div>
+        <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live News Wire</h3>
+        <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+        <div class="flex gap-1" id="newsWireFilters">
+          <button class="news-pill active" data-flt="all">All</button>
+          <button class="news-pill" data-flt="policy">Policy</button>
+          <button class="news-pill" data-flt="earnings">Earnings</button>
+          <button class="news-pill" data-flt="movers">Movers</button>
+          <button class="news-pill" data-flt="smallcap">Small/Mid Cap</button>
+        </div>
+        <span class="text-[9px] text-on-surface-variant/40 font-mono ml-2" id="newsWireUpdated">fetching…</span>
+      </div>
+      <style>
+        .news-pill { padding:3px 9px; font-size:10px; font-weight:700; border-radius:14px; background:transparent;
+          color:var(--t2); border:1px solid var(--b1); cursor:pointer; transition:all 0.12s; }
+        .news-pill:hover { color:var(--t1); border-color:var(--b2); }
+        .news-pill.active { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
+        .wire-row { display:grid; grid-template-columns:88px 1fr auto auto; gap:12px; align-items:center;
+          padding:8px 12px; border-radius:6px; background:var(--s0); border:1px solid var(--b0);
+          transition:border-color 0.12s, background 0.12s; cursor:pointer; }
+        .wire-row:hover { border-color:var(--b2); background:var(--s1); }
+        .wire-row + .wire-row { margin-top:6px; }
+        .wire-time { font-size:10px; font-family:var(--font-mono); color:var(--t3); white-space:nowrap; }
+        .wire-title { font-size:13px; font-weight:600; color:var(--t1); line-height:1.35; overflow:hidden;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+        .wire-meta { font-size:9.5px; color:var(--t3); margin-top:2px; }
+        .wire-tag { font-size:9px; font-weight:800; padding:2px 7px; border-radius:3px; white-space:nowrap;
+          letter-spacing:0.04em; text-transform:uppercase; }
+        .wire-tag.bull { background:var(--bull-dim); color:var(--bull); }
+        .wire-tag.bear { background:var(--bear-dim); color:var(--bear); }
+        .wire-tag.neut { background:rgba(138,148,168,0.10); color:var(--t2); }
+        .wire-alpha { font-family:var(--font-mono); font-size:13px; font-weight:800; min-width:32px; text-align:right; }
+        .wire-alpha.high { color:var(--bull); }
+        .wire-alpha.mid { color:var(--caution); }
+        .wire-alpha.low { color:var(--t3); }
+        @media (max-width:768px) {
+          .wire-row { grid-template-columns:1fr auto; gap:6px; }
+          .wire-time { display:none; }
+        }
+      </style>
+      <div id="newsWireList">
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;"></div>
+      </div>
+    </section>
+    <script>
+    (function() {
+      // Live News Wire — covers macro/policy/order-win/earnings + small-cap movers.
+      // Sources: /api/news/fast (tiered news pipeline) + /api/movers/spike (universe-wide
+      // intraday mover detector). Falls back gracefully if either is unavailable.
+      let _wireFlt = 'all';
+      let _wireData = [];
+
+      function ago(hours) {
+        if (hours == null) return '';
+        if (hours < 1) return Math.round(hours * 60) + 'm';
+        if (hours < 24) return Math.round(hours) + 'h';
+        return Math.round(hours / 24) + 'd';
+      }
+      function escape(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      }
+      function classify(it) {
+        const hay = ((it.title || '') + ' ' + (it.summary || '') + ' ' + (it.event_type || '') + ' ' + (it.feed || '')).toLowerCase();
+        const tickers = Array.isArray(it.tickers) ? it.tickers : (it.companies ? String(it.companies).split(',').filter(Boolean) : []);
+        const isMover = it._mover === true || /jumps? \d|surges? \d|plunges? \d|crashes? \d|gain(ed|s)? \d|fell \d|rallies? \d|down \d+%|up \d+%|hit (upper|lower) circuit/.test(hay);
+        const isPolicy = /\brbi\b|\bsebi\b|policy|circular|notification|government|ministry|cabinet|union budget|gst|nppa|trai|spectrum|subsidy/.test(hay) ||
+                         (it.event_type || '').toLowerCase() === 'policy';
+        const isEarnings = /q[1-4]|quarter|earnings|profit|revenue|ebitda|guidance|results/.test(hay) ||
+                           (it.event_type || '').toLowerCase() === 'earnings';
+        const isOrderWin = /order win|contract|bagged|awarded|secured|loi/.test(hay) ||
+                           (it.event_type || '').toLowerCase() === 'order_win';
+        // Small/mid cap heuristic: any explicitly tagged "smallcap" / "midcap", OR any
+        // ticker that's NOT in the well-known large-cap set
+        const LARGE = new Set(['RELIANCE','TCS','INFY','HDFCBANK','ICICIBANK','SBIN','BHARTIARTL','ITC','LT','HINDUNILVR','MARUTI','SUNPHARMA','AXISBANK','BAJFINANCE','TATASTEEL','ASIANPAINT','KOTAKBANK','TITAN','WIPRO','ULTRACEMCO','M&M','POWERGRID','NTPC','BAJAJFINSV','HCLTECH','ADANIPORTS']);
+        const isSmallMid = /\b(small.?cap|mid.?cap|multibagger|microcap)\b/i.test(hay) ||
+                           (tickers.length && tickers.some(t => !LARGE.has(t.trim().toUpperCase())));
+        return { isMover, isPolicy, isEarnings, isOrderWin, isSmallMid, tickers };
+      }
+      function passesFilter(it, flt, c) {
+        if (flt === 'all') return true;
+        if (flt === 'policy') return c.isPolicy;
+        if (flt === 'earnings') return c.isEarnings || c.isOrderWin;
+        if (flt === 'movers') return c.isMover || it._mover;
+        if (flt === 'smallcap') return c.isSmallMid;
+        return true;
+      }
+      function senTag(s) {
+        s = (s || '').toLowerCase();
+        if (s === 'bullish' || s === 'positive') return { cls: 'bull', label: 'Bullish' };
+        if (s === 'bearish' || s === 'negative') return { cls: 'bear', label: 'Bearish' };
+        return { cls: 'neut', label: 'Neutral' };
+      }
+      function alphaBucket(a) {
+        if (a == null) return null;
+        if (a >= 65) return 'high';
+        if (a >= 40) return 'mid';
+        return 'low';
+      }
+      function renderWire() {
+        const list = document.getElementById('newsWireList');
+        if (!list) return;
+        const items = _wireData
+          .map(it => ({ it, c: classify(it) }))
+          .filter(x => passesFilter(x.it, _wireFlt, x.c))
+          .slice(0, 25);
+        if (!items.length) {
+          list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;">No news matches this filter yet.</div>';
+          return;
+        }
+        list.innerHTML = items.map(({ it, c }, idx) => {
+          const sen = senTag(it.sentiment);
+          const tickers = c.tickers.slice(0, 4).map(t => `<a href="stock.html?t=${escape(t)}" onclick="event.stopPropagation();" style="color:var(--info);font-family:var(--font-mono);font-size:10px;font-weight:700;text-decoration:none;">${escape(t)}</a>`).join(' · ');
+          const alphaVal = it.alpha_score != null ? Math.round(it.alpha_score) : (it.magnitude != null ? Math.round(it.magnitude) : null);
+          const bucket = alphaBucket(alphaVal);
+          const tags = [];
+          if (c.isPolicy)   tags.push('<span class="wire-tag" style="background:rgba(108,138,255,0.12);color:var(--info);">POLICY</span>');
+          if (c.isOrderWin) tags.push('<span class="wire-tag" style="background:rgba(52,211,153,0.12);color:var(--bull);">ORDER</span>');
+          if (c.isEarnings) tags.push('<span class="wire-tag" style="background:rgba(251,191,36,0.12);color:var(--caution);">EARNINGS</span>');
+          if (it._mover)    tags.push('<span class="wire-tag" style="background:rgba(251,113,133,0.12);color:var(--bear);">MOVER</span>');
+          if (it.confidence === 'high')   tags.push('<span class="wire-tag" style="background:rgba(52,211,153,0.18);color:var(--bull);">HIGH CONFIDENCE</span>');
+          else if (it.confidence === 'medium') tags.push('<span class="wire-tag" style="background:rgba(251,191,36,0.18);color:var(--caution);">MID CONF.</span>');
+          if (it.sector) tags.push(`<span class="wire-tag" style="background:rgba(148,163,184,0.14);color:var(--t2);">${escape(it.sector)}</span>`);
+
+          const hasDetails = it._mover && (Array.isArray(it.reasoning) && it.reasoning.length);
+          const link = it.link || '#';
+          // Movers: row click toggles details (link is '#'). News: row click opens link.
+          const onClick = hasDetails
+            ? `onclick="(function(el){var d=el.querySelector('.wire-details');if(d){d.style.display=d.style.display==='block'?'none':'block';var c=el.querySelector('.wire-chev');if(c)c.style.transform=d.style.display==='block'?'rotate(90deg)':'rotate(0deg)';}})(this)"`
+            : (link === '#' ? '' : `onclick="window.open('${escape(link)}','_blank','noopener')"`);
+          const chev = hasDetails ? '<span class="wire-chev material-symbols-outlined" style="font-size:14px;color:var(--t3);transition:transform .15s;display:inline-block;vertical-align:-3px;margin-right:2px;">chevron_right</span>' : '';
+
+          let detailsHtml = '';
+          if (hasDetails) {
+            const comp = it.alpha_components || {};
+            const compBar = (label, val, max, color) => `
+              <div style="flex:1;min-width:90px;">
+                <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">${label}</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="flex:1;height:5px;background:rgba(148,163,184,0.12);border-radius:3px;overflow:hidden;">
+                    <div style="width:${Math.min(100, (val/max)*100)}%;height:100%;background:${color};border-radius:3px;"></div>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--t2);min-width:28px;text-align:right;">${val}/${max}</span>
+                </div>
+              </div>`;
+
+            const reasoningHtml = (it.reasoning || []).map(b => {
+              const icon = ({move:'trending_up', volume:'graphic_eq', news:'article', no_news:'visibility_off', sector:'category'})[b.kind] || 'info';
+              const linkPart = b.link ? ` <a href="${escape(b.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--info);text-decoration:none;font-size:10px;">↗ open</a>` : '';
+              return `<div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--t2);line-height:1.5;">
+                <span class="material-symbols-outlined" style="font-size:14px;color:var(--t3);margin-top:1px;">${icon}</span>
+                <div>${escape(b.label)}${linkPart}</div>
+              </div>`;
+            }).join('');
+
+            const sugg = (it.suggested || []).slice(0, 4);
+            const suggHtml = sugg.length ? `
+              <div style="margin-top:10px;">
+                <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Suggested · sympathy plays</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  ${sugg.map(s => {
+                    const ppct = s.pct_change;
+                    const pSign = ppct == null ? '' : (ppct >= 0 ? '+' : '');
+                    const pCol  = ppct == null ? 'var(--t2)' : (ppct >= 0 ? 'var(--bull)' : 'var(--bear)');
+                    const pTxt  = ppct == null ? '' : ` <span style="color:${pCol};">${pSign}${ppct.toFixed(1)}%</span>`;
+                    return `<a href="stock.html?t=${escape(s.ticker)}" onclick="event.stopPropagation();" title="${escape(s.reason||'')}" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--b1);border-radius:999px;background:var(--s1);text-decoration:none;font-family:var(--font-mono);font-size:10px;color:var(--t1);font-weight:600;">${escape(s.ticker)}${pTxt}</a>`;
+                  }).join('')}
+                </div>
+              </div>` : '';
+
+            detailsHtml = `<div class="wire-details" style="display:none;grid-column:1 / -1;margin-top:8px;padding:12px;background:var(--s0);border:1px solid var(--b1);border-radius:8px;">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                ${compBar('Magnitude', comp.magnitude||0, 40, 'var(--info)')}
+                ${compBar('Volume',    comp.volume||0,    30, 'var(--bull)')}
+                ${compBar('News',      comp.news||0,      20, 'var(--caution)')}
+                ${compBar('Sector',    comp.sector||0,    10, '#a78bfa')}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">${reasoningHtml}</div>
+              ${suggHtml}
+            </div>`;
+          }
+
+          return `<div class="wire-row" ${onClick} style="${hasDetails ? 'cursor:pointer;align-items:start;' : ''}">
+            <div class="wire-time">${escape(ago(it.age_hours))} ago</div>
+            <div>
+              <div class="wire-title">${chev}${escape(it.title || it.summary || 'Untitled')}</div>
+              <div class="wire-meta">
+                <span style="text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">${escape((it.feed || it.source || 'news').slice(0, 28))}</span>
+                ${tickers ? ' · ' + tickers : ''}
+                ${tags.length ? ' · ' + tags.join(' ') : ''}
+              </div>
+            </div>
+            <div><span class="wire-tag ${sen.cls}">${sen.label}</span></div>
+            <div class="wire-alpha ${bucket || 'low'}" title="Alpha score: 0-100. Higher = stronger conviction (move + volume + news + sector).">${alphaVal != null ? alphaVal : '—'}</div>
+            ${detailsHtml}
+          </div>`;
+        }).join('');
+      }
+      async function refreshWire() {
+        try {
+          // exclude_social=1 keeps reddit/telegram chatter out of the wire so
+          // curated press (RSS + Google News + filings) dominates the feed.
+          const [news, movers] = await Promise.all([
+            fetch('/api/news/fast?limit=80&exclude_social=1').then(r => r.json()).catch(() => ({})),
+            fetch('/api/movers/spike?limit=15').then(r => r.json()).catch(() => ({})),
+          ]);
+          const newsList = (news && news.data) || [];
+          const moverList = ((movers && movers.data) || []).map(m => {
+            const pct = m.pct_change || 0;
+            const dir = pct >= 0 ? 'jumps' : 'falls';
+            // Prefer the strongest reasoning bullet (news headline) for the title;
+            // fall back to the generic "X jumps Y%" if nothing else is available.
+            const newsBullet = (m.reasoning || []).find(b => b.kind === 'news');
+            const title = newsBullet
+              ? `${m.ticker} ${dir} ${Math.abs(pct).toFixed(1)}% — ${newsBullet.label.replace(/^Headline \([^)]+\):\s*/, '')}`
+              : `${m.ticker} ${dir} ${Math.abs(pct).toFixed(1)}% intraday`;
+            return {
+              ...m, _mover: true,
+              title,
+              tickers: [m.ticker],
+              feed: 'price_scanner',
+              sentiment: pct >= 0 ? 'bullish' : 'bearish',
+              age_hours: 0.05,
+              // alpha_score, reasoning, suggested, sector, confidence, alpha_components
+              // all come through from `...m`.
+            };
+          });
+          // Interleave by recency: movers first (most actionable), then news
+          _wireData = [...moverList, ...newsList];
+          const upd = document.getElementById('newsWireUpdated');
+          if (upd) upd.textContent = `${_wireData.length} items · ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+          renderWire();
+        } catch (e) {
+          console.warn('news wire failed:', e);
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#newsWireFilters .news-pill').forEach(b => {
+          b.addEventListener('click', () => {
+            document.querySelectorAll('#newsWireFilters .news-pill').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            _wireFlt = b.dataset.flt;
+            renderWire();
+          });
+        });
+        refreshWire();
+        setInterval(refreshWire, 60000);
+      });
+    })();
+    </script>
+    <!-- ============ END LIVE NEWS WIRE ============ -->
+
     <!-- Main Grid: Events + Signals -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Latest Events (2 columns) -->
@@ -378,7 +641,7 @@
     </div>
 </main>
 
-<script src="./shared/js/app.js"></script>
+<script src="./shared/js/app.js?v=vix2"></script>
 <script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/realtime.js"></script>
@@ -452,15 +715,25 @@ function renderMarketPulse(indices) {
     const pulse = MarketPulse.analyze(indices);
     if (!pulse) return;
 
-    // Update VIX metric card
+    // Update VIX metric card.  The KPI tile is a mint pastel-card; light or
+    // saturated colors disappear there.  Render the value + label inside a
+    // small dark "ink" chip so contrast is guaranteed against any background,
+    // independent of the upstream fearColor palette.
+    const ink = '#0f1420';
     const vixEl = document.getElementById('metricVIX');
     if (vixEl) {
-        vixEl.innerHTML = `<span style="color:${pulse.fearColor}">${pulse.vixVal}</span>`;
+        vixEl.innerHTML =
+            `<span style="display:inline-block;background:${ink};color:${pulse.fearColor};` +
+            `padding:2px 10px;border-radius:6px;font-weight:700;` +
+            `box-shadow:0 1px 2px rgba(0,0,0,0.18);">${pulse.vixVal}</span>`;
     }
     const vixLbl = document.getElementById('metricVIXLabel');
     if (vixLbl) {
-        vixLbl.textContent = pulse.fearLabel;
-        vixLbl.style.color = pulse.fearColor;
+        vixLbl.innerHTML =
+            `<span style="display:inline-block;background:${ink};color:${pulse.fearColor};` +
+            `padding:1px 8px;border-radius:4px;font-weight:600;font-size:11px;` +
+            `letter-spacing:0.04em;">${pulse.fearLabel}</span>`;
+        vixLbl.style.color = '';
     }
 
     // Render index mini-cards

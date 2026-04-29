@@ -153,12 +153,13 @@ _SCREENERS = {
         "description": "Alpha ≥ 65, forensic_band = clean, signal age < 7 days",
         "sql": """
             SELECT s.ticker, s.company, s.alpha_score, s.sentiment, s.event_type,
-                   s.created_at, COALESCE(s.forensic_band, 'clean') AS forensic_band
+                   s.created_at, COALESCE(ms.band, 'clean') AS forensic_band
             FROM signals s
+            LEFT JOIN manipulation_scores ms ON ms.event_id = s.event_id
             WHERE s.alpha_score >= 65
-              AND COALESCE(s.forensic_band, 'clean') = 'clean'
+              AND COALESCE(ms.band, 'clean') = 'clean'
               AND s.created_at >= datetime('now', '-7 days')
-              AND COALESCE(s.expired_at, '') = ''
+              AND s.status = 'active'
             ORDER BY s.alpha_score DESC LIMIT 50
         """,
     },
@@ -357,7 +358,15 @@ def paper_positions_open():
         (_user_id(), ticker, side, qty, entry, data.get("tag"), data.get("event_id")),
     )
     db.conn.commit()
-    return jsonify({"success": True, "id": cur.lastrowid})
+    pid = cur.lastrowid
+    try:
+        from api import audit_log as _audit
+        _audit('paper_open', f'paper:{pid}',
+               {'ticker': ticker, 'side': side, 'qty': qty, 'entry': entry,
+                'tag': data.get('tag'), 'event_id': data.get('event_id')})
+    except Exception:
+        pass
+    return jsonify({"success": True, "id": pid})
 
 
 @bp.route("/api/paper/positions/<int:pid>/close", methods=["POST"])
@@ -392,6 +401,13 @@ def paper_positions_close(pid: int):
         (exit_price, round(pnl_pct, 2), pnl_inr, pid),
     )
     db.conn.commit()
+    try:
+        from api import audit_log as _audit
+        _audit('paper_close', f'paper:{pid}',
+               {'ticker': pos['ticker'], 'side': pos['side'],
+                'exit': exit_price, 'pnl_pct': round(pnl_pct, 2), 'pnl_inr': pnl_inr})
+    except Exception:
+        pass
     return jsonify({"success": True, "pnl_pct": round(pnl_pct, 2), "pnl_inr": pnl_inr})
 
 
@@ -1033,6 +1049,1057 @@ def social_refresh():
         return jsonify({"success": True, "data": results})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ============ STOCK DETAIL PAGE — fundamentals tabs =========================
+# Tabs: profile, financials (P&L/BS/CF), ratios, shareholding, corp-actions, news.
+# Tickertape-style coverage, but the page itself surfaces event-track-record first.
+
+_STOCK_CACHE: Dict[str, Dict] = {}
+_STOCK_CACHE_TTL = 60 * 60 * 6  # 6h — fundamentals don't change intraday
+
+
+def _cached(key: str, ttl: int, builder):
+    rec = _STOCK_CACHE.get(key)
+    now = time.time()
+    if rec and (now - rec["t"]) < ttl:
+        return rec["v"]
+    v = builder()
+    _STOCK_CACHE[key] = {"t": now, "v": v}
+    return v
+
+
+def _yf_ticker(ticker: str):
+    import yfinance as yf
+    return yf.Ticker(f"{ticker.upper()}.NS")
+
+
+def _df_to_year_records(df, max_periods: int = 5) -> List[Dict]:
+    """Flatten a yfinance financials DataFrame (cols=dates, rows=line items)
+    into [{period: 'FY24', <line>: <crore>, ...}, ...] (₹ crore)."""
+    if df is None or df.empty:
+        return []
+    cols = list(df.columns)[:max_periods]
+    out = []
+    for c in cols:
+        try:
+            label = c.strftime("%b %Y") if hasattr(c, "strftime") else str(c)
+        except Exception:
+            label = str(c)
+        rec = {"period": label}
+        for idx, val in df[c].items():
+            try:
+                if val is None:
+                    continue
+                fval = float(val)
+                if fval != fval:  # NaN
+                    continue
+                rec[str(idx)] = round(fval / 1e7, 2)  # to ₹ crore
+            except Exception:
+                continue
+        out.append(rec)
+    return out
+
+
+@bp.route("/api/stock/<ticker>/profile", methods=["GET"])
+def stock_profile(ticker: str):
+    """Company description, sector, industry, address, key officers, web."""
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            info = _yf_ticker(ticker).info or {}
+            return {
+                "ticker": ticker,
+                "company": info.get("longName") or info.get("shortName") or ticker,
+                "sector": info.get("sector"),
+                "industry": info.get("industry"),
+                "summary": info.get("longBusinessSummary"),
+                "website": info.get("website"),
+                "country": info.get("country"),
+                "city": info.get("city"),
+                "employees": info.get("fullTimeEmployees"),
+                "market_cap": info.get("marketCap"),
+                "shares_outstanding": info.get("sharesOutstanding"),
+                "isin": info.get("isin"),
+                "exchange": info.get("exchange"),
+                "currency": info.get("currency", "INR"),
+                "officers": [
+                    {"name": o.get("name"), "title": o.get("title"), "age": o.get("age")}
+                    for o in (info.get("companyOfficers") or [])[:6]
+                ],
+            }
+        except Exception as e:
+            return {"ticker": ticker, "error": str(e)}
+
+    data = _cached(f"profile:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/financials", methods=["GET"])
+def stock_financials(ticker: str):
+    """Income statement, balance sheet, cash flow — last 4-5 fiscal years.
+    Values returned in ₹ crore."""
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            t = _yf_ticker(ticker)
+            return {
+                "income_statement": _df_to_year_records(t.financials, 5),
+                "balance_sheet": _df_to_year_records(t.balance_sheet, 5),
+                "cash_flow": _df_to_year_records(t.cashflow, 5),
+                "income_statement_q": _df_to_year_records(t.quarterly_financials, 4),
+                "currency_unit": "₹ crore",
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    data = _cached(f"fin:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/ratios", methods=["GET"])
+def stock_ratios(ticker: str):
+    """Key ratios: PE, PB, ROE, ROCE, debt/equity, current ratio, margins, yield, EPS."""
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            info = _yf_ticker(ticker).info or {}
+
+            def _pct(v):
+                if v is None:
+                    return None
+                try:
+                    return round(float(v) * 100, 2)
+                except Exception:
+                    return None
+
+            return {
+                "pe_ratio": info.get("trailingPE"),
+                "forward_pe": info.get("forwardPE"),
+                "pb_ratio": info.get("priceToBook"),
+                "ps_ratio": info.get("priceToSalesTrailing12Months"),
+                "peg_ratio": info.get("pegRatio"),
+                "ev_to_ebitda": info.get("enterpriseToEbitda"),
+                "ev_to_revenue": info.get("enterpriseToRevenue"),
+                "eps_ttm": info.get("trailingEps"),
+                "eps_forward": info.get("forwardEps"),
+                "book_value": info.get("bookValue"),
+                "roe_pct": _pct(info.get("returnOnEquity")),
+                "roa_pct": _pct(info.get("returnOnAssets")),
+                "operating_margin_pct": _pct(info.get("operatingMargins")),
+                "profit_margin_pct": _pct(info.get("profitMargins")),
+                "gross_margin_pct": _pct(info.get("grossMargins")),
+                "ebitda_margin_pct": _pct(info.get("ebitdaMargins")),
+                "debt_to_equity": info.get("debtToEquity"),
+                "current_ratio": info.get("currentRatio"),
+                "quick_ratio": info.get("quickRatio"),
+                "dividend_yield_pct": _pct(info.get("dividendYield")),
+                "payout_ratio_pct": _pct(info.get("payoutRatio")),
+                "dividend_rate": info.get("dividendRate"),
+                "beta": info.get("beta"),
+                "fifty_two_week_high": info.get("fiftyTwoWeekHigh"),
+                "fifty_two_week_low": info.get("fiftyTwoWeekLow"),
+                "fifty_day_avg": info.get("fiftyDayAverage"),
+                "two_hundred_day_avg": info.get("twoHundredDayAverage"),
+                "revenue_growth_pct": _pct(info.get("revenueGrowth")),
+                "earnings_growth_pct": _pct(info.get("earningsGrowth")),
+                "revenue_ttm": info.get("totalRevenue"),
+                "ebitda_ttm": info.get("ebitda"),
+                "net_income_ttm": info.get("netIncomeToCommon"),
+                "total_cash": info.get("totalCash"),
+                "total_debt": info.get("totalDebt"),
+                "free_cashflow": info.get("freeCashflow"),
+                "operating_cashflow": info.get("operatingCashflow"),
+                "shares_outstanding": info.get("sharesOutstanding"),
+                "float_shares": info.get("floatShares"),
+                "held_pct_insiders": _pct(info.get("heldPercentInsiders")),
+                "held_pct_institutions": _pct(info.get("heldPercentInstitutions")),
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    data = _cached(f"ratios:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/shareholding", methods=["GET"])
+def stock_shareholding(ticker: str):
+    """Shareholding pattern — major holders, institutional list, mutual fund holders."""
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            t = _yf_ticker(ticker)
+            out = {"major": [], "institutional": [], "mutual_funds": []}
+
+            try:
+                mh = t.major_holders
+                if mh is not None and not mh.empty:
+                    for _, row in mh.iterrows():
+                        vals = [str(v) for v in row.tolist()]
+                        if len(vals) >= 2:
+                            out["major"].append({"label": vals[1], "pct": vals[0]})
+            except Exception:
+                pass
+
+            try:
+                ih = t.institutional_holders
+                if ih is not None and not ih.empty:
+                    for _, row in ih.iterrows():
+                        out["institutional"].append({
+                            "holder": str(row.get("Holder", "")),
+                            "shares": int(row.get("Shares", 0) or 0),
+                            "date_reported": str(row.get("Date Reported", "")),
+                            "pct_out": float(row.get("% Out", 0) or 0),
+                            "value": int(row.get("Value", 0) or 0),
+                        })
+            except Exception:
+                pass
+
+            try:
+                mf = t.mutualfund_holders
+                if mf is not None and not mf.empty:
+                    for _, row in mf.iterrows():
+                        out["mutual_funds"].append({
+                            "holder": str(row.get("Holder", "")),
+                            "shares": int(row.get("Shares", 0) or 0),
+                            "date_reported": str(row.get("Date Reported", "")),
+                            "pct_out": float(row.get("% Out", 0) or 0),
+                            "value": int(row.get("Value", 0) or 0),
+                        })
+            except Exception:
+                pass
+
+            return out
+        except Exception as e:
+            return {"error": str(e)}
+
+    data = _cached(f"sh:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/corp-actions", methods=["GET"])
+def stock_corp_actions(ticker: str):
+    """Corporate actions: dividends history, splits."""
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            t = _yf_ticker(ticker)
+            divs, splits = [], []
+            try:
+                d = t.dividends
+                if d is not None and not d.empty:
+                    for dt, val in list(d.items())[-30:]:
+                        divs.append({
+                            "ex_date": dt.strftime("%Y-%m-%d") if hasattr(dt, "strftime") else str(dt),
+                            "amount": round(float(val), 2),
+                        })
+            except Exception:
+                pass
+            try:
+                s = t.splits
+                if s is not None and not s.empty:
+                    for dt, val in list(s.items())[-20:]:
+                        splits.append({
+                            "date": dt.strftime("%Y-%m-%d") if hasattr(dt, "strftime") else str(dt),
+                            "ratio": round(float(val), 4),
+                        })
+            except Exception:
+                pass
+            divs.reverse()
+            splits.reverse()
+            return {"dividends": divs, "splits": splits}
+        except Exception as e:
+            return {"error": str(e)}
+
+    data = _cached(f"corp:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/news", methods=["GET"])
+def stock_news(ticker: str):
+    """Recent news headlines from yfinance, plus this app's own events for the ticker.
+
+    yfinance changed the news payload around 0.2.40: fields moved from flat
+    keys (`title`, `link`, `publisher`, `providerPublishTime`) into a nested
+    `content` object with `title`, `clickThroughUrl.url`, `provider.displayName`,
+    `pubDate` (ISO string). We support both shapes so a yfinance upgrade
+    doesn't blank out the page.
+    """
+    ticker = ticker.upper().strip()
+    out = {"news": [], "events": []}
+
+    def _norm(n):
+        # New nested shape
+        c = n.get("content") if isinstance(n, dict) else None
+        if isinstance(c, dict):
+            link = (c.get("clickThroughUrl") or {}).get("url") or \
+                   (c.get("canonicalUrl") or {}).get("url")
+            provider = ((c.get("provider") or {}).get("displayName")
+                        or (c.get("provider") or {}).get("url"))
+            pub_iso = c.get("pubDate") or c.get("displayTime")
+            # Convert ISO → unix seconds for the frontend's fmt.date helper
+            published_ts = None
+            if pub_iso:
+                try:
+                    from datetime import datetime as _dt
+                    s = pub_iso.replace("Z", "+00:00")
+                    published_ts = int(_dt.fromisoformat(s).timestamp())
+                except Exception:
+                    published_ts = None
+            return {
+                "title": c.get("title"),
+                "publisher": provider,
+                "link": link,
+                "published": published_ts,
+                "type": c.get("contentType") or c.get("type"),
+            }
+        # Old flat shape
+        return {
+            "title": n.get("title"),
+            "publisher": n.get("publisher"),
+            "link": n.get("link"),
+            "published": n.get("providerPublishTime"),
+            "type": n.get("type"),
+        }
+
+    try:
+        t = _yf_ticker(ticker)
+        for n in (t.news or [])[:25]:
+            row = _norm(n)
+            # Skip rows where we still couldn't extract a title — protects
+            # the UI from rendering "null" placeholders.
+            if row.get("title"):
+                out["news"].append(row)
+    except Exception as exc:
+        logger.debug(f"stock_news yfinance failed for {ticker}: {exc}")
+
+    try:
+        db = _get_db()
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT event_id, title, summary, sentiment, magnitude, event_type,
+                      source, link, created_at
+               FROM events WHERE companies LIKE ?
+               ORDER BY created_at DESC LIMIT 25""",
+            (f"%{ticker}%",),
+        )
+        out["events"] = [dict(r) for r in cur.fetchall()]
+    except Exception:
+        pass
+
+    return jsonify({"success": True, "data": out})
+
+
+@bp.route("/api/stock/<ticker>/peers-detail", methods=["GET"])
+def stock_peers_detail(ticker: str):
+    """Peer comparison with Tickertape-style metrics: P/E, P/B, market-cap, ROE, alpha."""
+    ticker = ticker.upper().strip()
+    try:
+        try:
+            from config import STOCK_SECTORS, SECTOR_STOCKS, STOCK_COMPANIES
+        except Exception:
+            STOCK_SECTORS = SECTOR_STOCKS = STOCK_COMPANIES = {}
+        sector = STOCK_SECTORS.get(ticker)
+        peers_list = (SECTOR_STOCKS.get(sector) or []) if sector else []
+        peers_list = [p for p in peers_list if p != ticker][:10]
+
+        def enrich(t):
+            row = {"ticker": t, "company": STOCK_COMPANIES.get(t, t)}
+            try:
+                info = _yf_ticker(t).info or {}
+                row.update({
+                    "price": info.get("currentPrice") or info.get("regularMarketPrice"),
+                    "change_pct": info.get("regularMarketChangePercent"),
+                    "market_cap": info.get("marketCap"),
+                    "pe": info.get("trailingPE"),
+                    "pb": info.get("priceToBook"),
+                    "roe_pct": (info.get("returnOnEquity") or 0) * 100 if info.get("returnOnEquity") else None,
+                    "div_yield_pct": (info.get("dividendYield") or 0) * 100 if info.get("dividendYield") else None,
+                })
+            except Exception:
+                pass
+            try:
+                db = _get_db()
+                cur = db.conn.cursor()
+                cur.execute(
+                    "SELECT alpha_score, sentiment FROM signals WHERE ticker=? AND status='active' ORDER BY alpha_score DESC LIMIT 1",
+                    (t,),
+                )
+                sig = cur.fetchone()
+                if sig:
+                    row["alpha_score"] = sig["alpha_score"]
+                    row["sentiment"] = sig["sentiment"]
+            except Exception:
+                pass
+            return row
+
+        # Always include the subject ticker first for side-by-side comparison
+        rows = [enrich(ticker)] + [enrich(p) for p in peers_list]
+        return jsonify({"success": True, "sector": sector, "data": rows})
+    except Exception as e:
+        return jsonify({"success": True, "data": [], "warning": str(e)})
+
+
+# ============ CUSTOM SCREENER — formula query over signals/fundamentals =====
+# Tickertape-style filter builder. Accepts a list of {field, op, value} clauses
+# joined with AND. Whitelist of fields prevents SQL injection.
+
+_SCREEN_FIELDS = {
+    # numeric, on signals table
+    "alpha_score":   {"col": "s.alpha_score",   "type": "num", "label": "Alpha Score"},
+    "confidence":    {"col": "s.confidence",    "type": "num", "label": "Confidence"},
+    "magnitude":     {"col": "s.magnitude",     "type": "num", "label": "Magnitude"},
+    "entry_price":   {"col": "s.entry_price",   "type": "num", "label": "Last Price (₹)"},
+    # categorical
+    "sentiment":     {"col": "s.sentiment",     "type": "cat", "label": "Sentiment",
+                      "options": ["bullish", "bearish", "neutral"]},
+    "event_type":    {"col": "s.event_type",    "type": "cat", "label": "Event Type"},
+    "ticker":        {"col": "s.ticker",        "type": "cat", "label": "Ticker"},
+    "forensic_band": {"col": "COALESCE(ms.band,'clean')", "type": "cat",
+                      "label": "Forensic Band",
+                      "options": ["clean", "watch", "suspicious", "likely_manipulated"]},
+    # time bucket — handled specially as days-since-created
+    "age_days":      {"col": "JULIANDAY('now') - JULIANDAY(s.created_at)",
+                      "type": "num", "label": "Age (days since signal)"},
+}
+
+_SCREEN_OPS_NUM = {">", ">=", "<", "<=", "=", "!="}
+_SCREEN_OPS_CAT = {"=", "!=", "IN"}
+
+
+@bp.route("/api/screener/fields", methods=["GET"])
+def screener_fields():
+    """List of whitelisted filter fields the custom screener accepts."""
+    return jsonify({
+        "success": True,
+        "data": [{"id": k, **{kk: vv for kk, vv in v.items() if kk != "col"}}
+                 for k, v in _SCREEN_FIELDS.items()],
+    })
+
+
+@bp.route("/api/screener/run", methods=["POST"])
+def screener_run_custom():
+    """Run a user-built screener.
+    Body: { "filters": [{field, op, value}], "sort": "alpha_score", "limit": 100 }
+    """
+    body = request.get_json(force=True, silent=True) or {}
+    filters = body.get("filters") or []
+    sort = body.get("sort") or "alpha_score"
+    sort_dir = "DESC" if (body.get("sort_dir") or "desc").lower() == "desc" else "ASC"
+    limit = max(1, min(int(body.get("limit") or 50), 500))
+
+    where = ["s.status = 'active'"]
+    params: List = []
+
+    for f in filters:
+        fid = f.get("field")
+        op = (f.get("op") or "").upper()
+        val = f.get("value")
+        spec = _SCREEN_FIELDS.get(fid)
+        if not spec or val in (None, ""):
+            continue
+        col = spec["col"]
+        if spec["type"] == "num":
+            if op not in _SCREEN_OPS_NUM:
+                continue
+            try:
+                fv = float(val)
+            except Exception:
+                continue
+            where.append(f"{col} {op} ?")
+            params.append(fv)
+        else:  # cat
+            if op == "IN" and isinstance(val, list):
+                if not val:
+                    continue
+                placeholders = ",".join(["?"] * len(val))
+                where.append(f"{col} IN ({placeholders})")
+                params.extend([str(x) for x in val])
+            elif op in {"=", "!="}:
+                where.append(f"{col} {op} ?")
+                params.append(str(val))
+
+    sort_col = (_SCREEN_FIELDS.get(sort) or {}).get("col") or "s.alpha_score"
+    sql = f"""
+        SELECT s.ticker, s.company, s.alpha_score, s.confidence, s.sentiment,
+               s.event_type, s.entry_price, s.magnitude,
+               COALESCE(ms.band,'clean') AS forensic_band,
+               s.created_at,
+               ROUND(JULIANDAY('now') - JULIANDAY(s.created_at), 1) AS age_days
+        FROM signals s
+        LEFT JOIN manipulation_scores ms ON ms.event_id = s.event_id
+        WHERE {' AND '.join(where)}
+        ORDER BY {sort_col} {sort_dir}
+        LIMIT {limit}
+    """
+    try:
+        db = _get_db()
+        cur = db.conn.cursor()
+        cur.execute(sql, params)
+        rows = [dict(r) for r in cur.fetchall()]
+        return jsonify({"success": True, "count": len(rows), "data": rows,
+                        "filters_applied": filters})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e), "sql": sql}), 400
+
+
+# ============ FREEMIUM TIER SYSTEM ==========================================
+# Single source of truth for what each tier can do.  Read by both frontend
+# (pricing page, capability checks) and backend (@require_tier decorator).
+
+TIER_LIMITS = {
+    "free": {
+        "screener_max_rows":   50,
+        "screener_export_csv": False,
+        "watchlist_size":      50,
+        "alerts_active":       2,
+        "stock_detail_full":   False,   # gates Financials/Ratios/Shareholding tabs
+        "policy_fast_window":  24,      # hours of policy events visible
+        "commodity_macro":     False,
+        "global_spillover":    False,
+        "fo_unusual":          False,
+        "pre_mover_full":      False,   # Free → top-5 preview only
+        "pre_mover_preview":   5,
+    },
+    "pro": {
+        "screener_max_rows":   500,
+        "screener_export_csv": True,
+        "watchlist_size":      1000,
+        "alerts_active":       50,
+        "stock_detail_full":   True,
+        "policy_fast_window":  720,     # 30d
+        "commodity_macro":     True,
+        "global_spillover":    True,
+        "fo_unusual":          True,
+        "pre_mover_full":      True,
+        "pre_mover_preview":   100,
+    },
+}
+
+
+def _ensure_tier_column(db) -> None:
+    """Lazy-add `tier` column to users table.  Idempotent."""
+    try:
+        cur = db.conn.cursor()
+        cur.execute("PRAGMA table_info(users)")
+        cols = {row[1] for row in cur.fetchall()}
+        if "tier" not in cols:
+            cur.execute("ALTER TABLE users ADD COLUMN tier TEXT DEFAULT 'free'")
+            db.conn.commit()
+            logger.info("users.tier column added (defaulting to 'free')")
+    except Exception as e:
+        logger.warning(f"_ensure_tier_column: {e}")
+
+
+def _user_tier() -> str:
+    """Resolve current user's tier.  Returns 'free' when no auth (legacy)."""
+    uid = getattr(g, "user_id", None)
+    if not uid:
+        return "free"
+    try:
+        db = _get_db()
+        _ensure_tier_column(db)
+        cur = db.conn.cursor()
+        cur.execute("SELECT tier FROM users WHERE id = ? OR email = ?", (uid, uid))
+        row = cur.fetchone()
+        if row and row[0] in TIER_LIMITS:
+            return row[0]
+    except Exception:
+        pass
+    return "free"
+
+
+def require_tier(level: str):
+    """Decorator: gate an endpoint behind a tier level.  Free is always allowed."""
+    from functools import wraps
+
+    def deco(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            current = _user_tier()
+            if level == "free" or current == "pro":
+                return fn(*args, **kwargs)
+            return jsonify({
+                "success": False,
+                "error": "tier_required",
+                "required_tier": level,
+                "current_tier": current,
+                "upgrade_url": "/pricing.html",
+            }), 402  # Payment Required
+        return wrapper
+    return deco
+
+
+@bp.route("/api/tier", methods=["GET"])
+def tier_info():
+    """Return current user's tier + the limits matrix.  UI uses this for gating."""
+    return jsonify({
+        "success": True,
+        "data": {
+            "current_tier": _user_tier(),
+            "limits":       TIER_LIMITS,
+        },
+    })
+
+
+@bp.route("/api/tier/upgrade", methods=["POST"])
+def tier_upgrade_stub():
+    """Upgrade endpoint stub.  Real payment integration goes here.
+    For now returns a 501 with a clear message — keeps the UI honest."""
+    return jsonify({
+        "success": False,
+        "error":   "payment_provider_not_configured",
+        "note":    "wire Razorpay/Stripe here; this endpoint flips users.tier to 'pro' on success",
+    }), 501
+
+
+# ============ OBSERVABILITY METRICS =========================================
+# Lightweight in-memory counters.  Cheap, no extra dependency.
+# Exposed at /api/metrics in both JSON and Prometheus text format.
+
+_METRICS_LOCK = __import__("threading").Lock()
+_METRICS: Dict[str, float] = {}
+_METRIC_LABELS: Dict[str, Dict[str, str]] = {}
+
+
+def _metric_key(name: str, labels: Optional[Dict[str, str]] = None) -> str:
+    if not labels:
+        return name
+    parts = ",".join(f'{k}="{v}"' for k, v in sorted(labels.items()))
+    return f"{name}{{{parts}}}"
+
+
+def metric_inc(name: str, labels: Optional[Dict[str, str]] = None, value: float = 1.0) -> None:
+    key = _metric_key(name, labels)
+    with _METRICS_LOCK:
+        _METRICS[key] = _METRICS.get(key, 0.0) + value
+        if labels:
+            _METRIC_LABELS[key] = {"name": name, **labels}
+        else:
+            _METRIC_LABELS[key] = {"name": name}
+
+
+def metric_observe(name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
+    """Histogram-style observation: stores last value + running sum + count."""
+    key = _metric_key(name, labels)
+    with _METRICS_LOCK:
+        _METRICS[key + "_sum"]   = _METRICS.get(key + "_sum", 0.0) + value
+        _METRICS[key + "_count"] = _METRICS.get(key + "_count", 0.0) + 1
+        _METRICS[key + "_last"]  = value
+
+
+@bp.route("/api/metrics", methods=["GET"])
+def metrics_endpoint():
+    """JSON metrics dump.  Prometheus scrape format available at ?format=prom."""
+    fmt = (request.args.get("format") or "json").lower()
+    with _METRICS_LOCK:
+        snap = dict(_METRICS)
+    if fmt == "prom":
+        lines = []
+        seen_help = set()
+        for k, v in snap.items():
+            base = k.split("{")[0]
+            if base not in seen_help:
+                lines.append(f"# TYPE {base} counter")
+                seen_help.add(base)
+            lines.append(f"{k} {v}")
+        return ("\n".join(lines) + "\n", 200, {"Content-Type": "text/plain; version=0.0.4"})
+    return jsonify({"success": True, "data": snap})
+
+
+@bp.before_app_request
+def _metric_request_counter():
+    """Count every API request.  Cheap; runs in the request thread."""
+    try:
+        path = request.path or "/"
+        if path.startswith("/api/"):
+            metric_inc("tickwave_api_requests_total",
+                       {"path": path.split("?")[0][:120]})
+    except Exception:
+        pass
+
+
+# ============ POLICY FAST-TRACK ============================================
+# Surfaces filing-grade policy events from RBI / SEBI / Govt / Min-of-Finance
+# / GST sources with the tightest latency the scraper supports.  Tickwave's
+# differentiator vs Tickertape/Screener: those platforms don't surface policy
+# events as a first-class feed.
+
+_POLICY_SOURCE_PATTERNS = (
+    "RBI", "SEBI", "MoF", "Min%Fin", "Min%Finance",
+    "GST", "CBDT", "PIB", "NSE", "BSE",
+    "RBI Notification", "RBI Press", "SEBI Press", "SEBI Circular",
+    "Reserve Bank", "Securities Exchange Board",
+)
+
+
+def _policy_where_clause(table_alias: str = "s") -> str:
+    """OR-joined LIKE clauses for the policy source set."""
+    return " OR ".join(f"{table_alias}.source LIKE '{p}%'" for p in _POLICY_SOURCE_PATTERNS)
+
+
+@bp.route("/api/policy/fast", methods=["GET"])
+def policy_fast():
+    """Recent policy events.  Free tier: 24h window.  Pro tier: 30d window.
+    Returns ordered by created_at DESC with alpha + sentiment for ranking."""
+    db = _get_db()
+    tier = _user_tier()
+    hours_cap = TIER_LIMITS[tier]["policy_fast_window"]
+    hours = min(int(request.args.get("hours", "24")), hours_cap)
+    limit = min(int(request.args.get("limit", "100")), 500)
+
+    metric_inc("tickwave_policy_fast_calls_total", {"tier": tier})
+    where = _policy_where_clause("s")
+    sql = f"""
+        SELECT s.event_id, s.ticker, s.company, s.alpha_score, s.confidence,
+               s.sentiment, s.event_type, s.headline, s.source, s.link,
+               s.created_at, COALESCE(s.forensic_band, 'clean') AS forensic_band
+        FROM signals s
+        WHERE ({where})
+          AND s.created_at >= datetime('now', ?)
+        ORDER BY s.created_at DESC
+        LIMIT ?
+    """
+    try:
+        cur = db.conn.cursor()
+        cur.execute(sql, (f"-{hours} hours", limit))
+        rows = [dict(r) for r in cur.fetchall()]
+
+        # Bucket-by-source for the KPI strip
+        by_source: Dict[str, int] = {}
+        for r in rows:
+            src = (r.get("source") or "").split(":")[0].strip()
+            for tag in ("RBI", "SEBI", "GST", "CBDT", "PIB", "NSE", "BSE", "MoF"):
+                if tag.lower() in src.lower():
+                    by_source[tag] = by_source.get(tag, 0) + 1
+                    break
+
+        return jsonify({
+            "success":   True,
+            "tier":      tier,
+            "window_h":  hours,
+            "by_source": by_source,
+            "count":     len(rows),
+            "data":      rows,
+        })
+    except Exception as e:
+        return jsonify({"success": True, "data": [], "warning": str(e)})
+
+
+# ============ COMMODITY × MACRO FACTORS ====================================
+# Cross-tabulates commodity moves against detected macro themes.  Answers:
+# "when does crude rally — what macro theme drove it?".  Pro-only.
+
+_COMMODITY_KEYWORDS = {
+    "crude":    ["crude", "brent", "wti", "oil price"],
+    "gold":     ["gold price", "gold rallies", "gold tumbles", "comex gold"],
+    "silver":   ["silver price", "silver rallies"],
+    "copper":   ["copper", "lme copper"],
+    "natgas":   ["natural gas", "henry hub", "lng"],
+    "wheat":    ["wheat", "grain"],
+    "sugar":    ["sugar"],
+    "rubber":   ["rubber"],
+    "aluminum": ["aluminium", "aluminum", "lme alumin"],
+}
+
+
+@bp.route("/api/commodities/macro", methods=["GET"])
+@require_tier("pro")
+def commodities_macro():
+    """For each commodity, count how many active signals reference it grouped
+    by macro theme (war, rate, oil, supply).  Output is a heatmap-ready matrix."""
+    db = _get_db()
+    days = min(int(request.args.get("days", "30")), 365)
+    metric_inc("tickwave_commodity_macro_calls_total")
+
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT headline, summary, event_type, sentiment, alpha_score,
+                      ticker, company, source, created_at
+               FROM signals
+               WHERE created_at >= datetime('now', ?)
+               LIMIT 5000""",
+            (f"-{days} days",),
+        )
+        sigs = [dict(r) for r in cur.fetchall()]
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    # Macro themes detected by simple keyword scan (matches scraper's vocabulary)
+    macro_themes = {
+        "war":    ["war", "conflict", "sanctions", "embargo", "ukraine", "russia", "israel", "gaza", "middle east"],
+        "rate":   ["rate cut", "rate hike", "fomc", "fed decision", "rbi rate", "repo rate", "monetary policy"],
+        "supply": ["supply chain", "shortage", "production cut", "opec", "output cut", "logistic"],
+        "demand": ["demand surge", "demand drop", "consumption", "festive", "ev demand"],
+        "policy": ["budget", "import duty", "export ban", "subsidy", "tax cut"],
+    }
+
+    # Matrix: commodity × theme → {count, avg_alpha, sentiment_skew, samples}
+    matrix: Dict[str, Dict[str, Dict]] = {c: {t: {"count": 0, "alpha_sum": 0.0, "bull": 0, "bear": 0, "samples": []}
+                                              for t in macro_themes}
+                                          for c in _COMMODITY_KEYWORDS}
+
+    totals = {c: 0 for c in _COMMODITY_KEYWORDS}
+    for s in sigs:
+        text = ((s.get("headline") or "") + " " + (s.get("summary") or "")).lower()
+        if not text.strip():
+            continue
+        # Identify which commodity (if any)
+        hit_comm = None
+        for comm, kws in _COMMODITY_KEYWORDS.items():
+            if any(kw in text for kw in kws):
+                hit_comm = comm
+                break
+        if not hit_comm:
+            continue
+        totals[hit_comm] += 1
+        # Identify which macro theme
+        for theme, kws in macro_themes.items():
+            if any(kw in text for kw in kws):
+                cell = matrix[hit_comm][theme]
+                cell["count"] += 1
+                cell["alpha_sum"] += float(s.get("alpha_score") or 0)
+                if s.get("sentiment") == "bullish":
+                    cell["bull"] += 1
+                elif s.get("sentiment") == "bearish":
+                    cell["bear"] += 1
+                if len(cell["samples"]) < 3:
+                    cell["samples"].append({
+                        "headline":  (s.get("headline") or "")[:140],
+                        "ticker":    s.get("ticker"),
+                        "alpha":     s.get("alpha_score"),
+                        "sentiment": s.get("sentiment"),
+                        "source":    s.get("source"),
+                        "link":      None,
+                    })
+
+    # Reduce to a flat list of cells with avg alpha and a tilt score
+    out_cells = []
+    for comm, themes in matrix.items():
+        for theme, cell in themes.items():
+            n = cell["count"]
+            if n == 0:
+                continue
+            avg_alpha = cell["alpha_sum"] / n
+            tilt = (cell["bull"] - cell["bear"]) / n  # -1..+1
+            out_cells.append({
+                "commodity":     comm,
+                "macro_theme":   theme,
+                "count":         n,
+                "avg_alpha":     round(avg_alpha, 1),
+                "tilt":          round(tilt, 2),
+                "bull":          cell["bull"],
+                "bear":          cell["bear"],
+                "samples":       cell["samples"],
+            })
+
+    out_cells.sort(key=lambda x: x["count"], reverse=True)
+    return jsonify({
+        "success":     True,
+        "window_days": days,
+        "totals":      totals,
+        "themes":      list(macro_themes),
+        "commodities": list(_COMMODITY_KEYWORDS),
+        "data":        out_cells,
+    })
+
+
+# ============ GLOBAL SPILLOVER / MARKET IMPACT ==============================
+# Cross-tab Indian sectors vs global indices.  For each (sector, index) pair,
+# computes a co-movement-style score from concurrent signal density.  Pro-only.
+
+_GLOBAL_INDEX_KEYWORDS = {
+    "S&P 500":    ["s&p 500", "sp500", "us stocks", "wall street", "dow jones"],
+    "NASDAQ":     ["nasdaq", "tech stocks rally", "tech sell-off"],
+    "Nikkei":     ["nikkei", "japan stocks"],
+    "Hang Seng":  ["hang seng", "hong kong stocks", "hsi"],
+    "FTSE":       ["ftse", "uk stocks"],
+    "DAX":        ["dax", "germany stocks"],
+    "Shanghai":   ["shanghai composite", "china stocks", "sse"],
+    "Crude":      ["brent crude", "wti crude", "oil price"],
+    "Dollar":     ["dxy", "dollar index", "usd strength", "rupee fall"],
+    "Bond yield": ["10-year yield", "us treasury yield", "bond yield"],
+}
+
+_INDIAN_SECTORS = (
+    "BANK", "IT", "AUTO", "PHARMA", "ENERGY", "FMCG", "METAL", "REALTY",
+    "INFRA", "POWER", "TELECOM", "DEFENCE", "CHEMICALS", "RETAIL",
+)
+
+
+@bp.route("/api/global/spillover", methods=["GET"])
+@require_tier("pro")
+def global_spillover():
+    """Sector-by-global-driver matrix from concurrent signal flow.
+    For each (Indian sector, global driver) pair, count how often the global
+    keyword appears in articles that also touch sector-tagged tickers."""
+    db = _get_db()
+    days = min(int(request.args.get("days", "14")), 90)
+    metric_inc("tickwave_global_spillover_calls_total")
+
+    try:
+        from config import STOCK_SECTORS  # ticker → sector
+    except Exception:
+        STOCK_SECTORS = {}
+
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT headline, summary, ticker, sentiment, alpha_score, created_at
+               FROM signals
+               WHERE created_at >= datetime('now', ?)
+               LIMIT 5000""",
+            (f"-{days} days",),
+        )
+        sigs = [dict(r) for r in cur.fetchall()]
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    cells: Dict[str, Dict[str, Dict]] = {
+        sec: {idx: {"count": 0, "bull": 0, "bear": 0, "alpha_sum": 0.0, "samples": []}
+              for idx in _GLOBAL_INDEX_KEYWORDS}
+        for sec in _INDIAN_SECTORS
+    }
+
+    sector_totals = {s: 0 for s in _INDIAN_SECTORS}
+    for s in sigs:
+        text = ((s.get("headline") or "") + " " + (s.get("summary") or "")).lower()
+        sector = STOCK_SECTORS.get((s.get("ticker") or "").upper())
+        if not sector or sector not in cells:
+            continue
+        sector_totals[sector] += 1
+        for idx_name, kws in _GLOBAL_INDEX_KEYWORDS.items():
+            if not any(kw in text for kw in kws):
+                continue
+            c = cells[sector][idx_name]
+            c["count"] += 1
+            c["alpha_sum"] += float(s.get("alpha_score") or 0)
+            if s.get("sentiment") == "bullish":
+                c["bull"] += 1
+            elif s.get("sentiment") == "bearish":
+                c["bear"] += 1
+            if len(c["samples"]) < 2:
+                c["samples"].append({
+                    "headline": (s.get("headline") or "")[:140],
+                    "ticker":   s.get("ticker"),
+                    "alpha":    s.get("alpha_score"),
+                })
+
+    out = []
+    for sec, idxs in cells.items():
+        for idx_name, c in idxs.items():
+            if c["count"] == 0:
+                continue
+            n = c["count"]
+            out.append({
+                "sector":    sec,
+                "driver":    idx_name,
+                "count":     n,
+                "avg_alpha": round(c["alpha_sum"] / n, 1),
+                "tilt":      round((c["bull"] - c["bear"]) / n, 2),
+                "bull":      c["bull"],
+                "bear":      c["bear"],
+                "samples":   c["samples"],
+            })
+    out.sort(key=lambda x: x["count"], reverse=True)
+
+    return jsonify({
+        "success":        True,
+        "window_days":    days,
+        "sector_totals":  sector_totals,
+        "drivers":        list(_GLOBAL_INDEX_KEYWORDS),
+        "sectors":        list(_INDIAN_SECTORS),
+        "data":           out,
+    })
+
+
+# ============ PRE-MOVER ENDPOINT ============================================
+# Ranks the universe by leading indicators that fire BEFORE a price move.
+# Free tier sees a 5-row preview + an upsell flag; Pro sees the full ranking.
+
+@bp.route("/api/premover", methods=["GET"])
+def premover_endpoint():
+    """Pre-mover candidates ranked by composite leading-indicator score.
+
+    Query params:
+      horizon=1D|5D|20D    (default 5D)
+      limit=N              (1..100, default 30)
+      min_score=F          (0..100, default 30)
+
+    Free-tier behaviour: result truncated to TIER_LIMITS['free']['pre_mover_preview'] (5)
+    rows; response carries `tier_gated=True` and `upgrade_url=/pricing.html` so
+    the UI can show the upsell banner without a separate call.
+    """
+    db = _get_db()
+    tier = _user_tier()
+    horizon = (request.args.get("horizon") or "5D").upper()
+    if horizon not in ("1D", "5D", "20D"):
+        horizon = "5D"
+    limit = max(1, min(int(request.args.get("limit", "30")), 100))
+    try:
+        min_score = float(request.args.get("min_score", "30"))
+    except Exception:
+        min_score = 30.0
+
+    metric_inc("tickwave_premover_calls_total", {"horizon": horizon, "tier": tier})
+
+    # Pull from the scraper's pure scoring module
+    try:
+        # scraper/ is on sys.path via api.py boot; if not, try a relative import.
+        try:
+            from premover import compute_premover_scores
+        except Exception:
+            import sys as _sys, os as _os
+            _scr = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "scraper")
+            if _scr not in _sys.path:
+                _sys.path.insert(0, _scr)
+            from premover import compute_premover_scores
+    except Exception as e:
+        return jsonify({"success": False, "error": f"premover module not loadable: {e}"}), 500
+
+    t0 = time.time()
+    try:
+        result = compute_premover_scores(
+            db,
+            horizon=horizon,
+            limit=limit,
+            min_score=min_score,
+        )
+    except Exception as e:
+        return jsonify({"success": False, "error": f"compute failed: {e}"}), 500
+
+    metric_observe("tickwave_premover_latency_seconds", time.time() - t0,
+                   {"horizon": horizon})
+    metric_observe("tickwave_premover_candidates",
+                   float(len(result.get("data") or [])),
+                   {"horizon": horizon})
+
+    # Tier-gate: free users see a top-N preview
+    full_data = result.get("data") or []
+    tier_gated = False
+    upgrade_url = None
+    if not TIER_LIMITS[tier].get("pre_mover_full", False):
+        preview_n = int(TIER_LIMITS[tier].get("pre_mover_preview", 5))
+        if len(full_data) > preview_n:
+            full_data = full_data[:preview_n]
+            tier_gated = True
+            upgrade_url = "/pricing.html"
+        result["data"] = full_data
+
+    result.update({
+        "success":      True,
+        "tier":         tier,
+        "tier_gated":   tier_gated,
+        "upgrade_url":  upgrade_url,
+        "count":        len(result.get("data") or []),
+    })
+    return jsonify(result)
 
 
 # ============ REGISTRATION ==================================================

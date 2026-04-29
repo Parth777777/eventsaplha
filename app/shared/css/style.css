@@ -3504,6 +3504,469 @@ main > .grid.lg\:grid-cols-3.gap-8 .space-y-4 > * + * { margin-top: 6px !importa
   main > header.sticky p.text-on-surface-variant.text-sm { display: block; font-size: 11px !important; }
 }
 
+/* ── Layout safety net: prevent narrow-column collapse ───────
+   Any direct child of <main> using a rigid `1fr 1fr` (or 3-col)
+   inline grid stacks to a single column on viewports under
+   ~900px so trade rows / signal rows don't squash text vertically.
+   Targets the class-less inline-style grids on rebuilt pages. */
+@media (max-width: 900px) {
+  main > div[style*="grid-template-columns:1fr 1fr"],
+  main > div[style*="grid-template-columns:1.1fr 1fr 1fr"],
+  main > div[style*="grid-template-columns:1.4fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* Belt-and-braces: even on wide viewports, if the parent shrinks
+   below the per-card minimum, allow grid items to fall to their
+   intrinsic natural width without forcing children to overflow. */
+main > div[style*="grid-template-columns"] { min-width: 0; }
+main > div[style*="grid-template-columns"] > * { min-width: 0; }
+
 /* ============================================================
    END SINGLE-VIEW DENSITY
+   ============================================================ */
+
+
+/* ============================================================
+   STOCK QUICK-VIEW POPUP  —  modular, design-system-aligned
+   Replaces the inline-styled popup in app.js. Uses the same
+   tokens (--bg / --s* / --t* / --b* / --bull / --bear / --info)
+   and font stack (--font-head / --font-ui / --font-mono) as
+   the rest of the app, so themes apply uniformly.
+   ============================================================ */
+
+/* Overlay */
+.sp-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+}
+:root[data-theme='light'] .sp-overlay { background: rgba(15, 18, 36, 0.35); }
+
+/* Modal shell */
+.sp-modal {
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-lg);
+  width: 92%; max-width: 540px; max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-ui);
+  color: var(--t1);
+}
+.sp-body { padding: 18px 20px; }
+
+/* Header */
+.sp-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 14px;
+}
+.sp-id { min-width: 0; flex: 1; }
+.sp-id-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sp-ticker {
+  font-family: var(--font-head);
+  font-size: 22px; font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--t1);
+}
+.sp-company { font-size: 12px; color: var(--t2); margin-top: 1px; }
+.sp-meta-line { font-size: 10px; color: var(--t3); margin-top: 2px; }
+
+/* Sentiment chip — three-state */
+.sp-sentiment {
+  font-size: 9px; padding: 3px 8px; border-radius: var(--r-sm);
+  font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.sp-sentiment.bull { background: var(--bull-dim); color: var(--bull); border-color: var(--bull-border); }
+.sp-sentiment.bear { background: var(--bear-dim); color: var(--bear); border-color: var(--bear-border); }
+.sp-sentiment.neut { background: rgba(138, 148, 168, 0.10); color: var(--t2); border-color: var(--b1); }
+
+/* Action buttons */
+.sp-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.sp-btn-ghost {
+  background: transparent; color: var(--t1);
+  border: 1px solid var(--b1); border-radius: var(--r-sm);
+  padding: 5px 11px; font-size: 11px; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+  font-family: var(--font-ui);
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.sp-btn-ghost:hover {
+  border-color: var(--info-border);
+  color: var(--info);
+  background: var(--info-dim);
+}
+.sp-btn-icon {
+  background: transparent; border: 0; color: var(--t3);
+  cursor: pointer; font-size: 18px; line-height: 1;
+  padding: 6px 8px; border-radius: var(--r-sm);
+  transition: color 0.12s, background 0.12s;
+}
+.sp-btn-icon:hover { color: var(--t1); background: var(--s2); }
+
+/* Hero — current price + alpha */
+.sp-hero {
+  display: flex; gap: 16px;
+  padding: 14px 16px;
+  background: var(--s0);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  margin-bottom: 14px;
+}
+.sp-hero-block { flex: 1; min-width: 0; }
+.sp-hero-block.right { text-align: right; flex: 0 0 auto; }
+.sp-label {
+  font-size: 9px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  font-weight: 700; font-family: var(--font-ui);
+  margin-bottom: 5px;
+}
+.sp-price {
+  font-family: var(--font-mono);
+  font-size: 24px; font-weight: 700; color: var(--t1);
+  letter-spacing: -0.01em;
+  font-feature-settings: 'tnum', 'zero';
+}
+.sp-price-delta {
+  font-family: var(--font-mono);
+  font-size: 13px; font-weight: 700; margin-top: 2px;
+}
+.sp-price-delta.up { color: var(--bull); }
+.sp-price-delta.down { color: var(--bear); }
+.sp-alpha {
+  font-family: var(--font-mono);
+  font-size: 24px; font-weight: 700;
+  font-feature-settings: 'tnum';
+}
+.sp-alpha.high { color: var(--bull); }
+.sp-alpha.mid  { color: var(--caution); }
+.sp-alpha.low  { color: var(--t2); }
+
+/* Quick stats */
+.sp-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; margin-bottom: 16px;
+}
+.sp-stat {
+  padding: 9px 10px;
+  background: var(--s0);
+  border: 1px solid var(--b0);
+  border-radius: var(--r-sm);
+}
+.sp-stat-label {
+  font-size: 8.5px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.10em;
+  font-weight: 700; margin-bottom: 4px;
+}
+.sp-stat-value {
+  font-family: var(--font-mono);
+  font-size: 13px; font-weight: 700; color: var(--t1);
+  font-feature-settings: 'tnum';
+}
+.sp-stat-value.bull { color: var(--bull); }
+.sp-stat-value.bear { color: var(--bear); }
+
+/* Section heading */
+.sp-section { margin-bottom: 14px; }
+.sp-section-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.sp-section-title {
+  font-size: 9px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  font-weight: 800; font-family: var(--font-ui);
+}
+
+/* Predictions table */
+.sp-table { width: 100%; border-collapse: collapse; }
+.sp-table thead th {
+  padding: 8px 10px; text-align: left;
+  font-size: 9px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.10em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--b1);
+}
+.sp-table th.center { text-align: center; }
+.sp-table tbody td {
+  padding: 9px 10px; font-size: 12px; color: var(--t1);
+  border-bottom: 1px solid var(--b0);
+}
+.sp-table tbody tr:last-child td { border-bottom: 0; }
+.sp-table td.mono { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
+.sp-table td.center { text-align: center; }
+.sp-table td.bull { color: var(--bull); font-weight: 700; }
+.sp-table td.bear { color: var(--bear); font-weight: 700; }
+.sp-table td.muted { color: var(--t3); }
+
+/* Period buttons (chart timeframes) */
+.sp-period-row { display: flex; gap: 4px; }
+.sp-period-btn {
+  padding: 3px 9px; font-size: 10px; font-weight: 700;
+  font-family: var(--font-ui);
+  border: 1px solid var(--b1); border-radius: var(--r-sm);
+  background: transparent; color: var(--t2); cursor: pointer;
+  transition: all 0.12s;
+}
+.sp-period-btn:hover { color: var(--t1); border-color: var(--b2); }
+.sp-period-btn.active {
+  background: var(--info-dim); color: var(--info);
+  border-color: var(--info-border);
+}
+
+/* Chart wrapper */
+.sp-chart-wrap {
+  position: relative;
+  background: var(--s0);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.sp-chart-tooltip {
+  display: none;
+  position: absolute; top: 8px; left: 8px;
+  background: var(--s2); border: 1px solid var(--b1);
+  border-radius: var(--r-sm);
+  padding: 6px 10px;
+  font-size: 10px; color: var(--t1);
+  font-family: var(--font-mono);
+  pointer-events: none; z-index: 10;
+}
+
+/* Signal analysis box */
+.sp-analysis {
+  padding: 12px 14px;
+  background: var(--s0);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  font-size: 11px; color: var(--t1); line-height: 1.6;
+}
+.sp-analysis-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3px 0;
+}
+.sp-analysis-label { color: var(--t3); }
+.sp-analysis-value { font-weight: 700; color: var(--t1); }
+.sp-analysis-value.info { color: var(--info); }
+.sp-headline {
+  margin-top: 10px;
+  padding: 9px 11px;
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  font-size: 11px; color: var(--t2);
+  font-style: italic; line-height: 1.5;
+}
+
+/* Glossary footnote */
+.sp-glossary { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--b0); }
+.sp-glossary-title {
+  font-size: 8px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-weight: 800; margin-bottom: 6px;
+}
+.sp-glossary p {
+  font-size: 10px; color: var(--t2);
+  line-height: 1.6; margin-top: 3px;
+}
+.sp-glossary p strong { color: var(--t1); font-weight: 700; }
+
+/* Section divider (between forensics / volume / promoter blocks) */
+.sp-divider {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--b0);
+}
+
+/* Empty / loading states */
+.sp-empty {
+  padding: 14px; text-align: center;
+  color: var(--t3); font-size: 11px;
+}
+.sp-loading {
+  text-align: center; color: var(--t3);
+  font-size: 11px; padding: 12px;
+}
+
+/* Compare link footer */
+.sp-compare-link {
+  margin-top: 10px; text-align: center;
+}
+.sp-compare-link a {
+  font-size: 10px; color: var(--info);
+  text-decoration: none; font-weight: 700;
+}
+.sp-compare-link a:hover { text-decoration: underline; }
+
+/* ── Custom widget components inside the popup ───────────── */
+
+/* Logo badge — gradient-filled square showing first letter of ticker.
+   Cheap visual identity without per-stock asset hosting. */
+.sp-logo {
+  width: 38px; height: 38px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-weight: 800;
+  font-size: 16px; color: var(--t1);
+  background: linear-gradient(135deg, var(--info-dim), var(--bull-dim));
+  border: 1px solid var(--b1);
+  flex-shrink: 0;
+}
+
+.sp-id-with-logo { display: flex; gap: 12px; align-items: flex-start; min-width: 0; flex: 1; }
+
+/* Hero is now richer — left column has price + sparkline, right column has alpha gauge SVG */
+.sp-hero {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 18px; padding: 16px 18px;
+  background: linear-gradient(180deg, var(--s0) 0%, var(--bg) 100%);
+  border: 1px solid var(--b1);
+  border-radius: var(--r-md);
+  margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+.sp-hero::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; height: 2px; width: 100%;
+  background: linear-gradient(90deg, var(--bull) 0%, var(--info) 50%, var(--bear) 100%);
+  opacity: 0.4;
+}
+.sp-spark {
+  margin-top: 6px; height: 24px;
+  display: block; width: 100%;
+}
+.sp-spark path.line { fill: none; stroke-width: 1.5; }
+
+/* Alpha gauge — semicircle SVG */
+.sp-gauge { width: 140px; height: 76px; display: block; }
+.sp-gauge .track  { fill: none; stroke: var(--b1); stroke-width: 7; }
+.sp-gauge .fill   { fill: none; stroke-width: 7; stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease; }
+.sp-gauge .fill.high { stroke: var(--bull); }
+.sp-gauge .fill.mid  { stroke: var(--caution); }
+.sp-gauge .fill.low  { stroke: var(--t3); }
+.sp-gauge-label {
+  text-align: center;
+  font-size: 9px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.10em;
+  font-weight: 700; margin-top: 4px;
+}
+.sp-gauge-value {
+  text-align: center;
+  font-family: var(--font-mono); font-weight: 800;
+  font-size: 22px; line-height: 1;
+  margin-top: -34px; pointer-events: none;
+}
+
+/* Momentum strip — 4 horizons (1D / 5D / 20D / 60D) as thin coloured bars */
+.sp-momentum {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.sp-mom-cell {
+  padding: 9px 11px;
+  background: var(--s0);
+  border: 1px solid var(--b0);
+  border-radius: var(--r-sm);
+}
+.sp-mom-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 5px;
+}
+.sp-mom-h {
+  font-size: 9px; color: var(--t3);
+  font-family: var(--font-mono); font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.sp-mom-v {
+  font-size: 11px; font-family: var(--font-mono); font-weight: 700;
+  font-feature-settings: 'tnum';
+}
+.sp-mom-v.up { color: var(--bull); }
+.sp-mom-v.down { color: var(--bear); }
+.sp-mom-bar {
+  height: 4px; background: var(--b0); border-radius: 2px;
+  overflow: hidden; position: relative;
+}
+.sp-mom-bar > span {
+  position: absolute; top: 0; bottom: 0;
+  left: 50%;
+  background: var(--bull);
+  transition: width 0.4s ease;
+}
+.sp-mom-bar > span.down { background: var(--bear); right: 50%; left: auto; }
+
+/* Range slider — visual track for day / 52w range */
+.sp-range {
+  margin-bottom: 14px; padding: 10px 12px;
+  background: var(--s0);
+  border: 1px solid var(--b0);
+  border-radius: var(--r-sm);
+}
+.sp-range-row { display: flex; align-items: center; gap: 8px; }
+.sp-range-row + .sp-range-row { margin-top: 9px; }
+.sp-range-label {
+  font-size: 9px; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.10em;
+  font-weight: 700; width: 38px; flex-shrink: 0;
+}
+.sp-range-track {
+  position: relative; height: 8px;
+  flex: 1;
+  background: var(--b0);
+  border-radius: 4px;
+}
+.sp-range-fill {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, var(--bear), var(--caution), var(--bull));
+  border-radius: 4px;
+  opacity: 0.35;
+}
+.sp-range-marker {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--info);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--info-border), var(--shadow-sm);
+}
+.sp-range-ends {
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 700; color: var(--t2);
+  font-feature-settings: 'tnum';
+  width: 50px; flex-shrink: 0;
+}
+.sp-range-ends.right { text-align: right; }
+
+/* Confidence bar in the predictions table */
+.sp-conf-cell {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px;
+  font-feature-settings: 'tnum';
+}
+.sp-conf-bar {
+  width: 38px; height: 4px;
+  background: var(--b0);
+  border-radius: 2px; overflow: hidden;
+  flex-shrink: 0;
+}
+.sp-conf-bar > span {
+  display: block; height: 100%;
+  background: var(--info);
+  border-radius: 2px;
+}
+.sp-conf-bar.high > span { background: var(--bull); }
+.sp-conf-bar.mid > span  { background: var(--caution); }
+
+/* Mobile — collapse stats to 2 cols, momentum to 2x2 */
+@media (max-width: 480px) {
+  .sp-stats { grid-template-columns: repeat(2, 1fr); }
+  .sp-momentum { grid-template-columns: repeat(2, 1fr); }
+  .sp-hero { grid-template-columns: 1fr; gap: 14px; }
+  .sp-hero-block.right { text-align: left; }
+}
+/* ============================================================
+   END STOCK QUICK-VIEW POPUP
    ============================================================ */

@@ -171,6 +171,158 @@ def optional_auth(f):
     return decorated
 
 
+# ============ ADMIN AUTH ============
+# Admin endpoints (calibrate, resolve_predictions, backfill_forensics,
+# seed_promoter, init_ext_schema) bypass user JWT and authenticate via a
+# single shared admin token. The token MUST be set in production via the
+# ADMIN_TOKEN env var; if unset the endpoints refuse all calls.
+
+_ADMIN_TOKEN = (os.getenv('ADMIN_TOKEN') or os.getenv('ADMIN_SECRET') or '').strip()
+# Reject the previous default placeholder explicitly — its presence anywhere
+# in env vars or config means the operator forgot to set a real token.
+_ADMIN_TOKEN_INSECURE_DEFAULTS = {'change-me-admin', 'changeme', 'admin', ''}
+
+
+def require_admin(f):
+    """Decorator: require admin token in `X-Admin-Token` (preferred) or
+    `X-Admin-Secret` (legacy) header, matched against ADMIN_TOKEN/ADMIN_SECRET.
+
+    Refuses all calls if the env var is unset OR set to a known insecure
+    default (closed by default — prevents accidental exposure). Uses constant-
+    time comparison to avoid timing oracles. Every call is audit-logged.
+    """
+    import hmac as _hmac
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if not _ADMIN_TOKEN or _ADMIN_TOKEN in _ADMIN_TOKEN_INSECURE_DEFAULTS:
+            logger.warning("admin endpoint blocked: ADMIN_TOKEN not configured (or insecure default)")
+            return jsonify({'success': False,
+                            'error': 'admin endpoints disabled (set ADMIN_TOKEN env var)'}), 503
+        provided = (request.headers.get('X-Admin-Token')
+                    or request.headers.get('X-Admin-Secret') or '')
+        if not provided or not _hmac.compare_digest(provided, _ADMIN_TOKEN):
+            try:
+                audit_log('admin_denied', request.path,
+                          {'method': request.method, 'remote': request.remote_addr})
+            except Exception:
+                pass
+            return jsonify({'success': False, 'error': 'invalid admin token'}), 401
+        try:
+            audit_log('admin_call', request.path,
+                      {'method': request.method,
+                       'args': dict(request.args),
+                       'remote': request.remote_addr})
+        except Exception:
+            pass
+        return f(*args, **kwargs)
+    return decorated
+
+
+# ============ AUDIT LOG ============
+# Lightweight audit trail for security-relevant actions. Logs to the
+# `audit_log` table (created lazily on first write). Calls never raise —
+# audit failures must not break the hot path.
+
+_AUDIT_TABLE_READY = False
+
+
+def _ensure_audit_table():
+    global _AUDIT_TABLE_READY
+    if _AUDIT_TABLE_READY:
+        return
+    try:
+        d = get_db()
+        cur = d.conn.cursor()
+        if getattr(d, 'is_postgres', False):
+            cur.execute("""CREATE TABLE IF NOT EXISTS audit_log (
+                id SERIAL PRIMARY KEY,
+                ts TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                user_id TEXT,
+                action TEXT NOT NULL,
+                resource TEXT,
+                ip TEXT,
+                payload JSONB
+            )""")
+            cur.execute("CREATE INDEX IF NOT EXISTS audit_ts_idx ON audit_log(ts DESC)")
+            cur.execute("CREATE INDEX IF NOT EXISTS audit_user_idx ON audit_log(user_id, ts DESC)")
+        else:
+            cur.execute("""CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id TEXT,
+                action TEXT NOT NULL,
+                resource TEXT,
+                ip TEXT,
+                payload TEXT
+            )""")
+            cur.execute("CREATE INDEX IF NOT EXISTS audit_ts_idx ON audit_log(ts DESC)")
+            cur.execute("CREATE INDEX IF NOT EXISTS audit_user_idx ON audit_log(user_id, ts DESC)")
+        d.conn.commit()
+        _AUDIT_TABLE_READY = True
+    except Exception as exc:
+        logger.warning(f"audit table init failed (logging disabled): {exc}")
+
+
+def audit_log(action: str, resource: str = '', payload=None):
+    """Append an audit entry. Best-effort — never raises."""
+    import json as _json
+    try:
+        _ensure_audit_table()
+        if not _AUDIT_TABLE_READY:
+            return
+        d = get_db()
+        cur = d.conn.cursor()
+        p = "%s" if getattr(d, 'is_postgres', False) else "?"
+        user_id = getattr(g, 'user_id', None) if request else None
+        ip = request.remote_addr if request else None
+        cur.execute(
+            f"INSERT INTO audit_log (user_id, action, resource, ip, payload) VALUES ({p},{p},{p},{p},{p})",
+            (user_id, action, resource or '', ip,
+             _json.dumps(payload) if payload is not None else None),
+        )
+        d.conn.commit()
+    except Exception as exc:
+        logger.debug(f"audit_log write failed: {exc}")
+
+
+# ============ PER-USER THROTTLE ============
+# Simple in-memory token bucket keyed by user_id (or remote IP for anon).
+# Designed to protect expensive endpoints (simulator, screeners) without
+# adding Redis as a dep. State is in-process so multiple workers each get
+# their own bucket — acceptable since the goal is to prevent runaway loops,
+# not enforce a strict global cap.
+
+import threading as _threading
+_THROTTLE_LOCK = _threading.Lock()
+_THROTTLE_BUCKETS: dict = {}
+
+
+def throttle(name: str, max_calls: int, window_secs: int):
+    """Decorator: cap calls per (endpoint × user_id-or-IP) within window."""
+    import time as _time
+    def deco(f):
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            uid = getattr(g, 'user_id', None) or (request.remote_addr if request else 'anon')
+            key = f"{name}:{uid}"
+            now = _time.time()
+            with _THROTTLE_LOCK:
+                hits = _THROTTLE_BUCKETS.get(key, [])
+                hits = [t for t in hits if (now - t) < window_secs]
+                if len(hits) >= max_calls:
+                    retry_after = int(window_secs - (now - hits[0]))
+                    return jsonify({
+                        'success': False,
+                        'error': f'rate limit exceeded for {name}',
+                        'retry_after_secs': max(retry_after, 1),
+                    }), 429
+                hits.append(now)
+                _THROTTLE_BUCKETS[key] = hits
+            return f(*args, **kwargs)
+        return decorated
+    return deco
+
+
 # ============ SCRAPER SCHEDULER ============
 
 scraper_status = {
@@ -879,6 +1031,7 @@ def get_sector_stocks(sector):
 # ============ PORTFOLIO SIMULATOR ============
 
 @app.route('/api/simulator', methods=['GET'])
+@throttle('simulator', max_calls=10, window_secs=60)
 def portfolio_simulator():
     """Simulate returns from following top alpha signals.
     Shows what would happen if you invested equally in top N signals."""
@@ -980,6 +1133,7 @@ def portfolio_simulator():
 # ============ SIMULATOR EQUITY CURVE ============
 
 @app.route('/api/simulator/equity-curve', methods=['GET'])
+@throttle('equity_curve', max_calls=10, window_secs=60)
 def simulator_equity_curve():
     """Return time-series data for cumulative PnL chart and drawdown chart."""
     try:
@@ -1941,7 +2095,7 @@ except Exception as _rt_exc:
 try:
     import api_v3
     api_v3.register(app, get_db)
-    logger.info("api_v3 registered: /api/forensics/* /api/fo/* /api/bulk-deals /api/screeners/* /api/paper/* /api/telemetry /api/audit/* /api/onboarding/* /api/watchlist/tags /api/sectors/rotation /api/geo/india /api/earnings/* /api/compare/*")
+    logger.info("api_v3 registered: /api/forensics/* /api/fo/* /api/bulk-deals /api/screeners/* /api/paper/* /api/telemetry /api/audit/* /api/onboarding/* /api/watchlist/tags /api/sectors/rotation /api/geo/india /api/earnings/* /api/compare/* /api/stock/<t>/(profile|financials|ratios|shareholding|corp-actions|news|peers-detail) /api/screener/(fields|run)")
 except Exception as _v3_exc:
     logger.error(f"api_v3 init failed: {_v3_exc}")
 

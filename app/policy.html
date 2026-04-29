@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Policy Fast-Track</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script id="tailwind-config">
+  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
+    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
+    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
+    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
+    "outline":"#3d4a5c","outline-variant":"#253040",
+    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
+  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["JetBrains Mono"] } } } }
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
+.src-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:var(--r-sm);
+  font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.04em; }
+.src-pill[data-src="RBI"]  { background:var(--info-dim); color:var(--info); border:1px solid var(--info-border); }
+.src-pill[data-src="SEBI"] { background:var(--caution-dim); color:var(--caution); border:1px solid var(--caution-border); }
+.src-pill[data-src="GST"]  { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
+.src-pill[data-src="CBDT"] { background:rgba(132,88,255,0.10); color:#a899e8; border:1px solid rgba(132,88,255,0.25); }
+.src-pill[data-src="PIB"]  { background:rgba(91,108,255,0.10); color:#5b6cff; border:1px solid rgba(91,108,255,0.22); }
+.src-pill[data-src="NSE"]  { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
+.src-pill[data-src="BSE"]  { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
+.src-pill[data-src="MoF"]  { background:var(--bear-dim); color:var(--bear); border:1px solid var(--bear-border); }
+.src-pill[data-src=""]     { background:var(--s2); color:var(--t2); border:1px solid var(--b1); }
+.alpha-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:var(--r-sm);
+  font-family:var(--font-mono); font-size:11px; font-weight:600; }
+.alpha-pill.high { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
+.alpha-pill.mid  { background:var(--caution-dim); color:var(--caution); border:1px solid var(--caution-border); }
+.alpha-pill.low  { background:var(--info-dim); color:var(--info); border:1px solid var(--info-border); }
+.range-period { padding:4px 10px; font-size:11px; font-weight:600; border:1px solid var(--b1);
+  border-radius:var(--r-sm); background:transparent; color:var(--t2); cursor:pointer; font-family:var(--font-ui); }
+.range-period.active { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
+.range-period:hover:not(.active) { background:var(--b0); color:var(--t1); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Policy Track</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+    <a class="sidebar-link active" href="policy.html"><span class="material-symbols-outlined sidebar-icon">gavel</span>Policy</a>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+  </nav>
+</aside>
+
+<main class="main-content" style="max-width:1400px;">
+
+<header style="position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--b1);padding:14px 0;margin-bottom:18px;">
+  <div style="display:flex;align-items:baseline;gap:10px;justify-content:space-between;flex-wrap:wrap;">
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
+        <span style="color:var(--b2);">·</span>
+        <h1 style="font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--t1);">Policy Fast-Track</h1>
+      </div>
+      <p style="color:var(--t3);font-size:12px;margin-top:2px;">Filing-grade policy events from RBI, SEBI, GST, CBDT, PIB, NSE, BSE — surfaced with the lowest latency the scraper supports.</p>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button class="range-period" data-window="6">6h</button>
+      <button class="range-period active" data-window="24">24h</button>
+      <button class="range-period" data-window="72">3D</button>
+      <button class="range-period" data-window="168">7D</button>
+      <button class="range-period" data-window="720">30D</button>
+    </div>
+  </div>
+</header>
+
+<!-- Pastel KPI strip — by-source counts -->
+<div id="policyKpi" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px;"></div>
+
+<!-- Two-column dashboard above the feed -->
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:18px;">
+  <div class="widget" style="min-height:240px;">
+    <div class="widget__head">
+      <div><div class="widget__title">Policy event velocity</div><div class="widget__meta">filing-grade hits · last 30d</div></div>
+      <span class="widget__year-pill" id="velPill">—</span>
+    </div>
+    <div id="policyHeatmap" style="margin-top:8px;"></div>
+  </div>
+  <div class="widget" style="min-height:240px;">
+    <div class="widget__head">
+      <div><div class="widget__title">By regulator</div><div class="widget__meta">share of policy volume</div></div>
+    </div>
+    <div id="policyHist" style="flex:1;"></div>
+  </div>
+</div>
+
+<!-- Tier banner: nudges Free users to Pro for longer windows -->
+<div id="tierBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:var(--r-lg);
+  border:1px solid var(--caution-border);background:var(--caution-dim);font-size:12px;color:var(--t1);">
+  <span class="material-symbols-outlined" style="vertical-align:-3px;color:var(--caution);font-size:16px;">workspace_premium</span>
+  <strong style="color:var(--caution);">Free tier · 24h window.</strong>
+  <span style="color:var(--t2);">Upgrade for 30-day policy backlog, custom alerts, and full filings export.</span>
+  <a href="pricing.html" style="color:var(--info);text-decoration:none;font-weight:600;margin-left:6px;">See plans →</a>
+</div>
+
+<!-- Filterable feed of policy events -->
+<div class="widget" style="min-height:auto;">
+  <div class="widget__head">
+    <div><div class="widget__title">Policy Event Feed</div><div class="widget__meta">click any item to drill into the ticker</div></div>
+    <span class="widget__year-pill" id="countPill">— events</span>
+  </div>
+  <div id="policyFeed"></div>
+</div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script>
+let _activeHours = 24;
+let _allRows = [];
+
+const SOURCE_COLORS = {
+  RBI:'lavender', SEBI:'yellow', GST:'mint', CBDT:'lavender',
+  PIB:'lavender', NSE:'mint', BSE:'mint', MoF:'coral',
+};
+const SOURCE_ICONS = {
+  RBI:'account_balance', SEBI:'gavel', GST:'receipt_long', CBDT:'description',
+  PIB:'campaign', NSE:'show_chart', BSE:'show_chart', MoF:'account_balance_wallet',
+};
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts.replace(' ', 'T') + 'Z');
+  if (isNaN(d)) return ts.slice(0, 16);
+  const m = Math.floor((Date.now() - d) / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h';
+  return Math.floor(h / 24) + 'd';
+}
+
+function alphaClass(a) { return a >= 65 ? 'high' : a >= 40 ? 'mid' : 'low'; }
+function detectSource(src) {
+  const u = (src || '').toUpperCase();
+  for (const tag of ['RBI','SEBI','GST','CBDT','PIB','NSE','BSE','MOF']) {
+    if (u.includes(tag)) return tag === 'MOF' ? 'MoF' : tag;
+  }
+  return '';
+}
+
+async function loadPolicy(hours) {
+  _activeHours = hours;
+  document.querySelectorAll('[data-window]').forEach(b =>
+    b.classList.toggle('active', String(b.dataset.window) === String(hours)));
+  const r = await API.get(`/policy/fast?hours=${hours}&limit=300`);
+  if (!r) return;
+  _allRows = r.data || [];
+
+  // Tier nudge: capped at 24h
+  const tier = (r.tier || 'free');
+  document.getElementById('tierBanner').style.display = (tier === 'free' && hours < 720) ? '' : 'none';
+
+  renderKpi(r.by_source || {}, _allRows);
+  renderDashboard(_allRows);
+  renderFeed(_allRows);
+  document.getElementById('countPill').textContent = _allRows.length + ' events';
+}
+
+function renderKpi(bySource, rows) {
+  const escape = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // Top 4 regulators by volume + total count + high-alpha share
+  const order = Object.entries(bySource).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const total = rows.length;
+  const high  = rows.filter(r => (r.alpha_score||0) >= 65).length;
+  const cards = order.map(([src, n]) => ({
+    color: SOURCE_COLORS[src] || 'lavender',
+    icon: SOURCE_ICONS[src] || 'gavel',
+    label: src + ' filings',
+    value: n,
+    sub:   total ? Math.round(n/total*100) + '% of policy volume' : '',
+  }));
+  // Pad with totals/high tiles
+  while (cards.length < 3) cards.push({ color:'lavender', icon:'gavel', label:'—', value:0, sub:'' });
+  cards.push({
+    color:'dark', icon:'star', label:'High-α policy events',
+    value: high, sub: total ? Math.round(high/total*100) + '% of policy volume' : '', delta: 'live',
+  });
+  const root = document.getElementById('policyKpi');
+  root.innerHTML = cards.map(c => `
+    <div class="pastel-card pastel-card--${c.color}">
+      <div class="pastel-card__head">
+        <span class="pastel-card__chip"${c.color==='dark'?' style="background:rgba(255,255,255,0.10);color:inherit;"':''}>
+          <span class="pastel-card__icon-bg"${c.color==='dark'?' style="background:rgba(255,255,255,0.10);"':''}>
+            <span class="material-symbols-outlined">${escape(c.icon)}</span>
+          </span>
+          ${escape(c.label)}
+        </span>
+        ${c.delta ? `<span class="delta"${c.color==='dark'?' style="background:rgba(200,245,98,0.20);color:var(--accent-lime);"':''}>${escape(c.delta)}</span>` : ''}
+      </div>
+      <div class="pastel-card__value">${escape(c.value)}</div>
+      <div class="pastel-card__sub"${c.color==='dark'?' style="opacity:0.7;"':''}>${escape(c.sub)}</div>
+    </div>`).join('');
+}
+
+function renderDashboard(rows) {
+  if (window.Widgets) {
+    // Heatmap: 30-day signal velocity
+    const heat = Widgets.heatmap(
+      document.getElementById('policyHeatmap'),
+      rows.map(r => ({ ts: r.created_at })),
+      { days: 30 }
+    );
+    if (heat) document.getElementById('velPill').textContent = heat.total + ' events · ' + heat.activeDays + ' active days';
+
+    // Histogram by regulator
+    const buckets = {};
+    rows.forEach(r => {
+      const tag = detectSource(r.source) || 'OTHER';
+      buckets[tag] = (buckets[tag] || 0) + 1;
+    });
+    const colorFor = { RBI:'#6ba3d6', SEBI:'#e6b84a', GST:'#2dd4aa', CBDT:'#8458ff',
+                       PIB:'#5b6cff', NSE:'#2dd4aa', BSE:'#2dd4aa', MoF:'#f26b6b', OTHER:'#3d4a5c' };
+    const data = Object.entries(buckets).sort((a,b)=>b[1]-a[1]).slice(0,8)
+                  .map(([k,v]) => ({ label: k, value: v, color: colorFor[k] || '#5b6cff' }));
+    Widgets.histogram(document.getElementById('policyHist'), data, { height: 150 });
+  }
+}
+
+function renderFeed(rows) {
+  const el = document.getElementById('policyFeed');
+  if (!rows.length) {
+    el.innerHTML = '<div style="color:var(--t3);font-size:12px;padding:30px;text-align:center;">No policy events in this window.</div>';
+    return;
+  }
+  if (window.Widgets) {
+    const items = rows.map(r => ({
+      ticker: r.ticker || detectSource(r.source) || 'POL',
+      company: r.headline || '(no headline)',
+      sub: [detectSource(r.source) || (r.source || '').slice(0,18), r.event_type || '', fmtTime(r.created_at)].filter(Boolean).join(' · '),
+      alpha: r.alpha_score || 0,
+      sentiment: r.sentiment,
+      created_at: r.created_at,
+    }));
+    Widgets.feed(el, items, {
+      max: 60,
+      pills: [
+        { label: 'All',     filter: 'all' },
+        { label: 'Bullish', filter: 'bullish' },
+        { label: 'Bearish', filter: 'bearish' },
+        { label: 'High α',  filter: 'high' },
+      ],
+    });
+    // Bind clicks to drill into stock detail page
+    el.querySelectorAll('.activity-row').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => {
+        const t = row.dataset.ticker;
+        if (t && t !== 'POL' && !['RBI','SEBI','GST','CBDT','PIB','NSE','BSE','MoF'].includes(t))
+          window.location.href = 'stock.html?t=' + encodeURIComponent(t);
+      });
+    });
+  }
+}
+
+document.querySelectorAll('[data-window]').forEach(b =>
+  b.addEventListener('click', () => loadPolicy(parseInt(b.dataset.window))));
+
+document.addEventListener('DOMContentLoaded', () => loadPolicy(24));
+</script>
+</body>
+</html>

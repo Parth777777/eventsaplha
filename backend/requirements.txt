@@ -1,3 +1,8 @@
 Flask==2.3.3
 Flask-CORS==4.0.0
 python-dateutil==2.8.2
+# Production WSGI servers — pick one for deploy.
+# Gunicorn for Linux/macOS, Waitress for Windows-compatible single-process.
+waitress>=2.1
+# Process metrics for /api/metrics and /api/health/ext
+psutil>=5.9

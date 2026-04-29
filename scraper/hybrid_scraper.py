@@ -24,7 +24,9 @@ import feedparser
 # Without this, a single dead RSS feed (e.g. a host that accepts the TCP
 # connection then never sends) hangs fetch_feeds() forever and silently
 # starves the whole pipeline. Tunable via FEED_TIMEOUT_SECS.
-socket.setdefaulttimeout(float(os.getenv('FEED_TIMEOUT_SECS', '10')))
+# Bumped 10s → 25s: under load some upstream RSS hosts respond slowly but
+# successfully past 10s; the previous timeout dropped legitimate articles.
+socket.setdefaulttimeout(float(os.getenv('FEED_TIMEOUT_SECS', '25')))
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -47,7 +49,10 @@ from config import (
     TICKER_NEWS_ROTATION, TICKERS_PER_CYCLE,
     GOOGLE_NEWS_ENTRIES_PER_QUERY,
 )
-from stock_universe import STOCK_UNIVERSE, UNIVERSE_TICKERS, UNIVERSE_SHORT_NAMES
+from stock_universe import (
+    STOCK_UNIVERSE, UNIVERSE_TICKERS, UNIVERSE_SHORT_NAMES,
+    AMBIGUOUS_TICKERS, AMBIGUOUS_FIRST_WORDS,
+)
 
 # Module-level rotation state — persists across scrape cycles within a process
 _ROTATION_STATE = {'sector_idx': 0, 'ticker_idx': 0}
@@ -399,6 +404,43 @@ Return ONLY valid JSON, nothing else."""
 
 
 # ============ RSS FEED COLLECTOR ============
+def _fetch_feed_with_retry(url: str, attempts: int = 2, base_delay: float = 1.0):
+    """Parse an RSS/Atom feed with bounded retry on transient failure.
+
+    Most upstream RSS hosts have intermittent timeouts; a single retry with
+    a short delay recovers the majority. Caps at `attempts` total tries.
+    Returns the feedparser result (or a parsed object with empty .entries)
+    so callers can treat it uniformly.
+    """
+    last_exc = None
+    for i in range(attempts):
+        try:
+            f = feedparser.parse(url)
+            # feedparser returns an object even on network failure; check
+            # whether we actually got entries or a bozo flag.
+            if getattr(f, 'entries', None):
+                return f
+            # No entries — might be empty feed (legitimate) or transient.
+            # Only retry if there's a bozo exception.
+            bozo = getattr(f, 'bozo_exception', None)
+            if not bozo:
+                return f
+            last_exc = bozo
+        except Exception as exc:
+            last_exc = exc
+        if i < attempts - 1:
+            time.sleep(base_delay * (2 ** i))
+    if last_exc:
+        logger.debug(f"feed fetch gave up after {attempts}: {url[:80]} → {last_exc}")
+    # Return whatever the last parse produced (likely empty entries)
+    try:
+        return feedparser.parse(url)
+    except Exception:
+        class _Empty:
+            entries = []
+        return _Empty()
+
+
 class RSSFeedCollector:
     """Collects news from RSS feeds, Google News RSS, and NewsAPI"""
 
@@ -407,26 +449,55 @@ class RSSFeedCollector:
         self.db = db
         self.articles = []
 
+    def _fetch_one_source(self, source_name: str, feed_url: str) -> List[Dict]:
+        """Pure fetcher (no DB writes). Used by the parallel pool."""
+        try:
+            feed = _fetch_feed_with_retry(feed_url)
+            return [(source_name, e) for e in feed.entries[:MAX_ARTICLES_PER_SOURCE]]
+        except Exception as exc:
+            logger.warning(f"  Failed to fetch {source_name}: {exc}")
+            return []
+
     def fetch_feeds(self) -> List[Dict]:
-        """Fetch all news sources and return deduplicated articles"""
+        """Fetch all news sources and return deduplicated articles.
+
+        RSS feeds are fetched in parallel with bounded concurrency (8 workers)
+        to compress wall-clock time without hammering hosts. The previous
+        sequential loop took 27 × ~2s ≈ 1 min in the worst case; this caps
+        the dominant cost at roughly max-source-latency.
+        """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
         logger.info("Fetching news from all sources...")
         all_articles = []
 
-        # 1. Standard RSS feeds
-        for source_name, feed_url in self.sources.items():
-            try:
-                feed = feedparser.parse(feed_url)
+        # 1. Standard RSS feeds — parallel fetch, then sequential dedup write.
+        # DB writes stay sequential because is_article_seen + mark_article_seen
+        # form a check-then-write pair that races under threading.
+        per_source_counts: Dict[str, int] = {}
+        max_workers = int(os.getenv('RSS_PARALLEL_WORKERS', '8'))
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = {
+                pool.submit(self._fetch_one_source, name, url): name
+                for name, url in self.sources.items()
+            }
+            for fut in as_completed(futures):
+                source_name = futures[fut]
+                try:
+                    pairs = fut.result()
+                except Exception as exc:
+                    logger.warning(f"  Failed to fetch {source_name}: {exc}")
+                    continue
                 count = 0
-                for entry in feed.entries[:MAX_ARTICLES_PER_SOURCE]:
-                    article = self._parse_entry(entry, source_name)
+                for src, entry in pairs:
+                    article = self._parse_entry(entry, src)
                     if article and not self.db.is_article_seen(article['link'], article['title']):
                         all_articles.append(article)
-                        self.db.mark_article_seen(article['link'], article['title'], source_name, article.get('summary'))
+                        self.db.mark_article_seen(article['link'], article['title'], src, article.get('summary'))
                         count += 1
-                if count > 0:
-                    logger.info(f"  {source_name}: {count} new articles")
-            except Exception as e:
-                logger.warning(f"  Failed to fetch {source_name}: {e}")
+                if count:
+                    per_source_counts[source_name] = count
+        for src, n in per_source_counts.items():
+            logger.info(f"  {src}: {n} new articles")
 
         # 2. Google News RSS (free, no API key)
         # Build the query plan for this cycle:
@@ -458,7 +529,7 @@ class RSSFeedCollector:
         for kind, query in plan:
             try:
                 url = f"https://news.google.com/rss/search?q={requests.utils.quote(query)}&hl=en-IN&gl=IN&ceid=IN:en"
-                feed = feedparser.parse(url)
+                feed = _fetch_feed_with_retry(url)
                 count = 0
                 for entry in feed.entries[:GOOGLE_NEWS_ENTRIES_PER_QUERY]:
                     article = self._parse_entry(entry, f'google_news')
@@ -785,38 +856,77 @@ class PolicyParser:
                         'google', 'microsoft', 'tesla', 'nvidia', 'meta', 'openai',
                         'spacex', 'samsung', 'toyota', 'sony']
 
+    # Listicle headlines like "5 Speciality Chemical Stocks", "Top 10 Banking
+    # Shares to Buy", "7 Defence Stocks for 2025" \u2014 the descriptor word is an
+    # adjective, not a company. Skip first-word short-name matches in these.
+    _LISTICLE_RE = re.compile(
+        r'^\s*(top\s+)?\d+\s+\w+(\s+\w+){0,4}?\s+(stocks?|shares?|companies|picks?|bets?)\b',
+        re.IGNORECASE,
+    )
+
     def extract_entities(self, text: str) -> Dict:
         """Extract companies from text using the full 500-stock universe.
 
         Prevents false matches for foreign articles while catching
         mentions of any NSE/BSE listed company.
+
+        Defenses against false positives:
+          1. Ambiguous tickers (those whose lowercase form is a common English
+             word \u2014 SPECIALITY, POWER, GLOBAL, CAPITAL \u2026) require ALL-CAPS
+             spelling in the source.  "Speciality Chemical Stocks" no longer
+             trips SPECIALITY (Speciality Restaurants).
+          2. Listicle headlines ("5 X Y Stocks", "Top 10 Banking Shares \u2026")
+             skip the first-word short-name path entirely.
+          3. Short-name matches (case-insensitive first-word) require that the
+             match appears as a proper noun (capitalised in the original text),
+             except for curated overrides (tata, adani, \u2026) where the lowercase
+             form is itself unambiguous.
         """
         entities = {'companies': []}
         text_lower = text.lower()
 
-        # If the article is primarily about foreign companies, require strong context
         foreign_focus = sum(1 for kw in self.FOREIGN_KEYWORDS if kw in text_lower)
         is_foreign_article = foreign_focus >= 2
 
-        # Match tickers from the full universe (500+ stocks)
+        # Detect listicle headlines \u2014 first ~120 chars are the headline body
+        head = text[:120]
+        is_listicle = bool(self._LISTICLE_RE.match(head))
+
+        # \u2500\u2500 Pass 1: ticker scan \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         for ticker in UNIVERSE_TICKERS:
             if ticker in self.TICKER_BLACKLIST or len(ticker) < 3:
                 continue
             pattern = r'\b' + re.escape(ticker) + r'\b'
-            if re.search(pattern, text, re.IGNORECASE):
+            # Ambiguous tickers must match in ALL CAPS only (case-sensitive).
+            # Everything else stays case-insensitive.
+            flags = 0 if ticker in AMBIGUOUS_TICKERS else re.IGNORECASE
+            if re.search(pattern, text, flags):
                 if is_foreign_article:
                     fin_pattern = r'\b' + re.escape(ticker) + r'\b.{0,20}(share|stock|NSE|BSE|target|buy|sell|rating|Rs|INR|\u20b9)'
                     if not re.search(fin_pattern, text, re.IGNORECASE):
                         continue
                 entities['companies'].append(ticker)
 
-        # Match by company name (short name, e.g., "Zomato", "Infosys", "Reliance")
+        # \u2500\u2500 Pass 2: short-name (first-word) scan \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         if not is_foreign_article:
             for short_name, ticker in UNIVERSE_SHORT_NAMES.items():
                 if ticker in entities['companies'] or ticker in self.TICKER_BLACKLIST:
                     continue
-                if short_name in text_lower:
-                    entities['companies'].append(ticker)
+                # Word-bounded match (NOT substring) \u2014 fixes "indus" false-matching
+                # inside "industries", "tata" inside "tatami", etc.
+                m = re.search(r'\b' + re.escape(short_name) + r'\b', text, re.IGNORECASE)
+                if not m:
+                    continue
+                # Skip listicle false-positives \u2014 descriptor words \u2260 companies
+                if is_listicle and m.start() < len(head):
+                    continue
+                # Require the short-name to appear as a proper noun (capitalised)
+                # in the original text. Catches "5 Power Stocks\u2026" without losing
+                # "Power Finance Corp said today\u2026". Curated overrides (tata,
+                # adani, etc.) still pass because they appear capitalised in news.
+                if not m.group(0)[0].isupper():
+                    continue
+                entities['companies'].append(ticker)
 
         return entities
 
@@ -1032,8 +1142,34 @@ class SignalEngine:
         sector_returns = self._compute_sector_momentum(stock_data)
 
         for event in events:
+            # If the event has no specific ticker but is a macro/policy event
+            # with sector impact (e.g. RBI rate cut → BFSI sector), expand it
+            # to the top stocks in each affected sector so the signal stream
+            # surfaces it. Without this expansion, RBI/SEBI/state-policy
+            # events get extracted but never generate a signal.
             if not event['companies']:
-                continue
+                macro = event.get('macro') or {}
+                sector_impacts = macro.get('sectors') or {}
+                if not sector_impacts:
+                    continue
+                # Expand to top-N stocks per affected sector. Cap per-sector
+                # to avoid 50 signals from a single rate cut.
+                MAX_STOCKS_PER_SECTOR = int(os.getenv('MACRO_EXPANSION_MAX', '3'))
+                expanded: List[str] = []
+                for sec, sec_sentiment in sector_impacts.items():
+                    if not sec_sentiment or sec_sentiment == 'neutral':
+                        continue
+                    sec_stocks = SECTOR_STOCKS.get(sec, []) or []
+                    # Prefer stocks present in stock_data (we have current prices)
+                    candidates = [s for s in sec_stocks if s in stock_data]
+                    expanded.extend(candidates[:MAX_STOCKS_PER_SECTOR])
+                if not expanded:
+                    continue
+                # Discount magnitude on derived signals so direct-hit events
+                # outrank sector-bucket inferences. Mark for downstream UI.
+                event = {**event, 'companies': expanded,
+                         'magnitude': float(event.get('magnitude', 50)) * 0.65,
+                         '_macro_expanded': True}
 
             for company in event['companies']:
                 try:

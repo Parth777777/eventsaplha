@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Pre-mover</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script id="tailwind-config">
+  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
+    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
+    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
+    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
+    "outline":"#3d4a5c","outline-variant":"#253040",
+    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
+  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["JetBrains Mono"] } } } }
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
+
+.range-period { padding:4px 10px; font-size:11px; font-weight:600; border:1px solid var(--b1);
+  border-radius:var(--r-sm); background:transparent; color:var(--t2); cursor:pointer; font-family:var(--font-ui); }
+.range-period.active { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
+.range-period:hover:not(.active) { background:var(--b0); color:var(--t1); }
+
+.score-pill { font-family:var(--font-mono); font-size:13px; font-weight:700; padding:5px 10px;
+  border-radius:var(--r-sm); display:inline-block; min-width:50px; text-align:center; }
+.score-pill.s-hi  { background:var(--bull-dim);    color:var(--bull);    border:1px solid var(--bull-border); }
+.score-pill.s-mid { background:var(--caution-dim); color:var(--caution); border:1px solid var(--caution-border); }
+.score-pill.s-lo  { background:var(--info-dim);    color:var(--info);    border:1px solid var(--info-border); }
+
+.factor-bar { display:grid; grid-template-columns:96px 1fr 60px; gap:8px; align-items:center;
+  font-size:11px; padding:3px 0; }
+.factor-bar .lbl  { color:var(--t3); font-family:var(--font-mono); text-transform:lowercase; letter-spacing:0.04em; }
+.factor-bar .track { height:5px; background:var(--s1); border-radius:3px; overflow:hidden; }
+.factor-bar .fill  { height:100%; border-radius:3px; transition:width 300ms ease; }
+.factor-bar .num   { color:var(--t2); font-family:var(--font-mono); font-size:10px; text-align:right; }
+
+.cand-card { padding:14px 16px; border-radius:var(--r-lg); border:1px solid var(--b1); background:var(--s1);
+  display:grid; grid-template-columns:1fr 240px; gap:18px; transition:border-color 0.15s; margin-bottom:10px; }
+.cand-card:hover { border-color:var(--info-border); }
+.cand-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+.cand-ticker { font-family:var(--font-head); font-weight:800; font-size:14px; color:var(--info); text-decoration:none; }
+.cand-ticker:hover { color:#fff; }
+.cand-meta-chip { font-family:var(--font-mono); font-size:10px; padding:2px 7px; border-radius:var(--r-sm);
+  background:var(--s2); color:var(--t2); border:1px solid var(--b1); }
+.reason-line { font-size:12px; color:var(--t2); line-height:1.5; margin-bottom:8px; }
+
+.alpha-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:var(--r-sm);
+  font-family:var(--font-mono); font-size:11px; font-weight:600; }
+.alpha-pill.high { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
+.alpha-pill.mid  { background:var(--caution-dim); color:var(--caution); border:1px solid var(--caution-border); }
+.alpha-pill.low  { background:var(--info-dim); color:var(--info); border:1px solid var(--info-border); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Pre-mover</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+    <a class="sidebar-link" href="policy.html"><span class="material-symbols-outlined sidebar-icon">gavel</span>Policy</a>
+    <a class="sidebar-link active" href="premover.html"><span class="material-symbols-outlined sidebar-icon">trending_up</span>Pre-mover</a>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+  </nav>
+</aside>
+
+<main class="main-content" style="max-width:1400px;">
+
+<header style="position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--b1);padding:14px 0;margin-bottom:18px;">
+  <div style="display:flex;align-items:flex-end;gap:14px;justify-content:space-between;flex-wrap:wrap;">
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
+        <span style="color:var(--b2);">·</span>
+        <h1 style="font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--t1);">Pre-mover</h1>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--caution);background:var(--caution-dim);border:1px solid var(--caution-border);padding:2px 7px;border-radius:var(--r-sm);text-transform:uppercase;letter-spacing:0.08em;">experimental</span>
+      </div>
+      <p style="color:var(--t3);font-size:12px;margin-top:2px;max-width:760px;">Stocks that haven't surged yet but show pre-mover signals — accumulation, insider buying, OI build-up, fresh policy tailwinds, valuation gap, low attention. By design, names already trending on news are excluded.</p>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button class="range-period" data-horizon="1D">1D</button>
+      <button class="range-period active" data-horizon="5D">5D</button>
+      <button class="range-period" data-horizon="20D">20D</button>
+    </div>
+  </div>
+</header>
+
+<!-- Pastel KPI strip -->
+<div id="pmKpi" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;"></div>
+
+<!-- Tier banner — shown when free-tier preview kicks in -->
+<div id="pmGate" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:var(--r-lg);
+  border:1px solid var(--caution-border);background:var(--caution-dim);font-size:12px;color:var(--t1);">
+  <span class="material-symbols-outlined" style="vertical-align:-3px;color:var(--caution);font-size:16px;">workspace_premium</span>
+  <strong style="color:var(--caution);">Free tier · top-5 preview.</strong>
+  <span style="color:var(--t2);">Upgrade for the full ranked list, all three horizons, and per-factor reasoning evidence.</span>
+  <a href="pricing.html" style="color:var(--info);text-decoration:none;font-weight:600;margin-left:6px;">See plans →</a>
+</div>
+
+<!-- Two-up dashboard above the list -->
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:18px;">
+  <div class="widget" style="min-height:220px;">
+    <div class="widget__head">
+      <div><div class="widget__title">Score distribution</div><div class="widget__meta">candidates by PreMoverScore bucket</div></div>
+      <span class="widget__year-pill" id="pmDistPill">— total</span>
+    </div>
+    <div id="pmHist" style="flex:1;"></div>
+  </div>
+  <div class="widget" style="min-height:220px;">
+    <div class="widget__head">
+      <div><div class="widget__title">Catalyst-led share</div><div class="widget__meta">% of candidates with Tier-1 catalyst</div></div>
+    </div>
+    <div id="pmDonut" style="flex:1;"></div>
+  </div>
+</div>
+
+<!-- Candidate list -->
+<div class="widget" style="min-height:auto;">
+  <div class="widget__head">
+    <div><div class="widget__title">Candidates</div><div class="widget__meta">ranked by composite score · click any ticker for the full deep-dive</div></div>
+    <span class="widget__year-pill" id="pmCount">— candidates</span>
+  </div>
+  <div id="pmList"></div>
+</div>
+
+<!-- Methodology panel (always visible — important for the "experimental" tag) -->
+<div class="widget" style="min-height:auto;margin-top:14px;">
+  <div class="widget__head">
+    <div><div class="widget__title">How this score is built</div><div class="widget__meta">factor stack · honest disclosure of inputs &amp; gaps</div></div>
+  </div>
+  <div style="font-size:12px;color:var(--t2);line-height:1.7;">
+    <p style="margin-bottom:8px;">PreMoverScore is a weighted blend of eight leading-indicator factors. Per horizon, the same factor stack is reweighted — 1D leans on intraday volume + OI build-up, 20D leans on valuation + policy catalyst.</p>
+    <ul style="padding-left:18px;margin-bottom:8px;">
+      <li><strong style="color:var(--t1);">accumulation</strong> — net BUY value across bulk &amp; block deals over the last 5 trading days, log-scaled.</li>
+      <li><strong style="color:var(--t1);">insider</strong> — directional sum of promoter SAST/PIT acquire-vs-dispose events and pledge changes (last 30d).</li>
+      <li><strong style="color:var(--t1);">oi_buildup</strong> — F&amp;O unusual-OI score on OTM calls minus puts, last 24h.</li>
+      <li><strong style="color:var(--t1);">vol_divergence</strong> — volume z-score &gt; 2 in last 3d without a high-α news signal in 48h.</li>
+      <li><strong style="color:var(--t1);">catalyst</strong> — Tier-1 RBI/SEBI/MoF/PIB/CBDT policy event mapped to the ticker (direct) or its sector (fan-out).</li>
+      <li><strong style="color:var(--t1);">valuation</strong> — PE / PB discount vs. sector median (only computed for surviving candidates to keep the call cheap).</li>
+      <li><strong style="color:var(--t1);">low_attention</strong> — signal count over 30d below sector p25.</li>
+      <li><strong style="color:var(--t1);">sector_tailwind</strong> — sector average alpha in top quartile, while the ticker's own alpha lags the sector mean.</li>
+    </ul>
+    <p style="margin-bottom:8px;"><strong style="color:var(--t1);">Hard filters before scoring:</strong> excluded if forensic band is suspicious / likely_manipulated, if the entry-price has moved &gt;5% in 5d (already surged), or if no qualifying source signal exists.</p>
+    <p style="margin-bottom:0;"><strong style="color:var(--t1);">Honest gaps.</strong> The repo doesn't carry an intraday OHLCV table, so the volume divergence factor approximates with the volume_anomalies z-score. Backtested hit-rate for PreMoverScore itself isn't published yet — predictions emitted by the existing tracker will start scoring this surface forward from launch.</p>
+  </div>
+</div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script>
+let _activeHorizon = '5D';
+const FACTOR_ORDER = ['accumulation','insider','oi_buildup','vol_divergence','catalyst','valuation','low_attention','sector_tailwind'];
+const FACTOR_COLORS = {
+  accumulation:    '#2dd4aa',
+  insider:         '#5b6cff',
+  oi_buildup:      '#e6b84a',
+  vol_divergence:  '#8458ff',
+  catalyst:        '#6ba3d6',
+  valuation:       '#4ee6b8',
+  low_attention:   '#a899e8',
+  sector_tailwind: '#f5d875',
+};
+
+function scoreClass(s) { return s >= 65 ? 's-hi' : s >= 45 ? 's-mid' : 's-lo'; }
+function fmtCr(v) {
+  if (v == null) return '—';
+  const n = Number(v);
+  if (n >= 1e5)  return '₹' + (n / 1e5).toFixed(1) + 'L Cr';
+  if (n >= 1e4)  return '₹' + (n / 1e4).toFixed(1) + 'k Cr';
+  return '₹' + Math.round(n).toLocaleString('en-IN') + ' Cr';
+}
+
+document.querySelectorAll('[data-horizon]').forEach(b =>
+  b.addEventListener('click', () => loadPremover(b.dataset.horizon)));
+
+async function loadPremover(horizon) {
+  _activeHorizon = horizon;
+  document.querySelectorAll('[data-horizon]').forEach(b =>
+    b.classList.toggle('active', b.dataset.horizon === horizon));
+
+  document.getElementById('pmList').innerHTML =
+    '<div style="padding:30px;text-align:center;color:var(--t3);font-size:11px;">Computing pre-mover scores…</div>';
+
+  const r = await API.get(`/premover?horizon=${horizon}&limit=30&min_score=20`);
+  if (!r) {
+    document.getElementById('pmList').innerHTML =
+      '<div style="padding:30px;color:var(--bear);font-size:12px;">Failed to load. The endpoint may not be available yet.</div>';
+    return;
+  }
+  document.getElementById('pmGate').style.display = r.tier_gated ? '' : 'none';
+  document.getElementById('pmCount').textContent =
+    (r.count || 0) + ' candidates · ' + (r.candidate_universe_size || 0) + ' universe · ' + (r.compute_ms || 0) + 'ms';
+
+  renderKpi(r);
+  renderDashboard(r);
+  renderList(r.data || [], r);
+}
+
+function renderKpi(r) {
+  const escape = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const data = r.data || [];
+  const top20 = data.slice(0, 20);
+  const avg = top20.length ? Math.round(top20.reduce((a,c) => a + c.score, 0) / top20.length) : 0;
+  const driverCount = {};
+  data.forEach(c => (c.top_drivers || []).forEach(d => { driverCount[d] = (driverCount[d] || 0) + 1; }));
+  const topDriver = Object.entries(driverCount).sort((a,b) => b[1] - a[1])[0];
+  const cards = [
+    { color:'mint',     icon:'trending_up',  label:'Pre-mover candidates', value: data.length, sub: 'horizon ' + r.horizon },
+    { color:'yellow',   icon:'speed',        label:'Avg score (top 20)',   value: avg || '—',  sub: 'PreMoverScore mean' },
+    { color:'lavender', icon:'auto_graph',
+      label:'Top driver',
+      value: topDriver ? topDriver[0].replace(/_/g, ' ') : '—',
+      sub:   topDriver ? topDriver[1] + ' candidates lean here' : '' },
+    { color:'dark',     icon:'science',      label:'Status', value: 'experimental',
+      sub: 'forward-tracked', delta: 'live' },
+  ];
+  document.getElementById('pmKpi').innerHTML = cards.map(c => `
+    <div class="pastel-card pastel-card--${c.color}">
+      <div class="pastel-card__head">
+        <span class="pastel-card__chip"${c.color==='dark'?' style="background:rgba(255,255,255,0.10);color:inherit;"':''}>
+          <span class="pastel-card__icon-bg"${c.color==='dark'?' style="background:rgba(255,255,255,0.10);"':''}>
+            <span class="material-symbols-outlined">${escape(c.icon)}</span>
+          </span>
+          ${escape(c.label)}
+        </span>
+        ${c.delta ? `<span class="delta"${c.color==='dark'?' style="background:rgba(200,245,98,0.20);color:var(--accent-lime);"':''}>${escape(c.delta)}</span>` : ''}
+      </div>
+      <div class="pastel-card__value">${escape(c.value)}</div>
+      <div class="pastel-card__sub"${c.color==='dark'?' style="opacity:0.7;"':''}>${escape(c.sub)}</div>
+    </div>`).join('');
+}
+
+function renderDashboard(r) {
+  const data = r.data || [];
+  // Histogram of score buckets
+  const buckets = [
+    { label:'30-40', value:0, color:'#3d4a5c' },
+    { label:'40-50', value:0, color:'#6ba3d6' },
+    { label:'50-65', value:0, color:'#5b6cff' },
+    { label:'65-80', value:0, color:'#e6b84a' },
+    { label:'80+',   value:0, color:'#2dd4aa' },
+  ];
+  data.forEach(c => {
+    const s = c.score;
+    if (s >= 80)      buckets[4].value++;
+    else if (s >= 65) buckets[3].value++;
+    else if (s >= 50) buckets[2].value++;
+    else if (s >= 40) buckets[1].value++;
+    else              buckets[0].value++;
+  });
+  document.getElementById('pmDistPill').textContent = data.length + ' total';
+  if (window.Widgets) {
+    Widgets.histogram(document.getElementById('pmHist'), buckets, { height: 140 });
+    const withCatalyst = data.filter(c => (c.factors?.catalyst?.score || 0) > 0.2).length;
+    const pct = data.length ? Math.round(withCatalyst / data.length * 100) : 0;
+    Widgets.donut(document.getElementById('pmDonut'), pct, {
+      label:    pct + '%',
+      sublabel: withCatalyst + ' of ' + data.length,
+      color:  pct >= 50 ? '#2dd4aa' : '#5b6cff',
+      color2: pct >= 50 ? '#4ee6b8' : '#8458ff',
+    });
+  }
+}
+
+function renderList(rows, raw) {
+  const el = document.getElementById('pmList');
+  if (!rows.length) {
+    el.innerHTML =
+      '<div style="padding:30px;text-align:center;color:var(--t3);font-size:12px;">' +
+      'No pre-mover candidates above the score threshold for this horizon. ' +
+      ((raw.exclusion_counts || {}).surged ? `${raw.exclusion_counts.surged} excluded for already-surged.` : '') +
+      '</div>';
+    return;
+  }
+  el.innerHTML = rows.map(c => {
+    const factors = c.factors || {};
+    const reason = (c.top_drivers || []).map(k => {
+      const ev = factors[k]?.evidence;
+      return ev ? `<strong style="color:var(--t1);">${k.replace(/_/g, ' ')}:</strong> ${ev}` : '';
+    }).filter(Boolean).join(' · ') || '—';
+
+    const factorBars = FACTOR_ORDER.map(k => {
+      const f = factors[k] || { score: 0, weight: 0, evidence: '' };
+      const pct = Math.round((f.score || 0) * 100);
+      const c = FACTOR_COLORS[k];
+      const w = (f.weight || 0).toFixed(2);
+      return `<div class="factor-bar" title="${f.evidence || (k + ' — no evidence')}">
+        <span class="lbl">${k.replace(/_/g, ' ')}</span>
+        <div class="track"><div class="fill" style="width:${pct}%;background:${c};opacity:${pct === 0 ? 0.2 : 1};"></div></div>
+        <span class="num">${pct} · w${w}</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="cand-card">
+      <div>
+        <div class="cand-head">
+          <a class="cand-ticker" href="stock.html?t=${c.ticker}">${c.ticker}</a>
+          <span style="color:var(--t1);font-size:13px;font-weight:500;">${(c.company || '').slice(0, 36)}</span>
+          <span class="cand-meta-chip">${c.sector || '—'}</span>
+          <span style="margin-left:auto;" class="score-pill ${scoreClass(c.score)}">${c.score.toFixed(1)}</span>
+        </div>
+        <div class="reason-line">${reason}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${(c.top_drivers || []).map(k => `<span class="cand-meta-chip" style="color:var(--info);border-color:var(--info-border);background:var(--info-dim);">${k.replace(/_/g, ' ')}</span>`).join('')}
+        </div>
+      </div>
+      <div>${factorBars}</div>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => loadPremover('5D'));
+</script>
+</body>
+</html>

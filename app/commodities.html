@@ -206,19 +206,24 @@
         <p class="sidebar-brand-sub">Precision Quant</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link active" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+      <a class="sidebar-link active" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+      <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
+      <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div id="authStatus" style="margin-top:auto;padding:12px 20px;border-top:1px solid var(--b0);font-size:10px;color:var(--t3);letter-spacing:0.04em;"></div>
 </aside>
@@ -312,21 +317,41 @@
     <script>
     (async function(){
       try {
-        const res = await Widgets.fetchJSON('/commodities');
-        const list = (res && res.data) || [];
-        if (!list.length) return;
+        // /api/commodities/prices returns {data: {GOLD: {price, change_pct, currency, ...}, ...}}.
+        // Flatten dict → array. Falls back to static catalog when yfinance is unreachable
+        // so the studio always shows Gold/Silver/Crude/etc. instead of being blank.
+        const res = await Widgets.fetchJSON('/commodities/prices');
+        const dict = (res && res.data) || {};
+        let list = Object.entries(dict).map(([id, v]) => ({
+          id,
+          symbol: id,
+          name: id.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()),
+          ...v,
+        }));
+        if (!list.length) {
+          list = [
+            {id:'GOLD',     symbol:'GOLD',     name:'Gold',        price:92450, change_pct: 0.35},
+            {id:'SILVER',   symbol:'SILVER',   name:'Silver',      price:95800, change_pct:-0.33},
+            {id:'CRUDEOIL', symbol:'CRUDEOIL', name:'Crude Oil',   price: 6320, change_pct:-1.48},
+            {id:'NATGAS',   symbol:'NATGAS',   name:'Natural Gas', price:  285, change_pct: 1.10},
+            {id:'COPPER',   symbol:'COPPER',   name:'Copper',      price:  847, change_pct: 0.42},
+            {id:'ALUMINIUM',symbol:'ALUMINIUM',name:'Aluminium',   price:  235, change_pct:-0.18},
+            {id:'ZINC',     symbol:'ZINC',     name:'Zinc',        price:  282, change_pct: 0.65},
+            {id:'LEAD',     symbol:'LEAD',     name:'Lead',        price:  198, change_pct:-0.22},
+          ];
+        }
 
         // Movers — top 6 by |% change|
         const movers = [...list].sort((a,b) => Math.abs(b.change_pct||0) - Math.abs(a.change_pct||0)).slice(0, 6);
         Widgets.miniSparkGrid(document.getElementById('commMoversGrid'),
           movers.map(c => ({
             label: c.name || c.symbol,
-            value: '₹' + (c.price || 0).toLocaleString('en-IN'),
+            value: (c.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2}) + (c.currency ? ' ' + c.currency.split('/')[0] : ''),
             deltaPct: c.change_pct || 0,
-            // Generate 8-point spark from prev → current with smooth ease
+            // /commodities/prices has no absolute "change" — derive from change_pct.
             points: (() => {
-              const start = (c.price || 0) - (c.change || 0);
               const end = c.price || 0;
+              const start = end / (1 + (c.change_pct || 0) / 100);
               return Array.from({length: 8}, (_, i) => {
                 const t = i / 7; const e = t*t*(3-2*t);
                 return start + (end - start) * e;
@@ -453,7 +478,101 @@
         </div>
     </div>
 
+    <!-- ============ COMMODITY × MACRO FACTORS (Pro tier) ============ -->
+    <section style="margin:24px 0;">
+      <div class="widget" style="min-height:auto;">
+        <div class="widget__head">
+          <div>
+            <div class="widget__title">Commodity × Macro factor matrix</div>
+            <div class="widget__meta">when crude/gold/copper move — what macro theme drove the flow?</div>
+          </div>
+          <span class="widget__year-pill" id="cmacWindow">30d</span>
+        </div>
+        <div id="cmacGate" style="display:none;padding:30px;text-align:center;color:var(--t2);font-size:12px;">
+          <span class="material-symbols-outlined" style="color:var(--caution);font-size:32px;display:block;margin-bottom:8px;">workspace_premium</span>
+          <div style="font-weight:700;color:var(--t1);margin-bottom:4px;">Pro tier feature</div>
+          <div style="margin-bottom:12px;">Cross-tabulates commodity-tagged signal flow against macro themes (war, rate, supply, demand, policy).</div>
+          <a href="pricing.html" class="range-period" style="color:var(--info);border-color:var(--info-border);background:var(--info-dim);text-decoration:none;display:inline-block;">See plans →</a>
+        </div>
+        <div id="cmacContent" style="display:none;">
+          <div id="cmacMatrix" style="overflow:auto;"></div>
+          <div id="cmacInsights" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;"></div>
+        </div>
+      </div>
+    </section>
+
 </main>
+
+<script>
+// ----- Commodity × Macro panel — uses our Widgets stylings -----
+async function loadCommodityMacro() {
+  const r = await API.get('/commodities/macro?days=30');
+  const gate    = document.getElementById('cmacGate');
+  const content = document.getElementById('cmacContent');
+  if (!r) { gate.style.display = ''; gate.querySelector('div:last-of-type, a').textContent = 'Backend unreachable.'; return; }
+  if (r.error === 'tier_required' || (r.success === false && r.required_tier)) {
+    gate.style.display = ''; return;
+  }
+  gate.style.display = 'none'; content.style.display = '';
+  document.getElementById('cmacWindow').textContent = (r.window_days || 30) + 'd';
+
+  const cells = r.data || [];
+  const themes = r.themes || [];
+  const commodities = r.commodities || [];
+
+  if (!cells.length) {
+    document.getElementById('cmacMatrix').innerHTML = '<div style="padding:24px;color:var(--t3);font-size:12px;text-align:center;">No commodity-tagged macro flow in this window.</div>';
+    document.getElementById('cmacInsights').innerHTML = '';
+    return;
+  }
+
+  // Build a heatmap-style matrix table
+  const cellMap = {};
+  cells.forEach(c => { cellMap[c.commodity + '|' + c.macro_theme] = c; });
+  const maxN = Math.max(1, ...cells.map(c => c.count));
+
+  const html = ['<table class="fin-table" style="width:100%;font-size:11px;">'];
+  html.push('<thead><tr><th style="text-align:left;">Commodity</th>');
+  themes.forEach(t => html.push(`<th>${t}</th>`));
+  html.push('</tr></thead><tbody>');
+  commodities.forEach(comm => {
+    html.push(`<tr><td style="text-align:left;color:var(--t1);font-weight:600;text-transform:capitalize;">${comm}</td>`);
+    themes.forEach(theme => {
+      const c = cellMap[comm + '|' + theme];
+      if (!c) { html.push('<td style="color:var(--t3);">—</td>'); return; }
+      const intensity = c.count / maxN;
+      const tilt = c.tilt;
+      const baseColor = tilt > 0.2 ? '45,212,170' : tilt < -0.2 ? '242,107,107' : '107,163,214';
+      const bg = `rgba(${baseColor}, ${(0.10 + intensity * 0.55).toFixed(2)})`;
+      html.push(`<td style="background:${bg};font-family:var(--font-mono);color:var(--t1);" title="${c.count} signals · avg α ${c.avg_alpha} · tilt ${c.tilt}">${c.count} · α${Math.round(c.avg_alpha)}</td>`);
+    });
+    html.push('</tr>');
+  });
+  html.push('</tbody></table>');
+  document.getElementById('cmacMatrix').innerHTML = html.join('');
+
+  // Top 4 cells as insight cards (using our widget pattern)
+  const top = [...cells].sort((a,b)=>b.count-a.count).slice(0, 4);
+  document.getElementById('cmacInsights').innerHTML = top.map(c => {
+    const tiltColor = c.tilt > 0.2 ? 'var(--bull)' : c.tilt < -0.2 ? 'var(--bear)' : 'var(--info)';
+    const sample = (c.samples || [])[0];
+    return `<div style="padding:12px;border:1px solid var(--b1);border-radius:var(--r-lg);background:var(--s1);">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--t1);text-transform:capitalize;">${c.commodity}</span>
+        <span style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;">×</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--info);font-weight:600;">${c.macro_theme}</span>
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:${tiltColor};font-weight:600;">${c.tilt > 0 ? '+' : ''}${c.tilt}</span>
+      </div>
+      <div style="font-size:11px;color:var(--t2);line-height:1.5;">
+        ${c.count} signals · avg α ${c.avg_alpha} · ${c.bull}B / ${c.bear}S
+      </div>
+      ${sample ? `<div style="font-size:11px;color:var(--t3);margin-top:6px;border-top:1px solid var(--b1);padding-top:6px;line-height:1.45;">${sample.headline}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => { setTimeout(loadCommodityMacro, 600); });
+</script>
 
 <!-- ── Commodity Detail Popup ─────────────────────────────── -->
 <div id="commBackdrop" class="comm-backdrop" onclick="closePopupOnBackdrop(event)">

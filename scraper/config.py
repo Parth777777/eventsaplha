@@ -115,6 +115,43 @@ SECTOR_ROTATION_QUERIES = [
     'India sugar exporter quarterly result',
     'India railway PSU stocks',
     'India shipbuilder defence stocks',
+    # ── Sector-specific policy / regulator queries ─────────────────
+    # These catch policy-level events that move whole sectors but don't
+    # name a specific ticker (NPPA pricing → pharma, spectrum auction →
+    # telecom, anti-dumping → metals). Without these in the rotation
+    # the macro sector signals stay sparse.
+    'NPPA pharma drug price ceiling India',
+    'TRAI telecom spectrum auction India',
+    'India steel import duty anti dumping',
+    'India electric vehicle subsidy FAME policy',
+    'PLI scheme manufacturing semiconductor India',
+    'India ethanol blending policy sugar',
+    'India sugar export quota notification',
+    'India crude oil import duty refining',
+    'India gold import duty jewellery',
+    'India real estate RERA notification',
+    'India MSME credit guarantee scheme',
+    'India agri MSP procurement notification',
+    'India fertilizer subsidy notification urea',
+    'SEBI margin trading peak margin circular',
+    'SEBI mutual fund expense ratio circular',
+    'RBI repo rate MPC decision India',
+    'RBI banking license NBFC notification',
+    'India Union Budget capital gains tax',
+    'India infrastructure spending capex announcement',
+    'India semiconductor chip incentive announcement',
+    # ── State-level industrial policy ─────────────────────────────
+    # State governments increasingly drive sector winners (Maharashtra
+    # data centres, Karnataka EV, Gujarat semiconductors, TN auto).
+    # These were missing from coverage entirely — adding explicit queries.
+    'Maharashtra industrial policy investment',
+    'Karnataka EV policy electric vehicle',
+    'Gujarat semiconductor incentive Dholera',
+    'Tamil Nadu electronics manufacturing policy',
+    'Telangana data centre policy Hyderabad',
+    'Uttar Pradesh logistics warehouse policy',
+    'Andhra Pradesh ports infrastructure policy',
+    'India state MoU manufacturing investment',
 ]
 GOOGLE_NEWS_SECTOR_PER_CYCLE = int(os.getenv('SECTOR_QUERIES_PER_CYCLE', '5'))
 

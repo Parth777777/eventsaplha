@@ -94,6 +94,66 @@
     }).catch(() => {});
   }
 
+  // ---- 5. Sidebar grouping
+  // The sidebar is duplicated as plain HTML across 21 pages with links in
+  // an ad-hoc order. We physically reorder the links into named sections
+  // and insert section headers, so users see Markets/Research/Activity/
+  // Insights cleanly grouped no matter what order the page authored.
+  // Links not listed in any section are appended at the end (so a future
+  // page that adds an unmapped link doesn't disappear from the sidebar).
+  function groupSidebar() {
+    const nav = document.querySelector('aside.sidebar nav.sidebar-nav');
+    if (!nav || nav.dataset.grouped === '1') return;
+    const SECTIONS = [
+      { title: 'Markets',  items: ['index', 'explore', 'sectors', 'map', 'global', 'commodities'] },
+      { title: 'Research', items: ['compare', 'screeners', 'earnings', 'events'] },
+      { title: 'Activity', items: ['watchlist', 'alerts', 'portfolio', 'paper', 'simulator'] },
+      { title: 'Insights', items: ['analytics', 'social', 'trust'] },
+    ];
+    const links = Array.from(nav.querySelectorAll('a.sidebar-link'));
+    if (!links.length) return;
+    const byHref = new Map();
+    links.forEach((a) => {
+      const file = (a.getAttribute('href') || '').replace(/\.html$/, '').toLowerCase().trim();
+      if (file && !byHref.has(file)) byHref.set(file, a);
+    });
+    const used = new Set();
+    // Detach all sidebar links from the nav before re-appending in section order.
+    links.forEach((a) => a.remove());
+
+    function makeHeader(title, isFirst) {
+      const h = document.createElement('div');
+      h.className = 'sidebar-section';
+      h.textContent = title;
+      h.style.cssText = 'padding:' + (isFirst ? '4px' : '12px') + ' 14px 4px; font-size:8.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:rgba(138,148,168,0.55);' + (isFirst ? '' : 'border-top:1px solid rgba(255,255,255,0.05); margin-top:6px;');
+      return h;
+    }
+
+    let firstSectionRendered = false;
+    SECTIONS.forEach((sec) => {
+      // Collect this section's existing links (in section order, not page order)
+      const matched = sec.items.map((k) => byHref.get(k)).filter(Boolean);
+      if (!matched.length) return;
+      nav.appendChild(makeHeader(sec.title, !firstSectionRendered));
+      firstSectionRendered = true;
+      matched.forEach((a) => { nav.appendChild(a); used.add(a); });
+    });
+
+    // Append any links not assigned to a section (defensive — keeps unknown
+    // pages reachable rather than silently dropping them).
+    const orphans = links.filter((a) => !used.has(a));
+    if (orphans.length) {
+      nav.appendChild(makeHeader('More', !firstSectionRendered));
+      orphans.forEach((a) => nav.appendChild(a));
+    }
+    nav.dataset.grouped = '1';
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', groupSidebar);
+  } else {
+    groupSidebar();
+  }
+
   // PWA: link the manifest if absent (avoids editing every page)
   if (!document.querySelector('link[rel="manifest"]')) {
     const l = document.createElement('link');

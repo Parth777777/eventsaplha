@@ -614,12 +614,45 @@ for _t, _info in SUPPLEMENTARY_STOCKS.items():
 STOCK_UNIVERSE = _base
 UNIVERSE_TICKERS = set(STOCK_UNIVERSE.keys())
 
+# Common English adjectives/nouns that happen to also be the FIRST word of an
+# Indian listed company name (e.g. "Speciality Restaurants", "Power Finance",
+# "Capital Small Finance Bank", "Global Health"). Auto-mapping these to a single
+# ticker via the first-word heuristic causes massive false positives — a listicle
+# titled "5 Speciality Chemical Stocks…" matched SPECIALITY (the restaurant chain)
+# because the headline contains the adjective "speciality".
+#
+# These words are excluded from the auto-built UNIVERSE_SHORT_NAMES dict.
+# Their tickers can still be matched, but only when the ticker appears in ALL CAPS
+# (see AMBIGUOUS_TICKERS handling in hybrid_scraper.extract_entities).
+AMBIGUOUS_FIRST_WORDS = {
+    'speciality', 'specialty', 'premium', 'power', 'capital', 'global',
+    'ultra', 'prime', 'alpha', 'force', 'industries', 'industrial',
+    'national', 'international', 'apex', 'pioneer', 'modern', 'metro',
+    'super', 'mega', 'royal', 'crown', 'star', 'gold', 'silver', 'green',
+    'blue', 'red', 'white', 'black', 'first', 'best', 'top', 'general',
+    'public', 'central', 'eastern', 'western', 'northern', 'southern',
+    'standard', 'pure', 'fresh', 'classic', 'master', 'expert', 'select',
+    'unique', 'spectrum', 'vision', 'fortune', 'genius', 'core', 'kraft',
+    'empower', 'integrated', 'united', 'allied', 'orient', 'oriental',
+    'sterling', 'platinum', 'diamond', 'pearl', 'ruby', 'crystal',
+    'advance', 'advanced', 'innovative', 'creative', 'dynamic',
+    'speciality', 'maximum', 'minimum', 'quality', 'value', 'smart',
+    'rapid', 'safe', 'secure', 'trusted', 'authentic', 'genuine',
+}
+
+# Tickers that are too generic on their own — must be matched case-sensitively
+# (require literal ALL-CAPS spelling in the source text). Built from the same
+# blacklist so a ticker named SPECIALITY only matches "SPECIALITY", never the
+# English word "speciality" or title-cased "Speciality".
+AMBIGUOUS_TICKERS = {t for t in UNIVERSE_TICKERS
+                    if t.lower() in AMBIGUOUS_FIRST_WORDS}
+
 # Build name lookup tables
 UNIVERSE_SHORT_NAMES = {}
 for _ticker, _info in STOCK_UNIVERSE.items():
     short = _info['name'].split(' ')[0].lower()
-    if len(short) > 3:  # Min 4 chars
-        # For duplicates, prefer the bigger/more important company
+    if len(short) > 3 and short not in AMBIGUOUS_FIRST_WORDS:
+        # For duplicates, prefer the first-encountered (curated overrides win below)
         if short not in UNIVERSE_SHORT_NAMES:
             UNIVERSE_SHORT_NAMES[short] = _ticker
 

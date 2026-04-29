@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script id="tailwind-config">
+  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
+    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
+    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
+    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
+    "outline":"#3d4a5c","outline-variant":"#253040",
+    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
+  } } } }
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
+.plan-card { padding:22px 20px; border-radius:var(--r-lg); border:1px solid var(--b1); background:var(--s1); display:flex; flex-direction:column; gap:14px; min-height:520px; }
+.plan-card.featured { border:1px solid var(--info-border); box-shadow:0 0 0 1px var(--info-border), 0 8px 28px rgba(107,163,214,0.18); position:relative; }
+.plan-tag { position:absolute; top:-10px; right:18px; background:var(--info); color:#0b0e15; font-family:var(--font-mono); font-size:10px; font-weight:700; padding:3px 9px; border-radius:var(--r-sm); letter-spacing:0.1em; text-transform:uppercase; }
+.plan-name { font-family:var(--font-head); font-size:16px; font-weight:700; color:var(--t1); letter-spacing:-0.01em; }
+.plan-tag-line { font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
+.plan-price { font-family:var(--font-mono); font-size:32px; font-weight:700; color:var(--t1); letter-spacing:-0.02em; }
+.plan-price-sub { font-size:11px; color:var(--t3); }
+.plan-feature { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--t2); line-height:1.5; }
+.plan-feature.yes::before { content:''; width:14px; height:14px; border-radius:50%; background:var(--bull-dim); border:1px solid var(--bull-border); flex-shrink:0; margin-top:3px; position:relative; }
+.plan-feature.yes::after { content:''; width:6px; height:3px; border-left:1.5px solid var(--bull); border-bottom:1.5px solid var(--bull); transform:rotate(-45deg); position:absolute; margin-left:4px; margin-top:7px; }
+.plan-feature.no::before  { content:''; width:14px; height:14px; border-radius:50%; background:var(--s2); border:1px solid var(--b1); flex-shrink:0; margin-top:3px; }
+.plan-feature span { display:block; }
+.plan-cta { padding:11px 14px; border-radius:var(--r-sm); font-family:var(--font-ui); font-size:12px; font-weight:700; cursor:pointer; border:1px solid var(--b1); background:var(--s2); color:var(--t1); transition:all 0.15s; }
+.plan-cta:hover { background:var(--s3); }
+.plan-cta.primary { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
+.plan-cta.primary:hover { background:var(--info-border); color:#fff; }
+.compare-row { display:grid; grid-template-columns:2fr 1fr 1fr; padding:10px 14px; border-bottom:1px solid var(--b1); align-items:center; font-size:12px; }
+.compare-row:hover { background:var(--b0); }
+.compare-row > div:not(:first-child) { text-align:center; font-family:var(--font-mono); }
+.compare-head { font-family:var(--font-head); font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; padding:10px 14px; border-bottom:1px solid var(--b2); background:var(--s0); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Plans</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="policy.html"><span class="material-symbols-outlined sidebar-icon">gavel</span>Policy</a>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+    <a class="sidebar-link active" href="pricing.html"><span class="material-symbols-outlined sidebar-icon">workspace_premium</span>Pricing</a>
+  </nav>
+</aside>
+
+<main class="main-content" style="max-width:1200px;">
+
+<header style="padding:18px 0;margin-bottom:18px;">
+  <div style="display:flex;align-items:baseline;gap:10px;">
+    <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
+    <span style="color:var(--b2);">·</span>
+    <h1 style="font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--t1);">Plans &amp; Pricing</h1>
+  </div>
+  <p style="color:var(--t2);font-size:13px;margin-top:6px;max-width:680px;">Free covers core scanning + watchlist. Pro unlocks the Tickwave-only edges: commodity × macro factor matrix, global spillover analysis, full policy backlog, custom screener export, and broader alert capacity.</p>
+</header>
+
+<!-- Current tier banner -->
+<div id="tierBanner" class="widget" style="min-height:auto;margin-bottom:18px;display:none;">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <span class="material-symbols-outlined" style="color:var(--info);font-size:28px;">workspace_premium</span>
+    <div style="flex:1;min-width:200px;">
+      <div style="font-family:var(--font-head);font-weight:700;color:var(--t1);font-size:14px;">Your current plan: <span id="currentTier" style="color:var(--info);text-transform:capitalize;">free</span></div>
+      <div style="font-size:12px;color:var(--t2);" id="currentTierSub">Upgrade for full feature access.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Plan cards (3-up: Free, Pro, Team — Team kept as a "contact us" placeholder) -->
+<section style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:28px;">
+
+  <!-- FREE -->
+  <div class="plan-card">
+    <div>
+      <div class="plan-tag-line">Hobby</div>
+      <div class="plan-name">Free</div>
+    </div>
+    <div>
+      <div class="plan-price">₹0</div>
+      <div class="plan-price-sub">forever · no card needed</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="plan-feature yes"><span>Up to 50 watchlist tickers</span></div>
+      <div class="plan-feature yes"><span>2 active alerts</span></div>
+      <div class="plan-feature yes"><span>Pre-built screeners</span></div>
+      <div class="plan-feature yes"><span>Custom screener · 50 result rows</span></div>
+      <div class="plan-feature yes"><span>Stock detail · event track record + chart</span></div>
+      <div class="plan-feature yes"><span>Policy fast-track · 24h window</span></div>
+      <div class="plan-feature no"><span>Financials / ratios / shareholding tabs</span></div>
+      <div class="plan-feature no"><span>CSV export</span></div>
+      <div class="plan-feature no"><span>Commodity × macro factor matrix</span></div>
+      <div class="plan-feature no"><span>Global spillover analysis</span></div>
+      <div class="plan-feature no"><span>F&amp;O unusual options activity</span></div>
+      <div class="plan-feature yes"><span>Pre-mover candidates · top-5 preview</span></div>
+    </div>
+    <button class="plan-cta" style="margin-top:auto;" disabled id="freeCta">Current plan</button>
+  </div>
+
+  <!-- PRO (featured) -->
+  <div class="plan-card featured">
+    <span class="plan-tag">Most popular</span>
+    <div>
+      <div class="plan-tag-line">Investor</div>
+      <div class="plan-name">Pro</div>
+    </div>
+    <div>
+      <div class="plan-price">₹299<span style="font-size:14px;color:var(--t3);font-weight:500;">/mo</span></div>
+      <div class="plan-price-sub">billed monthly · cancel anytime</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="plan-feature yes"><span>1,000 watchlist tickers</span></div>
+      <div class="plan-feature yes"><span>50 active alerts</span></div>
+      <div class="plan-feature yes"><span>Pre-built + custom screeners · 500 rows</span></div>
+      <div class="plan-feature yes"><span>Stock detail · all tabs (financials, ratios, shareholding, corp actions)</span></div>
+      <div class="plan-feature yes"><span>Policy fast-track · 30-day backlog</span></div>
+      <div class="plan-feature yes"><span>CSV export across all tables</span></div>
+      <div class="plan-feature yes"><span>Commodity × macro factor matrix</span></div>
+      <div class="plan-feature yes"><span>Global driver × Indian sector spillover</span></div>
+      <div class="plan-feature yes"><span>F&amp;O unusual options activity feed</span></div>
+      <div class="plan-feature yes"><span>Pre-mover candidates · full ranking with reasoning</span></div>
+      <div class="plan-feature yes"><span>Forensics + manipulation flags</span></div>
+    </div>
+    <button class="plan-cta primary" onclick="upgrade()" style="margin-top:auto;">Upgrade to Pro</button>
+  </div>
+
+  <!-- TEAM -->
+  <div class="plan-card">
+    <div>
+      <div class="plan-tag-line">For desks</div>
+      <div class="plan-name">Team</div>
+    </div>
+    <div>
+      <div class="plan-price">Custom</div>
+      <div class="plan-price-sub">5+ seats · annual billing</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div class="plan-feature yes"><span>Everything in Pro</span></div>
+      <div class="plan-feature yes"><span>Shared watchlists &amp; portfolios</span></div>
+      <div class="plan-feature yes"><span>Webhook alert delivery</span></div>
+      <div class="plan-feature yes"><span>Audit trail + admin dashboard</span></div>
+      <div class="plan-feature yes"><span>Priority data refresh window</span></div>
+      <div class="plan-feature yes"><span>Onboarding + training session</span></div>
+      <div class="plan-feature yes"><span>SLA: 99.5% uptime</span></div>
+    </div>
+    <a class="plan-cta" href="mailto:sales@tickwave.example" style="margin-top:auto;text-align:center;text-decoration:none;">Contact sales</a>
+  </div>
+
+</section>
+
+<!-- Comparison detail driven by /api/tier -->
+<div class="widget" style="min-height:auto;margin-bottom:28px;">
+  <div class="widget__head">
+    <div><div class="widget__title">Detailed limits</div><div class="widget__meta">live from /api/tier — exactly what the backend enforces</div></div>
+  </div>
+  <div id="tierMatrix"></div>
+</div>
+
+<!-- Disclaimers / data attribution row -->
+<section class="widget" style="min-height:auto;margin-bottom:28px;">
+  <div class="widget__head">
+    <div><div class="widget__title">What you should know before you subscribe</div><div class="widget__meta">disclosures · data sourcing · refunds</div></div>
+  </div>
+  <div style="font-size:12px;color:var(--t2);line-height:1.7;">
+    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Not investment advice.</strong> Tickwave is a market intelligence and analytics tool. Outputs (alpha scores, predictions, signals, ratings) are model-generated views derived from public news and market data. They are not investment recommendations, research-analyst opinions, or solicitations to trade any security. Decide based on your own analysis or licensed adviser.</p>
+    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Data sourcing.</strong> Fundamentals and quotes shown on this site are aggregated from third-party providers (e.g. Yahoo Finance) and public exchange disclosures (NSE / BSE). Prices may be delayed; corporate filings may lag the original release. We do not redistribute raw exchange feeds.</p>
+    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Cancellation &amp; refunds.</strong> You can cancel any time from your account; access continues until the end of the current billing cycle. We do not offer pro-rata refunds for partial months.</p>
+    <p><strong style="color:var(--t1);">Privacy.</strong> Watchlists, alerts, and portfolio entries are tied to your user id and stored on Tickwave servers. We do not sell user data to third parties. See <a href="privacy.html" style="color:var(--info);text-decoration:none;">privacy policy</a> and <a href="terms.html" style="color:var(--info);text-decoration:none;">terms of use</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script>
+async function loadTier() {
+  const r = await API.get('/tier');
+  if (!r || !r.success) return;
+  const t = r.data.current_tier || 'free';
+  document.getElementById('currentTier').textContent = t;
+  document.getElementById('tierBanner').style.display = '';
+  if (t === 'pro') {
+    document.getElementById('currentTierSub').textContent = 'Pro features active. Manage billing from your account page.';
+    document.getElementById('freeCta').textContent = 'Downgrade to Free';
+    document.getElementById('freeCta').disabled = false;
+    document.querySelector('.plan-card.featured .plan-cta').textContent = 'Current plan';
+    document.querySelector('.plan-card.featured .plan-cta').disabled = true;
+  }
+  renderMatrix(r.data.limits);
+}
+
+function renderMatrix(limits) {
+  const free = limits.free, pro = limits.pro;
+  const rows = [
+    ['Watchlist size',                 free.watchlist_size,           pro.watchlist_size],
+    ['Active alerts',                  free.alerts_active,            pro.alerts_active],
+    ['Screener result rows',           free.screener_max_rows,        pro.screener_max_rows],
+    ['CSV export',                     free.screener_export_csv,      pro.screener_export_csv],
+    ['Stock detail · full tabs',       free.stock_detail_full,        pro.stock_detail_full],
+    ['Policy fast-track window (h)',   free.policy_fast_window,       pro.policy_fast_window],
+    ['Commodity × macro matrix',       free.commodity_macro,          pro.commodity_macro],
+    ['Global spillover analysis',      free.global_spillover,         pro.global_spillover],
+    ['F&O unusual activity',           free.fo_unusual,               pro.fo_unusual],
+    ['Pre-mover candidates · full',    free.pre_mover_full,           pro.pre_mover_full],
+    ['Pre-mover preview rows',         free.pre_mover_preview,        pro.pre_mover_preview],
+  ];
+  const fmt = v => typeof v === 'boolean' ? (v ? '<span style="color:var(--bull);">✓</span>' : '<span style="color:var(--t3);">—</span>') : v;
+  const html = ['<div class="compare-head" style="display:grid;grid-template-columns:2fr 1fr 1fr;">',
+    '<div>Capability</div><div style="text-align:center;">Free</div><div style="text-align:center;">Pro</div></div>'];
+  rows.forEach(([k, a, b]) => {
+    html.push(`<div class="compare-row"><div style="color:var(--t2);">${k}</div><div>${fmt(a)}</div><div>${fmt(b)}</div></div>`);
+  });
+  document.getElementById('tierMatrix').innerHTML = html.join('');
+}
+
+async function upgrade() {
+  const r = await API.post('/tier/upgrade', {});
+  if (r && r.success) {
+    alert('Upgrade complete — refresh to use Pro features.');
+    location.reload();
+  } else {
+    alert('Payment provider not configured yet. Wire Razorpay/Stripe at /api/tier/upgrade — once that returns success:true, this UI is ready.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadTier);
+</script>
+</body>
+</html>
