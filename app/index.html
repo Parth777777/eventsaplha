@@ -35,20 +35,44 @@
         <p class="sidebar-brand-sub">Alpha Terminal</p>
     </div>
     <nav class="sidebar-nav">
+        <!-- Core -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:4px;margin-bottom:8px;">Core</div>
         <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
         <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+
+        <!-- Analysis -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Analysis</div>
+        <a class="sidebar-link" href="premover.html"><span class="material-symbols-outlined sidebar-icon">trending_up</span>Pre-Mover</a>
         <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Market Map</a>
         <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+
+        <!-- Events & News -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Events</div>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+
+        <!-- Tracking -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Tracking</div>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+
+        <!-- Markets -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Markets</div>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+
+        <!-- Tools -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Tools</div>
+        <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
         <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+        <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">article</span>Paper Trading</a>
+
+        <!-- Community -->
+        <div style="padding:12px 16px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--on-surface-variant);margin-top:12px;margin-bottom:8px;">Community</div>
+        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
     </nav>
     <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
         <div class="engine-status p-4 rounded-lg">
@@ -376,6 +400,66 @@
             </div>
         </div>
     </div>
+
+    <!-- ============ UPCOMING IPOs ============ -->
+    <div class="mb-8" id="ipoSection">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#2dd4aa;">trending_up</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Upcoming IPOs</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="ipoUpdated">loading...</span>
+        </div>
+        <div id="ipoList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+        </div>
+    </div>
+
+    <!-- ============ EARNINGS CALENDAR ============ -->
+    <div class="mb-8" id="earningsSection">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#e6b84a;">calendar_month</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Earnings Calendar</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="earningsUpdated">loading...</span>
+        </div>
+        <div id="earningsList" class="space-y-2">
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+        </div>
+    </div>
+
+    <!-- ============ POLICY UPDATES ============ -->
+    <div class="mb-8" id="policySection">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#6ba3d6;">gavel</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Policy Updates</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="policyUpdated">loading...</span>
+        </div>
+        <div id="policyList" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:100px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:100px;"></div>
+        </div>
+    </div>
+
+    <!-- ============ CORPORATE ACTIONS ============ -->
+    <div class="mb-8" id="corporateSection">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#f29090;">business</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Corporate Actions</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="corporateUpdated">loading...</span>
+        </div>
+        <div id="corporateList" class="space-y-2">
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+        </div>
+    </div>
+
 </main>
 
 <script src="./shared/js/app.js"></script>
@@ -386,7 +470,125 @@
 // Mount the always-on status banner (last-updated chip + live count) ASAP.
 document.addEventListener('DOMContentLoaded', () => {
     if (window.Realtime) Realtime.mountStatusBanner('statusBanner', 30);
+
+    // Load additional sections
+    loadIPOs();
+    loadEarnings();
+    loadPolicy();
+    loadCorporateActions();
 });
+
+// Load upcoming IPOs
+async function loadIPOs() {
+    try {
+        const res = await fetch('/api/ipos?limit=6');
+        const data = await res.json();
+        const list = document.getElementById('ipoList');
+        if (!list) return;
+
+        list.innerHTML = (data.data || []).slice(0, 6).map(ipo => {
+            const date = new Date(ipo.listing_date);
+            const daysUntil = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
+            const dateStr = daysUntil > 0 ? `${daysUntil}d away` : 'Listed';
+            const priceRange = ipo.price_band_low && ipo.price_band_high ? `₹${ipo.price_band_low}-${ipo.price_band_high}` : 'TBD';
+
+            return `
+                <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 cursor-pointer transition-colors">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-bold text-sm text-on-surface">${ipo.company || 'Company'}</div>
+                            <div class="text-[9px] text-on-surface-variant/60">${ipo.sector || 'Sector'}</div>
+                        </div>
+                        <div class="text-[9px] font-bold px-2 py-1 rounded" style="background:rgba(45,212,170,0.15);color:#2dd4aa;">${dateStr}</div>
+                    </div>
+                    <div class="text-[10px] text-on-surface-variant mb-2">Price: ${priceRange}</div>
+                    <div class="text-[9px] text-on-surface-variant/50">${ipo.issue_size || '--'} shares</div>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('IPO load error:', e);
+    }
+}
+
+// Load earnings calendar
+async function loadEarnings() {
+    try {
+        const res = await fetch('/api/earnings?limit=10');
+        const data = await res.json();
+        const list = document.getElementById('earningsList');
+        if (!list) return;
+
+        list.innerHTML = (data.data || []).slice(0, 10).map(earning => {
+            const d = new Date(earning.earnings_date || earning.date);
+            const dateStr = d.toLocaleString('en-IN', {month:'short', day:'numeric'});
+
+            return `
+                <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30">
+                    <div>
+                        <div class="font-bold text-sm text-on-surface">${earning.company || 'Company'}</div>
+                        <div class="text-[9px] text-on-surface-variant/60">${earning.quarter || 'Q'}</div>
+                    </div>
+                    <div class="text-[11px] font-bold text-primary font-mono">${dateStr}</div>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Earnings load error:', e);
+    }
+}
+
+// Load policy updates
+async function loadPolicy() {
+    try {
+        const res = await fetch('/api/events?limit=6&type=policy');
+        const data = await res.json();
+        const list = document.getElementById('policyList');
+        if (!list) return;
+
+        list.innerHTML = (data.data || []).slice(0, 6).map(policy => {
+            const color = policy.impact_score > 70 ? '#ff7a8a' : policy.impact_score > 40 ? '#e6b84a' : '#6ba3d6';
+
+            return `
+                <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-sm text-on-surface flex-1">${policy.title || 'Policy'}</div>
+                        <div class="text-[9px] font-bold ml-2 flex-shrink-0" style="color:${color};">${(policy.impact_score || 50).toFixed(0)}%</div>
+                    </div>
+                    <p class="text-[9px] text-on-surface-variant/70 line-clamp-2">${policy.summary || ''}</p>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Policy load error:', e);
+    }
+}
+
+// Load corporate actions (buybacks, dividends, splits)
+async function loadCorporateActions() {
+    try {
+        const res = await fetch('/api/corporate-actions?limit=10');
+        const data = await res.json();
+        const list = document.getElementById('corporateList');
+        if (!list) return;
+
+        list.innerHTML = (data.data || []).slice(0, 10).map(action => {
+            const typeLabel = action.event_type === 'buyback' ? 'BUYBACK' : action.event_type === 'dividend' ? 'DIVIDEND' : action.event_type === 'split' ? 'SPLIT' : 'ACTION';
+
+            return `
+                <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30">
+                    <div class="flex-1">
+                        <div class="font-bold text-sm text-on-surface">${action.title || 'Action'}</div>
+                        <div class="text-[9px] text-on-surface-variant/60">${(action.companies || 'Companies').slice(0, 40)}</div>
+                    </div>
+                    <div class="text-[9px] font-bold px-2 py-1 rounded" style="background:rgba(45,212,170,0.15);color:#2dd4aa;">${typeLabel}</div>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Corporate load error:', e);
+    }
+}
 // ============ RICH SIGNAL REASONING ============
 function buildSignalReasoning(sig, pulse) {
     const evType  = (sig.event_type || 'news').replace(/_/g, ' ');
@@ -1060,37 +1262,77 @@ async function loadHomePage() {
     } catch(e) { /* non-critical */ }
 }
 
-// "Today's 5 things you'd regret missing" — curated from /api/news/fast.
-// Picks the top 5 events by composite score (alpha + freshness + tier + cluster size),
-// dedups by ticker, surfaces an action line per card.
+// "Today's 5 things you'd regret missing" — strictly curated from /api/news/fast.
+// ONLY shows: fresh (<2h), high-alpha (≥50), verified sources, NO social/noise.
+// NO random stuff, only substantial catalysts.
 async function renderTodaysFive() {
     const host = document.getElementById('todaysFive');
     if (!host) return;
     let items = [];
     try {
-        const r = await fetch('/api/news/fast?limit=60');
+        // Fetch with strict filters: exclude_social=1, min_alpha=50, and recency window
+        const r = await fetch('/api/news/fast?limit=100&exclude_social=1&min_alpha=50');
         const j = await r.json();
         items = (j && j.data) || [];
-    } catch (e) { return; }
+    } catch (e) {
+        console.error('renderTodaysFive fetch:', e);
+        return;
+    }
 
-    // Score: alpha (0..100) + cluster confidence (tier1/confirmed = +20) - age penalty
-    const scored = items.map(it => {
-        const alpha = Number(it.alpha_score || 0);
-        const tier = Number(it.source_tier || 4);
-        const confBonus = it.confirmation === 'tier1' ? 25 : it.confirmation === 'confirmed' ? 18 : it.confirmation === 'single' ? 5 : -10;
-        const tierBonus = tier === 1 ? 15 : tier === 2 ? 8 : 0;
-        const ageHrs = Number(it.age_hours || 0);
-        const ageDecay = Math.exp(-ageHrs / 6) * 20;
-        const fb = it.forensic_band;
-        const fbPenalty = fb === 'likely_manipulated' ? -40 : fb === 'suspicious' ? -15 : 0;
-        return { ...it, _score: alpha + confBonus + tierBonus + ageDecay + fbPenalty };
-    });
+    if (!items.length) {
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for substantive events (alpha ≥50, verified sources only)…</div>';
+        return;
+    }
 
-    // Dedup by primary ticker (or event_id if no ticker)
+    // STRICT FILTERING: Only events that meet ALL criteria
+    // 1. Alpha score ≥ 50 (high conviction)
+    // 2. Age ≤ 2 hours (instant/very fresh)
+    // 3. Tier 1-2 only (no social/noise, no tier 3+ unreliable sources)
+    // 4. Not manipulated
+    // 5. NOT from social feeds
+    const filtered = items
+        .filter(it => {
+            const alpha = Number(it.alpha_score || 0);
+            const age = Number(it.age_hours || 999);
+            const tier = Number(it.tier || 4);
+            const fb = it.forensic_band;
+            const isSocial = (it.event_type || '').toLowerCase() === 'social'
+                || (it.feed || '').toLowerCase().includes('reddit')
+                || (it.feed || '').toLowerCase().includes('telegram');
+
+            // Hard cutoffs: if ANY of these fail, reject
+            if (alpha < 50) return false;           // Alpha too low
+            if (age > 2) return false;              // Too old (> 2h)
+            if (tier > 2) return false;             // Not a verified source
+            if (fb === 'likely_manipulated') return false;  // Forensically dirty
+            if (isSocial) return false;             // Social noise
+
+            return true;
+        });
+
+    // If no items pass strict filter, show softer version (alpha ≥ 40, age ≤ 4h)
+    let topItems = filtered;
+    if (topItems.length === 0) {
+        topItems = items
+            .filter(it => {
+                const alpha = Number(it.alpha_score || 0);
+                const age = Number(it.age_hours || 999);
+                const tier = Number(it.tier || 4);
+                const fb = it.forensic_band;
+                return alpha >= 40 && age <= 4 && tier <= 3 && fb !== 'likely_manipulated';
+            });
+    }
+
+    // Dedup by primary ticker
     const seen = new Set();
     const top = [];
-    scored.sort((a, b) => b._score - a._score);
-    for (const it of scored) {
+    topItems.sort((a, b) => {
+        const alphaScore = (b.alpha_score || 0) - (a.alpha_score || 0);
+        if (alphaScore !== 0) return alphaScore;
+        return (a.age_hours || 999) - (b.age_hours || 999);  // Fresher second
+    });
+
+    for (const it of topItems) {
         const key = (it.tickers && it.tickers[0]) || it.ticker || it.event_id;
         if (key && seen.has(key)) continue;
         if (key) seen.add(key);
@@ -1099,7 +1341,7 @@ async function renderTodaysFive() {
     }
 
     if (!top.length) {
-        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for fresh events…</div>';
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">No substantive events right now. Check back when market moves.</div>';
         return;
     }
 
@@ -1108,35 +1350,37 @@ async function renderTodaysFive() {
         const sent = it.sentiment || 'neutral';
         const sentColor = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#9aa0c8';
         const alpha = Number(it.alpha_score || 0);
-        const fresh = window.Realtime ? Realtime.freshness(it.published_at || it.created_at) : { label: '', color: '#9aa0c8' };
-        const conf = it.confirmation;
-        const confBadge = window.Realtime && conf ? Realtime.sourceConfirmationBadge(conf) : null;
-        const fb = it.forensic_band;
-        const fbBadge = window.Realtime && fb ? Realtime.forensicBadge(fb) : null;
+        const ageHrs = Number(it.age_hours || 0);
+        const freshLabel = ageHrs < 0.25 ? '🔴 NOW' : ageHrs < 1 ? '🟠 <1h' : '🟡 <2h';
+        const tier = Number(it.tier || 4);
+        const tierLabel = tier === 1 ? '✓ FILINGS' : tier === 2 ? '✓ PRESS' : '? UNVERIFIED';
+        const evType = (it.event_type || 'news').replace(/_/g, ' ').toUpperCase();
 
-        // Action line: "Buy/Watch/Avoid" based on alpha + sentiment + forensic
+        // High-conviction action based on alpha only (we already filtered social)
         let action = 'Watch';
         let actionColor = '#9aa0c8';
-        if (fb === 'likely_manipulated') { action = 'Avoid'; actionColor = '#ff7a8a'; }
-        else if (alpha >= 70 && sent === 'bullish') { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
-        else if (alpha >= 70 && sent === 'bearish') { action = 'Short / hedge'; actionColor = '#ff9466'; }
-        else if (alpha >= 60) { action = 'Watch closely'; actionColor = '#f9d423'; }
+        if (alpha >= 75 && sent === 'bullish') { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
+        else if (alpha >= 75 && sent === 'bearish') { action = 'Short / hedge'; actionColor = '#ff9466'; }
+        else if (alpha >= 65) { action = 'Watch closely'; actionColor = '#f9d423'; }
+        else if (alpha >= 50) { action = 'Monitor'; actionColor = '#b0c4ff'; }
 
         return `
         <div onclick="window.location='${ticker ? 'compare.html?t=' + ticker : 'events.html'}'"
-             style="cursor:pointer;background:#0d1118;border:1px solid ${sentColor}22;border-left:4px solid ${sentColor};border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:start;transition:all 0.2s;"
-             onmouseover="this.style.background='#111720';" onmouseout="this.style.background='#0d1118';">
+             style="cursor:pointer;background:#0d1118;border:1px solid ${sentColor}33;border-left:4px solid ${sentColor};border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:start;transition:all 0.2s;"
+             onmouseover="this.style.background='#111720';this.style.borderColor='${sentColor}55';" onmouseout="this.style.background='#0d1118';this.style.borderColor='${sentColor}33';">
             <div style="font-size:24px;font-weight:900;color:${sentColor};font-family:'JetBrains Mono',monospace;min-width:36px;">${i+1}</div>
             <div style="flex:1;min-width:0;">
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">
-                    ${ticker ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:900;color:#dde3ef;">${ticker}</span>` : ''}
-                    ${alpha ? `<span style="font-size:10px;font-weight:800;color:${sentColor};">α ${alpha.toFixed(0)}</span>` : ''}
-                    ${fresh.label ? Realtime.badgeChip(fresh.label, fresh.color) : ''}
-                    ${confBadge ? Realtime.badgeChip(confBadge.label, confBadge.color) : ''}
-                    ${fbBadge ? Realtime.badgeChip(fbBadge.label, fbBadge.color) : ''}
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center;">
+                    ${ticker ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:900;color:#dde3ef;font-size:14px;">${ticker}</span>` : ''}
+                    <span style="font-size:11px;font-weight:800;background:${sent==='bullish'?'rgba(78,222,163,0.2)':sent==='bearish'?'rgba(255,122,138,0.2)':'rgba(155,164,255,0.2)'};color:${sentColor};padding:2px 8px;border-radius:4px;text-transform:uppercase;">${sent}</span>
+                    <span style="font-size:10px;font-weight:700;background:rgba(107,163,214,0.15);color:#6ba3d6;padding:2px 6px;border-radius:3px;">α${alpha.toFixed(0)}</span>
+                    <span style="font-size:9px;font-weight:700;color:#9aa0c8;">${freshLabel}</span>
                 </div>
-                <div style="font-size:13px;color:#dde3ef;font-weight:600;line-height:1.3;margin-bottom:4px;">${(it.title || '').slice(0, 140)}</div>
-                <div style="font-size:10px;color:${actionColor};font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">→ ${action}</div>
+                <div style="font-size:13px;color:#dde3ef;font-weight:600;line-height:1.4;margin-bottom:4px;">${(it.title || '').slice(0, 140)}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:10px;color:${actionColor};font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">→ ${action}</div>
+                    <span style="font-size:8px;color:#9aa0c8;opacity:0.6;">${tierLabel}</span>
+                </div>
             </div>
         </div>`;
     }).join('');
