@@ -1280,46 +1280,47 @@ async function renderTodaysFive() {
     }
 
     if (!items.length) {
-        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for substantive events (alpha ≥50, verified sources only)…</div>';
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for breaking news…</div>';
         return;
     }
 
     // STRICT FILTERING: Only events that meet ALL criteria
-    // 1. Alpha score ≥ 50 (high conviction)
-    // 2. Age ≤ 2 hours (instant/very fresh)
-    // 3. Tier 1-2 only (no social/noise, no tier 3+ unreliable sources)
-    // 4. Not manipulated
-    // 5. NOT from social feeds
+    // 1. Fresh data only (≤ 2 hours old)
+    // 2. High-conviction sources (Tier 1-2: filings, press releases)
+    // 3. Not forensically dirty/manipulated
+    // 4. Bullish sentiment OR high magnitude OR high tier
+    // 5. NO social/unverified noise
     const filtered = items
         .filter(it => {
-            const alpha = Number(it.alpha_score || 0);
             const age = Number(it.age_hours || 999);
             const tier = Number(it.tier || 4);
+            const magnitude = Number(it.magnitude || 0);
+            const sent = (it.sentiment || '').toLowerCase();
             const fb = it.forensic_band;
             const isSocial = (it.event_type || '').toLowerCase() === 'social'
                 || (it.feed || '').toLowerCase().includes('reddit')
                 || (it.feed || '').toLowerCase().includes('telegram');
 
             // Hard cutoffs: if ANY of these fail, reject
-            if (alpha < 50) return false;           // Alpha too low
             if (age > 2) return false;              // Too old (> 2h)
             if (tier > 2) return false;             // Not a verified source
             if (fb === 'likely_manipulated') return false;  // Forensically dirty
             if (isSocial) return false;             // Social noise
+            if (magnitude < 2 && sent !== 'bullish') return false;  // Must be impactful or bullish
 
             return true;
         });
 
-    // If no items pass strict filter, show softer version (alpha ≥ 40, age ≤ 4h)
+    // If strict filter is empty, use medium filter (age ≤ 4h, tier ≤ 3, just not manipulated)
     let topItems = filtered;
     if (topItems.length === 0) {
         topItems = items
             .filter(it => {
-                const alpha = Number(it.alpha_score || 0);
                 const age = Number(it.age_hours || 999);
                 const tier = Number(it.tier || 4);
+                const magnitude = Number(it.magnitude || 0);
                 const fb = it.forensic_band;
-                return alpha >= 40 && age <= 4 && tier <= 3 && fb !== 'likely_manipulated';
+                return age <= 4 && tier <= 3 && fb !== 'likely_manipulated' && magnitude >= 2;
             });
     }
 
@@ -1349,20 +1350,24 @@ async function renderTodaysFive() {
         const ticker = (it.tickers && it.tickers[0]) || it.ticker || '';
         const sent = it.sentiment || 'neutral';
         const sentColor = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#9aa0c8';
-        const alpha = Number(it.alpha_score || 0);
+        // Use alpha_score if available from signal join, otherwise compute from impact/magnitude
+        const alpha = Number(it.alpha_score || 0) > 0
+            ? Number(it.alpha_score)
+            : Math.round((Number(it.impact_score || 30) + Number(it.magnitude || 0) * 10) / 2);
         const ageHrs = Number(it.age_hours || 0);
-        const freshLabel = ageHrs < 0.25 ? '🔴 NOW' : ageHrs < 1 ? '🟠 <1h' : '🟡 <2h';
+        const freshLabel = ageHrs < 0.25 ? '🔴 NOW' : ageHrs < 1 ? '🟠 <1h' : ageHrs < 2 ? '🟡 <2h' : '🟢 <4h';
         const tier = Number(it.tier || 4);
-        const tierLabel = tier === 1 ? '✓ FILINGS' : tier === 2 ? '✓ PRESS' : '? UNVERIFIED';
+        const tierLabel = tier === 1 ? '✓ FILINGS' : tier === 2 ? '✓ PRESS' : tier === 3 ? '⚠ RSS' : '❌ UNVERIFIED';
         const evType = (it.event_type || 'news').replace(/_/g, ' ').toUpperCase();
 
-        // High-conviction action based on alpha only (we already filtered social)
-        let action = 'Watch';
+        // Action based on alpha + sentiment combo
+        let action = 'Monitor';
         let actionColor = '#9aa0c8';
-        if (alpha >= 75 && sent === 'bullish') { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
-        else if (alpha >= 75 && sent === 'bearish') { action = 'Short / hedge'; actionColor = '#ff9466'; }
-        else if (alpha >= 65) { action = 'Watch closely'; actionColor = '#f9d423'; }
-        else if (alpha >= 50) { action = 'Monitor'; actionColor = '#b0c4ff'; }
+        if (sent === 'bullish' && alpha >= 65) { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bearish' && alpha >= 65) { action = 'Short / hedge'; actionColor = '#ff9466'; }
+        else if (sent === 'bullish' && alpha >= 50) { action = 'Consider long'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bullish') { action = 'Watch'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bearish') { action = 'Watch downside'; actionColor = '#ff9466'; }
 
         return `
         <div onclick="window.location='${ticker ? 'compare.html?t=' + ticker : 'events.html'}'"
