@@ -662,11 +662,8 @@ class StockPopup {
     if (this._modal) return;
     const overlay = document.createElement('div');
     overlay.id = 'stockPopupOverlay';
-    overlay.className = 'sp-overlay';
-    // Inline display:none keeps overlay hidden until .show() flips it. CSS
-    // tokens (background blur, color, etc.) come from .sp-overlay in style.css.
-    overlay.style.display = 'none';
-    overlay.innerHTML = '<div id="stockPopupContent" class="sp-modal"></div>';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    overlay.innerHTML = '<div id="stockPopupContent" style="background:#1c2026;border:1px solid #42475466;border-radius:16px;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.6);"></div>';
     overlay.addEventListener('click', (e) => { if (e.target === overlay) StockPopup.close(); });
     document.body.appendChild(overlay);
     this._modal = overlay;
@@ -685,7 +682,7 @@ class StockPopup {
     this._createModal();
     SoundFX.pop();
     const content = document.getElementById('stockPopupContent');
-    content.innerHTML = `<div class="sp-loading" style="padding:40px;">Loading ${ticker}…</div>`;
+    content.innerHTML = `<div style="padding:40px;text-align:center;color:#8c909f;font-size:13px;">Loading ${ticker}...</div>`;
     this._modal.style.display = 'flex';
     if (typeof AlphaFX !== 'undefined') AlphaFX.popupOpen(this._modal);
 
@@ -701,240 +698,185 @@ class StockPopup {
     const preds = d.predictions || {};
 
     const sent = sig?.sentiment || 'neutral';
-    const sentClass = sent === 'bullish' ? 'bull' : sent === 'bearish' ? 'bear' : 'neut';
+    const sentColor = sent === 'bullish' ? 'var(--bull)' : sent === 'bearish' ? 'var(--bear)' : 'var(--t2)';
     const alpha = sig?.alpha_score || 0;
-    // Alpha score band → CSS class on the value, lets the design system
-    // pick the colour rather than hard-coding hex per call site.
-    const alphaBand = alpha >= 65 ? 'high' : alpha >= 40 ? 'mid' : 'low';
-    const priceChange = p.change_pct || 0;
-    const priceDirCls = priceChange >= 0 ? 'up' : 'down';
 
-    // Alpha gauge — semicircle SVG. Stroke length = π·r ≈ 175 for r=56
-    // The dasharray fills proportional to alpha/100.
-    const gaugeR = 56, gaugeCirc = Math.PI * gaugeR;
-    const gaugeFill = (alpha / 100) * gaugeCirc;
-    const alphaGauge = sig ? `
-      <svg class="sp-gauge" viewBox="0 0 140 76" xmlns="http://www.w3.org/2000/svg">
-        <path class="track" d="M 14 70 A ${gaugeR} ${gaugeR} 0 0 1 126 70" />
-        <path class="fill ${alphaBand}" d="M 14 70 A ${gaugeR} ${gaugeR} 0 0 1 126 70"
-              stroke-dasharray="${gaugeFill.toFixed(1)} ${gaugeCirc.toFixed(1)}" />
-      </svg>
-      <div class="sp-gauge-value ${alphaBand === 'high' ? 'bull' : alphaBand === 'mid' ? 'caution' : ''}"
-           style="color:var(--${alphaBand === 'high' ? 'bull' : alphaBand === 'mid' ? 'caution' : 't2'});">
-        ${alpha.toFixed(1)}
-      </div>
-      <div class="sp-gauge-label">Alpha · ${alphaBand}</div>
-    ` : '';
-
-    // Day range slider — where current price sits between day high/low.
-    // We render only if we have both ends.
-    function rangeBlock(label, low, high, current) {
-      if (low == null || high == null || current == null || high <= low) return '';
-      const pct = Math.max(0, Math.min(100, ((current - low) / (high - low)) * 100));
-      return `<div class="sp-range-row">
-        <span class="sp-range-label">${label}</span>
-        <span class="sp-range-ends">₹${low.toFixed(0)}</span>
-        <div class="sp-range-track">
-          <div class="sp-range-fill" style="width:100%;"></div>
-          <div class="sp-range-marker" style="left:${pct.toFixed(1)}%;"></div>
-        </div>
-        <span class="sp-range-ends right">₹${high.toFixed(0)}</span>
-      </div>`;
-    }
-    const dayRange = rangeBlock('DAY', p.day_low, p.day_high, p.price);
-    const yearRange = rangeBlock('52W', p.fifty_two_week_low, p.fifty_two_week_high, p.price);
-
-    // Momentum strip — 4 horizons. 1D from change_pct (live); 5D/20D/60D get
-    // populated by computeMomentum() once the chart history loads.
-    function momCell(h, val) {
-      const dir = val == null ? null : (val >= 0 ? 'up' : 'down');
-      const cls = dir === 'up' ? 'up' : dir === 'down' ? 'down' : '';
-      const v = val == null ? '—' : `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
-      const w = val == null ? 0 : Math.min(50, Math.abs(val) * 5); // cap at 50% half-bar
-      const barCls = dir === 'down' ? 'down' : '';
-      return `<div class="sp-mom-cell" data-mom="${h}">
-        <div class="sp-mom-head">
-          <span class="sp-mom-h">${h}</span>
-          <span class="sp-mom-v ${cls}">${v}</span>
-        </div>
-        <div class="sp-mom-bar"><span class="${barCls}" style="width:${w.toFixed(1)}%;"></span></div>
-      </div>`;
-    }
-    const momentumStrip = `<div class="sp-momentum">
-      ${momCell('1D', priceChange)}
-      ${momCell('5D', null)}
-      ${momCell('20D', null)}
-      ${momCell('60D', null)}
-    </div>`;
-
-    // Prediction rows with confidence-bar widget in the conf column
+    // Prediction rows
     let predRows = '';
     for (const h of ['1D', '3D', '20D']) {
       const pr = preds[h];
       if (pr) {
         const ret = pr.predicted_return_pct || 0;
-        const retCls = ret >= 0 ? 'bull' : 'bear';
+        const retColor = ret >= 0 ? 'var(--bull)' : 'var(--bear)';
         const tp = pr.target_price || 0;
-        const confPct = (pr.confidence || 0) * 100;
-        const confBand = confPct >= 60 ? 'high' : confPct >= 40 ? 'mid' : '';
-        const hitIcon = pr.hit_target === true ? '✓' : pr.hit_target === false ? '✕' : '—';
-        const hitCls = pr.hit_target === true ? 'bull' : pr.hit_target === false ? 'bear' : 'muted';
-        predRows += `<tr>
-          <td class="mono"><strong>${h}</strong></td>
-          <td class="mono ${retCls}">${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%</td>
-          <td class="mono">${tp > 0 ? '₹' + tp.toFixed(2) : '<span class="muted">—</span>'}</td>
-          <td>
-            <div class="sp-conf-cell">
-              <div class="sp-conf-bar ${confBand}"><span style="width:${confPct.toFixed(0)}%;"></span></div>
-              <span class="muted">${confPct.toFixed(0)}%</span>
-            </div>
-          </td>
-          <td class="center ${hitCls}">${hitIcon}</td>
+        const conf = ((pr.confidence || 0) * 100).toFixed(0);
+        const actual = pr.actual_return_pct;
+        const hitIcon = pr.hit_target === true ? '&check;' : pr.hit_target === false ? '&times;' : '—';
+        const hitColor = pr.hit_target === true ? 'var(--bull)' : pr.hit_target === false ? 'var(--bear)' : 'var(--t3)';
+        predRows += `<tr style="border-bottom:1px solid #42475422;">
+          <td style="padding:10px 12px;font-weight:700;color:#dfe2eb;font-size:13px;">${h}</td>
+          <td style="padding:10px 12px;color:${retColor};font-weight:700;font-family:'JetBrains Mono',monospace;font-size:13px;">${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%</td>
+          <td style="padding:10px 12px;color:#c2c6d6;font-family:'JetBrains Mono',monospace;font-size:12px;">${tp > 0 ? '₹' + tp.toFixed(2) : '—'}</td>
+          <td style="padding:10px 12px;color:#8c909f;font-size:11px;">${conf}%</td>
+          <td style="padding:10px 12px;text-align:center;color:${hitColor};font-size:14px;">${hitIcon}</td>
         </tr>`;
       }
     }
     if (!predRows) {
-      predRows = '<tr><td colspan="5" class="center muted" style="padding:16px;">No predictions yet</td></tr>';
+      predRows = '<tr><td colspan="5" style="padding:16px;text-align:center;color:#8c909f55;font-size:12px;">No predictions yet</td></tr>';
     }
 
-    // Logo badge — gradient square with first letter of ticker
-    const logoLetter = (d.ticker || '?').slice(0, 1).toUpperCase();
+    const priceChange = p.change_pct || 0;
+    const priceColor = priceChange >= 0 ? 'var(--bull)' : 'var(--bear)';
 
     content.innerHTML = `
-      <div class="sp-body">
-        <!-- Header with logo badge -->
-        <header class="sp-header">
-          <div class="sp-id-with-logo">
-            <div class="sp-logo">${logoLetter}</div>
-            <div class="sp-id">
-              <div class="sp-id-row">
-                <span class="sp-ticker">${d.ticker}</span>
-                ${sig ? `<span class="sp-sentiment ${sentClass}">${sent}</span>` : ''}
-              </div>
-              <div class="sp-company">${d.company || ''}</div>
-              ${p.sector ? `<div class="sp-meta-line">${p.sector}${p.industry ? ' / ' + p.industry : ''}</div>` : ''}
+      <div style="padding:24px;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:20px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:900;color:#dfe2eb;">${d.ticker}</span>
+              ${sig ? `<span style="font-size:9px;padding:3px 8px;border-radius:4px;background:${sentColor}22;color:${sentColor};font-weight:700;text-transform:uppercase;">${sent}</span>` : ''}
             </div>
+            <div style="font-size:12px;color:#8c909f;">${d.company}</div>
+            ${p.sector ? `<div style="font-size:10px;color:#8c909f88;margin-top:2px;">${p.sector}${p.industry ? ' / ' + p.industry : ''}</div>` : ''}
           </div>
-          <div class="sp-actions">
-            <a href="stock.html?t=${d.ticker}" class="sp-btn-ghost">Open full →</a>
-            <button class="sp-btn-icon" onclick="StockPopup.close()" aria-label="Close">×</button>
-          </div>
-        </header>
+          <button onclick="StockPopup.close()" style="background:none;border:none;color:#8c909f;cursor:pointer;font-size:20px;padding:4px;">&times;</button>
+        </div>
 
-        <!-- Hero: price + intraday spark + alpha gauge -->
-        <div class="sp-hero">
-          <div class="sp-hero-block">
-            <div class="sp-label">Current price</div>
-            <div class="sp-price">${p.price ? '₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits: 2}) : '—'}</div>
-            <div class="sp-price-delta ${priceDirCls}">${priceChange >= 0 ? '▲' : '▼'} ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</div>
-            <svg class="sp-spark" id="spHeroSpark" viewBox="0 0 200 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>
+        <!-- Price -->
+        <div style="display:flex;gap:16px;margin-bottom:20px;padding:16px;background:#10141a;border-radius:12px;border:1px solid #42475422;">
+          <div style="flex:1;">
+            <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Current Price</div>
+            <div style="font-size:28px;font-weight:900;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">${p.price ? '₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2}) : '—'}</div>
+            <div style="font-size:13px;font-weight:700;color:${priceColor};">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</div>
           </div>
-          ${sig ? `<div class="sp-hero-block right">
-            ${alphaGauge}
+          ${sig ? `<div style="text-align:right;">
+            <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Alpha Score</div>
+            <div style="font-size:28px;font-weight:700;font-family:var(--font-mono);color:${UIHelper.alphaColor(alpha)};">${alpha.toFixed(1)}</div>
           </div>` : ''}
         </div>
 
-        <!-- Momentum strip — 1D / 5D / 20D / 60D -->
-        ${momentumStrip}
-
-        <!-- Range sliders — current price vs day & 52W ends -->
-        ${(dayRange || yearRange) ? `<div class="sp-range">
-          ${dayRange}
-          ${yearRange}
+        <!-- Quick Stats -->
+        ${p.price ? `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
+          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day High</div>
+            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">₹${(p.day_high||0).toFixed(0)}</div>
+          </div>
+          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day Low</div>
+            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">₹${(p.day_low||0).toFixed(0)}</div>
+          </div>
+          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W High</div>
+            <div style="font-size:12px;font-weight:700;color:#4edea3;font-family:'JetBrains Mono',monospace;">₹${(p.fifty_two_week_high||0).toFixed(0)}</div>
+          </div>
+          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W Low</div>
+            <div style="font-size:12px;font-weight:700;color:#ffb4ab;font-family:'JetBrains Mono',monospace;">₹${(p.fifty_two_week_low||0).toFixed(0)}</div>
+          </div>
         </div>` : ''}
 
-        <!-- Predictions -->
-        <section class="sp-section">
-          <div class="sp-section-head">
-            <span class="sp-section-title">Predicted returns</span>
-          </div>
-          <table class="sp-table">
+        <!-- Predictions Table -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">Predicted Returns</div>
+          <table style="width:100%;border-collapse:collapse;">
             <thead>
-              <tr>
-                <th>Horizon</th>
-                <th>Return</th>
-                <th>Target</th>
-                <th>Conf</th>
-                <th class="center">Hit</th>
+              <tr style="border-bottom:1px solid #42475444;">
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Horizon</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Return</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Target</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Conf</th>
+                <th style="padding:8px 12px;text-align:center;font-size:9px;color:#8c909f;text-transform:uppercase;">Hit</th>
               </tr>
             </thead>
             <tbody>${predRows}</tbody>
           </table>
-        </section>
+        </div>
 
-        <!-- Price chart -->
-        <section class="sp-section">
-          <div class="sp-section-head">
-            <span class="sp-section-title">Price chart</span>
-            <div class="sp-period-row" id="chartPeriodBtns">
-              <button class="sp-period-btn active" data-p="1mo" onclick="StockPopup.loadChart('${d.ticker}','1mo')">1M</button>
-              <button class="sp-period-btn" data-p="3mo" onclick="StockPopup.loadChart('${d.ticker}','3mo')">3M</button>
-              <button class="sp-period-btn" data-p="6mo" onclick="StockPopup.loadChart('${d.ticker}','6mo')">6M</button>
-              <button class="sp-period-btn" data-p="1y" onclick="StockPopup.loadChart('${d.ticker}','1y')">1Y</button>
+        <!-- Price Chart -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Price Chart</span>
+            <div style="display:flex;gap:4px;" id="chartPeriodBtns">
+              <button onclick="StockPopup.loadChart('${d.ticker}','1mo')" class="cp-btn" data-p="1mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:#adc6ff22;color:#adc6ff;cursor:pointer;">1M</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','3mo')" class="cp-btn" data-p="3mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">3M</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','6mo')" class="cp-btn" data-p="6mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">6M</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','1y')" class="cp-btn" data-p="1y" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">1Y</button>
             </div>
           </div>
-          <div class="sp-chart-wrap">
+          <div style="position:relative;background:#0a0e14;border-radius:10px;border:1px solid #42475422;overflow:hidden;">
             <canvas id="priceChart" width="452" height="160" style="width:100%;height:160px;display:block;"></canvas>
-            <div id="chartTooltip" class="sp-chart-tooltip"></div>
+            <div id="chartTooltip" style="display:none;position:absolute;top:8px;left:8px;background:#1c2026ee;border:1px solid #42475444;border-radius:6px;padding:6px 10px;font-size:10px;color:#dfe2eb;pointer-events:none;z-index:10;"></div>
           </div>
-        </section>
+        </div>
 
         ${sig ? `
-        <!-- Signal analysis -->
-        <section class="sp-section">
-          <div class="sp-analysis">
-            <div class="sp-section-title" style="margin-bottom:8px;">Signal analysis</div>
-            <div class="sp-analysis-row">
-              <span class="sp-analysis-label" title="The market event that triggered this signal">Event type</span>
-              <span class="sp-analysis-value info" style="text-transform:uppercase;">${(sig.event_type || '').replace(/_/g, ' ')}</span>
-            </div>
-            <div class="sp-analysis-row">
-              <span class="sp-analysis-label" title="Current market regime from volatility, momentum, and trend">Regime</span>
-              <span class="sp-analysis-value">${(sig.regime || '').replace(/_/g, ' ')}</span>
-            </div>
-            <div class="sp-analysis-row">
-              <span class="sp-analysis-label" title="NLP confidence in the sentiment classification">Confidence</span>
-              <span class="sp-analysis-value">${((sig.confidence || 0) * 100).toFixed(0)}%</span>
-            </div>
-            ${sig.headline ? `<div class="sp-headline">${sig.headline}</div>` : ''}
-            <div class="sp-glossary">
-              <div class="sp-glossary-title">What these numbers mean</div>
-              <p><strong>Alpha score</strong> — composite signal strength (0–100). Combines event type, sentiment, regime, source tier. ≥65 is strong.</p>
-              <p><strong>Predicted return</strong> — expected % move over the horizon. Positive = up.</p>
-              <p><strong>Confidence</strong> — probability the direction is right. ≥60% is worth watching.</p>
-              <p><strong>Target price</strong> — entry × (1 + predicted return).</p>
-            </div>
-            <div class="sp-compare-link">
-              <a href="compare.html?t=${d.ticker}">Compare with other stocks →</a>
+        <!-- Signal Details with Explanations -->
+        <div style="padding:14px;background:#10141a;border-radius:10px;border:1px solid #42475422;font-size:11px;color:#c2c6d6;line-height:1.8;">
+          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Signal Analysis</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="color:#8c909f;" title="The type of market event that triggered this signal">Event Type</span>
+            <span style="font-weight:700;text-transform:uppercase;color:#adc6ff;">${(sig.event_type || '').replace(/_/g, ' ')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="color:#8c909f;" title="Current market regime detected from volatility, momentum, and trend analysis across 32 stocks">Regime</span>
+            <span>${(sig.regime || '').replace(/_/g, ' ')}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="color:#8c909f;" title="How confident the NLP engine is about the sentiment classification (higher = more certain)">Confidence</span>
+            <span>${((sig.confidence || 0) * 100).toFixed(0)}%</span>
+          </div>
+
+          ${sig.headline ? `<div style="margin-top:8px;padding:8px;background:#0a0e14;border-radius:6px;font-size:10px;color:#8c909f;font-style:italic;line-height:1.5;">${sig.headline}</div>` : ''}
+
+          <!-- Metric Explanations -->
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid #42475422;">
+            <div style="font-size:8px;color:#42475488;text-transform:uppercase;letter-spacing:0.15em;font-weight:800;margin-bottom:6px;">What these numbers mean</div>
+            <div style="font-size:9px;color:#8c909f88;line-height:1.7;">
+              <div><span style="color:#adc6ff;font-weight:700;">Alpha Score</span> — Composite signal strength (0-100). Combines event importance, sentiment, market regime, sector momentum, relative performance, and timing. Above 60 = strong signal.</div>
+              <div style="margin-top:3px;"><span style="color:#4edea3;font-weight:700;">Predicted Return</span> — Expected price move based on event type, alpha quality, stock volatility, and market conditions. Positive = expected to go up.</div>
+              <div style="margin-top:3px;"><span style="color:#c2c6d6;font-weight:700;">Confidence</span> — Probability that the predicted direction is correct. 60%+ = worth watching. Based on NLP certainty and regime clarity.</div>
+              <div style="margin-top:3px;"><span style="color:#8c909f;font-weight:700;">Target Price</span> — Where the stock price could reach if the prediction plays out. Entry price × (1 + predicted return).</div>
             </div>
           </div>
-        </section>` : '<div class="sp-empty">No active signal — this stock has no recent news events.</div>'}
 
-        <!-- Event timeline -->
-        <section class="sp-section sp-divider">
-          <div class="sp-section-head"><span class="sp-section-title">Event timeline</span></div>
+          <!-- Compare link -->
+          <div style="margin-top:10px;text-align:center;">
+            <a href="compare.html?t=${d.ticker}" style="font-size:10px;color:#adc6ff;text-decoration:none;font-weight:700;">Compare with other stocks →</a>
+          </div>
+        </div>` : '<div style="padding:16px;text-align:center;color:#8c909f55;font-size:12px;">No active signal — this stock has no recent news events.</div>'}
+
+        <!-- Event Timeline -->
+        <div style="margin-top:16px;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Event Timeline</div>
           <div id="popupTimeline" style="max-height:200px;overflow-y:auto;"></div>
-        </section>
+        </div>
 
-        ${sig?.event_id ? `<section class="sp-section sp-divider">
-          <div class="sp-section-head"><span class="sp-section-title">Why this signal?</span></div>
-          <div id="popupReasoning" data-event-id="${sig.event_id}"><div class="sp-loading">Generating reasoning…</div></div>
-        </section>` : ''}
+        <!-- Why this signal? Reasoning chain -->
+        ${sig?.event_id ? `<div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Why this signal?</div>
+          <div id="popupReasoning" data-event-id="${sig.event_id}"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Generating reasoning...</div></div>
+        </div>` : ''}
 
-        <section class="sp-section sp-divider">
-          <div class="sp-section-head"><span class="sp-section-title">Forensics</span></div>
-          <div id="popupForensics"><div class="sp-loading">Analyzing forensics…</div></div>
-        </section>
+        <!-- Forensics Intelligence -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Forensics</div>
+          <div id="popupForensics"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Analyzing forensics...</div></div>
+        </div>
 
-        <section class="sp-section sp-divider">
-          <div class="sp-section-head"><span class="sp-section-title">Volume / OBV</span></div>
-          <div id="popupVolume"><div class="sp-loading">Loading volume…</div></div>
-        </section>
+        <!-- Volume + OBV Intelligence -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Volume / OBV</div>
+          <div id="popupVolume"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Loading volume analysis...</div></div>
+        </div>
 
-        <section class="sp-section sp-divider">
-          <div class="sp-section-head"><span class="sp-section-title">Promoter intelligence</span></div>
-          <div id="popupPromoter"><div class="sp-loading">Loading promoter data…</div></div>
-        </section>
+        <!-- Promoter Intelligence -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
+          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Promoter Intelligence</div>
+          <div id="popupPromoter"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Loading promoter data...</div></div>
+        </div>
       </div>`;
 
     // Load chart, timeline, promoter, volume, and forensics data after DOM renders
@@ -1075,65 +1017,14 @@ class StockPopup {
 
   static _chartData = [];
 
-  // Render the hero sparkline using the latest ~30 closes from chart data.
-  static _populateHeroSpark(data) {
-    const svg = document.getElementById('spHeroSpark');
-    if (!svg || !data || data.length < 2) return;
-    const closes = data.slice(-30).map(d => d.close);
-    if (closes.length < 2) return;
-    const min = Math.min(...closes), max = Math.max(...closes);
-    const range = (max - min) || 1;
-    const w = 200, h = 24, pad = 1;
-    const stepX = (w - pad * 2) / (closes.length - 1);
-    const pts = closes.map((c, i) => {
-      const x = pad + i * stepX;
-      const y = pad + (1 - (c - min) / range) * (h - pad * 2);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
-    const up = closes[closes.length - 1] >= closes[0];
-    const stroke = up ? 'var(--bull)' : 'var(--bear)';
-    svg.innerHTML = `
-      <polyline class="line" fill="none" stroke="${stroke}" stroke-width="1.5"
-                stroke-linejoin="round" stroke-linecap="round" points="${pts}"/>
-    `;
-  }
-
-  // Compute 5D / 20D / 60D realised returns from chart history and inject
-  // them into the momentum strip cells.
-  static _populateMomentum(data) {
-    if (!data || data.length < 2) return;
-    const closes = data.map(d => d.close);
-    const last = closes[closes.length - 1];
-    const horizons = [
-      { h: '5D',  back: 5  },
-      { h: '20D', back: 20 },
-      { h: '60D', back: 60 },
-    ];
-    horizons.forEach(({ h, back }) => {
-      if (closes.length <= back) return;
-      const past = closes[closes.length - 1 - back];
-      if (!past) return;
-      const pct = ((last - past) / past) * 100;
-      const cell = document.querySelector(`.sp-mom-cell[data-mom="${h}"]`);
-      if (!cell) return;
-      const dir = pct >= 0 ? 'up' : 'down';
-      const v = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
-      const w = Math.min(50, Math.abs(pct) * 5);
-      cell.querySelector('.sp-mom-v').className = `sp-mom-v ${dir}`;
-      cell.querySelector('.sp-mom-v').textContent = v;
-      const bar = cell.querySelector('.sp-mom-bar > span');
-      bar.className = dir === 'down' ? 'down' : '';
-      bar.style.width = `${w.toFixed(1)}%`;
-    });
-  }
-
   static async loadChart(ticker, period) {
     const canvas = document.getElementById('priceChart');
     if (!canvas) return;
 
-    // Update period button active state — class flip, no inline styling
-    document.querySelectorAll('#chartPeriodBtns .sp-period-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.p === period);
+    // Update period button styles
+    document.querySelectorAll('.cp-btn').forEach(b => {
+      b.style.background = b.dataset.p === period ? 'var(--info-dim)' : 'transparent';
+      b.style.color = b.dataset.p === period ? 'var(--info)' : 'var(--t3)';
     });
 
     const res = await API.get(`/stock/${ticker}/chart?period=${period}`);
@@ -1149,11 +1040,6 @@ class StockPopup {
 
     this._chartData = res.data;
     this._drawChart(canvas, res.data);
-    // Once chart history is in, populate the hero sparkline + 5D/20D/60D
-    // momentum cells. Done here (not in show()) because /chart is the
-    // existing data source — avoids a second API round-trip.
-    StockPopup._populateHeroSpark(res.data);
-    StockPopup._populateMomentum(res.data);
 
     // Hover crosshair + tooltip
     const overlay = document.createElement('canvas');
@@ -1912,16 +1798,14 @@ class MarketPulse {
     else if (avgChg >= -1.5) { trendKey = 'bear';        trendLabel = 'BEARISH';      trendColor = '#ffb4ab'; trendEmoji = '▼';  }
     else                     { trendKey = 'strong_bear'; trendLabel = 'STRONG BEAR';  trendColor = '#ffb4ab'; trendEmoji = '▼▼'; }
 
-    // VIX interpretation — fearColor must read on BOTH the mint pastel KPI card
-    // (light bg) and the dark surface variants. Original palette (#f9d423,
-    // #adc6ff, #ffb4ab) was tuned for dark only and was unreadable on mint.
+    // VIX interpretation
     const vixVal = vix?.price || 0;
     let fearLabel, fearColor;
-    if      (vixVal < 12) { fearLabel = 'Greed Zone';      fearColor = '#0d6b3a'; }
-    else if (vixVal < 18) { fearLabel = 'Normal';           fearColor = '#1e40af'; }
-    else if (vixVal < 24) { fearLabel = 'Elevated Fear';    fearColor = '#a35a00'; }
-    else if (vixVal < 30) { fearLabel = 'High Fear';        fearColor = '#9a3412'; }
-    else                  { fearLabel = 'Extreme Fear';      fearColor = '#7f1d1d'; }
+    if      (vixVal < 12) { fearLabel = 'Greed Zone';      fearColor = '#4edea3'; }
+    else if (vixVal < 18) { fearLabel = 'Normal';           fearColor = '#adc6ff'; }
+    else if (vixVal < 24) { fearLabel = 'Elevated Fear';    fearColor = '#f9d423'; }
+    else if (vixVal < 30) { fearLabel = 'High Fear';        fearColor = '#ffb4ab'; }
+    else                  { fearLabel = 'Extreme Fear';      fearColor = '#ff516a'; }
 
     // Breadth: how many of the 4 major indices are green
     const changes = [niftyChg, sensexChg, bankChg, itChg];
@@ -2240,15 +2124,9 @@ class PriorityChip {
     ].join(';');
     el.innerHTML =
       '<span style="opacity:0.9">For information only. <strong>Not investment advice.</strong> ' +
-      'Tickwave is not a SEBI-registered Research Analyst. ' +
+      'AlphaEvent is not a SEBI-registered Research Analyst. ' +
       'Signals reflect model output, not a recommendation. Trade at your own risk.</span> ' +
-      '<a href="#" id="sebi-disclaimer-more" style="color:#8eb4e0;margin-left:10px;text-decoration:underline">Read full</a>' +
-      '<span style="opacity:0.4;margin:0 6px;">·</span>' +
-      '<a href="terms.html"   style="color:#8c909f;text-decoration:none;">Terms</a>' +
-      '<span style="opacity:0.4;margin:0 4px;">·</span>' +
-      '<a href="privacy.html" style="color:#8c909f;text-decoration:none;">Privacy</a>' +
-      '<span style="opacity:0.4;margin:0 4px;">·</span>' +
-      '<a href="pricing.html" style="color:#8c909f;text-decoration:none;">Pricing</a>';
+      '<a href="#" id="sebi-disclaimer-more" style="color:#8eb4e0;margin-left:6px;text-decoration:underline">Read full</a>';
     document.body.appendChild(el);
     document.getElementById('sebi-disclaimer-more').addEventListener('click', (e) => {
       e.preventDefault();
@@ -2267,9 +2145,9 @@ class PriorityChip {
     ov.innerHTML =
       '<div style="max-width:480px;background:#0f1420;color:#cbd0dc;border:1px solid rgba(140,144,159,0.2);border-radius:14px;padding:22px;line-height:1.55;font-size:13px">' +
       '<h3 style="margin:0 0 10px 0;color:#fff;font-size:16px;font-weight:700">Before you proceed</h3>' +
-      '<p style="margin:0 0 8px 0">Tickwave is a market intelligence dashboard that surfaces news-driven trading signals from public Indian-market data.</p>' +
-      '<p style="margin:0 0 8px 0">It is <strong>not</strong> investment advice. Tickwave is not a SEBI-registered Research Analyst or Investment Advisor. Signals are computed from model heuristics over public news; outcomes are never guaranteed.</p>' +
-      '<p style="margin:0 0 14px 0">By continuing you confirm you understand that any trading decision is yours alone. See <a href="terms.html" style="color:#8eb4e0;">Terms</a> and <a href="privacy.html" style="color:#8eb4e0;">Privacy</a>.</p>' +
+      '<p style="margin:0 0 8px 0">AlphaEvent is a market intelligence dashboard that surfaces news-driven trading signals from public Indian-market data.</p>' +
+      '<p style="margin:0 0 8px 0">It is <strong>not</strong> investment advice. AlphaEvent is not a SEBI-registered Research Analyst or Investment Advisor. Signals are computed from model heuristics over public news; outcomes are never guaranteed.</p>' +
+      '<p style="margin:0 0 14px 0">By continuing you confirm you understand that any trading decision is yours alone.</p>' +
       '<button id="sebi-disclaimer-ok" style="background:#2dd4aa;color:#0a0e14;border:0;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer">I understand</button>' +
       '</div>';
     document.body.appendChild(ov);

@@ -66,24 +66,19 @@
         <p class="sidebar-brand-sub">Global Markets</p>
     </div>
     <nav class="sidebar-nav">
-      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-      <a class="sidebar-link active" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
-      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
-      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
-      <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-      <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
-      <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
-      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
-      <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
+        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+        <a class="sidebar-link active" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
+        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
+        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">science</span>Simulator</a>
     </nav>
     <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
 </aside>
@@ -151,23 +146,10 @@
     <script>
     (async function(){
       try {
-        // World indices, NOT Indian /market-indices. /global/markets returns
-        // { data: { indices: [{name, region, price, change_pct}, ...] } }.
-        // Falls back to static world-indices catalog when yfinance is unreachable.
-        const res = await Widgets.fetchJSON('/global/markets');
-        let list = ((res && res.data && res.data.indices) || []);
-        if (!list.length) {
-          list = [
-            {name:'S&P 500',      region:'USA', price:5125.40, change_pct: 0.42},
-            {name:'NASDAQ',       region:'USA', price:16380.20,change_pct: 0.61},
-            {name:'Dow Jones',    region:'USA', price:38790.10,change_pct: 0.18},
-            {name:'FTSE 100',     region:'UK',  price: 7942.30,change_pct:-0.15},
-            {name:'DAX',          region:'DEU', price:18025.60,change_pct: 0.28},
-            {name:'Nikkei 225',   region:'JPN', price:39620.40,change_pct:-0.72},
-            {name:'Hang Seng',    region:'HKG', price:17280.50,change_pct: 1.05},
-            {name:'Shanghai Comp',region:'CHN', price: 3056.20,change_pct:-0.34},
-          ];
-        }
+        // Use the same indices endpoint
+        const res = await Widgets.fetchJSON('/market-indices');
+        const list = (res && res.data) || [];
+        if (!list.length) return;
 
         // Sort by |% change| desc, take 6
         const movers = [...list]
@@ -175,13 +157,12 @@
           .slice(0, 6);
         Widgets.miniSparkGrid(document.getElementById('glMoversGrid'),
           movers.map(c => ({
-            label: c.name || c.short || c.symbol,
+            label: c.short || c.symbol,
             value: (c.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2}),
             deltaPct: c.change_pct || 0,
             points: (() => {
-              // /global/markets gives change_pct only — derive absolute change from it.
+              const start = (c.price || 0) - (c.change || 0);
               const end = c.price || 0;
-              const start = end / (1 + (c.change_pct || 0) / 100);
               return Array.from({length: 10}, (_, i) => {
                 const t = i / 9; const e = t*t*(3-2*t);
                 return start + (end - start) * e;
@@ -376,31 +357,36 @@
     </div>
 </div>
 
-<!-- ── Live Global Impact Table ───────────────────────── -->
+<!-- ── Sector Sensitivity Heatmap ─────────────────────── -->
 <section class="px-4 mb-8">
     <div class="mc">
         <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span class="material-symbols-outlined text-caution text-base">insights</span>
-            Live Global → Nifty Pull
-            <span class="text-[9px] font-normal text-on-surface-variant/50">Today's move × 60D rolling correlation</span>
+            <span class="material-symbols-outlined text-caution text-base">grid_on</span>
+            Indian Sector Sensitivity to Global Markets
+            <span class="text-[9px] font-normal text-on-surface-variant/50">Correlation coefficient (30D)</span>
         </h2>
         <div class="overflow-x-auto">
-            <table class="w-full text-[11px]" id="impactTable">
+            <table class="w-full text-[11px]" id="heatmapTable">
                 <thead>
-                    <tr class="text-on-surface-variant/60">
-                        <th class="text-left py-2 pr-4 font-semibold w-32">Index</th>
-                        <th class="text-center py-2 px-2 font-semibold">Region</th>
-                        <th class="text-right py-2 px-2 font-semibold">Today's Move</th>
-                        <th class="text-right py-2 px-2 font-semibold">Corr → Nifty (60D)</th>
-                        <th class="text-right py-2 px-2 font-semibold">Implied Nifty Pull</th>
-                        <th class="text-left py-2 pl-3 font-semibold">Read</th>
+                    <tr>
+                        <th class="text-left py-2 pr-4 text-on-surface-variant/60 font-semibold w-28">Sector</th>
+                        <th class="text-center py-2 px-2 text-info font-semibold">NASDAQ</th>
+                        <th class="text-center py-2 px-2 text-info font-semibold">S&P 500</th>
+                        <th class="text-center py-2 px-2 text-caution font-semibold">DAX</th>
+                        <th class="text-center py-2 px-2 text-caution font-semibold">FTSE</th>
+                        <th class="text-center py-2 px-2" style="color:#b28cff;">Nikkei</th>
+                        <th class="text-center py-2 px-2 text-bear font-semibold">Hang Seng</th>
+                        <th class="text-center py-2 px-2 text-bear font-semibold">Shanghai</th>
+                        <th class="text-center py-2 px-2 text-on-surface-variant/60 font-semibold">Primary Driver</th>
                     </tr>
                 </thead>
-                <tbody id="impactBody"></tbody>
+                <tbody id="heatmapBody" class="space-y-1"></tbody>
             </table>
         </div>
-        <div class="mt-3 text-[9px] text-on-surface-variant/50">
-            Implied pull = today's move × correlation. Positive correlation × negative move ⇒ negative pull on Nifty next session.
+        <div class="mt-3 flex items-center gap-4 text-[9px] text-on-surface-variant/50">
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(45,212,170,0.7)"></span> High correlation (>0.6)</div>
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(230,184,74,0.5)"></span> Medium (0.3–0.6)</div>
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(61,74,92,0.4)"></span> Low (<0.3)</div>
         </div>
     </div>
 </section>
@@ -451,93 +437,6 @@
     </div>
 </section>
 
-<!-- ============ GLOBAL × INDIAN SECTOR SPILLOVER (Pro tier) ============ -->
-<section style="margin:24px 8px;">
-  <div class="widget" style="min-height:auto;">
-    <div class="widget__head">
-      <div>
-        <div class="widget__title">Global driver × Indian sector spillover</div>
-        <div class="widget__meta">which Indian sectors are co-moving with which global drivers</div>
-      </div>
-      <span class="widget__year-pill" id="splWindow">14d</span>
-    </div>
-    <div id="splGate" style="display:none;padding:30px;text-align:center;color:var(--t2);font-size:12px;">
-      <span class="material-symbols-outlined" style="color:var(--caution);font-size:32px;display:block;margin-bottom:8px;">workspace_premium</span>
-      <div style="font-weight:700;color:var(--t1);margin-bottom:4px;">Pro tier feature</div>
-      <div style="margin-bottom:12px;">Cross-tabs Indian sector signal flow against global drivers (S&P 500, NASDAQ, Crude, Dollar, 10Y yield, China, etc.).</div>
-      <a href="pricing.html" class="range-period" style="color:var(--info);border-color:var(--info-border);background:var(--info-dim);text-decoration:none;display:inline-block;">See plans →</a>
-    </div>
-    <div id="splContent" style="display:none;">
-      <div id="splMatrix" style="overflow:auto;"></div>
-      <div id="splInsights" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;"></div>
-    </div>
-  </div>
-</section>
-
-<script>
-async function loadSpillover() {
-  const r = await API.get('/global/spillover?days=14');
-  const gate    = document.getElementById('splGate');
-  const content = document.getElementById('splContent');
-  if (!r) { gate.style.display=''; return; }
-  if (r.error === 'tier_required' || (r.success === false && r.required_tier)) {
-    gate.style.display=''; return;
-  }
-  gate.style.display='none'; content.style.display='';
-  document.getElementById('splWindow').textContent = (r.window_days || 14) + 'd';
-
-  const cells = r.data || [];
-  const drivers = r.drivers || [];
-  const sectors = r.sectors || [];
-  if (!cells.length) {
-    document.getElementById('splMatrix').innerHTML = '<div style="padding:24px;color:var(--t3);font-size:12px;text-align:center;">No spillover signal in this window.</div>';
-    document.getElementById('splInsights').innerHTML='';
-    return;
-  }
-
-  const cellMap = {};
-  cells.forEach(c => { cellMap[c.sector + '|' + c.driver] = c; });
-  const maxN = Math.max(1, ...cells.map(c => c.count));
-
-  const html = ['<table class="fin-table" style="width:100%;font-size:11px;">'];
-  html.push('<thead><tr><th style="text-align:left;">Sector</th>');
-  drivers.forEach(d => html.push(`<th>${d}</th>`));
-  html.push('</tr></thead><tbody>');
-  sectors.forEach(sec => {
-    html.push(`<tr><td style="text-align:left;color:var(--t1);font-weight:600;">${sec}</td>`);
-    drivers.forEach(driver => {
-      const c = cellMap[sec + '|' + driver];
-      if (!c) { html.push('<td style="color:var(--t3);">—</td>'); return; }
-      const intensity = c.count / maxN;
-      const tilt = c.tilt;
-      const baseColor = tilt > 0.2 ? '45,212,170' : tilt < -0.2 ? '242,107,107' : '107,163,214';
-      const bg = `rgba(${baseColor}, ${(0.10 + intensity*0.55).toFixed(2)})`;
-      html.push(`<td style="background:${bg};font-family:var(--font-mono);color:var(--t1);" title="${c.count} co-occurrences · avg α ${c.avg_alpha} · tilt ${c.tilt}">${c.count}</td>`);
-    });
-    html.push('</tr>');
-  });
-  html.push('</tbody></table>');
-  document.getElementById('splMatrix').innerHTML = html.join('');
-
-  const top = [...cells].sort((a,b)=>b.count-a.count).slice(0,4);
-  document.getElementById('splInsights').innerHTML = top.map(c => {
-    const tiltColor = c.tilt > 0.2 ? 'var(--bull)' : c.tilt < -0.2 ? 'var(--bear)' : 'var(--info)';
-    const sample = (c.samples || [])[0];
-    return `<div style="padding:12px;border:1px solid var(--b1);border-radius:var(--r-lg);background:var(--s1);">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-        <span style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--t1);">${c.sector}</span>
-        <span style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;">×</span>
-        <span style="font-family:var(--font-mono);font-size:11px;color:var(--info);font-weight:600;">${c.driver}</span>
-        <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:${tiltColor};font-weight:600;">${c.tilt > 0 ? '+' : ''}${c.tilt}</span>
-      </div>
-      <div style="font-size:11px;color:var(--t2);line-height:1.5;">${c.count} co-occurrences · avg α ${c.avg_alpha} · ${c.bull}B / ${c.bear}S</div>
-      ${sample ? `<div style="font-size:11px;color:var(--t3);margin-top:6px;border-top:1px solid var(--b1);padding-top:6px;line-height:1.45;">${sample.headline}</div>` : ''}
-    </div>`;
-  }).join('');
-}
-document.addEventListener('DOMContentLoaded', () => { setTimeout(loadSpillover, 800); });
-</script>
-
 </main>
 
 <!-- Phase 1.5 live overnight prediction -->
@@ -549,59 +448,84 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(loadSpillover, 
 <script src="./shared/js/phase_1_5.js"></script>
 <script>
 // ══════════════════════════════════════════════════════
-// LIVE DATA — fetched from backend; no hardcoded prices.
-// Static metadata below is purely cosmetic (colors, regions, label
-// mapping). Every number on this page is wired to a real endpoint.
+// DATA
 // ══════════════════════════════════════════════════════
 
-// Index display metadata. Keys match /api/global/overnight indices keys.
-const INDEX_META = {
-    nasdaq:   { id:'nasdaq',   name:'NASDAQ',     region:'US', color:'#6ba3d6' },
-    sp500:    { id:'sp500',    name:'S&P 500',    region:'US', color:'#8eb4e0' },
-    dow:      { id:'dow',      name:'Dow Jones',  region:'US', color:'#adc6ff' },
-    dax:      { id:'dax',      name:'DAX',        region:'EU', color:'#e6b84a' },
-    ftse:     { id:'ftse',     name:'FTSE 100',   region:'EU', color:'#c9a63a' },
-    nikkei:   { id:'nikkei',   name:'Nikkei 225', region:'JP', color:'#b28cff' },
-    hangseng: { id:'hangseng', name:'Hang Seng',  region:'CN', color:'#f26b6b' },
-    shanghai: { id:'shanghai', name:'Shanghai',   region:'CN', color:'#f28c6b' },
-};
-const REGION_GROUPS = {
-    US:   ['nasdaq','sp500','dow'],
-    EU:   ['dax','ftse'],
-    ASIA: ['nikkei','hangseng','shanghai'],
-};
-// Backend model input keys → display label.
-const MODEL_INPUT_LABEL = {
-    sp500_lag:   { label:'S&P 500',  color:'#8eb4e0' },
-    nasdaq_lag:  { label:'NASDAQ',   color:'#6ba3d6' },
-    nikkei_lag:  { label:'Nikkei',   color:'#b28cff' },
-    dxy_lag:     { label:'DXY',      color:'#adc6ff' },
-    usdinr_lag:  { label:'USD/INR',  color:'#e6b84a' },
-    vix_lag:     { label:'VIX',      color:'#f26b6b' },
+const INDEX_DATA = {
+    US: [
+        { id:'nasdaq', name:'NASDAQ', price:17892.4, change:0.82, prev:17747.1, color:'#6ba3d6', region:'US', sparkSeed:42 },
+        { id:'sp500',  name:'S&P 500', price:5234.2, change:0.65, prev:5200.1, color:'#8eb4e0', region:'US', sparkSeed:17 },
+        { id:'dow',    name:'Dow Jones', price:38905.1, change:0.48, prev:38718.6, color:'#adc6ff', region:'US', sparkSeed:33 },
+    ],
+    EU: [
+        { id:'dax',  name:'DAX',     price:18125.6, change:0.31, prev:18069.4, color:'#e6b84a', region:'EU', sparkSeed:55 },
+        { id:'ftse', name:'FTSE 100',price:8234.7,  change:-0.12,prev:8244.6,  color:'#c9a63a', region:'EU', sparkSeed:28 },
+        { id:'cac',  name:'CAC 40',  price:8012.3,  change:0.44, prev:7977.0,  color:'#ddb84a', region:'EU', sparkSeed:61 },
+    ],
+    ASIA: [
+        { id:'nikkei',   name:'Nikkei 225',  price:38450.8, change:1.23, prev:38983.2, color:'#b28cff', region:'JP', sparkSeed:74 },
+        { id:'hsi',      name:'Hang Seng',   price:17234.5, change:-0.88,prev:17388.0, color:'#f26b6b', region:'CN', sparkSeed:81 },
+        { id:'shanghai', name:'Shanghai',    price:3078.2,  change:-0.43,prev:3091.5,  color:'#f28c6b', region:'CN', sparkSeed:92 },
+    ]
 };
 
-// Live state populated by fetchAll(). Until populated, sections show skeletons.
-const state = {
-    indices: {},          // { nasdaq: {close, pct_change, asof}, ... }
-    correlations: {},     // { nasdaq: 0.72, dax: 0.51, ... }
-    prediction: null,     // { predicted_pct, direction, confidence, inputs, weights }
-    history: {},          // { nasdaq: [{date, close}, ...], ... }
-    news: [],             // [{title, summary, source, sentiment, age_hours, ...}]
-    asof: null,
-};
+const ALL_INDICES = [...INDEX_DATA.US, ...INDEX_DATA.EU, ...INDEX_DATA.ASIA];
 
-function allIndices() {
-    return Object.keys(INDEX_META)
-        .filter(k => state.indices[k])
-        .map(k => ({
-            id: k, name: INDEX_META[k].name, region: INDEX_META[k].region,
-            color: INDEX_META[k].color,
-            price: state.indices[k].close,
-            change: state.indices[k].pct_change || 0,
-        }));
-}
+// Model weights for Nifty prediction
+const MODEL_WEIGHTS = [
+    { id:'nasdaq',   label:'NASDAQ',    weight:0.35, color:'#6ba3d6' },
+    { id:'nikkei',   label:'SGX/Nikkei',weight:0.25, color:'#b28cff' },
+    { id:'hsi',      label:'Hang Seng', weight:0.15, color:'#f26b6b' },
+    { id:'dax',      label:'DAX',       weight:0.15, color:'#e6b84a' },
+    { id:'ftse',     label:'FTSE 100',  weight:0.10, color:'#c9a63a' },
+];
 
-const SESSIONS = [
+const CORRELATIONS_DATA = [
+    { id:'nasdaq',   label:'NASDAQ',    corr:0.72, beta:0.41, color:'#6ba3d6' },
+    { id:'sp500',    label:'S&P 500',   corr:0.68, beta:0.38, color:'#8eb4e0' },
+    { id:'nikkei',   label:'Nikkei 225',corr:0.63, beta:0.35, color:'#b28cff' },
+    { id:'dax',      label:'DAX',       corr:0.51, beta:0.28, color:'#e6b84a' },
+    { id:'ftse',     label:'FTSE 100',  corr:0.46, beta:0.25, color:'#c9a63a' },
+    { id:'hsi',      label:'Hang Seng', corr:0.44, beta:0.24, color:'#f26b6b' },
+    { id:'shanghai', label:'Shanghai',  corr:0.31, beta:0.17, color:'#f28c6b' },
+];
+
+const SECTOR_HEATMAP = [
+    { name:'IT / Tech',    nasdaq:0.81, sp500:0.74, dax:0.38, ftse:0.31, nikkei:0.55, hsi:0.29, shanghai:0.18, driver:'NASDAQ' },
+    { name:'Metals',       nasdaq:0.32, sp500:0.35, dax:0.41, ftse:0.38, nikkei:0.47, hsi:0.68, shanghai:0.72, driver:'Shanghai' },
+    { name:'Pharma',       nasdaq:0.61, sp500:0.58, dax:0.44, ftse:0.52, nikkei:0.39, hsi:0.22, shanghai:0.16, driver:'NASDAQ' },
+    { name:'Auto',         nasdaq:0.44, sp500:0.41, dax:0.71, ftse:0.55, nikkei:0.62, hsi:0.38, shanghai:0.31, driver:'DAX' },
+    { name:'Banking',      nasdaq:0.28, sp500:0.32, dax:0.34, ftse:0.48, nikkei:0.31, hsi:0.51, shanghai:0.42, driver:'FTSE' },
+    { name:'Energy',       nasdaq:0.24, sp500:0.28, dax:0.33, ftse:0.44, nikkei:0.35, hsi:0.57, shanghai:0.48, driver:'Hang Seng' },
+    { name:'FMCG',         nasdaq:0.18, sp500:0.22, dax:0.24, ftse:0.31, nikkei:0.21, hsi:0.18, shanghai:0.14, driver:'Domestic' },
+    { name:'Real Estate',  nasdaq:0.31, sp500:0.34, dax:0.27, ftse:0.29, nikkei:0.28, hsi:0.41, shanghai:0.38, driver:'Mixed' },
+];
+
+const NEWS_DATA = [
+    { h:'Fed signals patience on rate cuts as inflation stays sticky above 3%', region:'US', sentiment:'bear', sectors:['IT','Banking'], time:'1h ago', impact:'Negative for rate-sensitive sectors' },
+    { h:'Microsoft and Alphabet both beat Q4 earnings estimates by wide margins', region:'US', sentiment:'bull', sectors:['IT'], time:'2h ago', impact:'Positive for Indian IT majors: TCS, Infy' },
+    { h:'China PMI surprise: manufacturing expands at fastest pace in 8 months', region:'CN', sentiment:'bull', sectors:['Metals','Energy'], time:'3h ago', impact:'Positive for metals: JSW, Hindalco, SAIL' },
+    { h:'European Central Bank signals two more rate cuts before year-end', region:'EU', sentiment:'bull', sectors:['Banking','Auto'], time:'4h ago', impact:'Risk-on for global equities' },
+    { h:'US Treasury yields climb to 4.8% as jobs data exceeds expectations', region:'US', sentiment:'bear', sectors:['IT','FMCG'], time:'5h ago', impact:'DXY strength negative for FII flows' },
+    { h:'Bank of Japan holds rates steady, yen weakens past 155/USD', region:'JP', sentiment:'neut', sectors:['Auto'], time:'6h ago', impact:'Neutral for Indian markets' },
+    { h:'Oil extends gains on OPEC+ supply discipline and China demand revival', region:'GL', sentiment:'bull', sectors:['Energy'], time:'7h ago', impact:'Positive for ONGC, Oil India; negative for OMCs' },
+    { h:'Nvidia guidance tops estimates — AI capex cycle still accelerating', region:'US', sentiment:'bull', sectors:['IT'], time:'8h ago', impact:'Positive for IT, Semiconductor plays' },
+    { h:'UK retail sales disappoint; FTSE dips on consumer spending worry', region:'EU', sentiment:'bear', sectors:['FMCG','Auto'], time:'9h ago', impact:'Limited India impact — domestic-driven' },
+    { h:'China property sector: Evergrande liquidation orders upheld by court', region:'CN', sentiment:'bear', sectors:['Metals','Real Estate'], time:'11h ago', impact:'Negative for steel, cement, real estate' },
+    { h:'Global risk appetite improves as VIX falls below 15-month lows', region:'GL', sentiment:'bull', sectors:['Banking','Auto','IT'], time:'12h ago', impact:'FII buying expected in large-caps' },
+    { h:'ECB minutes: majority favored gradual easing, no rush on pace', region:'EU', sentiment:'neut', sectors:['Banking'], time:'14h ago', impact:'Neutral — India not directly impacted' },
+];
+
+const WEEK_EVENTS = [
+    { day:'Mon', label:'US ISM Manufacturing PMI', region:'US', impact:'high' },
+    { day:'Tue', label:'RBI MPC Minutes Release', region:'IN', impact:'high' },
+    { day:'Wed', label:'US Fed Beige Book', region:'US', impact:'med' },
+    { day:'Wed', label:'China Trade Balance', region:'CN', impact:'high' },
+    { day:'Thu', label:'US Initial Jobless Claims', region:'US', impact:'med' },
+    { day:'Thu', label:'ECB Policy Decision', region:'EU', impact:'high' },
+    { day:'Fri', label:'US Non-Farm Payrolls', region:'US', impact:'high' },
+    { day:'Fri', label:'India CPI Data', region:'IN', impact:'high' },
+];
 
 const SESSIONS = [
     { name:'Tokyo (TSE)', open:'09:00', close:'15:30', tz:'Asia/Tokyo', color:'#b28cff', flag:'🇯🇵' },
@@ -611,6 +535,22 @@ const SESSIONS = [
     { name:'New York (NYSE)', open:'09:30', close:'16:00', tz:'America/New_York', color:'#6ba3d6', flag:'🇺🇸' },
     { name:'GIFT Nifty', open:'06:00', close:'05:30+1', tz:'Asia/Kolkata', color:'#2dd4aa', flag:'🇮🇳' },
 ];
+
+// Seeded PRNG for deterministic sparklines
+function seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+function genSpark(seed, points = 20, volatility = 1.5, trend = 0.05) {
+    const rand = seededRand(seed);
+    let v = 100;
+    return Array.from({length: points}, () => { v += (rand() - 0.5) * volatility + trend; return +v.toFixed(2); });
+}
+
+function gen30D(seed, vol = 1.2, trend = 0.04) {
+    return genSpark(seed, 30, vol, trend);
+}
 
 // ══════════════════════════════════════════════════════
 // SVG HELPERS
@@ -889,38 +829,22 @@ function renderIndexGrid() {
     let cols = ['', '', ''];
 
     regions.forEach((reg, ri) => {
-        REGION_GROUPS[reg].forEach(key => {
-            const live = state.indices[key];
-            const meta = INDEX_META[key];
-            if (!live || live.close == null) {
-                cols[ri] += `<div class="idx-card fade-up opacity-50">
-                    <div class="font-black text-[11px] text-on-surface">${meta.name}</div>
-                    <div class="text-[9px] text-on-surface-variant/50 mt-1">no data</div>
-                </div>`;
-                return;
-            }
-            const change = live.pct_change || 0;
-            const up = change >= 0;
+        INDEX_DATA[reg].forEach(idx => {
+            const spark = gen30D(idx.sparkSeed, 1.8, idx.change > 0 ? 0.05 : -0.05);
+            const up = idx.change >= 0;
             const col = up ? '#2dd4aa' : '#f26b6b';
-            // Build sparkline from last 10 closes of history (if available)
-            const series = (state.history[key] || []).slice(-10).map(p => p.close);
-            const sparkHTML = series.length >= 2
-                ? sparklineSVG(series, col, 100, 28)
-                : `<div class="text-[8px] text-on-surface-variant/30 italic">history loading…</div>`;
-            // Absolute change in points = close × pct_change / 100
-            const absChange = Math.abs(live.close * change / 100);
             cols[ri] += `<div class="idx-card fade-up">
                 <div class="flex items-start justify-between mb-2">
                     <div>
-                        <div class="font-black text-[11px] text-on-surface">${meta.name}</div>
-                        <div class="font-mono text-lg font-black mt-0.5">${live.close.toLocaleString('en-IN', {maximumFractionDigits:1})}</div>
+                        <div class="font-black text-[11px] text-on-surface">${idx.name}</div>
+                        <div class="font-mono text-lg font-black mt-0.5">${idx.price.toLocaleString('en-IN', {maximumFractionDigits:1})}</div>
                     </div>
                     <div class="text-right">
-                        <div class="font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}">${up ? '+' : ''}${change.toFixed(2)}%</div>
-                        <div class="text-[9px] text-on-surface-variant/50 mt-0.5">${up ? '▲' : '▼'} ${absChange.toFixed(1)}</div>
+                        <div class="font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}">${up ? '+' : ''}${idx.change.toFixed(2)}%</div>
+                        <div class="text-[9px] text-on-surface-variant/50 mt-0.5">${up ? '▲' : '▼'} ${Math.abs((idx.price - idx.prev)).toFixed(1)}</div>
                     </div>
                 </div>
-                ${sparkHTML}
+                ${sparklineSVG(spark, col, 100, 28)}
             </div>`;
         });
     });
@@ -932,174 +856,121 @@ function renderIndexGrid() {
     `;
 }
 
-function renderForecast() {
-    if (!state.prediction) return;
-    const pred = state.prediction.predicted_pct || 0;
-    const up = pred >= 0;
-    // Nifty spot from live data, fallback to a sane number if missing
-    const niftyClose = state.indices.nifty?.close || 24500;
-    const pts = Math.round(pred * niftyClose / 100);
+function computePrediction() {
+    let pred = 0;
+    MODEL_WEIGHTS.forEach(w => {
+        const idx = ALL_INDICES.find(i => i.id === w.id);
+        if (idx) pred += idx.change * w.weight;
+    });
+    return +pred.toFixed(3);
+}
 
-    document.getElementById('predLabel').textContent =
-        `${up ? '+' : ''}${pred.toFixed(2)}% (${up ? '+' : ''}${pts} pts)`;
-    document.getElementById('predLabel').className =
-        `font-mono font-black text-2xl ${up ? 'text-secondary' : 'text-bear'}`;
+function renderForecast() {
+    const pred = computePrediction();
+    const up = pred >= 0;
+    const pts = Math.round(pred * 245); // ~24,500 Nifty
+
+    document.getElementById('predLabel').textContent = `${up ? '+' : ''}${pred.toFixed(2)}% (${up ? '+' : ''}${pts} pts)`;
+    document.getElementById('predLabel').className = `font-mono font-black text-2xl ${up ? 'text-secondary' : 'text-bear'}`;
 
     const bias = document.getElementById('predBias');
-    const dir = state.prediction.direction || (up ? 'bullish' : 'bearish');
-    if (dir === 'bullish') {
+    if (up) {
         bias.textContent = '▲ BULLISH BIAS';
         bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-secondary/10 text-secondary border border-secondary/20';
-    } else if (dir === 'bearish') {
+    } else {
         bias.textContent = '▼ BEARISH BIAS';
         bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-bear/10 text-bear border border-bear/20';
-    } else {
-        bias.textContent = '◇ NEUTRAL';
-        bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-caution/10 text-caution border border-caution/20';
     }
 
-    const conf = (state.prediction.confidence || 0) * 100;
+    const conf = Math.min(92, Math.max(52, 68 + Math.abs(pred) * 8));
     document.getElementById('predConf').textContent = `Confidence: ${conf.toFixed(0)}%`;
 
-    // Gauge — replace SVG content
-    const gaugeEl = document.getElementById('predGauge');
-    if (gaugeEl) {
-        gaugeEl.outerHTML = gaugeSVG(pred, -2.5, 2.5).replace('<svg', '<svg id="predGauge"');
-    }
+    // Gauge
+    document.getElementById('predGauge').outerHTML; // just replace
+    document.getElementById('predGauge').insertAdjacentHTML('afterend', gaugeSVG(pred, -2.5, 2.5));
+    document.getElementById('predGauge').remove();
 
-    // Model contributions (live: weights × inputs from backend)
-    const inputs = state.prediction.inputs || {};
-    const weights = state.prediction.weights || {};
-    const factorKeys = Object.keys(inputs);
-    const totalAbsContrib = factorKeys.reduce((a, k) => a + Math.abs((inputs[k] || 0) * (weights[k] || 0)), 0) || 1;
-
+    // Model weights
     const el = document.getElementById('modelWeights');
-    el.innerHTML = factorKeys.map(k => {
-        const meta = MODEL_INPUT_LABEL[k] || { label: k, color: '#8a94a8' };
-        const chg = inputs[k] || 0;
-        const w = weights[k] || 0;
-        const contrib = chg * w;
-        const wPct = (Math.abs(w) * 100); // approximate "weight share" for display
-        const sign = contrib >= 0;
+    el.innerHTML = MODEL_WEIGHTS.map(w => {
+        const idx = ALL_INDICES.find(i => i.id === w.id);
+        const chg = idx ? idx.change : 0;
+        const contrib = chg * w.weight;
+        const up2 = contrib >= 0;
         return `<div class="model-weight">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${meta.color}"></div>
+            <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${w.color}"></div>
             <div class="flex-1 min-w-0">
-                <div class="text-[11px] font-semibold">${meta.label}</div>
-                <div class="text-[9px] text-on-surface-variant/50">coef ${w >= 0 ? '+' : ''}${w.toFixed(2)}</div>
+                <div class="text-[11px] font-semibold">${w.label}</div>
+                <div class="text-[9px] text-on-surface-variant/50">${(w.weight * 100).toFixed(0)}% weight</div>
             </div>
             <div class="text-right">
                 <div class="font-mono text-xs ${chg >= 0 ? 'text-secondary' : 'text-bear'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</div>
-                <div class="font-mono text-[9px] ${sign ? 'text-secondary/60' : 'text-bear/60'}">${contrib >= 0 ? '+' : ''}${contrib.toFixed(3)} contrib</div>
+                <div class="font-mono text-[9px] ${up2 ? 'text-secondary/60' : 'text-bear/60'}">${contrib >= 0 ? '+' : ''}${contrib.toFixed(3)} contrib</div>
             </div>
         </div>`;
-    }).join('') || `<div class="text-[10px] text-on-surface-variant/50 italic py-2">No model inputs available.</div>`;
+    }).join('');
 
-    // Sector impact strip — derived from live correlations + bias direction
-    // High-corr indices that moved in the bias direction → those sectors lead
-    const strip = document.getElementById('sectorImpactStrip');
-    const driven = Object.entries(state.correlations || {})
-        .filter(([k, c]) => Math.abs(c) > 0.4 && state.indices[k])
-        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
-        .slice(0, 6);
+    // Sector impact strip
     const sectorMap = {
-        nasdaq: ['IT', 'Pharma'], sp500: ['IT', 'Banking'], dow: ['Industrials'],
-        dax: ['Auto', 'Industrials'], ftse: ['Banking', 'Energy'],
-        nikkei: ['Auto', 'Tech'], hangseng: ['Metals', 'Real Estate'],
-        shanghai: ['Metals', 'Energy'],
+        bull: [
+            { label:'IT / Tech', icon:'computer' },
+            { label:'Metals', icon:'construction' },
+            { label:'Pharma', icon:'medication' },
+        ],
+        bear: [
+            { label:'Banking', icon:'account_balance' },
+            { label:'FMCG', icon:'shopping_cart' },
+        ]
     };
-    const sectorsTouched = new Set();
-    driven.forEach(([k]) => (sectorMap[k] || []).forEach(s => sectorsTouched.add(s)));
-    const biasIsBull = pred >= 0;
-    strip.innerHTML = [...sectorsTouched].slice(0, 6).map(name => {
-        return `<div class="flex items-center gap-1 px-2 py-1 rounded ${biasIsBull ? 'bg-secondary/10 text-secondary border border-secondary/20' : 'bg-bear/10 text-bear border border-bear/20'} text-[10px] font-bold">
-            ${biasIsBull ? '▲' : '▼'} ${name}
+    const strip = document.getElementById('sectorImpactStrip');
+    const bias2 = pred >= 0 ? 'bull' : 'bear';
+    const sectors = [
+        ...SECTOR_HEATMAP.filter(s => bias2 === 'bull' ? s.nasdaq > 0.5 : s.nasdaq < 0.35).slice(0, 3),
+        ...SECTOR_HEATMAP.filter(s => bias2 === 'bear' ? s.shanghai > 0.5 : s.shanghai < 0.35).slice(0, 2),
+    ];
+    strip.innerHTML = sectors.slice(0, 5).map(s => {
+        return `<div class="flex items-center gap-1 px-2 py-1 rounded ${bias2 === 'bull' ? 'bg-secondary/10 text-secondary border border-secondary/20' : 'bg-bear/10 text-bear border border-bear/20'} text-[10px] font-bold">
+            ${bias2 === 'bull' ? '▲' : '▼'} ${s.name}
         </div>`;
-    }).join('') || `<div class="text-[10px] text-on-surface-variant/40 italic">Awaiting correlation data…</div>`;
+    }).join('');
 }
 
 let chartDays = 30;
-async function renderCorrChart() {
+function renderCorrChart() {
     const days = chartDays;
-    // Series we want to plot: Nifty + 4 globals
-    const seriesKeys = ['nifty', 'nasdaq', 'dax', 'nikkei', 'shanghai'];
-    const colors = { nifty:'#2dd4aa', nasdaq:'#6ba3d6', dax:'#e6b84a', nikkei:'#b28cff', shanghai:'#f26b6b' };
+    const series = [
+        { label:'Nifty 50', color:'#2dd4aa', data: gen30D(11, 1.0, 0.08) },
+        { label:'NASDAQ',   color:'#6ba3d6', data: gen30D(42, 1.6, 0.07) },
+        { label:'DAX',      color:'#e6b84a', data: gen30D(55, 1.1, 0.04) },
+        { label:'Nikkei',   color:'#b28cff', data: gen30D(74, 1.4, 0.10) },
+        { label:'Shanghai', color:'#f26b6b', data: gen30D(92, 1.3, -0.03) },
+    ];
 
-    // Build data arrays from history; require at least 2 points
-    const series = seriesKeys
-        .map(k => {
-            const h = (state.history[k] || []).slice(-days);
-            if (h.length < 2) return null;
-            return { label: INDEX_META[k]?.name || k, color: colors[k], data: h.map(p => p.close) };
-        })
-        .filter(Boolean);
-
-    const wrap = document.getElementById('corrChartWrap');
-    if (!series.length) {
-        wrap.innerHTML = `<div class="text-center py-12 text-on-surface-variant/40 text-xs">Historical data unavailable. Backend cache will populate within ~10 minutes.</div>`;
-        return;
-    }
-    const w = Math.max(480, wrap.clientWidth || 540);
-    // All series should have same length; pad shorter ones to longest length
-    const longest = Math.max(...series.map(s => s.data.length));
-    series.forEach(s => {
-        if (s.data.length < longest) {
-            // Pad at the start with the first known value
-            s.data = Array(longest - s.data.length).fill(s.data[0]).concat(s.data);
-        }
-    });
-    wrap.innerHTML = lineChartSVG(series, longest, w, 200);
+    const w = Math.max(480, document.getElementById('corrChartWrap')?.clientWidth || 540);
+    document.getElementById('corrChart').outerHTML = '<svg id="corrChart" class="chart-svg" style="min-width:480px;"></svg>';
+    // Reconstruct the wrap
+    document.getElementById('corrChartWrap').innerHTML = lineChartSVG(series, days, w, 200);
 }
 
-async function switchChart(d) {
+function switchChart(d) {
     chartDays = parseInt(d);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent === d + 'D'));
-    // If we don't have enough history for 90D, refetch with bigger window
-    const have = (state.history.nifty || []).length;
-    if (chartDays > have) {
-        await fetchHistory(chartDays);
-        renderIndexGrid();      // sparklines may benefit from updated data
-        renderOvernightChart(); // overnight bars depend on history
-    }
     renderCorrChart();
 }
 
 function renderOvernightChart() {
-    // Composite global = mean(pct_change of US closes) from history.
-    // Nifty next-day open gap ≈ Nifty[t+1] / Nifty[t] - 1, paired with global at t.
-    const niftyHist = state.history.nifty || [];
-    const globalKeys = ['nasdaq', 'sp500', 'dow'];
-    const globals = globalKeys.map(k => state.history[k] || []);
-    const wrap = document.getElementById('overnightChartWrap');
-    if (niftyHist.length < 3 || !globals.every(g => g.length >= 3)) {
-        wrap.innerHTML = `<div class="text-center py-8 text-on-surface-variant/40 text-xs">Awaiting historical data…</div>`;
-        return;
-    }
-    // Compute pct changes (close-to-close) for each series
-    function pctSeries(arr) {
-        return arr.slice(1).map((p, i) => ({
-            date: p.date,
-            pct: arr[i].close ? ((p.close - arr[i].close) / arr[i].close * 100) : 0,
-        }));
-    }
-    const niftyPct = pctSeries(niftyHist);
-    const globalPcts = globals.map(pctSeries);
-    // Align by index from the tail (assume same trading-day calendar approx).
-    // Use min length to be safe.
-    const N = Math.min(15, niftyPct.length, ...globalPcts.map(g => g.length));
-    const sessions = [];
-    for (let i = N - 1; i >= 0; i--) {
-        const idx = niftyPct.length - 1 - i; // count from tail
-        const composite = globalPcts.reduce((s, g) => s + (g[g.length - 1 - i]?.pct || 0), 0) / globalPcts.length;
-        const niftyP = niftyPct[idx]?.pct || 0;
-        const dt = new Date(niftyPct[idx]?.date || Date.now());
-        sessions.push({
-            global: +composite.toFixed(2),
-            nifty:  +niftyP.toFixed(2),
-            label:  `${dt.getDate()}/${dt.getMonth() + 1}`,
-        });
-    }
-    const w = Math.max(480, wrap.clientWidth || 540);
-    wrap.innerHTML = barChartSVG(sessions, w, 160);
+    const rand = seededRand(999);
+    const sessions = Array.from({length:15}, (_, i) => {
+        const global = +(((rand() - 0.45) * 2.5)).toFixed(2);
+        // Nifty corr ~0.65 with global
+        const nifty = +(global * 0.65 + (rand() - 0.5) * 0.4).toFixed(2);
+        const d = new Date(); d.setDate(d.getDate() - (14 - i));
+        const label = `${d.getDate()}/${d.getMonth() + 1}`;
+        return { global, nifty, label };
+    });
+
+    const w = Math.max(480, document.getElementById('overnightChartWrap')?.clientWidth || 540);
+    document.getElementById('overnightChartWrap').innerHTML = barChartSVG(sessions, w, 160);
 }
 
 let activeRegion = 'ALL', activeSentiment = 'ALL';
@@ -1116,79 +987,43 @@ function filterSentiment(s) {
     renderNewsFeed();
 }
 
-// Heuristic region tag based on news source/title (backend doesn't tag region).
-function inferRegion(item) {
-    const hay = `${item.title || ''} ${item.summary || ''} ${item.feed || ''} ${item.source || ''}`.toLowerCase();
-    if (/\b(fed|federal reserve|s&p|nasdaq|wall street|treasury|us\b|america|biden|trump|fomc)\b/.test(hay)) return 'US';
-    if (/\b(china|shanghai|hang seng|hangseng|pboc|yuan|beijing|csi|hong kong)\b/.test(hay)) return 'CN';
-    if (/\b(ecb|euro|europe|dax|ftse|frankfurt|london|brexit|bundesbank|eurozone)\b/.test(hay)) return 'EU';
-    if (/\b(boj|nikkei|tokyo|yen|japan)\b/.test(hay)) return 'JP';
-    return 'GL';
-}
-
-// Sentiment normalization: backend uses 'positive/negative/neutral'
-function normSentiment(s) {
-    if (!s) return 'neut';
-    s = String(s).toLowerCase();
-    if (s.startsWith('pos') || s === 'bull' || s === 'bullish') return 'bull';
-    if (s.startsWith('neg') || s === 'bear' || s === 'bearish') return 'bear';
-    return 'neut';
-}
-
-function ageLabel(hours) {
-    if (hours == null) return '';
-    if (hours < 1) return `${Math.round(hours * 60)}m ago`;
-    if (hours < 24) return `${hours.toFixed(0)}h ago`;
-    return `${Math.round(hours / 24)}d ago`;
-}
-
 function renderNewsFeed() {
-    const items = (state.news || []).map(n => ({
-        ...n,
-        region: inferRegion(n),
-        sentNorm: normSentiment(n.sentiment),
-    }));
-    const filtered = items.filter(n => {
+    const filtered = NEWS_DATA.filter(n => {
         const regionOk = activeRegion === 'ALL' || n.region === activeRegion;
-        const sentOk = activeSentiment === 'ALL' || n.sentNorm === activeSentiment;
+        const sentOk = activeSentiment === 'ALL' || n.sentiment === activeSentiment;
         return regionOk && sentOk;
     });
 
     const sentClass = { bull:'sentiment-bull', bear:'sentiment-bear', neut:'sentiment-neut' };
-    const sentLabel = { bull:'Bullish', bear:'Bearish', neut:'Neutral' };
+    const sentLabel = { bull:'Bullish for India', bear:'Bearish for India', neut:'Neutral' };
     const regClass  = { US:'region-us', EU:'region-eu', CN:'region-cn', JP:'region-jp', GL:'region-gl' };
     const regLabel  = { US:'US', EU:'Europe', CN:'China', JP:'Japan', GL:'Global' };
 
-    document.getElementById('newsFeed').innerHTML = filtered.length ? filtered.slice(0, 30).map(n => {
-        const url = n.link || n.url || '#';
-        const safeTitle = (n.title || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const tickers = Array.isArray(n.tickers) ? n.tickers.slice(0, 4) : [];
-        return `<a href="${url}" target="_blank" rel="noopener" class="news-card block">
+    document.getElementById('newsFeed').innerHTML = filtered.length ? filtered.map(n => `
+        <div class="news-card">
             <div class="flex flex-wrap gap-1.5 mb-1.5">
                 <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${regClass[n.region] || 'region-gl'}">${regLabel[n.region] || n.region}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${sentClass[n.sentNorm]}">${sentLabel[n.sentNorm]}</span>
-                ${n.tier ? `<span class="text-[8px] px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant/60">T${n.tier}</span>` : ''}
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${sentClass[n.sentiment]}">${sentLabel[n.sentiment]}</span>
             </div>
-            <p class="text-xs text-on-surface leading-snug mb-1.5">${safeTitle}</p>
+            <p class="text-xs text-on-surface leading-snug mb-1.5">${n.h}</p>
             <div class="flex items-center justify-between">
-                <p class="text-[9px] text-on-surface-variant/50 italic truncate pr-2">${n.feed || n.source || ''}</p>
-                <span class="text-[9px] text-on-surface-variant/40 flex-shrink-0">${ageLabel(n.age_hours)}</span>
+                <p class="text-[9px] text-on-surface-variant/50 italic">${n.impact}</p>
+                <span class="text-[9px] text-on-surface-variant/40">${n.time}</span>
             </div>
-            ${tickers.length ? `<div class="flex flex-wrap gap-1 mt-1.5">
-                ${tickers.map(t => `<span class="text-[8px] px-1 py-0.5 rounded bg-surface-container-high text-on-surface-variant/60">${t}</span>`).join('')}
-            </div>` : ''}
-        </a>`;
-    }).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news matches the selected filters.</div>`;
+            <div class="flex flex-wrap gap-1 mt-1.5">
+                ${n.sectors.map(s => `<span class="text-[8px] px-1 py-0.5 rounded bg-surface-container-high text-on-surface-variant/60">${s}</span>`).join('')}
+            </div>
+        </div>
+    `).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news matches the selected filters.</div>`;
 
     renderSentimentDonut();
 }
 
 function renderSentimentDonut() {
-    const items = (state.news || []).map(n => ({ ...n, region: inferRegion(n), sentNorm: normSentiment(n.sentiment) }));
-    const filtered = items.filter(n => activeRegion === 'ALL' || n.region === activeRegion);
-    const bull = filtered.filter(n => n.sentNorm === 'bull').length;
-    const bear = filtered.filter(n => n.sentNorm === 'bear').length;
-    const neut = filtered.filter(n => n.sentNorm === 'neut').length;
+    const filtered = NEWS_DATA.filter(n => activeRegion === 'ALL' || n.region === activeRegion);
+    const bull = filtered.filter(n => n.sentiment === 'bull').length;
+    const bear = filtered.filter(n => n.sentiment === 'bear').length;
+    const neut = filtered.filter(n => n.sentiment === 'neut').length;
     const total = filtered.length || 1;
 
     const segs = [
@@ -1197,214 +1032,128 @@ function renderSentimentDonut() {
         { label:'Neutral', value:neut, color:'#3d4a5c' },
     ].filter(s => s.value > 0);
 
-    const donutEl = document.getElementById('sentimentDonut');
-    if (donutEl) {
-        donutEl.outerHTML = (segs.length ? donutSVG(segs) : `<svg width="100" height="100"></svg>`)
-            .replace('<svg', '<svg id="sentimentDonut"');
-    }
+    document.getElementById('sentimentDonut').outerHTML = donutSVG(segs).replace('<svg', '<svg id="sentimentDonut"');
+
     document.getElementById('sentimentLegend').innerHTML = segs.map(s => `
         <div class="flex items-center gap-2">
             <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${s.color}"></div>
             <div class="flex-1 text-[10px] text-on-surface-variant/80">${s.label}</div>
             <div class="font-mono text-[10px] font-bold" style="color:${s.color}">${s.value} <span class="text-on-surface-variant/40">(${Math.round(s.value/total*100)}%)</span></div>
         </div>
-    `).join('') || `<div class="text-[10px] text-on-surface-variant/40 italic">No news yet.</div>`;
+    `).join('');
 }
 
 function renderCorrList() {
-    const rows = Object.entries(state.correlations || {})
-        .filter(([k]) => INDEX_META[k]) // only show known indices in the list (skip vix/dxy/usdinr)
-        .map(([k, corr]) => ({
-            id: k, label: INDEX_META[k].name, color: INDEX_META[k].color,
-            corr: typeof corr === 'number' ? corr : 0,
-        }))
-        .sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr));
-
-    const el = document.getElementById('corrList');
-    if (!rows.length) {
-        el.innerHTML = `<div class="text-[10px] text-on-surface-variant/40 italic py-2">Correlation data not yet available — backend computes 60-day rolling on first scrape.</div>`;
-        return;
-    }
-    el.innerHTML = rows.map(c => {
-        const w = Math.max(4, Math.abs(c.corr) * 100);
-        const sign = c.corr >= 0 ? '' : '−';
-        const color = c.corr >= 0 ? c.color : '#f26b6b';
-        return `<div>
+    document.getElementById('corrList').innerHTML = CORRELATIONS_DATA.map(c => `
+        <div>
             <div class="flex items-center justify-between mb-1">
                 <div class="flex items-center gap-1.5">
                     <div class="w-2 h-2 rounded-full" style="background:${c.color}"></div>
                     <span class="text-[11px] font-semibold">${c.label}</span>
                 </div>
                 <div class="text-right">
-                    <span class="font-mono text-xs font-bold text-primary">${sign}${Math.abs(c.corr).toFixed(2)}</span>
+                    <span class="font-mono text-xs font-bold text-primary">${c.corr.toFixed(2)}</span>
+                    <span class="text-[9px] text-on-surface-variant/50 ml-1">β=${c.beta}</span>
                 </div>
             </div>
             <div class="corr-bar-wrap">
-                <div class="corr-bar-fill" style="width:${w.toFixed(0)}%;background:${color};opacity:0.7;"></div>
+                <div class="corr-bar-fill" style="width:${(c.corr*100).toFixed(0)}%;background:${c.color};opacity:0.7;"></div>
             </div>
-        </div>`;
-    }).join('');
+        </div>
+    `).join('');
+}
+
+function renderHeatmap() {
+    const cols = ['nasdaq','sp500','dax','ftse','nikkei','hsi','shanghai'];
+    function heatColor(v) {
+        if (v > 0.6) return `rgba(45,212,170,${0.4 + v * 0.5})`;
+        if (v > 0.3) return `rgba(230,184,74,${0.3 + v * 0.4})`;
+        return `rgba(61,74,92,${0.3 + v * 0.3})`;
+    }
+    function textColor(v) {
+        if (v > 0.6) return '#2dd4aa';
+        if (v > 0.3) return '#e6b84a';
+        return '#5a6478';
+    }
+
+    document.getElementById('heatmapBody').innerHTML = SECTOR_HEATMAP.map(row => `
+        <tr class="border-t border-outline-variant/10">
+            <td class="py-2 pr-4 text-[11px] font-semibold text-on-surface/90 whitespace-nowrap">${row.name}</td>
+            ${cols.map(c => `
+                <td class="py-1.5 px-1.5">
+                    <div class="heat-cell" style="background:${heatColor(row[c])};color:${textColor(row[c])};">${row[c].toFixed(2)}</div>
+                </td>
+            `).join('')}
+            <td class="py-1.5 px-2">
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver}</span>
+            </td>
+        </tr>
+    `).join('');
 }
 
 function renderWeightPie() {
-    const w = state.prediction?.weights || {};
-    const segs = Object.keys(w)
-        .filter(k => k !== 'intercept' && Math.abs(w[k]) > 0.001)
-        .map(k => {
-            const meta = MODEL_INPUT_LABEL[k] || { label: k, color: '#8a94a8' };
-            return { label: meta.label, value: Math.abs(w[k]) * 100, color: meta.color };
-        });
-    if (!segs.length) {
-        document.getElementById('weightPieLegend').innerHTML =
-            `<div class="text-[10px] text-on-surface-variant/40 italic">Awaiting model weights…</div>`;
-        return;
-    }
-    const total = segs.reduce((s, x) => s + x.value, 0) || 1;
-    const pieEl = document.getElementById('weightPie');
-    if (pieEl) pieEl.outerHTML = pieSVG(segs).replace('<svg', '<svg id="weightPie"');
+    const segs = MODEL_WEIGHTS.map(w => ({ label: w.label, value: w.weight * 100, color: w.color }));
+    document.getElementById('weightPie').outerHTML = pieSVG(segs).replace('<svg', '<svg id="weightPie"');
     document.getElementById('weightPieLegend').innerHTML = segs.map(s => `
         <div class="flex items-center gap-2">
             <div class="w-2.5 h-2.5 rounded-sm flex-shrink-0" style="background:${s.color}"></div>
             <div class="flex-1 text-[10px] text-on-surface-variant/80">${s.label}</div>
-            <div class="font-mono text-[10px] font-bold text-on-surface-variant">${(s.value/total*100).toFixed(0)}%</div>
+            <div class="font-mono text-[10px] font-bold text-on-surface-variant">${s.value.toFixed(0)}%</div>
         </div>
     `).join('');
 }
 
 function renderRiskGauge() {
-    // Live VIX & DXY from overnight snapshot
-    const vix = state.indices.vix?.close;
-    const dxy = state.indices.dxy?.close;
-    // Risk score: VIX-driven (low vix = risk-on). Map 12-30 → 100-0, clamp.
-    let riskScore = 50;
-    if (vix != null) {
-        const v = Math.max(12, Math.min(30, vix));
-        riskScore = Math.round(((30 - v) / (30 - 12)) * 100);
-    } else {
-        // Fallback: average of index changes
-        const arr = allIndices();
-        if (arr.length) {
-            const avgChg = arr.reduce((a, i) => a + i.change, 0) / arr.length;
-            const avgUp = arr.filter(i => i.change > 0).length / arr.length;
-            riskScore = Math.round(50 + avgChg * 12 + (avgUp - 0.5) * 20);
-        }
-    }
+    // Risk score based on VIX-like calc from index moves
+    const avgUp = ALL_INDICES.filter(i => i.change > 0).length / ALL_INDICES.length;
+    const avgChg = ALL_INDICES.reduce((a, i) => a + i.change, 0) / ALL_INDICES.length;
+    const riskScore = Math.round(50 + avgChg * 12 + (avgUp - 0.5) * 20);
     const clamped = Math.max(10, Math.min(90, riskScore));
+    const vix = (20 - avgChg * 3 + Math.random() * 2).toFixed(1);
+    const dxy = (104.2 - avgChg * 0.4).toFixed(2);
+
+    // Gauge value: 0-100 → map to -1 to 1 range
     const gaugeVal = (clamped - 50) / 50 * 2.5;
     const gaugeEl = document.getElementById('riskGauge');
-    if (gaugeEl) gaugeEl.outerHTML = gaugeSVG(gaugeVal, -2.5, 2.5, 200, 110).replace('<svg', '<svg id="riskGauge"');
+    gaugeEl.outerHTML = gaugeSVG(gaugeVal, -2.5, 2.5, 200, 110).replace('<svg', '<svg id="riskGauge"');
 
     const label = clamped > 65 ? 'Risk-On' : clamped < 35 ? 'Risk-Off' : 'Neutral';
     const color = clamped > 65 ? 'text-secondary' : clamped < 35 ? 'text-bear' : 'text-caution';
     document.getElementById('riskLabel').textContent = label;
     document.getElementById('riskLabel').className = `font-mono font-black text-xl mt-2 ${color}`;
     document.getElementById('riskScore').textContent = `Score: ${clamped}/100`;
-    document.getElementById('vixVal').textContent = vix != null ? vix.toFixed(2) : '—';
-    document.getElementById('dxyVal').textContent = dxy != null ? dxy.toFixed(2) : '—';
+    document.getElementById('vixVal').textContent = vix;
+    document.getElementById('dxyVal').textContent = dxy;
 }
 
-// Replaced "Key Events This Week" with live "Today's top global drivers"
-// — derived from prediction inputs, ranked by absolute contribution.
 function renderWeekEvents() {
-    const inputs = state.prediction?.inputs || {};
-    const weights = state.prediction?.weights || {};
-    const drivers = Object.keys(inputs).map(k => {
-        const meta = MODEL_INPUT_LABEL[k] || { label: k, color: '#8a94a8' };
-        const v = inputs[k] || 0;
-        const w = weights[k] || 0;
-        return { key: k, label: meta.label, color: meta.color, value: v, weight: w, contrib: v * w };
-    }).sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+    const impactColor = { high:'text-bear', med:'text-caution', low:'text-on-surface-variant/50' };
+    const regColor = { US:'text-info', IN:'text-secondary', EU:'text-caution', CN:'text-bear' };
+    const days = ['Mon','Tue','Wed','Thu','Fri'];
+    const today = days[Math.min(new Date().getDay() - 1, 4)] || 'Mon';
 
-    const heading = document.querySelector('#weekEvents')?.parentElement?.querySelector('h2');
-    if (heading) heading.innerHTML = `<span class="material-symbols-outlined text-tertiary text-base">trending_up</span>Top Global Drivers · today`;
-
-    const el = document.getElementById('weekEvents');
-    if (!drivers.length) {
-        el.innerHTML = `<div class="text-[10px] text-on-surface-variant/40 italic">Awaiting model inputs…</div>`;
-        return;
-    }
-    el.innerHTML = drivers.map(d => {
-        const contribUp = d.contrib >= 0;
-        return `<div class="flex items-start gap-2 p-2 rounded-lg bg-surface-container-low/50">
-            <div class="w-1 h-8 rounded-full flex-shrink-0 mt-0.5" style="background:${d.color}"></div>
+    document.getElementById('weekEvents').innerHTML = WEEK_EVENTS.map(e => `
+        <div class="flex items-start gap-2 p-2 rounded-lg ${e.day === today ? 'bg-surface-container border border-outline-variant/20' : ''}">
+            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day}</div>
             <div class="flex-1 min-w-0">
-                <div class="text-[11px] font-semibold text-on-surface leading-snug">${d.label}</div>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <span class="font-mono text-[9px] ${d.value >= 0 ? 'text-secondary' : 'text-bear'}">${d.value >= 0 ? '+' : ''}${d.value.toFixed(2)}%</span>
-                    <span class="font-mono text-[9px] text-on-surface-variant/50">coef ${d.weight >= 0 ? '+' : ''}${d.weight.toFixed(2)}</span>
+                <div class="text-[10px] font-medium text-on-surface leading-snug">${e.label}</div>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region}</span>
+                    <span class="text-[8px] ${impactColor[e.impact]}">${e.impact.toUpperCase()} IMPACT</span>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="font-mono text-[10px] font-bold ${contribUp ? 'text-secondary' : 'text-bear'}">${contribUp ? '+' : ''}${d.contrib.toFixed(3)}</div>
-                <div class="text-[8px] text-on-surface-variant/40 uppercase">contrib</div>
-            </div>
-        </div>`;
-    }).join('');
+        </div>
+    `).join('');
 }
 
 function renderGiftNifty() {
-    const pred = state.prediction?.predicted_pct;
-    const nifty = state.indices.nifty?.close;
-    if (pred == null || nifty == null) {
-        document.getElementById('giftNiftyVal').textContent = '—';
-        return;
-    }
-    const giftPremium = pred * nifty / 100;
-    const giftVal = (nifty + giftPremium).toFixed(0);
+    const pred = computePrediction();
+    const niftySpot = 24350;
+    const giftPremium = pred * niftySpot / 100;
+    const giftVal = (niftySpot + giftPremium).toFixed(0);
     const up = giftPremium >= 0;
     document.getElementById('giftNiftyVal').textContent = `${Number(giftVal).toLocaleString('en-IN')} ${up ? '▲' : '▼'}`;
     document.getElementById('giftNiftyVal').className = `font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}`;
-}
-
-function renderImpactTable() {
-    const body = document.getElementById('impactBody');
-    if (!body) return;
-    const rows = Object.keys(INDEX_META)
-        .filter(k => state.indices[k])
-        .map(k => {
-            const live = state.indices[k];
-            const corr = state.correlations[k]; // may be undefined
-            const move = live.pct_change || 0;
-            const pull = (typeof corr === 'number') ? move * corr : null;
-            return { key: k, meta: INDEX_META[k], move, corr, pull };
-        })
-        .sort((a, b) => Math.abs(b.pull ?? 0) - Math.abs(a.pull ?? 0));
-
-    if (!rows.length) {
-        body.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-on-surface-variant/40 text-[10px] italic">Awaiting live snapshot…</td></tr>`;
-        return;
-    }
-    const regColor = { US:'text-info', EU:'text-caution', CN:'text-bear', JP:'#b28cff' };
-    body.innerHTML = rows.map(r => {
-        const moveCol = r.move >= 0 ? 'text-secondary' : 'text-bear';
-        const corrText = (typeof r.corr === 'number') ? r.corr.toFixed(2) : '—';
-        const pullCol = r.pull == null ? 'text-on-surface-variant/40' : (r.pull >= 0 ? 'text-secondary' : 'text-bear');
-        const pullText = r.pull == null ? '—' : `${r.pull >= 0 ? '+' : ''}${r.pull.toFixed(2)}%`;
-        // Read interpretation
-        let read = '—';
-        if (r.pull != null) {
-            const mag = Math.abs(r.pull);
-            if (mag < 0.05) read = 'Negligible';
-            else if (mag < 0.2) read = r.pull >= 0 ? 'Mildly bullish' : 'Mildly bearish';
-            else if (mag < 0.5) read = r.pull >= 0 ? 'Bullish' : 'Bearish';
-            else read = r.pull >= 0 ? 'Strongly bullish' : 'Strongly bearish';
-        }
-        return `<tr class="border-t border-outline-variant/10">
-            <td class="py-2 pr-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full" style="background:${r.meta.color}"></div>
-                    <span class="text-[11px] font-semibold text-on-surface">${r.meta.name}</span>
-                </div>
-            </td>
-            <td class="py-2 px-2 text-center">
-                <span class="text-[10px] font-bold ${regColor[r.meta.region] || 'text-on-surface-variant'}">${r.meta.region}</span>
-            </td>
-            <td class="py-2 px-2 text-right font-mono text-[11px] ${moveCol}">${r.move >= 0 ? '+' : ''}${r.move.toFixed(2)}%</td>
-            <td class="py-2 px-2 text-right font-mono text-[11px] text-on-surface-variant">${corrText}</td>
-            <td class="py-2 px-2 text-right font-mono text-[11px] font-bold ${pullCol}">${pullText}</td>
-            <td class="py-2 pl-3 text-[10px] text-on-surface-variant/80">${read}</td>
-        </tr>`;
-    }).join('');
 }
 
 // Clock
@@ -1416,102 +1165,39 @@ function updateClock() {
     const m = String(ist.getMinutes()).padStart(2, '0');
     const s = String(ist.getSeconds()).padStart(2, '0');
     document.getElementById('istClock').textContent = `${h}:${m}:${s}`;
-    const upd = document.getElementById('overviewUpdated');
-    if (upd) {
-        const stamp = state.asof ? new Date(state.asof) : null;
-        upd.textContent = stamp
-            ? `Snapshot ${stamp.toLocaleString('en-IN', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short'})}`
-            : `Updated ${h}:${m} IST`;
-    }
-}
-
-// ══════════════════════════════════════════════════════
-// API
-// ══════════════════════════════════════════════════════
-async function fetchJSON(path) {
-    const r = await fetch(path);
-    if (!r.ok) throw new Error(`${path} → HTTP ${r.status}`);
-    return r.json();
-}
-
-async function fetchOvernight() {
-    try {
-        const j = await fetchJSON('/api/global/overnight');
-        const d = (j && j.data) || {};
-        state.indices      = d.indices || {};
-        state.correlations = d.correlations_to_nifty || {};
-        state.prediction   = d.prediction || null;
-        state.asof         = d.asof || null;
-    } catch (e) {
-        console.warn('overnight fetch failed:', e);
-    }
-}
-
-async function fetchHistory(days = 30) {
-    try {
-        const j = await fetchJSON(`/api/global/history?days=${days}`);
-        const idx = (j && j.data && j.data.indices) || {};
-        // Flatten to {key: [{date, close}, ...]}
-        const flat = {};
-        Object.keys(idx).forEach(k => { flat[k] = idx[k].series || []; });
-        state.history = flat;
-    } catch (e) {
-        console.warn('history fetch failed:', e);
-    }
-}
-
-async function fetchNews() {
-    try {
-        const j = await fetchJSON('/api/news/fast?limit=40');
-        const list = j && j.data;
-        state.news = Array.isArray(list) ? list : [];
-    } catch (e) {
-        console.warn('news fetch failed:', e);
-        state.news = [];
-    }
-}
-
-async function refreshAll() {
-    await Promise.all([fetchOvernight(), fetchHistory(chartDays), fetchNews()]);
-    renderIndexGrid();
-    renderForecast();
-    renderCorrList();
-    renderImpactTable();
-    renderWeightPie();
-    renderRiskGauge();
-    renderWeekEvents();
-    renderGiftNifty();
-    renderNewsFeed();
-    renderCorrChart();
-    renderOvernightChart();
-    updateClock();
+    document.getElementById('overviewUpdated').textContent = `Updated ${h}:${m} IST`;
 }
 
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(renderSessionBar, 60000);
 
     renderSessionBar();
-    // Render skeletons immediately so the page isn't blank
     renderIndexGrid();
-    renderImpactTable();
+    renderForecast();
     renderCorrList();
+    renderNewsFeed();
+    renderHeatmap();
+    renderWeightPie();
+    renderRiskGauge();
     renderWeekEvents();
+    renderGiftNifty();
 
-    // Fire fetches; charts re-render on completion
-    await refreshAll();
+    // Charts need a tick to measure width
+    setTimeout(() => {
+        renderCorrChart();
+        renderOvernightChart();
+    }, 100);
 
-    if (window.Auth && Auth.updateAuthUI) Auth.updateAuthUI();
-    if (window.DataRefresher && DataRefresher.start) {
-        DataRefresher.start(() => {
-            renderSessionBar();
-            refreshAll().catch(e => console.warn('refresh:', e));
-        }, 60000);
-    }
+    Auth.updateAuthUI();
+    DataRefresher.start(() => {
+        renderSessionBar();
+        renderGiftNifty();
+    }, 30000);
 });
 </script>
 </body>

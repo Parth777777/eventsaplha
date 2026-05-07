@@ -3,183 +3,53 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tickwave | Screeners</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<script id="tailwind-config">
-  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
-    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
-    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
-    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
-    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
-    "outline":"#3d4a5c","outline-variant":"#253040",
-    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
-  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["JetBrains Mono"] } } } }
-</script>
 <link rel="stylesheet" href="./shared/css/style.css">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <style>
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
-
-/* Preset screen card — same visual language as widget */
-.screener-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r-lg);
-  padding:14px; cursor:pointer; transition:all 0.18s; box-shadow:var(--shadow-md); }
-.screener-card:hover { border-color:var(--info-border); transform: translateY(-2px); }
-.screener-card.active { border-color:var(--bull-border); background:linear-gradient(180deg, var(--bull-dim), var(--s1)); }
-.screener-card .sc-title { font-family:var(--font-head); font-weight:700; font-size:13px; color:var(--t1); }
-.screener-card .sc-desc  { font-size:11px; color:var(--t2); line-height:1.5; margin-top:4px; }
-
-/* Filter builder clauses — match form-control style of other pages */
-.clause-row { display:grid; grid-template-columns: 1fr 90px 1fr 28px; gap:8px; align-items:center; margin-bottom:8px; }
-.clause-row select, .clause-row input {
-  background:var(--s0); border:1px solid var(--b1); color:var(--t1);
-  border-radius:var(--r-sm); padding:7px 9px; font-size:12px; font-family:var(--font-ui); width:100%;
-}
-.clause-row select:focus, .clause-row input:focus { outline:none; border-color:var(--info); }
-
-.btn { background:var(--s2); border:1px solid var(--b1); color:var(--t1); border-radius:var(--r-sm);
-  padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font-ui); transition:all .12s; }
-.btn:hover { background:var(--s3); border-color:var(--b2); }
-.btn-primary { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
-.btn-primary:hover { background:var(--info-border); color:#fff; }
-.btn-icon { background:transparent; border:1px solid var(--b1); color:var(--t2);
-  border-radius:var(--r-sm); padding:4px 8px; cursor:pointer; }
-.btn-icon:hover { color:var(--bear); border-color:var(--bear-border); }
-
-/* Tabs same as stock.html */
-.tab-row { display:flex; gap:0; border-bottom:1px solid var(--b1); margin-bottom:18px; }
-.tab-row button { padding:10px 18px; font-size:12px; font-weight:600; color:var(--t2);
-  border:none; background:transparent; cursor:pointer; border-bottom:2px solid transparent; font-family:var(--font-ui); }
-.tab-row button.active { color:var(--info); border-bottom-color:var(--info); }
-.tab-row button:hover:not(.active) { color:var(--t1); }
-
-.alpha-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:var(--r-sm);
-  font-family:var(--font-mono); font-size:11px; font-weight:600; }
-.alpha-pill.high { background:var(--bull-dim); color:var(--bull); border:1px solid var(--bull-border); }
-.alpha-pill.mid  { background:var(--caution-dim); color:var(--caution); border:1px solid var(--caution-border); }
-.alpha-pill.low  { background:var(--info-dim); color:var(--info); border:1px solid var(--info-border); }
+.screener-card { background:#0d1118; border:1px solid #1f2336; border-radius:12px; padding:16px; cursor:pointer; transition:all 0.2s; }
+.screener-card:hover { border-color:#5b6cff; transform: translateY(-1px); }
+.screener-card.active { border-color:#4ee6b8; background:#0e1a16; }
+table { border-collapse:collapse; }
+th { background:#0d1118; }
+tr:hover { background:#0d1118; }
 </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body" style="background:#080c12;color:#dde3ef;">
 
 <aside class="sidebar hidden md:flex">
   <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Screeners</p></div>
   <nav class="sidebar-nav">
     <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
     <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
     <a class="sidebar-link active" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
-    <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
-    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
     <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
-    <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
     <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
-    <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
-    <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
-    <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
     <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
   </nav>
 </aside>
 
-<main class="main-content">
-
-<!-- Page header — same pattern as other pages -->
-<header style="position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--b1);padding:14px 0;margin-bottom:18px;">
-  <div style="display:flex;align-items:baseline;gap:10px;">
-    <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
-    <span style="color:var(--b2);">·</span>
-    <h1 style="font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--t1);">Screeners</h1>
-  </div>
-  <p style="color:var(--t3);font-size:12px;margin-top:2px;">Pre-built screens powered by alpha + forensics + filing-grade data, plus a Tickertape-style custom filter builder.</p>
+<main class="main-content" style="padding:32px;max-width:1300px;">
+<header style="margin-bottom:24px;">
+  <h1 style="font-family:'Plus Jakarta Sans';font-weight:900;font-size:32px;">SCREENERS</h1>
+  <p style="color:#9aa0c8;font-size:13px;">Pre-built filters powered by alpha + forensics + filing-grade data.</p>
 </header>
 
-<!-- KPI strip — universe stats (Widgets.statCard pattern, inline 4-up) -->
-<div id="screenerKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;"></div>
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:28px;" id="screenersGrid"></section>
 
-<div class="tab-row">
-  <button class="active" data-screen-tab="presets"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px;margin-right:4px;">view_module</span>Pre-built</button>
-  <button data-screen-tab="builder"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px;margin-right:4px;">tune</span>Custom Builder</button>
-</div>
-
-<!-- ============== PRESETS ============== -->
-<section data-pane="presets">
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;" id="screenersGrid"></div>
-</section>
-
-<!-- ============== BUILDER ============== -->
-<section data-pane="builder" style="display:none;">
-  <div class="widget" style="min-height:auto;">
-    <div class="widget__head">
-      <div>
-        <div class="widget__title">Filter Builder</div>
-        <div class="widget__meta">tickertape-style · clauses are AND-joined</div>
-      </div>
-      <span class="widget__year-pill" id="builderClauseCount">0 filters</span>
-    </div>
-
-    <div id="clauseList"></div>
-    <button class="btn" onclick="addClause()" style="margin-top:6px;">
-      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px;">add</span> Add Filter
-    </button>
-
-    <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;border-top:1px solid var(--b1);padding-top:14px;">
-      <label style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;">Sort by</label>
-      <select id="sortField" style="background:var(--s0);border:1px solid var(--b1);color:var(--t1);border-radius:var(--r-sm);padding:6px 8px;font-size:12px;"></select>
-      <select id="sortDir" style="background:var(--s0);border:1px solid var(--b1);color:var(--t1);border-radius:var(--r-sm);padding:6px 8px;font-size:12px;">
-        <option value="desc">Descending</option><option value="asc">Ascending</option>
-      </select>
-      <label style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;">Limit</label>
-      <input id="limitField" type="number" value="50" min="1" max="500"
-        style="background:var(--s0);border:1px solid var(--b1);color:var(--t1);border-radius:var(--r-sm);padding:6px 8px;font-size:12px;width:80px;"/>
-      <button class="btn btn-primary" onclick="runCustomScreen()">
-        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px;">play_arrow</span> Run Screen
-      </button>
-      <button class="btn" onclick="resetClauses()">Reset</button>
-    </div>
+<section id="resultPanel" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <h2 id="resultTitle" style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:20px;color:#4ee6b8;"></h2>
+    <span id="resultCount" style="font-size:11px;color:#5a5d6a;font-family:monospace;"></span>
+    <div style="height:1px;flex:1;background:#1f2336;"></div>
+    <button onclick="exportCsv()" style="background:#1f2336;color:#9aa0c8;border:1px solid #2a3142;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;">↓ CSV</button>
   </div>
+  <div id="resultTable" style="overflow:auto;border-radius:12px;border:1px solid #1f2336;"></div>
 </section>
-
-<!-- ============== RESULTS ============== -->
-<section id="resultPanel" style="display:none;margin-top:18px;">
-  <!-- Result-side dashboard: distribution histogram + alpha donut + sentiment mix -->
-  <div id="resultDashboard" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:14px;">
-    <div class="widget" style="min-height:200px;">
-      <div class="widget__head">
-        <div><div class="widget__title">Alpha distribution</div><div class="widget__meta">across results</div></div>
-      </div>
-      <div id="resAlphaHist" style="flex:1;"></div>
-    </div>
-    <div class="widget" style="min-height:200px;">
-      <div class="widget__head">
-        <div><div class="widget__title">High α share</div><div class="widget__meta">α ≥ 65 in result set</div></div>
-      </div>
-      <div id="resAlphaDonut" style="flex:1;"></div>
-    </div>
-    <div class="widget" style="min-height:200px;">
-      <div class="widget__head">
-        <div><div class="widget__title">Sentiment mix</div><div class="widget__meta">bull / bear / neutral</div></div>
-      </div>
-      <div id="resSentimentMix" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    </div>
-  </div>
-
-  <div class="widget" style="min-height:auto;">
-    <div class="widget__head">
-      <div><div class="widget__title" id="resultTitle">Results</div><div class="widget__meta" id="resultCount"></div></div>
-      <button class="btn" onclick="exportCsv()">
-        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px;">download</span> Export CSV
-      </button>
-    </div>
-    <div id="resultTable" style="overflow:auto;"></div>
-  </div>
-</section>
-
 </main>
 
 <script src="./shared/js/app.js"></script>
@@ -187,66 +57,18 @@
 <script>
 let _currentResults = [];
 let _currentScreener = null;
-let _fields = [];
 
-// ---- KPI strip — uses Widgets.statCard one-by-one for consistency ----
-async function loadKpiStrip() {
-  const root = document.getElementById('screenerKpiStrip');
-  // build 4 placeholder slots
-  root.innerHTML = '<div id="kpi_uni"></div><div id="kpi_sig"></div><div id="kpi_high"></div><div id="kpi_screens"></div>';
-  try {
-    const [stocksR, sigR, scrR] = await Promise.all([
-      API.get('/stocks/list'),
-      API.get('/signals?limit=300'),
-      API.get('/screeners'),
-    ]);
-    const stocks = (stocksR && stocksR.data) || [];
-    const sigs   = (sigR   && sigR.data)   || [];
-    const scrs   = (scrR   && scrR.data)   || [];
-    const high = sigs.filter(s => (s.alpha_score || 0) >= 65).length;
-
-    if (window.Widgets) {
-      Widgets.statCard(document.getElementById('kpi_uni'), {
-        label: 'Universe', value: stocks.length, sublabel: 'tracked tickers', icon: 'inventory_2', color: '#5b6cff',
-      });
-      Widgets.statCard(document.getElementById('kpi_sig'), {
-        label: 'Active signals', value: sigs.length, sublabel: 'on the book', icon: 'bolt', color: '#e6b84a',
-      });
-      Widgets.statCard(document.getElementById('kpi_high'), {
-        label: 'High α (≥65)', value: high,
-        sublabel: sigs.length ? Math.round(high/sigs.length*100) + '% of signals' : '',
-        icon: 'star', color: '#2dd4aa',
-        deltaPct: sigs.length ? (high/sigs.length*100 - 50) : null,
-      });
-      Widgets.statCard(document.getElementById('kpi_screens'), {
-        label: 'Pre-built screens', value: scrs.length, sublabel: 'curated + alpha-aware',
-        icon: 'filter_alt', color: '#8458ff',
-      });
-    }
-  } catch (e) { console.warn('KPI strip', e); }
-}
-
-// ---- Tab switching ----
-document.querySelectorAll('[data-screen-tab]').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('[data-screen-tab]').forEach(x => x.classList.toggle('active', x === b));
-    document.querySelectorAll('[data-pane]').forEach(p =>
-      p.style.display = p.dataset.pane === b.dataset.screenTab ? '' : 'none');
-  });
-});
-
-// ---- Presets ----
 async function loadScreeners() {
-  const r = await API.get('/screeners');
-  if (!r) return;
+  const r = await fetch('/api/screeners');
+  const j = await r.json();
   const grid = document.getElementById('screenersGrid');
-  grid.innerHTML = (r.data || []).map(s => `
+  grid.innerHTML = (j.data || []).map(s => `
     <div class="screener-card" data-id="${s.id}" onclick="runScreener('${s.id}', this)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span class="material-symbols-outlined" style="color:var(--bull);font-size:18px;">${iconFor(s.id)}</span>
-        <span class="sc-title">${s.name}</span>
+        <span class="material-symbols-outlined" style="color:#4ee6b8;font-size:18px;">${iconFor(s.id)}</span>
+        <span style="font-weight:800;font-size:13px;color:#dde3ef;">${s.name}</span>
       </div>
-      <div class="sc-desc">${s.description}</div>
+      <div style="font-size:11px;color:#9aa0c8;line-height:1.5;">${s.description}</div>
     </div>
   `).join('');
 }
@@ -264,201 +86,37 @@ async function runScreener(id, el) {
   document.querySelectorAll('.screener-card').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
   _currentScreener = id;
-  document.getElementById('resultPanel').style.display = 'block';
+  const panel = document.getElementById('resultPanel');
+  panel.style.display = 'block';
   const tbl = document.getElementById('resultTable');
-  tbl.innerHTML = '<div style="padding:30px;text-align:center;color:var(--t3);font-size:11px;">Running…</div>';
-  document.getElementById('resultTitle').textContent = 'Loading…';
+  tbl.innerHTML = '<div style="padding:30px;text-align:center;color:#5a5d6a;font-size:11px;">Running…</div>';
 
-  const r = await API.get('/screeners/' + id);
-  if (!r) { tbl.innerHTML = '<div style="padding:30px;color:var(--bear);">Failed.</div>'; return; }
-  document.getElementById('resultTitle').textContent = r.name || id;
-  document.getElementById('resultCount').textContent = (r.count || 0) + ' results';
-  _currentResults = r.data || [];
-  renderRows(_currentResults, r.warning);
-  renderResultDashboard(_currentResults);
-}
+  const r = await fetch('/api/screeners/' + id);
+  const j = await r.json();
+  document.getElementById('resultTitle').textContent = j.name || id;
+  document.getElementById('resultCount').textContent = (j.count || 0) + ' results';
 
-// ---- Builder ----
-async function loadFields() {
-  const r = await API.get('/screener/fields');
-  _fields = (r && r.data) || [];
-  const sortSel = document.getElementById('sortField');
-  sortSel.innerHTML = _fields.filter(f => f.type === 'num').map(f =>
-    `<option value="${f.id}">${f.label}</option>`).join('');
-  sortSel.value = 'alpha_score';
-  addClause();
-}
-
-function clauseTemplate(idx) {
-  const numOps = ['>', '>=', '<', '<=', '=', '!='];
-  return `
-    <div class="clause-row" data-idx="${idx}">
-      <select onchange="updateClauseField(${idx})">
-        ${_fields.map(f => `<option value="${f.id}" data-type="${f.type}">${f.label}</option>`).join('')}
-      </select>
-      <select data-role="op">${numOps.map(o => `<option>${o}</option>`).join('')}</select>
-      <input type="text" data-role="value" placeholder="value" />
-      <button class="btn-icon" onclick="removeClause(${idx})" title="Remove">
-        <span class="material-symbols-outlined" style="font-size:14px;">close</span>
-      </button>
-    </div>`;
-}
-
-let _clauseCount = 0;
-function refreshClauseCountPill() {
-  const pill = document.getElementById('builderClauseCount');
-  if (pill) {
-    const n = document.querySelectorAll('.clause-row').length;
-    pill.textContent = n + (n === 1 ? ' filter' : ' filters');
-  }
-}
-function addClause() {
-  document.getElementById('clauseList').insertAdjacentHTML('beforeend', clauseTemplate(_clauseCount++));
-  refreshClauseCountPill();
-}
-function removeClause(idx) {
-  const row = document.querySelector(`.clause-row[data-idx="${idx}"]`);
-  if (row) row.remove();
-  refreshClauseCountPill();
-}
-function resetClauses() {
-  document.getElementById('clauseList').innerHTML = '';
-  _clauseCount = 0;
-  addClause();
-}
-function updateClauseField(idx) {
-  const row = document.querySelector(`.clause-row[data-idx="${idx}"]`);
-  if (!row) return;
-  const fieldSel = row.querySelector('select');
-  const opSel = row.querySelector('[data-role="op"]');
-  const valInput = row.querySelector('[data-role="value"]');
-  const fid = fieldSel.value;
-  const f = _fields.find(x => x.id === fid);
-  const numOps = ['>', '>=', '<', '<=', '=', '!='];
-  const catOps = ['=', '!=', 'IN'];
-  const ops = f && f.type === 'num' ? numOps : catOps;
-  opSel.innerHTML = ops.map(o => `<option>${o}</option>`).join('');
-  if (f && f.type === 'cat' && f.options) {
-    valInput.outerHTML = `<select data-role="value">${(f.options||[]).map(o => `<option>${o}</option>`).join('')}</select>`;
-  } else {
-    valInput.outerHTML = `<input type="text" data-role="value" placeholder="value" />`;
-  }
-}
-
-async function runCustomScreen() {
-  const filters = [];
-  document.querySelectorAll('.clause-row').forEach(row => {
-    const fieldSel = row.querySelector('select');
-    const opSel = row.querySelector('[data-role="op"]');
-    const valEl = row.querySelector('[data-role="value"]');
-    const fid = fieldSel.value;
-    const op = opSel.value;
-    let val = valEl.value;
-    if (op === 'IN') val = val.split(',').map(s => s.trim()).filter(Boolean);
-    if (val !== '' && !(Array.isArray(val) && !val.length)) {
-      filters.push({ field: fid, op, value: val });
-    }
-  });
-  const sort = document.getElementById('sortField').value;
-  const sort_dir = document.getElementById('sortDir').value;
-  const limit = parseInt(document.getElementById('limitField').value) || 50;
-
-  document.getElementById('resultPanel').style.display = 'block';
-  const tbl = document.getElementById('resultTable');
-  tbl.innerHTML = '<div style="padding:30px;text-align:center;color:var(--t3);font-size:11px;">Running custom screen…</div>';
-  document.getElementById('resultTitle').textContent = 'Custom Screen';
-
-  _currentScreener = 'custom';
-  const r = await API.post('/screener/run', { filters, sort, sort_dir, limit });
-  if (!r || !r.success) {
-    tbl.innerHTML = '<div style="padding:20px;color:var(--bear);">Custom screen failed.</div>';
-    return;
-  }
-  _currentResults = r.data || [];
-  document.getElementById('resultCount').textContent = (r.count || 0) + ' results · ' + filters.length + ' filter(s)';
-  renderRows(_currentResults);
-  renderResultDashboard(_currentResults);
-}
-
-function renderRows(rows, warning) {
-  const tbl = document.getElementById('resultTable');
+  const rows = j.data || [];
+  _currentResults = rows;
   if (!rows.length) {
-    tbl.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3);font-size:11px;">No results.${warning ? ' (' + warning + ')' : ''}</div>`;
+    tbl.innerHTML = `<div style="padding:30px;text-align:center;color:#5a5d6a;font-size:11px;">No results. ${j.warning ? '(' + j.warning + ')' : ''}</div>`;
     return;
   }
   const cols = Object.keys(rows[0]);
-  tbl.innerHTML = `<table class="fin-table" style="width:100%;font-size:12px;">
-    <thead><tr>${cols.map(c => `<th${c==='ticker'||c==='company'?' style="text-align:left;"':''}>${c}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map(row => `<tr>${cols.map(c => `<td${c==='ticker'||c==='company'?' style="text-align:left;"':''}>${formatCell(row[c], c, row)}</td>`).join('')}</tr>`).join('')}</tbody>
+  tbl.innerHTML = `<table style="width:100%;font-size:12px;color:#dde3ef;">
+    <thead><tr>${cols.map(c => `<th style="text-align:left;padding:10px 14px;font-size:10px;color:#9aa0c8;text-transform:uppercase;letter-spacing:0.06em;font-weight:800;border-bottom:1px solid #1f2336;">${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr style="border-bottom:1px solid #1f2336;">${cols.map(c => `<td style="padding:10px 14px;font-family:monospace;">${formatCell(r[c], c)}</td>`).join('')}</tr>`).join('')}</tbody>
   </table>`;
 }
 
-function formatCell(v, col, row) {
-  if (v == null) return '<span style="color:var(--t3);">—</span>';
-  if (col === 'ticker' && row.ticker) {
-    return `<a href="stock.html?t=${row.ticker}" style="color:var(--info);font-weight:600;text-decoration:none;">${v}</a>`;
-  }
-  if (col === 'alpha_score' && typeof v === 'number') {
-    const a = Math.round(v);
-    const cls = a >= 65 ? 'high' : a >= 40 ? 'mid' : 'low';
-    return `<span class="alpha-pill ${cls}">${a}</span>`;
-  }
-  if (col === 'sentiment' && typeof v === 'string') {
-    const c = v === 'bullish' ? 'var(--bull)' : v === 'bearish' ? 'var(--bear)' : 'var(--info)';
-    return `<span style="color:${c};font-weight:600;">${v}</span>`;
-  }
+function formatCell(v, col) {
+  if (v == null) return '<span style="color:#5a5d6a;">—</span>';
   if (typeof v === 'number') {
-    if (col.includes('pct') || col.includes('alpha') || col.includes('score') || col === 'confidence' || col === 'magnitude' || col === 'age_days') return v.toFixed(2);
-    return v.toLocaleString('en-IN');
+    if (col.includes('alpha') || col.includes('score') || col.includes('pct')) return v.toFixed(2);
+    return v.toLocaleString();
   }
   if (typeof v === 'string' && v.length > 60) return v.slice(0, 58) + '…';
   return String(v);
-}
-
-// ---- Result dashboard: distribution + sentiment mix using Widgets ----
-function renderResultDashboard(rows) {
-  if (!rows.length) {
-    document.getElementById('resAlphaHist').innerHTML = '<div style="color:var(--t3);font-size:11px;text-align:center;padding:20px;">No data.</div>';
-    document.getElementById('resAlphaDonut').innerHTML = '';
-    document.getElementById('resSentimentMix').innerHTML = '';
-    return;
-  }
-  // Alpha histogram (5-bucket)
-  const buckets = [
-    { label: '0-20',  value: 0, color: '#3d4a5c' },
-    { label: '20-40', value: 0, color: '#6ba3d6' },
-    { label: '40-60', value: 0, color: '#5b6cff' },
-    { label: '60-80', value: 0, color: '#e6b84a' },
-    { label: '80+',   value: 0, color: '#2dd4aa' },
-  ];
-  let high = 0, bull = 0, bear = 0, neut = 0;
-  rows.forEach(r => {
-    const a = Number(r.alpha_score) || 0;
-    if (a >= 65) high++;
-    if (a >= 80) buckets[4].value++;
-    else if (a >= 60) buckets[3].value++;
-    else if (a >= 40) buckets[2].value++;
-    else if (a >= 20) buckets[1].value++;
-    else buckets[0].value++;
-    const s = (r.sentiment || '').toLowerCase();
-    if (s === 'bullish') bull++;
-    else if (s === 'bearish') bear++;
-    else neut++;
-  });
-
-  if (window.Widgets) {
-    Widgets.histogram(document.getElementById('resAlphaHist'), buckets, { height: 130 });
-    const pct = Math.round(high / rows.length * 100);
-    Widgets.donut(document.getElementById('resAlphaDonut'), pct, {
-      label: pct + '%', sublabel: high + ' of ' + rows.length,
-      color: pct >= 50 ? '#2dd4aa' : '#5b6cff', color2: pct >= 50 ? '#4ee6b8' : '#8458ff',
-    });
-    Widgets.stackedBar(document.getElementById('resSentimentMix'), [
-      { label: 'Bullish', value: bull, color: '#2dd4aa' },
-      { label: 'Bearish', value: bear, color: '#f26b6b' },
-      { label: 'Neutral', value: neut, color: '#6ba3d6' },
-    ], { height: 18 });
-  }
 }
 
 function exportCsv() {
@@ -473,11 +131,7 @@ function exportCsv() {
   URL.revokeObjectURL(url);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadKpiStrip();
-  loadScreeners();
-  loadFields();
-});
+document.addEventListener('DOMContentLoaded', loadScreeners);
 </script>
 </body>
 </html>
