@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickwave | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <h1 class="sidebar-brand">Tickwave</h1>
+        <p class="sidebar-brand-sub">Alpha Terminal</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">electric_bolt</span>Signals</a>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">public</span>Markets</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Insights</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">language</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
+        <div class="engine-status p-4 rounded-lg">
+            <p class="text-[10px] text-on-surface-variant mb-2 uppercase tracking-widest font-bold">Engine Status</p>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="text-xs font-bold text-on-surface uppercase">Active</span>
+                </div>
+                <span class="text-[10px] text-on-surface-variant/60 font-mono">v4.2.9</span>
+            </div>
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center text-[9px] text-on-surface-variant">
+                    <span>Latency</span>
+                    <span class="text-secondary font-mono">14ms</span>
+                </div>
+                <div class="w-full bg-surface-container-lowest h-1 rounded-full overflow-hidden">
+                    <div class="bg-secondary/40 h-full w-[88%]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content">
+    <header class="sticky top-0 z-40 bg-background/85 backdrop-blur border-b border-outline-variant/10 px-6 py-2.5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary" style="font-size:20px;">graphic_eq</span>
+            <span class="font-headline font-black text-base tracking-wide">Tickwave</span>
+            <span class="hidden lg:inline text-[9px] text-on-surface-variant/50 font-mono ml-2 pl-2 border-l border-outline-variant/20">LIVE MARKETS</span>
+        </div>
+        <!-- Market Ticker Strip -->
+        <div id="headerTicker" class="hidden lg:flex items-center gap-2 flex-1 overflow-x-auto scrollbar-hide px-2">
+            <!-- populated by renderMarketPulse() -->
+            <span class="skeleton h-6 w-24 rounded"></span>
+            <span class="skeleton h-6 w-24 rounded"></span>
+            <span class="skeleton h-6 w-24 rounded"></span>
+            <span class="skeleton h-6 w-24 rounded"></span>
+            <span class="skeleton h-6 w-24 rounded"></span>
+            <span class="skeleton h-6 w-24 rounded"></span>
+        </div>
+        <div class="flex items-center gap-3 ml-auto">
+            <div id="statusBanner" style="min-width:140px;text-align:right;font-size:11px;"></div>
+            <button onclick="const on = SoundFX.toggle(); this.querySelector('span').textContent = on ? 'volume_up' : 'volume_off'" class="p-2 text-on-surface-variant hover:bg-surface-container rounded transition-colors" title="Toggle alert sounds">
+                <span class="material-symbols-outlined text-sm">volume_up</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ============ HERO DASHBOARD ============ -->
+    <section class="relative overflow-hidden mx-2 md:mx-4 mt-4 mb-6 rounded-2xl border border-outline-variant/10"
+             style="background:rgba(13,17,24,0.5);backdrop-filter:blur(8px);">
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 p-4">
+            <!-- Panel 1: Live Event Detected (3/5) -->
+            <div id="heroPanelEvent" class="lg:col-span-3 bg-surface-container-low rounded-xl border border-outline-variant/10 p-5 min-h-[260px]">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                    <span class="text-[9px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live Event Detected</span>
+                </div>
+                <div id="heroPanelEventBody" class="flex-1">
+                    <div class="skeleton mb-3" style="height:28px;width:80%;border-radius:4px;"></div>
+                    <div class="flex gap-2 mb-4">
+                        <span class="skeleton h-5 w-16 rounded-full"></span>
+                        <span class="skeleton h-5 w-20 rounded-full"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton h-3 w-full rounded"></span>
+                        <span class="skeleton h-3 w-full rounded"></span>
+                        <span class="skeleton h-3 w-2/3 rounded"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Top Trades (1/5) -->
+            <div id="heroPanelTrades" class="lg:col-span-1 bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 min-h-[260px]">
+                <div class="text-[9px] font-black tracking-[0.25em] uppercase text-on-surface-variant mb-3">Top Trades</div>
+                <div id="heroPanelTradesBody" class="space-y-3 text-sm">
+                    <div class="skeleton h-16 rounded"></div>
+                    <div class="skeleton h-16 rounded"></div>
+                    <div class="skeleton h-16 rounded"></div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Market State (1/5) -->
+            <div id="heroPanelState" class="lg:col-span-1 bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 min-h-[260px]">
+                <div class="text-[9px] font-black tracking-[0.25em] uppercase text-on-surface-variant mb-4">Market State</div>
+                <div id="heroPanelStateBody" class="flex flex-col h-full">
+                    <div class="mb-4">
+                        <div class="skeleton h-24 w-full rounded mb-3"></div>
+                        <div class="skeleton h-5 w-2/3 rounded"></div>
+                    </div>
+                    <div class="text-xs space-y-2 mt-auto">
+                        <div class="flex justify-between"><span class="text-on-surface-variant/70">Advance/Decline</span><span class="skeleton h-4 w-12 rounded"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant/70">Market Breadth</span><span class="skeleton h-4 w-12 rounded"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant/70">Volatility</span><span class="skeleton h-4 w-12 rounded"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ============ END HERO DASHBOARD ============ -->
+    
+    <!-- Live Market Pulse Panel — HIDDEN for minimal UI -->
+    <div class="mb-8 hidden" id="marketPulsePanel">
+        <div class="flex items-center gap-2 mb-3">
+            <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+            <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live Market Pulse</h3>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="pulseUpdated">fetching...</span>
+        </div>
+        <div id="pulseIndices" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <!-- skeleton -->
+            <div class="skeleton rounded-xl" style="height:96px;"></div>
+            <div class="skeleton rounded-xl" style="height:96px;"></div>
+            <div class="skeleton rounded-xl" style="height:96px;"></div>
+            <div class="skeleton rounded-xl" style="height:96px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:96px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:96px;"></div>
+        </div>
+        <!-- Derived market trend bar -->
+        <div id="pulseTrendBar" class="mt-4 rounded-lg border border-outline-variant/10 px-4 py-3 text-xs" style="background:rgba(28,32,38,0.6); display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; row-gap:6px;">
+            <span class="skeleton" style="width:200px;height:14px;border-radius:4px;display:inline-block;"></span>
+            <span class="skeleton" style="width:80px;height:14px;border-radius:4px;display:inline-block;"></span>
+        </div>
+    </div>
+
+    <!-- Key Metrics Grid — hidden in simplified FTUE; reachable from Analytics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" style="display:none;">
+        <div class="pastel-card pastel-card--mint">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">speed</span></span>
+                    India VIX
+                </span>
+                <span class="delta" id="metricVIXDelta" style="display:none;">—</span>
+            </div>
+            <div class="pastel-card__value" id="metricVIX">—</div>
+            <div class="pastel-card__sub" id="metricVIXLabel">fear gauge</div>
+        </div>
+
+        <div class="pastel-card pastel-card--yellow">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">bolt</span></span>
+                    Live Signals
+                </span>
+                <span class="delta">+24h</span>
+            </div>
+            <div class="pastel-card__value" id="metricSignals">—</div>
+            <div class="pastel-card__sub">active signals on the book</div>
+        </div>
+
+        <div class="pastel-card pastel-card--lavender">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip">
+                    <span class="pastel-card__icon-bg"><span class="material-symbols-outlined">psychology</span></span>
+                    Avg Confidence
+                </span>
+            </div>
+            <div class="pastel-card__value" id="metricConfidence">—</div>
+            <div class="pastel-card__sub">NLP confidence score</div>
+        </div>
+
+        <div class="pastel-card pastel-card--dark">
+            <div class="pastel-card__head">
+                <span class="pastel-card__chip" style="background:rgba(255,255,255,0.10);color:inherit;">
+                    <span class="pastel-card__icon-bg" style="background:rgba(255,255,255,0.10);"><span class="material-symbols-outlined">bar_chart</span></span>
+                    Events Today
+                </span>
+                <span class="delta" style="background:rgba(200,245,98,0.20);color:var(--accent-lime);">live</span>
+            </div>
+            <div class="pastel-card__value" id="metricEvents">—</div>
+            <div class="pastel-card__sub" style="opacity:0.7;">events processed in last 24h</div>
+        </div>
+    </div>
+    
+    <!-- ============ INSIGHTS STUDIO (mounted from shared/js/widgets.js) — HIDDEN for minimal UI ============ -->
+    <div id="insightsRoot" class="mb-8 hidden"></div>
+
+    <!-- Sector Concentration Warning -->
+    <div id="concentrationWarning" class="hidden mb-6 px-4 py-3 rounded-xl border flex items-center gap-3" style="background:rgba(255,178,183,0.06);border-color:rgba(255,178,183,0.2);">
+        <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#ffb2b7;">warning</span>
+        <div class="flex-1">
+            <span class="text-xs font-bold" style="color:#ffb2b7;">Sector Concentration Risk</span>
+            <span id="concentrationText" class="text-xs text-on-surface-variant ml-2"></span>
+        </div>
+        <a href="analytics.html" class="text-[9px] px-2 py-1 rounded font-bold hover:opacity-80 transition-opacity flex-shrink-0" style="background:rgba(255,178,183,0.12);color:#ffb2b7;border:1px solid rgba(255,178,183,0.2);">View Analytics →</a>
+    </div>
+
+    <!-- Quant Tools CTA Row — hidden; primary CTAs live in the hero now -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 px-2" style="display:none;">
+        <a href="portfolio.html" class="flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:scale-[1.01]"
+           style="background:linear-gradient(135deg,rgba(78,222,163,0.08),rgba(78,222,163,0.03));border:1px solid rgba(78,222,163,0.20);">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(78,222,163,0.15);">
+                    <span class="material-symbols-outlined" style="color:#4edea3;font-size:22px;">account_balance_wallet</span>
+                </div>
+                <div>
+                    <div class="font-headline font-black text-sm" style="color:#4edea3;">QUANT PORTFOLIO</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Z-score ranking · Long-short · Vol-adjusted sizing</div>
+                </div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
+        </a>
+        <a href="compare.html" class="flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:scale-[1.01]"
+           style="background:linear-gradient(135deg,rgba(249,212,35,0.08),rgba(249,212,35,0.03));border:1px solid rgba(249,212,35,0.25);">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(249,212,35,0.15);">
+                    <span class="material-symbols-outlined" style="color:#f9d423;font-size:22px;">compare_arrows</span>
+                </div>
+                <div>
+                    <div class="font-headline font-black text-sm" style="color:#f9d423;">COMPARE STOCKS</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Stack up to 3 stocks side-by-side with verdict</div>
+                </div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
+        </a>
+    </div>
+
+    <!-- Prediction Accuracy — HIDDEN for minimal UI -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 hidden" id="accuracySection" style="display:none;">
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">1D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-secondary" id="accuracy1D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy1DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">3D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-primary" id="accuracy3D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy3DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">20D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-on-surface" id="accuracy20D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy20DCount">0 predictions</p>
+        </div>
+    </div>
+
+    <!-- Suggested Stocks — HIDDEN for minimal UI -->
+    <div class="mb-8 hidden" id="suggestedSection" style="display:none;">
+        <h2 class="font-headline font-bold text-lg text-on-surface mb-4">Suggested Stocks</h2>
+        <div id="suggestedStocks" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- ============ LIVE FEED — News ⇄ Buzz toggle ============ -->
+    <section class="mb-6 px-2" id="liveNewsWire">
+      <!-- Source toggle (News vs Buzz) — primary axis for first-time users -->
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <div class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></div>
+        <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live Feed</h3>
+        <div id="feedSourceToggle" class="ml-3 inline-flex rounded-full p-0.5"
+             style="background:rgba(255,255,255,0.04);border:1px solid var(--b1);">
+          <button class="src-pill active" data-src="news" title="Curated press, filings &amp; price-spike movers">
+            <span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;">article</span>
+            News
+          </button>
+          <button class="src-pill" data-src="buzz" title="Verified X handles + serious Reddit/Telegram chatter">
+            <span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;">forum</span>
+            Buzz
+          </button>
+        </div>
+        <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+        <div class="flex gap-1" id="newsWireFilters">
+          <button class="news-pill active" data-flt="all">All</button>
+          <button class="news-pill" data-flt="policy">Policy</button>
+          <button class="news-pill" data-flt="earnings">Earnings</button>
+          <button class="news-pill" data-flt="movers">Movers</button>
+          <button class="news-pill" data-flt="smallcap">Small/Mid Cap</button>
+        </div>
+        <span class="text-[9px] text-on-surface-variant/40 font-mono ml-2" id="newsWireUpdated">fetching…</span>
+      </div>
+      <style>
+        .src-pill { padding:5px 14px; font-size:11px; font-weight:800; border-radius:999px;
+          background:transparent; color:var(--t2); border:0; cursor:pointer;
+          letter-spacing:0.04em; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px; }
+        .src-pill:hover { color:var(--t1); }
+        .src-pill.active { background:linear-gradient(135deg,#2dd4aa,#1faa83); color:#06120e;
+          box-shadow:0 4px 14px rgba(45,212,170,0.25); }
+      </style>
+      <style>
+        .news-pill { padding:3px 9px; font-size:10px; font-weight:700; border-radius:14px; background:transparent;
+          color:var(--t2); border:1px solid var(--b1); cursor:pointer; transition:all 0.12s; }
+        .news-pill:hover { color:var(--t1); border-color:var(--b2); }
+        .news-pill.active { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
+        .wire-row { display:grid; grid-template-columns:88px 1fr auto auto; gap:12px; align-items:center;
+          padding:8px 12px; border-radius:6px; background:var(--s0); border:1px solid var(--b0);
+          transition:border-color 0.12s, background 0.12s; cursor:pointer; }
+        .wire-row:hover { border-color:var(--b2); background:var(--s1); }
+        .wire-row + .wire-row { margin-top:6px; }
+        .wire-time { font-size:10px; font-family:var(--font-mono); color:var(--t3); white-space:nowrap; }
+        .wire-title { font-size:13px; font-weight:600; color:var(--t1); line-height:1.35; overflow:hidden;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+        .wire-meta { font-size:9.5px; color:var(--t3); margin-top:2px; }
+        .wire-tag { font-size:9px; font-weight:800; padding:2px 7px; border-radius:3px; white-space:nowrap;
+          letter-spacing:0.04em; text-transform:uppercase; }
+        .wire-tag.bull { background:var(--bull-dim); color:var(--bull); }
+        .wire-tag.bear { background:var(--bear-dim); color:var(--bear); }
+        .wire-tag.neut { background:rgba(138,148,168,0.10); color:var(--t2); }
+        .wire-alpha { font-family:var(--font-mono); font-size:13px; font-weight:800; min-width:32px; text-align:right; }
+        .wire-alpha.high { color:var(--bull); }
+        .wire-alpha.mid { color:var(--caution); }
+        .wire-alpha.low { color:var(--t3); }
+        @media (max-width:768px) {
+          .wire-row { grid-template-columns:1fr auto; gap:6px; }
+          .wire-time { display:none; }
+        }
+      </style>
+      <div id="newsWireList">
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="height:42px;border-radius:6px;"></div>
+      </div>
+    </section>
+    <script>
+    (function() {
+      // Live Feed — News (press + price-spike movers) or Buzz (verified social).
+      // News:  /api/news/fast + /api/movers/spike
+      // Buzz:  /api/social/feed (verified X / serious Reddit / Telegram)
+      let _wireFlt = 'all';
+      let _wireSrc = 'news';   // 'news' | 'buzz'
+      let _wireData = [];
+
+      function ago(hours) {
+        if (hours == null) return '';
+        if (hours < 1) return Math.round(hours * 60) + 'm';
+        if (hours < 24) return Math.round(hours) + 'h';
+        return Math.round(hours / 24) + 'd';
+      }
+      function escape(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      }
+      function classify(it) {
+        const hay = ((it.title || '') + ' ' + (it.summary || '') + ' ' + (it.event_type || '') + ' ' + (it.feed || '')).toLowerCase();
+        const tickers = Array.isArray(it.tickers) ? it.tickers : (it.companies ? String(it.companies).split(',').filter(Boolean) : []);
+        const isMover = it._mover === true || /jumps? \d|surges? \d|plunges? \d|crashes? \d|gain(ed|s)? \d|fell \d|rallies? \d|down \d+%|up \d+%|hit (upper|lower) circuit/.test(hay);
+        const isPolicy = /\brbi\b|\bsebi\b|policy|circular|notification|government|ministry|cabinet|union budget|gst|nppa|trai|spectrum|subsidy/.test(hay) ||
+                         (it.event_type || '').toLowerCase() === 'policy';
+        const isEarnings = /q[1-4]|quarter|earnings|profit|revenue|ebitda|guidance|results/.test(hay) ||
+                           (it.event_type || '').toLowerCase() === 'earnings';
+        const isOrderWin = /order win|contract|bagged|awarded|secured|loi/.test(hay) ||
+                           (it.event_type || '').toLowerCase() === 'order_win';
+        // Small/mid cap heuristic: any explicitly tagged "smallcap" / "midcap", OR any
+        // ticker that's NOT in the well-known large-cap set
+        const LARGE = new Set(['RELIANCE','TCS','INFY','HDFCBANK','ICICIBANK','SBIN','BHARTIARTL','ITC','LT','HINDUNILVR','MARUTI','SUNPHARMA','AXISBANK','BAJFINANCE','TATASTEEL','ASIANPAINT','KOTAKBANK','TITAN','WIPRO','ULTRACEMCO','M&M','POWERGRID','NTPC','BAJAJFINSV','HCLTECH','ADANIPORTS']);
+        const isSmallMid = /\b(small.?cap|mid.?cap|multibagger|microcap)\b/i.test(hay) ||
+                           (tickers.length && tickers.some(t => !LARGE.has(t.trim().toUpperCase())));
+        return { isMover, isPolicy, isEarnings, isOrderWin, isSmallMid, tickers };
+      }
+      function passesFilter(it, flt, c) {
+        if (flt === 'all') return true;
+        if (flt === 'policy') return c.isPolicy;
+        if (flt === 'earnings') return c.isEarnings || c.isOrderWin;
+        if (flt === 'movers') return c.isMover || it._mover;
+        if (flt === 'smallcap') return c.isSmallMid;
+        return true;
+      }
+      function senTag(s) {
+        s = (s || '').toLowerCase();
+        if (s === 'bullish' || s === 'positive') return { cls: 'bull', label: 'Bullish' };
+        if (s === 'bearish' || s === 'negative') return { cls: 'bear', label: 'Bearish' };
+        return { cls: 'neut', label: 'Neutral' };
+      }
+      function alphaBucket(a) {
+        if (a == null) return null;
+        if (a >= 65) return 'high';
+        if (a >= 40) return 'mid';
+        return 'low';
+      }
+      function renderWire() {
+        const list = document.getElementById('newsWireList');
+        if (!list) return;
+        const items = _wireData
+          .map(it => ({ it, c: classify(it) }))
+          .filter(x => passesFilter(x.it, _wireFlt, x.c))
+          .slice(0, 25);
+        if (!items.length) {
+          list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;">No news matches this filter yet.</div>';
+          return;
+        }
+        list.innerHTML = items.map(({ it, c }, idx) => {
+          const sen = senTag(it.sentiment);
+          const tickers = c.tickers.slice(0, 4).map(t => `<a href="stock.html?t=${escape(t)}" onclick="event.stopPropagation();" style="color:var(--info);font-family:var(--font-mono);font-size:10px;font-weight:700;text-decoration:none;">${escape(t)}</a>`).join(' · ');
+          const alphaVal = it.alpha_score != null ? Math.round(it.alpha_score) : (it.magnitude != null ? Math.round(it.magnitude) : null);
+          const bucket = alphaBucket(alphaVal);
+          const tags = [];
+          if (c.isPolicy)   tags.push('<span class="wire-tag" style="background:rgba(108,138,255,0.12);color:var(--info);">POLICY</span>');
+          if (c.isOrderWin) tags.push('<span class="wire-tag" style="background:rgba(52,211,153,0.12);color:var(--bull);">ORDER</span>');
+          if (c.isEarnings) tags.push('<span class="wire-tag" style="background:rgba(251,191,36,0.12);color:var(--caution);">EARNINGS</span>');
+          if (it._mover)    tags.push('<span class="wire-tag" style="background:rgba(251,113,133,0.12);color:var(--bear);">MOVER</span>');
+          if (it.confidence === 'high')   tags.push('<span class="wire-tag" style="background:rgba(52,211,153,0.18);color:var(--bull);">HIGH CONFIDENCE</span>');
+          else if (it.confidence === 'medium') tags.push('<span class="wire-tag" style="background:rgba(251,191,36,0.18);color:var(--caution);">MID CONF.</span>');
+          if (it.sector) tags.push(`<span class="wire-tag" style="background:rgba(148,163,184,0.14);color:var(--t2);">${escape(it.sector)}</span>`);
+
+          const hasDetails = it._mover && (Array.isArray(it.reasoning) && it.reasoning.length);
+          const link = it.link || '#';
+          // Movers: row click toggles details (link is '#'). News: row click opens link.
+          const onClick = hasDetails
+            ? `onclick="(function(el){var d=el.querySelector('.wire-details');if(d){d.style.display=d.style.display==='block'?'none':'block';var c=el.querySelector('.wire-chev');if(c)c.style.transform=d.style.display==='block'?'rotate(90deg)':'rotate(0deg)';}})(this)"`
+            : (link === '#' ? '' : `onclick="window.open('${escape(link)}','_blank','noopener')"`);
+          const chev = hasDetails ? '<span class="wire-chev material-symbols-outlined" style="font-size:14px;color:var(--t3);transition:transform .15s;display:inline-block;vertical-align:-3px;margin-right:2px;">chevron_right</span>' : '';
+
+          let detailsHtml = '';
+          if (hasDetails) {
+            const comp = it.alpha_components || {};
+            const compBar = (label, val, max, color) => `
+              <div style="flex:1;min-width:90px;">
+                <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">${label}</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="flex:1;height:5px;background:rgba(148,163,184,0.12);border-radius:3px;overflow:hidden;">
+                    <div style="width:${Math.min(100, (val/max)*100)}%;height:100%;background:${color};border-radius:3px;"></div>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--t2);min-width:28px;text-align:right;">${val}/${max}</span>
+                </div>
+              </div>`;
+
+            const reasoningHtml = (it.reasoning || []).map(b => {
+              const icon = ({move:'trending_up', volume:'graphic_eq', news:'article', no_news:'visibility_off', sector:'category'})[b.kind] || 'info';
+              const linkPart = b.link ? ` <a href="${escape(b.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--info);text-decoration:none;font-size:10px;">↗ open</a>` : '';
+              return `<div style="display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--t2);line-height:1.5;">
+                <span class="material-symbols-outlined" style="font-size:14px;color:var(--t3);margin-top:1px;">${icon}</span>
+                <div>${escape(b.label)}${linkPart}</div>
+              </div>`;
+            }).join('');
+
+            const sugg = (it.suggested || []).slice(0, 4);
+            const suggHtml = sugg.length ? `
+              <div style="margin-top:10px;">
+                <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Suggested · sympathy plays</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  ${sugg.map(s => {
+                    const ppct = s.pct_change;
+                    const pSign = ppct == null ? '' : (ppct >= 0 ? '+' : '');
+                    const pCol  = ppct == null ? 'var(--t2)' : (ppct >= 0 ? 'var(--bull)' : 'var(--bear)');
+                    const pTxt  = ppct == null ? '' : ` <span style="color:${pCol};">${pSign}${ppct.toFixed(1)}%</span>`;
+                    return `<a href="stock.html?t=${escape(s.ticker)}" onclick="event.stopPropagation();" title="${escape(s.reason||'')}" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--b1);border-radius:999px;background:var(--s1);text-decoration:none;font-family:var(--font-mono);font-size:10px;color:var(--t1);font-weight:600;">${escape(s.ticker)}${pTxt}</a>`;
+                  }).join('')}
+                </div>
+              </div>` : '';
+
+            detailsHtml = `<div class="wire-details" style="display:none;grid-column:1 / -1;margin-top:8px;padding:12px;background:var(--s0);border:1px solid var(--b1);border-radius:8px;">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                ${compBar('Magnitude', comp.magnitude||0, 40, 'var(--info)')}
+                ${compBar('Volume',    comp.volume||0,    30, 'var(--bull)')}
+                ${compBar('News',      comp.news||0,      20, 'var(--caution)')}
+                ${compBar('Sector',    comp.sector||0,    10, '#a78bfa')}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">${reasoningHtml}</div>
+              ${suggHtml}
+            </div>`;
+          }
+
+          return `<div class="wire-row" ${onClick} style="${hasDetails ? 'cursor:pointer;align-items:start;' : ''}">
+            <div class="wire-time">${escape(ago(it.age_hours))} ago</div>
+            <div>
+              <div class="wire-title">${chev}${escape(it.title || it.summary || 'Untitled')}</div>
+              <div class="wire-meta">
+                <span style="text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">${escape((it.feed || it.source || 'news').slice(0, 28))}</span>
+                ${tickers ? ' · ' + tickers : ''}
+                ${tags.length ? ' · ' + tags.join(' ') : ''}
+              </div>
+            </div>
+            <div><span class="wire-tag ${sen.cls}">${sen.label}</span></div>
+            <div class="wire-alpha ${bucket || 'low'}" title="Alpha score: 0-100. Higher = stronger conviction (move + volume + news + sector).">${alphaVal != null ? alphaVal : '—'}</div>
+            ${detailsHtml}
+          </div>`;
+        }).join('');
+      }
+      async function refreshWire() {
+        try {
+          if (_wireSrc === 'buzz') {
+            // Verified social chatter — X handles only, serious Reddit/Telegram
+            const r = await fetch('/api/social/feed?hours=12&limit=80').then(x => x.json()).catch(() => ({}));
+            const items = ((r && r.data) || []).map(p => {
+              const text = (p.text || p.title || '').slice(0, 240);
+              const handleLabel = p.platform === 'x' ? '@' + p.handle
+                                : p.platform === 'reddit' ? 'r/' + p.handle
+                                : 't.me/' + p.handle;
+              const ageH = p.posted_at
+                ? Math.max(0.01, (Date.now() - new Date(p.posted_at).getTime()) / 3600000)
+                : 0.5;
+              const sev = (p.serious_score || 0) >= 50 ? 'high'
+                        : (p.serious_score || 0) >= 25 ? 'medium' : null;
+              return {
+                title: text || '(no text)',
+                summary: text,
+                tickers: p.tickers || [],
+                feed: handleLabel,
+                source: handleLabel,
+                sentiment: 'neutral',
+                age_hours: ageH,
+                alpha_score: Math.min(100, Math.round((p.serious_score || 0) + (p.engagement ? Math.log10(p.engagement) * 8 : 0))),
+                confidence: sev,
+                link: p.url,
+                _buzz: true,
+                _platform: p.platform,
+              };
+            });
+            _wireData = items;
+          } else {
+            // exclude_social=1 keeps chatter out of NEWS so curated press dominates.
+            const [news, movers] = await Promise.all([
+              fetch('/api/news/fast?limit=80&exclude_social=1').then(r => r.json()).catch(() => ({})),
+              fetch('/api/movers/spike?limit=15').then(r => r.json()).catch(() => ({})),
+            ]);
+            const newsList = (news && news.data) || [];
+            const moverList = ((movers && movers.data) || []).map(m => {
+              const pct = m.pct_change || 0;
+              const dir = pct >= 0 ? 'jumps' : 'falls';
+              const newsBullet = (m.reasoning || []).find(b => b.kind === 'news');
+              const title = newsBullet
+                ? `${m.ticker} ${dir} ${Math.abs(pct).toFixed(1)}% — ${newsBullet.label.replace(/^Headline \([^)]+\):\s*/, '')}`
+                : `${m.ticker} ${dir} ${Math.abs(pct).toFixed(1)}% intraday`;
+              return {
+                ...m, _mover: true,
+                title,
+                tickers: [m.ticker],
+                feed: 'price_scanner',
+                sentiment: pct >= 0 ? 'bullish' : 'bearish',
+                age_hours: 0.05,
+              };
+            });
+            _wireData = [...moverList, ...newsList];
+            // Hero "right now" tile — top mover snapshot (news source only)
+            paintHeroLive(moverList[0], moverList.length);
+          }
+          const upd = document.getElementById('newsWireUpdated');
+          if (upd) upd.textContent = `${_wireData.length} ${_wireSrc === 'buzz' ? 'posts' : 'items'} · ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+          renderWire();
+        } catch (e) {
+          console.warn('feed refresh failed:', e);
+        }
+      }
+
+      function paintHeroPanels(topEvent, topTrades, pulse) {
+        paintHeroPanelEvent(topEvent);
+        paintHeroPanelTrades(topTrades);
+        paintHeroPanelState(pulse);
+      }
+
+      function paintHeroPanelEvent(event) {
+        const body = document.getElementById('heroPanelEventBody');
+        if (!body) return;
+        if (!event) {
+          body.innerHTML = '<div style="color:var(--t2);font-size:12px;line-height:1.5;opacity:0.7;">Analyzing live market data...</div>';
+          return;
+        }
+        try {
+          const impact = event.impact || 'medium';
+          const impactColor = impact === 'high' ? '#ff7a8a' : impact === 'medium' ? '#f9d423' : '#4edea3';
+          const impactLabel = impact === 'high' ? 'HIGH IMPACT' : impact === 'medium' ? 'MED IMPACT' : 'LOW IMPACT';
+          const eventType = (event.event_type || 'news').toUpperCase().replace(/_/g, ' ');
+          const headline = event.headline || event.title || 'Market catalyst detected';
+
+          body.innerHTML = `
+            <h3 class="text-lg font-black mb-3 text-on-surface leading-snug">${escape(headline.slice(0, 100))}</h3>
+            <div class="flex gap-2 mb-4 flex-wrap">
+              <span class="text-[9px] px-2 py-1 rounded-full font-bold uppercase" style="background:rgba(200,150,100,0.15);color:#c89664;">${escape(eventType)}</span>
+              <span class="text-[9px] px-2 py-1 rounded-full font-bold uppercase" style="background:rgba(${impactColor.slice(1).match(/.{1,2}/g).join(',')},0.15);color:${impactColor};">${impactLabel}</span>
+            </div>
+            <div class="text-xs text-on-surface-variant/80 leading-relaxed">
+              <p>${escape((event.summary || 'Market impact expected').slice(0, 160))}</p>
+            </div>
+          `;
+        } catch(e) {
+          body.innerHTML = '<div style="color:var(--t2);font-size:12px;">Unable to load event data</div>';
+        }
+      }
+
+      function paintHeroPanelTrades(trades) {
+        const body = document.getElementById('heroPanelTradesBody');
+        if (!body) return;
+        const items = (trades || []).slice(0, 3);
+        if (!items.length) {
+          body.innerHTML = '<div style="color:var(--t2);font-size:11px;opacity:0.7;">Refreshing signals...</div>';
+          return;
+        }
+        body.innerHTML = items.map(t => {
+          const alphaColor = (t.alpha_score || 0) >= 75 ? '#4edea3' : (t.alpha_score || 0) >= 60 ? '#f9d423' : '#ff7a8a';
+          return `
+            <a href="stock.html?t=${escape(t.ticker)}" style="display:block;text-decoration:none;color:inherit;padding:0.75rem;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);hover:border-color:${alphaColor}33;">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-sm">${escape(t.ticker)}</span>
+                <span class="text-[10px] font-mono font-bold" style="color:${alphaColor};">${Math.round(t.alpha_score || 0)}</span>
+              </div>
+              <div class="text-[10px] text-on-surface-variant">${Math.round((t.confidence || 0) * 100)}% Confidence</div>
+            </a>
+          `;
+        }).join('');
+      }
+
+      function paintHeroPanelState(pulse) {
+        const body = document.getElementById('heroPanelStateBody');
+        if (!body) return;
+        if (!pulse) {
+          body.innerHTML = '<div style="color:var(--t2);font-size:11px;opacity:0.7;">Loading market state...</div>';
+          return;
+        }
+        const trendEmoji = pulse.trendLabel.includes('Bullish') ? '📈' : '📉';
+        const trendColor = pulse.trendLabel.includes('Bullish') ? '#4edea3' : '#ff7a8a';
+        body.innerHTML = `
+          <div style="text-align:center;margin-bottom:1rem;">
+            <div style="font-size:36px;margin-bottom:0.5rem;">${trendEmoji}</div>
+            <div class="text-xs text-on-surface-variant/70 mb-1">${pulse.trendLabel.includes('Bullish') ? 'BULLISH' : 'BEARISH'}</div>
+            <div class="text-base font-black" style="color:${trendColor};">${pulse.greenCount || 0}/4 Indices Up</div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between"><span class="text-on-surface-variant/70">Breadth</span><span class="font-mono font-bold">${pulse.greenCount >= 2 ? '62%' : '38%'}</span></div>
+            <div class="flex justify-between"><span class="text-on-surface-variant/70">VIX</span><span class="font-mono font-bold" style="color:${pulse.fearColor};">${pulse.vixVal}</span></div>
+          </div>
+        `;
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#newsWireFilters .news-pill').forEach(b => {
+          b.addEventListener('click', () => {
+            document.querySelectorAll('#newsWireFilters .news-pill').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            _wireFlt = b.dataset.flt;
+            renderWire();
+          });
+        });
+        // News ⇄ Buzz source toggle
+        document.querySelectorAll('#feedSourceToggle .src-pill').forEach(b => {
+          b.addEventListener('click', () => {
+            if (b.classList.contains('active')) return;
+            document.querySelectorAll('#feedSourceToggle .src-pill').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            _wireSrc = b.dataset.src;
+            const list = document.getElementById('newsWireList');
+            if (list) list.innerHTML = '<div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div><div class="skeleton" style="height:42px;border-radius:6px;margin-bottom:6px;"></div><div class="skeleton" style="height:42px;border-radius:6px;"></div>';
+            refreshWire();
+          });
+        });
+        refreshWire();
+        setInterval(refreshWire, 60000);
+      });
+    })();
+    </script>
+    <!-- ============ END LIVE NEWS WIRE ============ -->
+
+    <!-- ============ POLICY PULSE ============ -->
+    <section id="policyPulseSection" class="mb-8" style="display:none;">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="material-symbols-outlined" style="font-size:16px;color:#a78bfa;">gavel</span>
+        <h3 class="text-[10px] font-black tracking-[0.25em] uppercase" style="color:#a78bfa;">Policy Pulse</h3>
+        <span class="text-[10px] text-on-surface-variant/50 font-mono">RBI · SEBI · Budget · Ministry</span>
+        <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+        <span id="policyCount" class="text-[10px] font-mono text-on-surface-variant/40"></span>
+      </div>
+      <div id="policyList" class="space-y-2"></div>
+    </section>
+    <!-- ============ END POLICY PULSE ============ -->
+
+    <!-- Main Grid: Events + Signals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 px-2">
+        <!-- Latest Events (2 columns) — compact alpha-scored wire rows -->
+        <div class="lg:col-span-2">
+            <div class="flex items-center gap-2 mb-3">
+                <h2 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Latest Events</h2>
+                <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+                <a href="events.html" class="text-[10px] text-primary font-bold hover:underline">All events →</a>
+            </div>
+            <div id="latestEvents" class="space-y-1.5">
+                <!-- Skeleton placeholders — replaced by real data on load -->
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:25%;"></span>
+                        <span class="skeleton" style="height:14px;width:70%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:55%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:30%;"></span>
+                        <span class="skeleton" style="height:14px;width:80%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:45%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:20%;"></span>
+                        <span class="skeleton" style="height:14px;width:65%;"></span>
+                        <span class="skeleton" style="height:10px;width:95%;"></span>
+                        <span class="skeleton" style="height:10px;width:60%;"></span>
+                    </div>
+                </div>
+                <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4 flex gap-4">
+                    <span class="skeleton flex-shrink-0" style="width:48px;height:48px;border-radius:8px;min-width:48px;"></span>
+                    <div class="flex-1 space-y-2 py-1">
+                        <span class="skeleton" style="height:10px;width:28%;"></span>
+                        <span class="skeleton" style="height:14px;width:75%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:50%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Signals Sidebar -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 h-fit sticky top-80">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-secondary" style="font-size:14px;">bolt</span>
+                <span class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Top Signals</span>
+            </div>
+            <div id="topSignals" class="space-y-3">
+                <!-- Skeleton placeholders -->
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:66%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:50%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:75%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:60%;"></span>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
+                    <div class="flex justify-between mb-3">
+                        <span class="skeleton" style="width:64px;height:20px;border-radius:4px;"></span>
+                        <span class="skeleton" style="width:40px;height:20px;border-radius:4px;"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:100%;"></span>
+                        <span class="skeleton" style="height:10px;width:80%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="./shared/js/app.js?v=vix2"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/realtime.js"></script>
+<script>
+// Mount the always-on status banner (last-updated chip + live count) ASAP.
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.Realtime) Realtime.mountStatusBanner('statusBanner', 30);
+});
+// ============ RICH SIGNAL REASONING ============
+function buildSignalReasoning(sig, pulse) {
+    const evType  = (sig.event_type || 'news').replace(/_/g, ' ');
+    const rawType = (sig.event_type || 'news');
+    const sent    = sig.sentiment || 'neutral';
+    const alpha   = sig.alpha_score || 0;
+    const conf    = ((sig.confidence || 0) <= 1 ? (sig.confidence || 0) * 100 : (sig.confidence || 0));
+    const sector  = (sig.sector || '').replace(/_/g, ' ');
+    const regime  = (sig.regime || '').replace(/_/g, ' ');
+    const headline = sig.headline || '';
+    const pred1d  = sig.predictions?.['1D']?.return_pct;
+    const pred3d  = sig.predictions?.['3D']?.return_pct;
+
+    // 1. News trigger line
+    let triggerLine = '';
+    if (headline && headline.length > 12) {
+        const hl = headline.length > 90 ? headline.substring(0, 90) + '…' : headline;
+        triggerLine = `<span style="font-style:italic;opacity:0.75;">"${hl}"</span><br>`;
+    }
+
+    // 2. Event-type specific core narrative
+    const eventNarrative = {
+        earnings:  `Strong quarterly results signal fundamental momentum. Market typically re-prices ${sent === 'bullish' ? 'earnings beats' : 'earnings misses'} over 3-5 trading sessions as institutions adjust positions.`,
+        merger:    `M&A activity signals strategic value unlock. ${sent === 'bullish' ? 'Target premium or acquirer synergies expected to drive re-rating.' : 'Deal uncertainty or dilution risk may weigh on stock.'}`,
+        order_win: `New order win directly adds revenue visibility for the next 12-18 months, reducing analyst forecast risk and improving book-to-bill ratio.`,
+        dividend:  `Dividend announcement indicates strong free cash flow and management confidence in sustained earnings power.`,
+        policy:    `Regulatory/policy shift creates sector-wide impact. ${sig.ticker} is ${sent === 'bullish' ? 'positioned to benefit' : 'exposed to regulatory headwinds'} from this development.`,
+        supply:    `Supply chain event affects operating margins and production cadence. ${sent === 'bullish' ? 'Improved supply = cost advantage.' : 'Supply disruption = margin pressure.'}`,
+        insider:   `Insider ${sent === 'bullish' ? 'buying' : 'selling'} is a high-conviction signal — management has material non-public context. Insider ${sent === 'bullish' ? 'accumulation at current levels' : 'distribution'} is a strong directional cue.`,
+        news:      `Market catalyst identified with ${sent} implications. NLP confidence: ${conf.toFixed(0)}%.`,
+    };
+    const core = eventNarrative[rawType] || eventNarrative.news;
+
+    // 3. Sector context
+    let sectorLine = '';
+    if (sector) {
+        sectorLine = ` Operating in the <strong>${sector}</strong> sector${regime ? ` under a <strong>${regime}</strong> market regime` : ''}.`;
+    }
+
+    // 4. Market condition context from live indices
+    const mktLine = pulse ? MarketPulse.forSignal(pulse, sent) : '';
+
+    // 5. Prediction line
+    let predLine = '';
+    if (pred1d != null || pred3d != null) {
+        const p1 = pred1d != null ? `1D: <strong>${pred1d >= 0 ? '+' : ''}${pred1d.toFixed(1)}%</strong>` : '';
+        const p3 = pred3d != null ? `3D: <strong>${pred3d >= 0 ? '+' : ''}${pred3d.toFixed(1)}%</strong>` : '';
+        predLine = ` Model forecasts: ${[p1, p3].filter(Boolean).join(', ')}.`;
+    }
+
+    // 6. Alpha strength label
+    let alphaLine = '';
+    if      (alpha >= 80) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — top-tier signal, all scoring factors aligned.`;
+    else if (alpha >= 65) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — high-conviction, ${conf.toFixed(0)}% NLP confidence.`;
+    else if (alpha >= 50) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — moderate conviction, worth monitoring.`;
+    else                  alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — speculative; size positions conservatively.`;
+
+    return `${triggerLine}${core}${sectorLine}${predLine} ${mktLine ? mktLine + ' ' : ''}${alphaLine}`;
+}
+
+// ============ MARKET PULSE RENDERER ============
+function renderMarketPulse(indices) {
+    const pulse = MarketPulse.analyze(indices);
+    if (!pulse) return;
+
+    // Update VIX metric card.  The KPI tile is a mint pastel-card; light or
+    // saturated colors disappear there.  Render the value + label inside a
+    // small dark "ink" chip so contrast is guaranteed against any background,
+    // independent of the upstream fearColor palette.
+    const ink = '#0f1420';
+    const vixEl = document.getElementById('metricVIX');
+    if (vixEl) {
+        vixEl.innerHTML =
+            `<span style="display:inline-block;background:${ink};color:${pulse.fearColor};` +
+            `padding:2px 10px;border-radius:6px;font-weight:700;` +
+            `box-shadow:0 1px 2px rgba(0,0,0,0.18);">${pulse.vixVal}</span>`;
+    }
+    const vixLbl = document.getElementById('metricVIXLabel');
+    if (vixLbl) {
+        vixLbl.innerHTML =
+            `<span style="display:inline-block;background:${ink};color:${pulse.fearColor};` +
+            `padding:1px 8px;border-radius:4px;font-weight:600;font-size:11px;` +
+            `letter-spacing:0.04em;">${pulse.fearLabel}</span>`;
+        vixLbl.style.color = '';
+    }
+
+    // Render index mini-cards
+    const grid = document.getElementById('pulseIndices');
+    if (grid) {
+        const items = [
+            { label: 'NIFTY 50',    price: pulse.niftyPrice,  chg: pulse.niftyChg  },
+            { label: 'SENSEX',      price: pulse.sensexPrice, chg: pulse.sensexChg },
+            { label: 'BANK NIFTY',  price: pulse.bankPrice,   chg: pulse.bankChg   },
+            { label: 'NIFTY IT',    price: pulse.itPrice,     chg: pulse.itChg     },
+            { label: 'INDIA VIX',   price: pulse.vixVal,      chg: pulse.vixChg,   isVIX: true },
+            { label: 'USD / INR',   price: (indices.find(i=>i.short==='USD/INR')?.price||0), chg: pulse.usdChg, isRupee: true },
+        ];
+        grid.innerHTML = items.map(item => {
+            const pos  = item.isVIX ? item.chg < 0 : item.chg >= 0; // VIX down = good
+            const color = item.isRupee ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : item.isVIX  ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : (item.chg >= 0 ? '#4edea3' : '#ffb4ab');
+            const arrow = item.chg >= 0 ? '▲' : '▼';
+            const priceFmt = item.price > 1000
+                ? item.price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                : item.price.toFixed(2);
+            return `<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-3 hover:border-outline-variant/30 transition-all" style="min-height:96px;display:flex;flex-direction:column;justify-content:space-between;">
+                <p class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest" style="margin:0 0 4px 0;line-height:1.2;">${item.label}</p>
+                <p class="font-black font-mono" style="color:${color};font-size:1.125rem;line-height:1.15;margin:0;">${item.isRupee ? '₹' : ''}${priceFmt}</p>
+                <p class="font-bold" style="color:${color};font-size:10px;line-height:1.2;margin:4px 0 0 0;">${arrow} ${Math.abs(item.chg).toFixed(2)}%</p>
+            </div>`;
+        }).join('');
+    }
+
+    // Render header ticker chips (6 indices inline)
+    const headerTicker = document.getElementById('headerTicker');
+    if (headerTicker) {
+        const items = [
+            { label: 'NIFTY 50',    price: pulse.niftyPrice,  chg: pulse.niftyChg  },
+            { label: 'SENSEX',      price: pulse.sensexPrice, chg: pulse.sensexChg },
+            { label: 'BANK NIFTY',  price: pulse.bankPrice,   chg: pulse.bankChg   },
+            { label: 'NIFTY IT',    price: pulse.itPrice,     chg: pulse.itChg     },
+            { label: 'INDIA VIX',   price: pulse.vixVal,      chg: pulse.vixChg,   isVIX: true },
+            { label: 'USD / INR',   price: (indices.find(i=>i.short==='USD/INR')?.price||0), chg: pulse.usdChg, isRupee: true },
+        ];
+        headerTicker.innerHTML = items.map(item => {
+            const color = item.isRupee ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : item.isVIX  ? (item.chg > 0 ? '#ffb4ab' : '#4edea3')
+                        : (item.chg >= 0 ? '#4edea3' : '#ffb4ab');
+            const arrow = item.chg >= 0 ? '▲' : '▼';
+            const priceFmt = item.price > 1000
+                ? item.price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                : item.price.toFixed(2);
+            const ticker = item.label.replace(' / ', '/').replace(' ', '');
+            return `<span class="flex-shrink-0 text-[9px] font-mono font-bold px-2 py-1 rounded border border-outline-variant/15">
+                <span style="color:${color};">${arrow}</span> ${ticker} <span style="font-family:'DM Sans';font-size:9px;color:${color};">${priceFmt}</span> <span style="color:${color};">▼${Math.abs(item.chg).toFixed(2)}%</span>
+            </span>`;
+        }).join('');
+    }
+
+    // Render trend bar
+    const trendBar = document.getElementById('pulseTrendBar');
+    if (trendBar) {
+        const breadthLabel = pulse.greenCount === 4 ? 'All indices advancing' :
+                             pulse.greenCount === 3 ? '3/4 indices advancing' :
+                             pulse.greenCount === 2 ? 'Mixed — split market' :
+                             pulse.greenCount === 1 ? 'Broad selling pressure' :
+                             'All indices declining';
+        const fiiNote = pulse.fiiSell ? ' • Possible FII outflows detected' : '';
+        trendBar.style.borderColor = pulse.trendColor + '44';
+        // Flat list of inline spans inside a wrapping flex container.
+        // Each chip is its own flex item so they wrap independently on narrow widths
+        // instead of one giant text node that overlaps the cards above.
+        trendBar.innerHTML = `
+            <span class="font-black font-headline" style="color:${pulse.trendColor};font-size:13px;letter-spacing:0.04em;">${pulse.trendEmoji} ${pulse.trendLabel}</span>
+            <span style="font-size:10px;color:#5a5d6a;">·</span>
+            <span style="font-size:10px;color:#9aa0c8;line-height:1.4;">${breadthLabel}${fiiNote}</span>
+            <span style="font-size:10px;color:#5a5d6a;">·</span>
+            <span style="font-size:10px;color:${pulse.fearColor};line-height:1.4;">VIX ${pulse.vixVal} — ${pulse.fearLabel}</span>
+            <span style="margin-left:auto;font-size:10px;color:#5a5d6a;font-family:'JetBrains Mono',monospace;">Rupee ${pulse.rupeeDir}</span>`;
+    }
+
+    const updEl = document.getElementById('pulseUpdated');
+    if (updEl) updEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+
+    return pulse;
+}
+
+// ============ INSIGHTS STUDIO RENDERERS ============
+// Pure-render functions that consume already-loaded dashboard / signals / indices
+// data and populate the Insights Studio widgets. No new API calls.
+
+function renderInsightsStudio(dashboard, signals, indices) {
+    renderSectorRings(signals);
+    renderSignalDonut(dashboard);
+    renderActivityHeatmap(signals);
+    renderTopMoverSpark(indices);
+    renderActivityFeed(signals);
+}
+
+function renderSectorRings(signals) {
+    const stage = document.getElementById('ringsStage');
+    const totalPill = document.getElementById('ringsTotalPill');
+    if (!stage) return;
+
+    if (!signals || !signals.length) {
+        stage.innerHTML = '<span style="font-size:11px;color:var(--t3);">No signals yet</span>';
+        if (totalPill) totalPill.textContent = '0 signals';
+        return;
+    }
+
+    // Group by sector
+    const buckets = {};
+    for (const s of signals) {
+        const sec = (s.sector || 'OTHER').replace(/_/g, ' ');
+        buckets[sec] = (buckets[sec] || 0) + 1;
+    }
+    const top = Object.entries(buckets)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4);
+
+    if (totalPill) totalPill.textContent = `${signals.length} signals`;
+
+    // Render 4 nested rings, biggest = largest sector, innermost = top
+    // Reverse so largest sits on the outside.
+    const ordered = [...top].reverse();
+    stage.innerHTML = ordered.map((entry, i) => {
+        const [sector, count] = entry;
+        const ringIdx = i + 1; // 1..4 maps to ring--1..ring--4
+        if (ringIdx === 4) {
+            return `<div class="ring ring--${ringIdx}">
+                <div class="ring__value">${count}</div>
+                <div class="ring__label">${sector.slice(0,8)}</div>
+            </div>`;
+        }
+        return `<div class="ring ring--${ringIdx}">${sector} · ${count}</div>`;
+    }).join('');
+}
+
+function renderSignalDonut(dashboard) {
+    const fillEl = document.getElementById('donutFill');
+    const pctEl  = document.getElementById('donutPct');
+    if (!fillEl || !pctEl || !dashboard) return;
+
+    const bull = dashboard.bullish_count || 0;
+    const bear = dashboard.bearish_count || 0;
+    const neut = dashboard.neutral_count || 0;
+    const total = bull + bear + neut;
+    const pct = total ? Math.round((bull / total) * 100) : 0;
+
+    pctEl.textContent = pct + '%';
+
+    // Circumference = 2 * π * r, r=42 → 263.89
+    const C = 2 * Math.PI * 42;
+    const offset = C * (1 - pct / 100);
+    fillEl.setAttribute('stroke-dasharray', C.toFixed(2));
+    fillEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
+}
+
+function renderActivityHeatmap(signals) {
+    const grid = document.getElementById('heatmapGrid');
+    const bigDays = document.getElementById('heatmapBigDays');
+    const bigSignals = document.getElementById('heatmapBigSignals');
+    if (!grid) return;
+
+    // 30-day window ending today
+    const days = 30;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const buckets = new Array(days).fill(0);
+
+    if (signals) {
+        for (const s of signals) {
+            const ts = s.created_at || s.timestamp || s.ts;
+            if (!ts) continue;
+            const d = new Date(ts);
+            if (isNaN(d)) continue;
+            d.setHours(0, 0, 0, 0);
+            const diff = Math.floor((today - d) / 86400000);
+            if (diff >= 0 && diff < days) {
+                buckets[days - 1 - diff]++;  // oldest leftmost, today rightmost
+            }
+        }
+    }
+
+    const max = Math.max(1, ...buckets);
+    const dots = buckets.map((count, i) => {
+        let level = 0;
+        if (count > 0) {
+            const ratio = count / max;
+            level = ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+        }
+        const daysAgo = days - 1 - i;
+        return `<div class="heatmap-dot" data-level="${level}" title="${count} signal${count!==1?'s':''} · ${daysAgo}d ago"></div>`;
+    }).join('');
+    grid.innerHTML = dots;
+
+    const activeDays = buckets.filter(c => c > 0).length;
+    const totalSignals = buckets.reduce((a, b) => a + b, 0);
+    if (bigDays) bigDays.textContent = activeDays;
+    if (bigSignals) bigSignals.textContent = totalSignals;
+}
+
+function renderTopMoverSpark(indices) {
+    const lineEl  = document.getElementById('sparkLine');
+    const areaEl  = document.getElementById('sparkArea');
+    const labelEl = document.getElementById('sparkLabel');
+    const subEl   = document.getElementById('sparkSub');
+    const valEl   = document.getElementById('sparkValue');
+    const pctEl   = document.getElementById('sparkPct');
+    if (!lineEl || !indices || !indices.length) return;
+
+    // Pick the index with the largest |% change| (biggest mover) — exclude USD/INR
+    const candidates = indices.filter(i => i.short !== 'USD/INR' && i.short !== 'INDIA VIX');
+    if (!candidates.length) return;
+    const top = candidates.reduce((best, cur) =>
+        Math.abs(cur.change_pct || 0) > Math.abs(best.change_pct || 0) ? cur : best
+    );
+
+    const up = (top.change_pct || 0) >= 0;
+    const color = up ? '#4ee6b8' : '#ff7a8a';
+
+    // Build a synthetic intraday-style spark that ENDS at the live close.
+    // We don't have intra-day data on this endpoint, so we draw a smooth
+    // walk between previous close and current price (real anchors).
+    const start = (top.price || 0) - (top.change || 0);
+    const end   = top.price || 0;
+    const N = 22;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+        const t = i / (N - 1);
+        // ease-in-out + small jitter for visual rhythm
+        const ease = t * t * (3 - 2 * t);
+        const noise = (Math.sin(i * 1.3) + Math.cos(i * 2.1)) * Math.abs(end - start) * 0.04;
+        pts.push(start + (end - start) * ease + noise);
+    }
+    pts[N - 1] = end; // anchor exact close
+
+    const min = Math.min(...pts), max = Math.max(...pts);
+    const range = (max - min) || 1;
+    const W = 200, H = 90, pad = 6;
+    const x = i => (i / (N - 1)) * W;
+    const y = v => H - pad - ((v - min) / range) * (H - 2 * pad);
+
+    let dLine = '';
+    pts.forEach((v, i) => { dLine += (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; });
+    const dArea = dLine + `L ${W} ${H} L 0 ${H} Z`;
+
+    lineEl.setAttribute('d', dLine.trim());
+    lineEl.setAttribute('stroke', color);
+    areaEl.setAttribute('d', dArea.trim());
+    areaEl.setAttribute('fill', up ? 'url(#sparkGradientUp)' : 'url(#sparkGradientDown)');
+
+    if (labelEl) labelEl.textContent = top.short;
+    if (subEl)   subEl.textContent   = 'live close';
+    if (valEl)   valEl.textContent   = (top.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
+    if (pctEl) {
+        pctEl.textContent = (up ? '▲ +' : '▼ ') + (top.change_pct || 0).toFixed(2) + '%';
+        pctEl.className = 'spark-pct ' + (up ? 'up' : 'down');
+    }
+}
+
+function renderActivityFeed(signals) {
+    const feed   = document.getElementById('activityFeed');
+    const pills  = document.getElementById('activityPills');
+    const count  = document.getElementById('activityCount');
+    if (!feed) return;
+
+    const list = (signals || []).slice(0, 30);
+    if (count) count.textContent = list.length + ' events';
+
+    const renderRows = (filter) => {
+        let rows = list;
+        if (filter === 'bullish') rows = rows.filter(s => s.sentiment === 'bullish');
+        else if (filter === 'bearish') rows = rows.filter(s => s.sentiment === 'bearish');
+        else if (filter === 'high')    rows = rows.filter(s => (s.alpha_score || 0) >= 70);
+
+        if (!rows.length) {
+            feed.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:20px;text-align:center;">No matching activity</div>';
+            return;
+        }
+
+        feed.innerHTML = rows.slice(0, 12).map(s => {
+            const alpha = s.alpha_score || 0;
+            const tier  = alpha >= 70 ? 'high' : alpha >= 50 ? 'mid' : 'low';
+            const ticker = (s.ticker || '?').slice(0, 4).toUpperCase();
+            const company = s.company || s.ticker || '—';
+            const sector  = (s.sector || '').replace(/_/g, ' ').toLowerCase();
+            const evType  = (s.event_type || 'signal').replace(/_/g, ' ');
+            const t       = s.created_at ? UIHelper.formatTime(s.created_at) : '';
+            return `<div class="activity-row" data-ticker="${s.ticker}">
+                <div class="activity-row__avatar">${ticker.slice(0,2)}</div>
+                <div class="activity-row__main">
+                    <div class="activity-row__title">${s.ticker} · ${company}</div>
+                    <div class="activity-row__sub">${evType}${sector ? ' · ' + sector : ''}${t ? ' · ' + t : ''}</div>
+                </div>
+                <div class="activity-row__alpha ${tier}">${alpha.toFixed(0)}</div>
+            </div>`;
+        }).join('');
+    };
+
+    renderRows('all');
+
+    if (pills && !pills.dataset.bound) {
+        pills.dataset.bound = '1';
+        pills.addEventListener('click', (e) => {
+            const pill = e.target.closest('.activity-pill');
+            if (!pill) return;
+            pills.querySelectorAll('.activity-pill').forEach(p => p.classList.remove('is-active'));
+            pill.classList.add('is-active');
+            renderRows(pill.dataset.filter);
+        });
+    }
+}
+
+async function loadHomePage() {
+    try {
+        // Load market indices + dashboard in parallel
+        const [dashboard, indices] = await Promise.all([
+            LiveData.getDashboard().catch(() => null),
+            LiveData.getMarketIndices().catch(() => null)
+        ]);
+
+        // Render live market pulse panel first
+        const activePulse = indices && indices.length ? renderMarketPulse(indices) : null;
+
+        // Show hero panels with fallback data if APIs fail
+        if (!dashboard && !indices) {
+            paintHeroPanelEvent({ headline: 'Markets are live and ready', summary: 'Refreshing data...', event_type: 'news' });
+            paintHeroPanelTrades([]);
+            paintHeroPanelState(null);
+        }
+
+    if (dashboard) {
+        document.getElementById('metricSignals').textContent = dashboard.active_signals || 0;
+        document.getElementById('metricConfidence').textContent = (dashboard.avg_confidence || 0) + '%';
+        document.getElementById('metricEvents').textContent = dashboard.events_today || 0;
+
+        const bullish = dashboard.bullish_count || 0;
+        const bearish = dashboard.bearish_count || 0;
+        const neutral = dashboard.neutral_count || 0;
+        const total   = bullish + bearish + neutral || 1;
+        const delta   = ((bullish - bearish) / total * 100).toFixed(1);
+        const signals = dashboard.active_signals || 0;
+
+        // Regime label — prefer index-derived trend over DB regime
+        const regime = activePulse ? activePulse.trendLabel : (dashboard.current_regime || 'unknown').replace(/_/g, ' ');
+        const regimeColor = activePulse ? activePulse.trendColor : '#adc6ff';
+
+        // Sentiment delta display — elements may not exist if summary card is hidden/removed
+        const deltaEl = document.getElementById('sentimentDelta');
+        const iconEl  = document.getElementById('sentimentIcon');
+        if (deltaEl) {
+            deltaEl.textContent = (delta > 0 ? '+' : '') + delta + '%';
+            if (delta > 10)       deltaEl.style.color = '#4edea3';
+            else if (delta < -10) deltaEl.style.color = '#ffb4ab';
+            else                  deltaEl.style.color = '#adc6ff';
+        }
+        if (iconEl) {
+            iconEl.innerHTML = delta > 10
+                ? '<span class="material-symbols-outlined text-lg" style="color:#4edea3;">trending_up</span>'
+                : delta < -10
+                ? '<span class="material-symbols-outlined text-lg" style="color:#ffb4ab;">trending_down</span>'
+                : '<span class="material-symbols-outlined text-lg" style="color:#adc6ff;">trending_flat</span>';
+        }
+
+        const regimeLabelEl = document.getElementById('regimeLabel');
+        if (regimeLabelEl) { regimeLabelEl.textContent = regime; regimeLabelEl.style.color = regimeColor; }
+        const signalCountEl = document.getElementById('signalCount');
+        if (signalCountEl) signalCountEl.textContent = signals;
+
+        const sentimentWord = delta > 20 ? 'strongly bullish' : delta > 5 ? 'bullish' : delta < -20 ? 'strongly bearish' : delta < -5 ? 'bearish' : 'mixed';
+        const sentColor = delta > 5 ? '#4edea3' : delta < -5 ? '#ffb4ab' : '#adc6ff';
+        const regimeDesc = activePulse ? MarketPulse.headline(activePulse) : (
+            regime.includes('bull') ? 'Uptrend in progress.' :
+            regime.includes('bear') ? 'Downtrend pressure.' :
+            regime.includes('spike') ? 'High volatility detected.' :
+            regime.includes('crisis') ? 'Crisis mode — extreme caution.' : 'Sideways consolidation.'
+        );
+        const highAlpha = signals > 0 ? `${signals} active signals detected` : 'No strong signals right now';
+        const summaryHtml = `Signal sentiment is <span style="color:${sentColor};font-weight:700;">${sentimentWord}</span> — ${bullish} bullish vs ${bearish} bearish. <span style="opacity:0.7;">${regimeDesc} ${highAlpha}. ${dashboard.events_today || 0} events processed today.</span>`;
+        const summaryEl = document.getElementById('summaryText');
+        if (summaryEl) summaryEl.innerHTML = summaryHtml;
+    }
+
+    // Load events + signals together so we can cross-reference
+    const events  = await LiveData.getLatestEvents(10);
+    const signals = await LiveData.getTopSignals(50);
+
+    // Populate hero panels with live data
+    if (events && events.length) {
+        const topEvent = events[0];
+        paintHeroPanelEvent(topEvent);
+    }
+    if (signals && signals.length) {
+        paintHeroPanelTrades(signals);
+    }
+    if (activePulse) {
+        paintHeroPanelState(activePulse);
+    }
+
+    // Build signal lookup: ticker -> best signal
+    const sigByTicker = {};
+    if (signals) {
+        for (const s of signals) {
+            if (!sigByTicker[s.ticker] || (s.alpha_score || 0) > (sigByTicker[s.ticker].alpha_score || 0)) {
+                sigByTicker[s.ticker] = s;
+            }
+        }
+    }
+
+    // ---- helpers for compact event rows ----
+    function _esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    function _ago(h) {
+        if (h == null) return '';
+        if (h < 1) return Math.round(h * 60) + 'm';
+        if (h < 24) return Math.round(h) + 'h';
+        return Math.round(h / 24) + 'd';
+    }
+    function _alphaChip(a) {
+        if (a == null) return '';
+        const col = a >= 70 ? '#2dd4aa' : a >= 45 ? '#e6b84a' : '#8a94a8';
+        return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:800;color:${col};min-width:28px;text-align:right;">${Math.round(a)}</span>`;
+    }
+    function _senTag(s) {
+        s = (s || '').toLowerCase();
+        if (s === 'bullish' || s === 'positive') return { cls:'bull', label:'Bullish' };
+        if (s === 'bearish' || s === 'negative') return { cls:'bear', label:'Bearish' };
+        return { cls:'neut', label:'Neutral' };
+    }
+    function _evTypeColor(t) {
+        const m = { earnings:'rgba(251,191,36,0.12)', order_win:'rgba(52,211,153,0.12)', policy:'rgba(167,139,250,0.12)', dividend:'rgba(96,165,250,0.12)' };
+        return m[t] || 'rgba(148,163,184,0.10)';
+    }
+    function _evTypeText(t) {
+        const m = { earnings:'#f9d423', order_win:'#2dd4aa', policy:'#a78bfa', dividend:'#6ba3d6' };
+        return m[t] || '#8a94a8';
+    }
+
+    function renderEventRow(ev, sigByTicker) {
+        const companies = typeof ev.companies === 'string' ? ev.companies.split(',').filter(Boolean) : (ev.tickers || []);
+        const matchedSigs = companies.map(t => sigByTicker[t.trim()]).filter(Boolean);
+        const bestAlpha = matchedSigs.length ? Math.max(...matchedSigs.map(s => s.alpha_score || 0))
+                        : ev.impact_score != null ? ev.impact_score
+                        : ev.magnitude != null ? ev.magnitude * 7 : null;
+        const evType = (ev.event_type || 'news');
+        const evLabel = evType.replace(/_/g, ' ');
+        const sen = _senTag(ev.sentiment);
+        const ageH = ev.age_hours != null ? ev.age_hours
+                   : ev.published_at ? Math.max(0, (Date.now() - new Date(ev.published_at).getTime()) / 3600000)
+                   : null;
+        const title = (_esc(ev.title || ev.summary || 'Untitled')).slice(0, 120);
+        const tickerChips = companies.slice(0, 4).map(t => {
+            const sig = sigByTicker[t.trim()];
+            const col = sig ? (sig.sentiment === 'bullish' ? '#2dd4aa' : sig.sentiment === 'bearish' ? '#ff7a8a' : '#8a94a8') : '#8a94a8';
+            return `<a href="stock.html?t=${_esc(t.trim())}" onclick="event.stopPropagation();"
+                       style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${col};text-decoration:none;">${_esc(t.trim())}</a>`;
+        }).join(' · ');
+        const link = ev.link || '#';
+        return `<div class="wire-row" style="${link !== '#' ? 'cursor:pointer;' : ''}" ${link !== '#' ? `onclick="window.open('${_esc(link)}','_blank','noopener')"` : ''}>
+            <div class="wire-time">${_ago(ageH)} ago</div>
+            <div>
+                <div class="wire-title" style="font-size:12px;">${title}</div>
+                <div class="wire-meta">
+                    <span style="padding:1px 5px;border-radius:3px;background:${_evTypeColor(evType)};color:${_evTypeText(evType)};font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;">${_esc(evLabel)}</span>
+                    ${tickerChips ? ' · ' + tickerChips : ''}
+                </div>
+            </div>
+            <div><span class="wire-tag ${sen.cls}">${sen.label}</span></div>
+            ${_alphaChip(bestAlpha)}
+        </div>`;
+    }
+
+    const eventsDiv = document.getElementById('latestEvents');
+    if (!events || events.length === 0) {
+        if (eventsDiv) eventsDiv.innerHTML = '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;">No events yet — scraper is gathering data.</div>';
+    } else {
+        if (eventsDiv) eventsDiv.innerHTML = events.slice(0, 10).map(ev => renderEventRow(ev, sigByTicker)).join('');
+    }
+
+    // ---- Policy Pulse ----
+    const policyItems = [...(events || []), ...(signals || [])].filter(item => {
+        const hay = ((item.title || '') + ' ' + (item.summary || '') + ' ' + (item.event_type || '') + ' ' + (item.headline || '')).toLowerCase();
+        return item.event_type === 'policy'
+            || /\brbi\b|\bsebi\b|policy|circular|notification|government|ministry|cabinet|union budget|budget|gst|nppa|trai|spectrum|subsidy|parliament|lok sabha|rajya sabha|dpiit|fdi|fii|cci|income tax|customs|import duty/.test(hay);
+    }).slice(0, 6);
+
+    const policySection = document.getElementById('policyPulseSection');
+    const policyList = document.getElementById('policyList');
+    const policyCount = document.getElementById('policyCount');
+    if (policySection && policyItems.length > 0) {
+        policySection.style.display = 'block';
+        if (policyCount) policyCount.textContent = `${policyItems.length} political items today`;
+        if (policyList) {
+            policyList.innerHTML = policyItems.map(item => {
+                const companies = typeof item.companies === 'string' ? item.companies.split(',').filter(Boolean)
+                                : (item.tickers || (item.ticker ? [item.ticker] : []));
+                const matchedSigs = companies.map(t => sigByTicker[t.trim()]).filter(Boolean);
+                const bestAlpha = matchedSigs.length ? Math.max(...matchedSigs.map(s => s.alpha_score || 0))
+                                : item.alpha_score != null ? item.alpha_score
+                                : item.impact_score != null ? item.impact_score : null;
+                const sen = _senTag(item.sentiment);
+                const title = _esc((item.title || item.headline || 'Policy event').slice(0, 140));
+                const link = item.link || '#';
+
+                // Political analysis: extract political entities and company tie text from reasoning
+                let analysis = '';
+                if (item.reasoning) {
+                    try {
+                        const r = typeof item.reasoning === 'string' ? JSON.parse(item.reasoning) : item.reasoning;
+                        analysis = _esc((r.primary_driver || r.why_direction || '').slice(0, 120));
+                    } catch(e) {}
+                }
+                if (!analysis) {
+                    const hay = (item.title || item.headline || '').toLowerCase();
+                    if (/rbi/.test(hay)) analysis = 'RBI action — impacts banking, NBFC, and rate-sensitive sectors.';
+                    else if (/sebi/.test(hay)) analysis = 'SEBI regulation — watch for compliance costs and market structure changes.';
+                    else if (/budget|gst|tax/.test(hay)) analysis = 'Fiscal policy change — sector winners/losers depend on rate and coverage shifts.';
+                    else if (/subsidy/.test(hay)) analysis = 'Subsidy change — direct P&L impact for beneficiary companies.';
+                    else analysis = 'Political/policy catalyst — monitor downstream company exposure.';
+                }
+
+                const tickerChips = companies.slice(0, 5).map(t => {
+                    const sig = sigByTicker[t.trim()];
+                    const col = sig ? (sig.sentiment === 'bullish' ? 'rgba(45,212,170,0.15)' : sig.sentiment === 'bearish' ? 'rgba(255,122,138,0.15)' : 'rgba(148,163,184,0.12)') : 'rgba(148,163,184,0.12)';
+                    const textCol = sig ? (sig.sentiment === 'bullish' ? '#2dd4aa' : sig.sentiment === 'bearish' ? '#ff7a8a' : '#dde3ef') : '#dde3ef';
+                    const alphaStr = sig ? ` · α${Math.round(sig.alpha_score||0)}` : '';
+                    return `<a href="stock.html?t=${_esc(t.trim())}" style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:4px;background:${col};color:${textCol};font-family:var(--font-mono);font-size:10px;font-weight:700;text-decoration:none;">${_esc(t.trim())}${alphaStr}</a>`;
+                }).join('');
+
+                return `<div style="background:rgba(167,139,250,0.04);border:1px solid rgba(167,139,250,0.18);border-radius:10px;padding:12px 14px;${link !== '#' ? 'cursor:pointer;' : ''}"
+                             ${link !== '#' ? `onclick="window.open('${_esc(link)}','_blank','noopener')"` : ''}>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                        <span class="material-symbols-outlined" style="font-size:14px;color:#a78bfa;flex-shrink:0;">gavel</span>
+                        <div style="flex:1;font-size:12px;font-weight:600;color:#dde3ef;line-height:1.4;">${title}</div>
+                        ${_alphaChip(bestAlpha)}
+                        <span class="wire-tag ${sen.cls}" style="flex-shrink:0;">${sen.label}</span>
+                    </div>
+                    ${tickerChips ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${tickerChips}</div>` : ''}
+                    <div style="font-size:11px;color:#8a94a8;line-height:1.5;">${analysis}</div>
+                </div>`;
+            }).join('');
+        }
+    }
+
+    // Render top signals sidebar (reuse already-loaded signals)
+    const sidebarSignals = signals || [];
+    const signalsDiv = document.getElementById('topSignals');
+    if (!sidebarSignals || sidebarSignals.length === 0) {
+        UIHelper.showEmpty(signalsDiv, 'No signals yet.');
+    } else {
+        signalsDiv.innerHTML = sidebarSignals.slice(0, 5).map((sig, idx) => {
+            const alpha = sig.alpha_score || 0;
+            const conf = sig.confidence || 0;
+            const confPct = conf <= 1 ? Math.round(conf * 100) : Math.round(conf);
+            const pred1d = sig.predictions?.['1D']?.return_pct;
+            const retStr = pred1d != null ? UIHelper.formatPercent(pred1d) : '--';
+            return `
+            <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all cursor-pointer">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <span class="text-[10px] font-black text-on-surface-variant uppercase">#${idx + 1}</span>
+                        <span data-ticker="${sig.ticker}" class="text-base font-black font-mono text-primary cursor-pointer hover:underline">${sig.ticker}</span>
+                    </div>
+                    <span class="text-xs font-black text-secondary bg-secondary/10 px-2 py-1 rounded">${alpha.toFixed(1)}</span>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-[9px]"><span class="text-on-surface-variant">Alpha Score</span><span class="text-on-surface font-bold">${alpha.toFixed(1)}</span></div>
+                    <div class="flex justify-between text-[9px]"><span class="text-on-surface-variant">1D Return</span><span class="text-secondary font-bold">${retStr}</span></div>
+                    <div class="flex justify-between items-center text-[9px]">
+                        <span class="text-on-surface-variant">Confidence</span>
+                        <div class="flex gap-0.5">${Array(3).fill(0).map((_, i) => '<div class="w-1 h-2 rounded-full ' + (i < Math.ceil(confPct / 34) ? 'bg-secondary' : 'bg-outline-variant/30') + '"></div>').join('')}</div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Load suggested stocks (top 3 valid signals with reasoning)
+    const allSigs = signals || [];
+    if (allSigs.length > 0) {
+        // Deduplicate by ticker, take top 3
+        const seen = new Set();
+        const top = [];
+        for (const s of allSigs) {
+            if (!seen.has(s.ticker) && (s.alpha_score || 0) >= 40) {
+                seen.add(s.ticker);
+                top.push(s);
+                if (top.length >= 3) break;
+            }
+        }
+        if (top.length > 0) {
+            document.getElementById('suggestedSection').style.display = 'block';
+            document.getElementById('suggestedStocks').innerHTML = top.map(sig => {
+                const sent   = sig.sentiment || 'neutral';
+                const color  = sent === 'bullish' ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
+                const evType = (sig.event_type || 'news').replace(/_/g, ' ');
+                const alpha  = sig.alpha_score || 0;
+                const pred1d = sig.predictions?.['1D']?.return_pct;
+                const pred3d = sig.predictions?.['3D']?.return_pct;
+
+                // Prediction badges
+                const predBadges = [pred1d, pred3d].map((p, i) => p != null
+                    ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold" style="background:${p>=0?'rgba(78,222,163,0.1)':'rgba(255,180,171,0.1)'};color:${p>=0?'#4edea3':'#ffb4ab'}">${['1D','3D'][i]} ${p>=0?'+':''}${p.toFixed(1)}%</span>`
+                    : ''
+                ).filter(Boolean).join('');
+
+                // Alpha quality tier
+                const alphaTier = alpha >= 80 ? 'TOP PICK' : alpha >= 65 ? 'HIGH CONV.' : alpha >= 50 ? 'MODERATE' : 'WATCHLIST';
+                const alphaColor = UIHelper.alphaColor(alpha);
+                const reasoningSlot = `sugReason_${sig.event_id}`;
+
+                return `
+                <div class="bg-surface-container-low rounded-xl border border-${color}/20 p-5 hover:border-${color}/40 transition-all group">
+                    <!-- Header row -->
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span data-ticker="${sig.ticker}" class="text-xl font-black font-headline text-on-surface cursor-pointer hover:text-primary transition-colors">${sig.ticker}</span>
+                                <span class="text-[9px] px-1.5 py-0.5 bg-${color}/10 text-${color} rounded font-bold uppercase">${sent}</span>
+                                <span class="text-[8px] px-1 py-0.5 bg-surface-container-highest rounded text-on-surface-variant font-bold uppercase">${evType}</span>
+                            </div>
+                            <p class="text-[11px] text-on-surface-variant truncate">${sig.company || sig.ticker}${sig.sector ? ' · ' + (sig.sector||'').replace(/_/g,' ') : ''}</p>
+                        </div>
+                        <div class="text-right ml-3 flex-shrink-0">
+                            <div class="text-2xl font-black font-mono leading-none" style="color:${alphaColor}">${alpha.toFixed(0)}</div>
+                            <div class="text-[8px] font-bold uppercase mt-0.5" style="color:${alphaColor};opacity:0.7">${alphaTier}</div>
+                        </div>
+                    </div>
+
+                    <!-- Prediction badges -->
+                    ${predBadges ? `<div class="flex gap-1.5 mb-3">${predBadges}</div>` : ''}
+
+                    <!-- Reasoning block (loaded async from backend reasoning_engine) -->
+                    <div class="p-3 rounded-lg border border-outline-variant/10" style="background:rgba(10,14,20,0.5)">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <span class="material-symbols-outlined text-[14px] text-${color}">psychology</span>
+                            <span class="text-[9px] font-bold uppercase tracking-widest text-${color}">Why this stock</span>
+                        </div>
+                        <div id="${reasoningSlot}" class="text-[11px] text-on-surface-variant/85 leading-relaxed">
+                            <span class="opacity-50">loading reasoning…</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="mt-3 pt-2.5 border-t border-outline-variant/10 flex items-center justify-between">
+                        <span class="text-[9px] text-on-surface-variant/50 font-mono">${UIHelper.formatPrice(sig.entry_price)}</span>
+                        <span class="text-[9px] text-on-surface-variant/40">${UIHelper.formatTime(sig.created_at)}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Hydrate reasoning blocks in parallel from the backend.
+            // Falls back to client-side template only if the API fails.
+            top.forEach(sig => {
+                const slot = document.getElementById(`sugReason_${sig.event_id}`);
+                if (!slot) return;
+                API.get(`/signal/${encodeURIComponent(sig.event_id)}/reasoning`)
+                    .then(res => {
+                        const r = res?.data || res;
+                        if (!r || !r.primary_driver) throw new Error('empty reasoning');
+                        const facts = (r.headline_facts || []).length
+                            ? `<div class="mt-1 text-[10px] opacity-70">Figures: ${r.headline_facts.join(' · ')}</div>` : '';
+                        const risks = (r.risk_factors || []).slice(0, 2)
+                            .map(x => `<li>${x}</li>`).join('');
+                        slot.innerHTML = `
+                            <div class="font-semibold text-on-surface mb-1">${r.primary_driver}</div>
+                            <div class="opacity-80 mb-1">${r.why_direction || ''}</div>
+                            <div class="opacity-70 text-[10px]">${r.why_magnitude || ''}</div>
+                            ${facts}
+                            ${risks ? `<ul class="mt-1.5 text-[10px] opacity-70 list-disc list-inside text-error/80">${risks}</ul>` : ''}
+                        `;
+                    })
+                    .catch(() => {
+                        slot.innerHTML = buildSignalReasoning(sig, activePulse);
+                    });
+            });
+        }
+    }
+
+    // Load prediction accuracy
+    const accuracy = await LiveData.getAccuracy();
+    if (accuracy && Object.keys(accuracy).length > 0) {
+        document.getElementById('accuracySection').style.display = 'grid';
+        for (const [horizon, stats] of Object.entries(accuracy)) {
+            const el = document.getElementById(`accuracy${horizon}`);
+            if (el) el.textContent = `${(stats.hit_rate * 100).toFixed(1)}%`;
+            const countEl = document.getElementById(`accuracy${horizon}Count`);
+            if (countEl) countEl.textContent = `${stats.total} predictions`;
+        }
+    }
+
+    // ============ INSIGHTS STUDIO renderers (shared module) ============
+    // SKIPPED for minimal UI — element is hidden
+    // try { await InsightsStudio.mount('insightsRoot', { dashboard, signals, indices }); }
+    // catch(e) { console.warn('insights studio:', e); }
+
+    // Sector concentration warning — fetch analytics and warn if top sector >40%
+    try {
+        const analyticsRes = await API.get('/analytics');
+        const conc = analyticsRes?.data?.concentration;
+        const risk = analyticsRes?.data?.summary?.concentration_risk;
+        if (conc && conc.length && conc[0].pct >= 40) {
+            const warn = document.getElementById('concentrationWarning');
+            const txt  = document.getElementById('concentrationText');
+            if (warn && txt) {
+                txt.textContent = `${conc[0].pct}% of active signals are in ${conc[0].sector} — consider diversifying across sectors.`;
+                warn.classList.remove('hidden');
+            }
+        }
+    } catch(e) { /* non-critical */ }
+}
+
+// "Today's 5 things you'd regret missing" — curated from /api/news/fast.
+// Picks the top 5 events by composite score (alpha + freshness + tier + cluster size),
+// dedups by ticker, surfaces an action line per card.
+async function renderTodaysFive() {
+    const host = document.getElementById('todaysFive');
+    if (!host) return;
+    let items = [];
+    try {
+        const r = await fetch('/api/news/fast?limit=60');
+        const j = await r.json();
+        items = (j && j.data) || [];
+    } catch (e) { return; }
+
+    // Score: alpha (0..100) + cluster confidence (tier1/confirmed = +20) - age penalty
+    const scored = items.map(it => {
+        const alpha = Number(it.alpha_score || 0);
+        const tier = Number(it.source_tier || 4);
+        const confBonus = it.confirmation === 'tier1' ? 25 : it.confirmation === 'confirmed' ? 18 : it.confirmation === 'single' ? 5 : -10;
+        const tierBonus = tier === 1 ? 15 : tier === 2 ? 8 : 0;
+        const ageHrs = Number(it.age_hours || 0);
+        const ageDecay = Math.exp(-ageHrs / 6) * 20;
+        const fb = it.forensic_band;
+        const fbPenalty = fb === 'likely_manipulated' ? -40 : fb === 'suspicious' ? -15 : 0;
+        return { ...it, _score: alpha + confBonus + tierBonus + ageDecay + fbPenalty };
+    });
+
+    // Dedup by primary ticker (or event_id if no ticker)
+    const seen = new Set();
+    const top = [];
+    scored.sort((a, b) => b._score - a._score);
+    for (const it of scored) {
+        const key = (it.tickers && it.tickers[0]) || it.ticker || it.event_id;
+        if (key && seen.has(key)) continue;
+        if (key) seen.add(key);
+        top.push(it);
+        if (top.length >= 5) break;
+    }
+
+    if (!top.length) {
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for fresh events…</div>';
+        return;
+    }
+
+    host.innerHTML = top.map((it, i) => {
+        const ticker = (it.tickers && it.tickers[0]) || it.ticker || '';
+        const sent = it.sentiment || 'neutral';
+        const sentColor = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#9aa0c8';
+        const alpha = Number(it.alpha_score || 0);
+        const fresh = window.Realtime ? Realtime.freshness(it.published_at || it.created_at) : { label: '', color: '#9aa0c8' };
+        const conf = it.confirmation;
+        const confBadge = window.Realtime && conf ? Realtime.sourceConfirmationBadge(conf) : null;
+        const fb = it.forensic_band;
+        const fbBadge = window.Realtime && fb ? Realtime.forensicBadge(fb) : null;
+
+        // Action line: "Buy/Watch/Avoid" based on alpha + sentiment + forensic
+        let action = 'Watch';
+        let actionColor = '#9aa0c8';
+        if (fb === 'likely_manipulated') { action = 'Avoid'; actionColor = '#ff7a8a'; }
+        else if (alpha >= 70 && sent === 'bullish') { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
+        else if (alpha >= 70 && sent === 'bearish') { action = 'Short / hedge'; actionColor = '#ff9466'; }
+        else if (alpha >= 60) { action = 'Watch closely'; actionColor = '#f9d423'; }
+
+        return `
+        <div onclick="window.location='${ticker ? 'compare.html?t=' + ticker : 'events.html'}'"
+             style="cursor:pointer;background:#0d1118;border:1px solid ${sentColor}22;border-left:4px solid ${sentColor};border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:start;transition:all 0.2s;"
+             onmouseover="this.style.background='#111720';" onmouseout="this.style.background='#0d1118';">
+            <div style="font-size:24px;font-weight:900;color:${sentColor};font-family:'JetBrains Mono',monospace;min-width:36px;">${i+1}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">
+                    ${ticker ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:900;color:#dde3ef;">${ticker}</span>` : ''}
+                    ${alpha ? `<span style="font-size:10px;font-weight:800;color:${sentColor};">α ${alpha.toFixed(0)}</span>` : ''}
+                    ${fresh.label ? Realtime.badgeChip(fresh.label, fresh.color) : ''}
+                    ${confBadge ? Realtime.badgeChip(confBadge.label, confBadge.color) : ''}
+                    ${fbBadge ? Realtime.badgeChip(fbBadge.label, fbBadge.color) : ''}
+                </div>
+                <div style="font-size:13px;color:#dde3ef;font-weight:600;line-height:1.3;margin-bottom:4px;">${(it.title || '').slice(0, 140)}</div>
+                <div style="font-size:10px;color:${actionColor};font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">→ ${action}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        SoundFX.init();
+    } catch(e) { console.log('SoundFX init skipped'); }
+
+    // Inject "Today's 5" panel before the Policy Pulse section
+    try {
+        const _pps = document.getElementById('policyPulseSection');
+        if (_pps && !document.getElementById('todaysFive')) {
+            const panel = document.createElement('section');
+            panel.className = 'mb-8';
+            panel.innerHTML = `
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="text-[10px] font-black tracking-widest uppercase" style="color:#f9d423;">TODAY'S 5</span>
+                    <span class="text-[10px] text-on-surface-variant/50 font-mono">things you'd regret missing</span>
+                    <div class="h-[1px] flex-1 bg-primary/10"></div>
+                </div>
+                <div id="todaysFive" class="space-y-2"></div>`;
+            _pps.parentNode.insertBefore(panel, _pps);
+        }
+    } catch(e) { console.log('Today\'s 5 panel skipped'); }
+
+    // Start data refresh with error handling
+    if (window.DataRefresher) {
+        DataRefresher.start(async () => {
+            try {
+                await loadHomePage();
+            } catch(e) { console.warn('loadHomePage error:', e); }
+            try {
+                await renderTodaysFive();
+            } catch(e) { console.warn('renderTodaysFive error:', e); }
+        }, 60000);
+    }
+
+    // Load initial data immediately
+    loadHomePage().catch(e => console.warn('Initial load error:', e));
+
+    try {
+        Auth.updateAuthUI();
+    } catch(e) { console.log('Auth update skipped'); }
+});
+</script>
+</body>
+</html>

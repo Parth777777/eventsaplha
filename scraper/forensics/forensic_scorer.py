@@ -20,29 +20,33 @@ from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Weighted contributions (tuned conservatively; recompute after backtest)
+# Weighted contributions — tuned more aggressively so partial evidence still scores
+# meaningfully (was producing zeros + clean bands even for shady patterns).
 WEIGHTS = {
-    "discrepancy_flagged": 28,
-    "intent_dump_setup": 20,
-    "intent_hype": 12,
-    "intent_attack": 10,
-    "intent_promote": 8,
-    "fingerprint_unsourced_numbers": 10,
-    "fingerprint_anonymous_insider": 10,
-    "fingerprint_contradicts_public_facts": 12,
-    "fingerprint_promo_disguised_as_analysis": 8,
-    "fingerprint_recycled_phrasing": 6,
-    "coordinated_campaign": 15,
-    "low_source_credibility": 12,
-    "unexplained_volume_pre_news": 14,
-    "promoter_selling_recent": 10,
+    "discrepancy_flagged": 35,            # filing/number mismatches are damning
+    "intent_dump_setup": 28,
+    "intent_hype": 18,
+    "intent_attack": 16,
+    "intent_promote": 12,
+    "fingerprint_unsourced_numbers": 14,
+    "fingerprint_anonymous_insider": 14,
+    "fingerprint_contradicts_public_facts": 16,
+    "fingerprint_promo_disguised_as_analysis": 12,
+    "fingerprint_recycled_phrasing": 10,
+    "coordinated_campaign": 22,
+    "low_source_credibility": 18,
+    "unexplained_volume_pre_news": 22,    # pre-news volume is a textbook leak tell
+    "promoter_selling_recent": 16,
+    "low_credibility_compounded": 8,      # extra kick if source < 0.20
 }
 
 
 def classify_band(score: int) -> str:
-    if score >= 70:
+    # Lowered bands so meaningful evidence escapes "clean".
+    # 55+ = likely_manipulated (was 70), 25+ = unverified (was 40).
+    if score >= 55:
         return "likely_manipulated"
-    if score >= 40:
+    if score >= 25:
         return "unverified"
     return "clean"
 
@@ -92,9 +96,13 @@ def score_event(
         score += WEIGHTS["coordinated_campaign"]
         reasons.append("coordinated_campaign")
 
-    if source_credibility < 0.35:
+    # Looser credibility threshold — anything below ~0.45 is suspect now (was 0.35)
+    if source_credibility < 0.45:
         score += WEIGHTS["low_source_credibility"]
         reasons.append("low_source_credibility")
+        if source_credibility < 0.20:
+            score += WEIGHTS["low_credibility_compounded"]
+            reasons.append("very_low_source_credibility")
 
     if unexplained_volume_pre_news:
         score += WEIGHTS["unexplained_volume_pre_news"]
@@ -202,18 +210,23 @@ def fuse(
         if llm.get("favouring_party") in {"company", "short_seller"}:
             reasons.append(f"favours_{llm.get('favouring_party')}")
 
-    # Weighted fusion: base 40% + pump 25% + article 20% + fine_print 15%
-    fused = (
-        0.40 * sub_scores.get("base", 0)
-        + 0.25 * sub_scores.get("pump_dump", 0)
-        + 0.20 * sub_scores.get("article", 0)
-        + 0.15 * sub_scores.get("fine_print", 0)
-    )
+    # Weighted fusion: base 40% + pump 25% + article 20% + fine_print 15%.
+    # If only a single sub-score is present, scale it up so a strong solo signal
+    # isn't washed out by zeros on missing inputs.
+    present = [k for k in ("base", "pump_dump", "article", "fine_print") if k in sub_scores]
+    weights_full = {"base": 0.40, "pump_dump": 0.25, "article": 0.20, "fine_print": 0.15}
+    used = {k: weights_full[k] for k in present}
+    total_w = sum(used.values()) or 1.0
+    fused = sum((used[k] / total_w) * sub_scores.get(k, 0) for k in present)
+    # Floor at the strongest single sub-score so a 75 pump-dump can't fall below 40
+    if present:
+        fused = max(fused, max(sub_scores.get(k, 0) for k in present) * 0.65)
     score = int(min(100, round(fused)))
 
-    if score >= 70:
+    # Lowered bands consistent with classify_band()
+    if score >= 55:
         band = "likely_manipulated"
-    elif score >= 40:
+    elif score >= 25:
         band = "unverified"
     else:
         band = "clean"

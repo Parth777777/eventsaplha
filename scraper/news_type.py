@@ -19,6 +19,7 @@ NEWS_OUTLETS = {
     "et_markets", "et_stocks", "mint_markets", "mint_companies",
     "moneycontrol_markets", "moneycontrol_stocks", "bs_markets",
     "newsapi", "google_news", "rbi_press",
+    "pib_releases", "pib_features", "mof_press", "pmo_press",
 }
 
 

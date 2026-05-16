@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tickwave | Geo Intelligence Map</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Tickwave | Geo Intelligence</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -19,14 +24,13 @@
                 "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
                 "outline": "#3d4a5c", "outline-variant": "#253040",
                 "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
-            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
     <script src="./shared/js/theme.js"></script>
-    <script src="./shared/js/widgets.js"></script>
 
-    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
@@ -34,678 +38,1145 @@
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         #map { background: #080b10; }
-        .leaflet-container { background: #080b10 !important; }
+        .leaflet-container { background: #080b10 !important; font-family: 'DM Sans', sans-serif; }
         .leaflet-control-zoom a { background: #1c2026 !important; color: #dfe2eb !important; border-color: #424754 !important; }
-        .leaflet-control-attribution { background: rgba(8,11,16,0.9) !important; color: #424754 !important; font-size: 8px !important; }
+        .leaflet-control-attribution { background: rgba(8,11,16,0.85) !important; color: #424754 !important; font-size: 8px !important; }
         .leaflet-control-attribution a { color: #6b7280 !important; }
-        .leaflet-popup-content-wrapper { background: #1c2026 !important; color: #dfe2eb !important; border: 1px solid rgba(66,71,84,0.4) !important; border-radius: 10px !important; box-shadow: 0 12px 40px rgba(0,0,0,0.7) !important; }
-        .leaflet-popup-tip { background: #1c2026 !important; }
-        .leaflet-popup-close-button { color: #8c909f !important; font-size: 18px !important; }
-        .leaflet-popup-content { margin: 12px 14px !important; }
-        .pulse-marker { border-radius: 50%; }
-        @keyframes pulse-ring {
-            0%   { box-shadow: 0 0 0 0px rgba(173,198,255,0.5); }
-            70%  { box-shadow: 0 0 0 14px rgba(173,198,255,0); }
-            100% { box-shadow: 0 0 0 0px rgba(173,198,255,0); }
+        .leaflet-popup-content-wrapper { background: #0f1420 !important; color: #dfe2eb !important; border: 1px solid rgba(141,180,224,0.3) !important; border-radius: 8px !important; box-shadow: 0 12px 40px rgba(0,0,0,0.7) !important; }
+        .leaflet-popup-tip { background: #0f1420 !important; }
+        .leaflet-popup-close-button { color: #8a94a8 !important; }
+        .leaflet-popup-content { margin: 10px 12px !important; min-width: 220px; }
+
+        /* Pin: monogram disc — color via CSS var --c, severity scales --sz */
+        .geo-pin {
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-family: 'Geist Mono', monospace;
+            font-weight: 800; font-size: 9px; letter-spacing: 0.5px;
+            color: #fff; cursor: pointer;
+            background: var(--c, #8eb4e0);
+            box-shadow: 0 0 0 1.5px rgba(255,255,255,0.18), 0 4px 12px rgba(0,0,0,0.5);
+            transition: transform 120ms ease;
         }
-        @keyframes pulse-ring-red {
-            0%   { box-shadow: 0 0 0 0px rgba(255,107,107,0.5); }
-            70%  { box-shadow: 0 0 0 18px rgba(255,107,107,0); }
-            100% { box-shadow: 0 0 0 0px rgba(255,107,107,0); }
+        .geo-pin:hover { transform: scale(1.15); }
+        .geo-pin.is-new::after {
+            content: ''; position: absolute; inset: -6px;
+            border-radius: 50%; border: 2px solid var(--c);
+            animation: geo-pulse 1.4s ease-out infinite;
         }
-        @keyframes pulse-ring-green {
-            0%   { box-shadow: 0 0 0 0px rgba(78,222,163,0.4); }
-            70%  { box-shadow: 0 0 0 10px rgba(78,222,163,0); }
-            100% { box-shadow: 0 0 0 0px rgba(78,222,163,0); }
+        .geo-pin.is-watchlist {
+            box-shadow: 0 0 0 2px #e6b84a, 0 0 14px rgba(230,184,74,0.6);
         }
-        .pulse-high   { animation: pulse-ring-red   2.2s ease-out infinite; }
-        .pulse-medium { animation: pulse-ring       2.8s ease-out infinite; }
-        .pulse-low    { animation: pulse-ring-green 3.5s ease-out infinite; }
-        .exchange-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
-        .exchange-open   { background: rgba(78,222,163,0.15); color: #4edea3; border: 1px solid rgba(78,222,163,0.2); }
-        .exchange-closed { background: rgba(140,144,159,0.1); color: #8c909f; border: 1px solid rgba(140,144,159,0.15); }
-        .ev-chip { font-size: 9px; padding: 2px 7px; border-radius: 4px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .ev-chip.active { background: rgba(173,198,255,0.2); color: #adc6ff; border: 1px solid rgba(173,198,255,0.3); }
-        .ev-chip:not(.active) { background: rgba(66,71,84,0.15); color: #8c909f; border: 1px solid rgba(66,71,84,0.2); }
-        .ev-chip:hover { opacity: 0.8; }
-        ::-webkit-scrollbar { width: 4px; }
+        @keyframes geo-pulse {
+            0%   { transform: scale(0.9); opacity: 0.9; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        /* Lens chips */
+        .lens-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px; border-radius: 999px;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; cursor: pointer;
+            border: 1px solid rgba(141,148,168,0.25);
+            background: rgba(13,17,24,0.6); color: #8a94a8;
+            transition: all 120ms ease;
+            white-space: nowrap;
+        }
+        .lens-chip:hover { color: #dde3ef; border-color: rgba(141,180,224,0.45); }
+        .lens-chip.active { color: #fff; }
+        .lens-chip .lens-mono {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; border-radius: 50%;
+            font-family: 'Geist Mono', monospace; font-size: 8.5px; font-weight: 800;
+            color: #fff; letter-spacing: 0;
+        }
+
+        /* Affected tickers grid */
+        .ticker-row {
+            display: grid; grid-template-columns: 36px 1fr 70px 64px 50px;
+            gap: 8px; align-items: center;
+            padding: 9px 10px; cursor: pointer;
+            border-bottom: 1px solid rgba(37,48,64,0.4);
+            transition: background 80ms;
+        }
+        .ticker-row:hover { background: rgba(141,180,224,0.06); }
+        .ticker-row.is-watchlist { border-left: 3px solid #e6b84a; padding-left: 7px; }
+        .ticker-row .rank { color: #5a6373; font-family: 'Geist Mono', monospace; font-size: 11px; text-align: right; }
+        .ticker-row .tk   { font-weight: 800; font-size: 12px; color: #dde3ef; letter-spacing: 0.02em; }
+        .ticker-row .reason { font-size: 9px; color: #8a94a8; line-height: 1.3; margin-top: 2px; }
+        .ticker-row .px   { font-family: 'Geist Mono', monospace; font-size: 11px; text-align: right; color: #dde3ef; }
+        .ticker-row .alpha { font-family: 'Geist Mono', monospace; font-size: 11px; text-align: right; font-weight: 700; }
+        .ticker-row .beta { font-family: 'Geist Mono', monospace; font-size: 10px; text-align: right; }
+
+        .grid-head {
+            display: grid; grid-template-columns: 36px 1fr 70px 64px 50px;
+            gap: 8px; padding: 8px 10px;
+            font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
+            text-transform: uppercase; color: #5a6373;
+            border-bottom: 1px solid rgba(37,48,64,0.7);
+        }
+        .grid-head .rank-h { text-align: right; }
+
+        /* Reasoning chain */
+        .chain-step { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; }
+        .chain-step .step-n {
+            flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(141,180,224,0.15); color: #8eb4e0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 800;
+            margin-top: 1px;
+        }
+
+        /* Reaction status pill — "priced in" / "room to spike" / "diverging" */
+        .reaction-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 7px; border-radius: 999px;
+            font-size: 8.5px; font-weight: 800; letter-spacing: 0.05em;
+            text-transform: uppercase; line-height: 1.4;
+            border: 1px solid;
+            white-space: nowrap;
+            font-family: 'Geist Mono', monospace;
+            margin-top: 4px;
+        }
+        .reaction-pill .react-dot {
+            display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+            box-shadow: 0 0 4px currentColor;
+        }
+        .reaction-pill .react-chg { opacity: 0.75; font-weight: 700; }
+        .reaction-pill.is-loading { opacity: 0.45; }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #424754; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: rgba(60,72,90,0.5); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(141,180,224,0.4); }
+
+        /* ── Macro ribbon (top of page) ─────────────────────────────── */
+        .macro-ribbon {
+            display: flex; gap: 0; overflow-x: auto;
+            background: linear-gradient(90deg, rgba(13,17,24,0.8), rgba(17,23,32,0.8));
+            border: 1px solid rgba(37,48,64,0.5); border-radius: 10px;
+            margin: 0 12px 12px;
+        }
+        .macro-cell {
+            flex: 1; min-width: 130px;
+            display: flex; flex-direction: column; gap: 2px;
+            padding: 8px 14px;
+            border-right: 1px solid rgba(37,48,64,0.4);
+            white-space: nowrap;
+        }
+        .macro-cell:last-child { border-right: none; }
+        .macro-cell .lbl { font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: #5a6373; }
+        .macro-cell .px { font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 800; color: #dde3ef; line-height: 1; margin-top: 2px; }
+        .macro-cell .chg { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 700; }
+        .macro-cell.up   .chg { color: #2dd4aa; }
+        .macro-cell.dn   .chg { color: #f26b6b; }
+        .macro-cell.flat .chg { color: #8a94a8; }
+
+        /* ── Time window pills ──────────────────────────────────────── */
+        .tw-pill {
+            padding: 4px 10px; border-radius: 999px;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: transparent; color: #8a94a8;
+            cursor: pointer; transition: all 100ms;
+        }
+        .tw-pill:hover { color: #dde3ef; }
+        .tw-pill.active { background: #8eb4e0; color: #0a0e14; font-weight: 800; }
+
+        /* ── Map overlay controls (severity legend + heatmap toggle + zoom presets) ─ */
+        .map-overlay {
+            position: absolute; z-index: 600;
+            background: rgba(13,17,24,0.92); backdrop-filter: blur(8px);
+            border: 1px solid rgba(37,48,64,0.7); border-radius: 8px;
+            padding: 8px 10px; pointer-events: auto;
+        }
+        .map-overlay.bottom-left  { left: 12px;  bottom: 14px; }
+        .map-overlay.top-right    { right: 12px; top: 12px; }
+        .map-overlay.bottom-right { right: 12px; bottom: 14px; }
+
+        .severity-legend { display: flex; align-items: center; gap: 10px; }
+        .severity-legend .lbl { font-size: 8.5px; font-weight: 800; color: #5a6373; text-transform: uppercase; letter-spacing: 0.12em; }
+        .severity-legend .dot {
+            display: inline-block; border-radius: 50%;
+            background: linear-gradient(135deg, #8eb4e0, #6a9bd1);
+            box-shadow: 0 0 4px rgba(141,180,224,0.5);
+        }
+
+        .map-tool-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 9px; border-radius: 5px;
+            background: transparent; color: #8a94a8;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 100ms;
+        }
+        .map-tool-btn:hover { color: #dde3ef; background: rgba(141,180,224,0.08); }
+        .map-tool-btn.active { color: #fff; background: rgba(141,180,224,0.18); border-color: rgba(141,180,224,0.4); }
+
+        .preset-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 8px; border-radius: 999px;
+            background: transparent; color: #8a94a8;
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; cursor: pointer;
+            border: 1px solid rgba(60,72,90,0.4);
+            transition: all 100ms;
+        }
+        .preset-btn:hover { color: #dde3ef; border-color: rgba(141,180,224,0.5); }
+        .preset-btn.active { color: #fff; background: rgba(141,180,224,0.2); border-color: rgba(141,180,224,0.6); }
+
+        /* ── Pin polish (inner ring + softer halo) ─────────────────── */
+        .geo-pin {
+            position: relative;
+        }
+        .geo-pin::before {
+            content: ''; position: absolute; inset: 2px;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.25);
+            pointer-events: none;
+        }
+        .geo-pin.is-high {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 0 16px var(--c), 0 4px 14px rgba(0,0,0,0.6);
+        }
+
+        /* ── Watchlist hit chip ────────────────────────────────────── */
+        .watch-hit-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px;
+            background: rgba(230,184,74,0.12); border: 1px solid rgba(230,184,74,0.4);
+            color: #e6b84a; font-size: 10px; font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Lens chip count badge ──────────────────────────────────── */
+        .lens-chip .lens-count {
+            font-family: 'Geist Mono', monospace; font-size: 9px;
+            font-weight: 800; color: rgba(255,255,255,0.55);
+            margin-left: 2px;
+        }
+        .lens-chip.active .lens-count { color: rgba(255,255,255,0.85); }
+
+        /* Leaflet tooltip dark variant */
+        .leaflet-tooltip-dark, .leaflet-tooltip {
+            background: rgba(13,17,24,0.94) !important;
+            border: 1px solid rgba(141,180,224,0.4) !important;
+            color: #dde3ef !important;
+            font-size: 11px !important;
+            padding: 6px 9px !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-tooltip-top:before { border-top-color: rgba(13,17,24,0.94) !important; }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
 
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">Tickwave</h1>
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
         <p class="sidebar-brand-sub">Geo Intelligence</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link active" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link active" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
 </aside>
 
 <main class="main-content">
     <!-- Header -->
-    <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-3 mb-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div>
-                <h1 class="text-3xl font-black font-headline text-on-surface">GEO INTELLIGENCE</h1>
-                <p class="text-on-surface-variant text-xs mt-0.5">Global macro event flows and their impact on Indian equities</p>
+    <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-outline-variant/15 px-6 py-3 mb-3">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3 mb-3">
+            <div class="min-w-0">
+                <h1 class="text-2xl font-black font-headline text-on-surface">GEO INTELLIGENCE</h1>
+                <p class="text-on-surface-variant text-xs mt-0.5" id="modeHint">Click a pin → transmission chain to affected Indian stocks</p>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <!-- Impact filters -->
-                <div class="flex gap-1.5">
-                    <span class="ev-chip active" id="filter-high"   onclick="toggleFilter('high')">🔴 High</span>
-                    <span class="ev-chip active" id="filter-medium" onclick="toggleFilter('medium')">🔵 Medium</span>
-                    <span class="ev-chip active" id="filter-low"    onclick="toggleFilter('low')">🟢 Low</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- World / India mode toggle -->
+                <div class="flex items-center p-0.5 bg-surface-container rounded-full border border-outline-variant/15">
+                    <button id="modeWorld" class="mode-btn px-3 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-black flex items-center gap-1.5 transition-colors" style="background:#8eb4e0;color:#0a0e14;">
+                        <span class="material-symbols-outlined" style="font-size:13px;">public</span>World
+                    </button>
+                    <button id="modeIndia" class="mode-btn px-3 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+                        <span class="material-symbols-outlined" style="font-size:13px;">flag</span>India
+                    </button>
                 </div>
-                <div class="h-5 w-px bg-outline-variant/30 hidden md:block"></div>
-                <!-- Exchange status -->
-                <div id="exchangeStatus" class="flex gap-1.5"></div>
+                <label class="flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-full border border-outline-variant/15 cursor-pointer text-[10px] font-bold text-on-surface-variant hover:text-on-surface">
+                    <input type="checkbox" id="watchlistToggle" class="w-3 h-3 accent-caution"/>
+                    <span class="material-symbols-outlined" style="font-size:13px;color:#e6b84a;">star</span>
+                    Watchlist only
+                </label>
                 <div class="flex items-center px-3 py-1.5 bg-surface-container rounded-full border border-outline-variant/10">
                     <span class="w-2 h-2 rounded-full bg-secondary mr-2 animate-pulse"></span>
                     <span class="text-[10px] font-bold text-on-surface-variant" id="eventCount">Loading…</span>
                 </div>
+                <div id="watchHitChip" class="watch-hit-chip hidden">
+                    <span class="material-symbols-outlined" style="font-size:12px;">star</span>
+                    <span id="watchHitText">0 of 0</span>
+                </div>
+            </div>
+        </div>
+        <!-- Lens filter chips + time window pills -->
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div id="lensChips" class="flex flex-wrap gap-2 items-center"></div>
+            <div class="flex items-center gap-1 p-0.5 bg-surface-container rounded-full border border-outline-variant/15">
+                <button class="tw-pill" data-hours="6">6h</button>
+                <button class="tw-pill" data-hours="24">24h</button>
+                <button class="tw-pill" data-hours="72">72h</button>
+                <button class="tw-pill active" data-hours="168">7d</button>
+                <button class="tw-pill" data-hours="720">30d</button>
             </div>
         </div>
     </header>
-    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'map'}); });</script>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 px-2">
-        <!-- Map -->
-        <div class="lg:col-span-3">
-            <div id="map" class="h-[640px] rounded-xl border border-outline-variant/10 overflow-hidden"></div>
+    <!-- Live macro ribbon (transmission channels: indices, oil, gold, FX, yield) -->
+    <div id="macroRibbon" class="macro-ribbon">
+        <div class="macro-cell flat"><span class="lbl">Loading…</span><span class="px">--</span></div>
+    </div>
+
+    <!-- Map + Right Rail -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 px-3">
+        <div class="lg:col-span-2 relative">
+            <div id="map" class="h-[640px] rounded-xl border border-outline-variant/15 overflow-hidden"></div>
+
+            <!-- Severity legend (bottom-left overlay) -->
+            <div class="map-overlay bottom-left severity-legend">
+                <span class="lbl">Severity</span>
+                <span class="dot" style="width:8px;height:8px;"></span>
+                <span class="lbl" style="letter-spacing:0;color:#8a94a8;">low</span>
+                <span class="dot" style="width:14px;height:14px;"></span>
+                <span class="dot" style="width:22px;height:22px;"></span>
+                <span class="lbl" style="letter-spacing:0;color:#8a94a8;">high</span>
+            </div>
+
+            <!-- Map tools (top-right overlay) -->
+            <div class="map-overlay top-right" style="display:flex;gap:4px;">
+                <button id="heatBtn"   class="map-tool-btn" title="Toggle event-density heatmap"><span class="material-symbols-outlined" style="font-size:13px;">whatshot</span>Heat</button>
+                <button id="arcsBtn"   class="map-tool-btn active" title="Show transmission arcs on click"><span class="material-symbols-outlined" style="font-size:13px;">timeline</span>Arcs</button>
+            </div>
+
+            <!-- Quick zoom presets (bottom-right overlay) -->
+            <div class="map-overlay bottom-right" style="display:flex;gap:5px;flex-wrap:wrap;max-width:380px;">
+                <button class="preset-btn" data-preset="world">World</button>
+                <button class="preset-btn" data-preset="india">India</button>
+                <button class="preset-btn" data-preset="apac">Asia-Pac</button>
+                <button class="preset-btn" data-preset="mideast">MidEast</button>
+                <button class="preset-btn" data-preset="americas">Americas</button>
+                <button class="preset-btn" data-preset="europe">Europe</button>
+            </div>
         </div>
 
-        <!-- Right panel -->
-        <div class="space-y-3 flex flex-col">
-            <!-- Region hotspots -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
-                <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Event Hotspots</h3>
-                <div id="regionStats" class="space-y-2"></div>
-            </div>
-
-            <!-- Event feed -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 flex-1 min-h-0">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Live Event Feed</h3>
-                    <span id="feedCount" class="text-[9px] text-on-surface-variant/50 font-mono"></span>
+        <!-- Right Rail: affected tickers grid -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 flex flex-col h-[640px]">
+            <div class="px-4 py-3 border-b border-outline-variant/15 flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">Transmission chain</div>
+                    <div id="rrTitle" class="text-sm font-bold text-on-surface mt-0.5 line-clamp-2">Click a pin on the map</div>
+                    <div id="rrLensTag" class="hidden mt-1.5"></div>
                 </div>
-                <div id="map-events" class="space-y-2 overflow-y-auto" style="max-height:420px;">
-                    <div class="text-center py-4 text-on-surface-variant/40 text-xs">Loading…</div>
-                </div>
+                <button id="rrClose" class="hidden text-on-surface-variant hover:text-on-surface flex-shrink-0" title="Clear selection">
+                    <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+                </button>
             </div>
-
-            <!-- Legend -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4">
-                <h3 class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Map Legend</h3>
-                <div class="space-y-2 text-xs">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-4 h-4 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#ff6b6b,#ff6b6b44);border:1.5px solid #ff6b6b66;"></div>
-                        <span class="text-on-surface-variant">High impact — Major market mover</span>
-                    </div>
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#adc6ff,#adc6ff44);border:1.5px solid #adc6ff66;"></div>
-                        <span class="text-on-surface-variant">Medium — Sector / indirect</span>
-                    </div>
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:radial-gradient(circle,#4edea3,#4edea344);border:1.5px solid #4edea366;"></div>
-                        <span class="text-on-surface-variant">Low — Informational</span>
-                    </div>
-                    <div class="flex items-center gap-2.5 mt-2 pt-2 border-t border-outline-variant/10">
-                        <svg width="28" height="8"><line x1="0" y1="4" x2="28" y2="4" stroke="#adc6ff" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/></svg>
-                        <span class="text-on-surface-variant">Impact flow to India (NSE)</span>
-                    </div>
+            <div id="rrGridHead" class="grid-head hidden">
+                <div class="rank-h">#</div>
+                <div>Ticker / reason</div>
+                <div style="text-align:right;">Last</div>
+                <div style="text-align:right;">Alpha</div>
+                <div style="text-align:right;">β</div>
+            </div>
+            <div id="rrGrid" class="flex-1 overflow-y-auto">
+                <div class="p-6 text-center text-on-surface-variant/50 text-xs">
+                    <span class="material-symbols-outlined block mb-2" style="font-size:32px;color:#3d4a5c;">touch_app</span>
+                    Select an event pin to see which Indian stocks it affects, ranked by historical sensitivity.
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ============ MAP INSIGHT STUDIO (page-unique) ============ -->
-    <section class="mb-6 px-4 mt-4" id="mapStudio">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:14px;">
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">Event tier mix</div>
-              <div class="widget__meta">Impact distribution</div>
+    <!-- Event Detail Card (full-width, appears below map when pin clicked) -->
+    <section id="eventDetail" class="hidden mx-3 mt-3 bg-surface-container-low rounded-xl border border-outline-variant/15 p-5">
+        <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="flex items-start gap-3 min-w-0">
+                <div id="edMono" class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-mono font-black text-sm text-white" style="background:#8eb4e0;">--</div>
+                <div class="min-w-0">
+                    <div id="edMeta" class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-1"></div>
+                    <h3 id="edTitle" class="text-base font-bold text-on-surface leading-snug"></h3>
+                    <div id="edSummary" class="text-xs text-on-surface-variant/80 mt-1 leading-relaxed"></div>
+                </div>
             </div>
-          </div>
-          <div id="mapTierRings" style="flex:1;"></div>
+            <a id="edSourceLink" href="#" target="_blank" rel="noopener" class="hidden flex-shrink-0 text-[10px] uppercase tracking-widest font-bold text-primary hover:underline">
+                Source <span class="material-symbols-outlined align-middle" style="font-size:12px;">open_in_new</span>
+            </a>
         </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
+        <!-- Reasoning chain -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <div class="widget__title">High-impact share</div>
-              <div class="widget__meta">Of all geo events</div>
+                <div class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Reasoning chain</div>
+                <div id="edChain" class="text-xs text-on-surface"></div>
             </div>
-          </div>
-          <div id="mapHighDonut" style="flex:1;"></div>
-        </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
             <div>
-              <div class="widget__title">Geo event velocity</div>
-              <div class="widget__meta">Last 30 days</div>
+                <div class="text-[9px] font-black text-on-surface-variant uppercase tracking-widest mb-2">Top affected stocks</div>
+                <div id="edTopAffected" class="space-y-1.5"></div>
             </div>
-          </div>
-          <div id="mapVelHeat" style="flex:1;"></div>
         </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">Region concentration</div>
-              <div class="widget__meta">Top regions by event count</div>
-            </div>
-          </div>
-          <div id="mapRegHist" style="margin-top:10px;flex:1;"></div>
-        </div>
-      </div>
     </section>
-    <script>
-    (async function(){
-      try {
-        const res = await Widgets.fetchJSON('/geoevents?limit=300');
-        const events = (res && res.data) || [];
-        if (!events.length) return;
-
-        // Tier rings (high/medium/low)
-        const high = events.filter(e => e.impact === 'high' || e.severity === 'high').length;
-        const med  = events.filter(e => e.impact === 'medium' || e.severity === 'medium').length;
-        const low  = events.length - high - med;
-        Widgets.rings(document.getElementById('mapTierRings'),
-          [{label: 'Low', value: low}, {label: 'Medium', value: med}, {label: 'High', value: high}]
-        );
-
-        // High-impact donut
-        const hpct = events.length ? Math.round(high / events.length * 100) : 0;
-        Widgets.donut(document.getElementById('mapHighDonut'), hpct,
-          {sublabel: high + ' high-impact', color: '#ff7a8a', color2: '#ff9466'});
-
-        // Velocity
-        Widgets.heatmap(document.getElementById('mapVelHeat'), events.map(e => ({ts: e.created_at || e.timestamp})));
-
-        // Region concentration
-        const reg = {};
-        for (const e of events) {
-          const r = e.country || e.region || 'GLOBAL';
-          reg[r] = (reg[r] || 0) + 1;
-        }
-        const top = Object.entries(reg).sort((a,b) => b[1]-a[1]).slice(0, 8);
-        Widgets.histogram(document.getElementById('mapRegHist'),
-          top.map(([l, v]) => ({label: l.slice(0,6), value: v, color: '#5b6cff'})),
-          {height: 90}
-        );
-      } catch(e) { console.warn('map studio:', e); }
-    })();
-    </script>
-    <!-- ============ END MAP INSIGHT STUDIO ============ -->
-
 </main>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/news-time.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/stock-popup.js"></script>
 <script src="./shared/js/bootstrap.js"></script>
-<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/realtime.js"></script>
 <script>
-// ── Global state ─────────────────────────────────────────
-let map = null;
-let markers = [];
-let connections = [];
-let heatLayer = null;
+// ── State ────────────────────────────────────────────────────────────────
+let geoMap = null;
+let pinLayer = null;
 let allEvents = [];
-let activeFilters = new Set(['high', 'medium', 'low']);
-
+let lensesMeta = {};
+let activeLens = null;          // null = all
+let watchlistOnly = false;
+let watchlistTickers = new Set();
+let selectedEventId = null;
+let mode = 'world';                // 'world' | 'india'
+let stateSummary = [];             // for india view
+let lookbackHours = 168;           // time window — default 7d
+let heatLayer = null;
+let heatOn = false;
+let arcsOn = true;
+let arcLayer = null;               // transmission arc polylines
 const INDIA = [20.5937, 78.9629];
 
-const IMPACT_STYLES = {
-    high:   { color: '#ff6b6b', size: 28, glow: 'rgba(255,107,107,0.45)', iconSize: 12 },
-    medium: { color: '#adc6ff', size: 20, glow: 'rgba(173,198,255,0.35)', iconSize: 10 },
-    low:    { color: '#4edea3', size: 14, glow: 'rgba(78,222,163,0.3)',  iconSize: 9  }
+const ZOOM_PRESETS = {
+    world:    { center: [22, 65],     zoom: 3 },
+    india:    { center: [22.5, 80],   zoom: 5 },
+    apac:     { center: [10, 120],    zoom: 3 },
+    mideast:  { center: [27, 50],     zoom: 4 },
+    americas: { center: [10, -85],    zoom: 3 },
+    europe:   { center: [50, 15],     zoom: 4 },
 };
 
-// ── Comprehensive global base events ─────────────────────
-// These always display even when the DB has few geo events.
-// Covers every major macro theme that impacts Indian equities.
-const BASE_EVENTS = [
-    // ── INDIA ────────────────────────────────────────────
-    { country:'India',         lat:28.6139, lng:77.2090, impact:'high',   type:'monetary',  desc:'RBI Monetary Policy Committee rate decision — repo rate & liquidity',   assets:'BANKBARODA,HDFC,ICICIBANK,KOTAKBANK' },
-    { country:'India',         lat:17.3850, lng:78.4867, impact:'high',   type:'policy',    desc:'SEBI tightens F&O margin norms for retail derivatives',                assets:'NSE listed equities' },
-    { country:'India',         lat:19.0760, lng:72.8777, impact:'medium', type:'earnings',  desc:'Nifty 50 Q1 earnings season — broad market results',                   assets:'RELIANCE,TCS,INFY,HDFCBANK' },
-    { country:'India',         lat:12.9716, lng:77.5946, impact:'medium', type:'trade',     desc:'India–EU Free Trade Agreement talks resume in Bengaluru',               assets:'IT,PHARMA' },
-    { country:'India',         lat:22.5726, lng:88.3639, impact:'low',    type:'policy',    desc:'West Bengal state budget — infrastructure & capex allocation',           assets:'INFRA' },
-
-    // ── UNITED STATES ────────────────────────────────────
-    { country:'United States', lat:38.8951, lng:-77.0369, impact:'high',  type:'monetary',  desc:'Federal Reserve FOMC meeting — US rate decision & dot plot',           assets:'USD/INR,USDINR' },
-    { country:'United States', lat:40.7128, lng:-74.0060, impact:'high',  type:'markets',   desc:'S&P 500 quarterly rebalancing — large-cap weight shifts',               assets:'FIIs,global funds' },
-    { country:'United States', lat:37.7749, lng:-122.4194,impact:'high',  type:'tech',      desc:'US Big Tech earnings (Apple, Microsoft, Nvidia) — AI capex cycle',      assets:'TCS,INFY,WIPRO,TECHM,HCLTECH' },
-    { country:'United States', lat:38.9072, lng:-77.0369, impact:'high',  type:'policy',    desc:'US Treasury sanctions on Iranian oil exports — crude supply disruption', assets:'RELIANCE,BPCL,HINDPETRO,IOC' },
-    { country:'United States', lat:38.8951, lng:-77.1200, impact:'medium',type:'trade',     desc:'US–India trade review: IT visa quotas and tariff concessions',           assets:'INFY,TCS,WIPRO' },
-    { country:'United States', lat:33.4484, lng:-112.074, impact:'medium',type:'policy',    desc:'US CHIPS Act subsidies — semiconductor capex boosts Asian suppliers',    assets:'DIXON,KAYNES,AMBER' },
-
-    // ── CHINA ────────────────────────────────────────────
-    { country:'China',         lat:39.9042, lng:116.4074, impact:'high',  type:'policy',    desc:'PBoC cuts 7-day repo rate — China stimulus & yuan depreciation',         assets:'USD/INR,metals,imports' },
-    { country:'China',         lat:31.2304, lng:121.4737, impact:'high',  type:'trade',     desc:'China imposes export controls on rare earth processing chemicals',        assets:'VEDL,HINDZINC,NALCO' },
-    { country:'China',         lat:22.5431, lng:114.0579, impact:'medium',type:'tech',      desc:'Shenzhen EV market: BYD global expansion impacts Indian EV plays',       assets:'TATAMOTORS,MAHINDRA,OLECTRA' },
-    { country:'China',         lat:30.5728, lng:104.0668, impact:'medium',type:'supply',    desc:'Sichuan floods disrupt lithium production — battery supply chain alert',  assets:'TATAMOTORS,battery makers' },
-    { country:'China',         lat:39.9042, lng:116.3000, impact:'low',   type:'trade',     desc:'China PMI manufacturing dips below 50 — global demand slowdown signal',  assets:'METALS,IT outsourcing' },
-
-    // ── MIDDLE EAST ──────────────────────────────────────
-    { country:'Saudi Arabia',  lat:24.7136, lng:46.6753, impact:'high',  type:'oil',       desc:'OPEC+ emergency meeting — Saudi Arabia extends 1 mb/d voluntary cuts',    assets:'RELIANCE,BPCL,HINDPETRO,IOC,ONGC' },
-    { country:'Iran',          lat:35.6892, lng:51.3890, impact:'high',  type:'oil',       desc:'US–Iran nuclear tensions escalate — Strait of Hormuz shipping risk',      assets:'RELIANCE,BPCL,IOC,shipping' },
-    { country:'UAE',           lat:25.2048, lng:55.2708, impact:'medium',type:'trade',     desc:'India–UAE CEPA: $100B trade target — pharma, IT, jewellery exports',     assets:'SUNPHARMA,DRREDDY,TITAN,TCS' },
-    { country:'Israel',        lat:32.0853, lng:34.7818, impact:'high',  type:'conflict',  desc:'Middle East conflict: oil shipping routes under pressure via Red Sea',    assets:'shipping,ONGC,oil importers' },
-    { country:'Iraq',          lat:33.3152, lng:44.3661, impact:'medium',type:'oil',       desc:'Iraq oil field production disruption — OPEC quota compliance issue',      assets:'BPCL,HINDPETRO,ONGC' },
-
-    // ── EUROPE ───────────────────────────────────────────
-    { country:'Germany',       lat:52.5200, lng:13.4050, impact:'medium',type:'monetary',  desc:'ECB rate cut cycle continues — euro weakness vs USD',                    assets:'USD/INR,FIIs,export cos' },
-    { country:'United Kingdom',lat:51.5074, lng:-0.1278,  impact:'medium',type:'monetary',  desc:'Bank of England rate decision — UK inflation & sterling move',           assets:'INFOSYS UK,TCS UK revenues' },
-    { country:'Russia',        lat:55.7558, lng:37.6173, impact:'high',  type:'conflict',  desc:'Russia–Ukraine war: wheat & fertilizer supply disruption continues',      assets:'CHAMBAL,COROMANDEL,UPL' },
-    { country:'Russia',        lat:59.9311, lng:30.3609, impact:'medium',type:'oil',       desc:'Russia crude discounts to India widen — BPCL/IOC margin improvement',    assets:'BPCL,IOC,HINDPETRO' },
-    { country:'Netherlands',   lat:52.3676, lng:4.9041,  impact:'medium',type:'tech',      desc:'ASML export controls: EUV lithography machines banned to China',          assets:'DIXON,KAYNES,semiconductor plays' },
-
-    // ── JAPAN / SOUTH KOREA ──────────────────────────────
-    { country:'Japan',         lat:35.6762, lng:139.6503, impact:'medium',type:'monetary',  desc:'Bank of Japan ends negative rate era — yen surge, carry trade unwind',   assets:'FIIs,IT sector' },
-    { country:'Japan',         lat:35.4478, lng:136.7213, impact:'low',   type:'trade',     desc:'Japan–India infrastructure fund: ¥5T committed for Indian rail/ports',   assets:'IRFC,L&T,SIEMENS' },
-    { country:'South Korea',   lat:37.5665, lng:126.9780, impact:'medium',type:'tech',      desc:'Samsung memory chip price surge — DRAM supply tightening',               assets:'DIXON,KAYNES,electronics' },
-
-    // ── ASIA-PACIFIC ─────────────────────────────────────
-    { country:'Singapore',     lat:1.3521,  lng:103.8198, impact:'medium',type:'markets',   desc:'SGX Nifty futures indicate gap-up open — overnight global sentiment',    assets:'Nifty futures,BANKNIFTY' },
-    { country:'Australia',     lat:-33.8688,lng:151.2093, impact:'medium',type:'commodity', desc:'Iron ore price surge on China stimulus — Austr. exports up',             assets:'TATATSTEEL,SAIL,HINDALCO' },
-    { country:'Indonesia',     lat:-6.2088, lng:106.8456, impact:'medium',type:'commodity', desc:'Indonesia palm oil export ban lifted — edible oil prices fall',           assets:'KRBL,RUCHI,ADANI WILMAR' },
-
-    // ── AFRICA ───────────────────────────────────────────
-    { country:'South Africa',  lat:-26.2041,lng:28.0473,  impact:'low',   type:'commodity', desc:'SA gold mine strike — global gold production output risk',               assets:'Gold ETFs,jewelry stocks' },
-    { country:'Nigeria',       lat:6.5244,  lng:3.3792,   impact:'low',   type:'oil',       desc:'Nigeria OPEC production quota miss — crude market imbalance',            assets:'ONGC,BPCL' },
-
-    // ── GLOBAL / MULTILATERAL ────────────────────────────
-    { country:'Switzerland',   lat:47.5596, lng:7.5886,   impact:'medium',type:'policy',    desc:'BIS quarterly review: global banking system leverage warnings',           assets:'BANKBARODA,SBI,financial system' },
-    { country:'United States', lat:41.8781, lng:-87.6298, impact:'medium',type:'commodity', desc:'CME crude oil futures: WTI options expiry — high volatility alert',      assets:'RELIANCE,ONGC,oil companies' },
-    { country:'India',         lat:26.9124, lng:75.7873,  impact:'low',   type:'policy',    desc:'PM Modi infrastructure push: Rajasthan highway & logistics corridor',    assets:'KNRCON,PNCINFRA,IRB' },
-    { country:'United States', lat:43.0481, lng:-76.1474, impact:'low',   type:'tech',      desc:'US AI regulation: Senate committee proposes LLM disclosure norms',        assets:'INFY,TCS AI revenue' },
-    { country:'France',        lat:48.8566, lng:2.3522,   impact:'low',   type:'policy',    desc:'G7 finance ministers summit — global minimum tax implementation',         assets:'Multinationals, IT exports' },
-    { country:'Brazil',        lat:-23.5505,lng:-46.6333, impact:'low',   type:'commodity', desc:'Brazil soybean harvest record — agri commodity glut, lower edible oils', assets:'MARICO,HUL,edible oil cos' },
-    { country:'Canada',        lat:43.7001, lng:-79.4163, impact:'low',   type:'commodity', desc:'Canadian wildfire disrupts Alberta oil sands — global crude supply risk',  assets:'ONGC,RELIANCE,BPCL' },
-    { country:'Mexico',        lat:19.4326, lng:-99.1332, impact:'low',   type:'trade',     desc:'US–Mexico nearshoring boom draws IT/BPO contracts from India',           assets:'INFY,TCS,WIPRO' },
-];
-
-// ── Event type categorisation ────────────────────────────
-const TYPE_META = {
-    monetary:  { icon: '📊', label: 'Central Bank' },
-    policy:    { icon: '🏛', label: 'Policy' },
-    earnings:  { icon: '📈', label: 'Earnings' },
-    trade:     { icon: '🚢', label: 'Trade' },
-    oil:       { icon: '🛢', label: 'Energy' },
-    tech:      { icon: '💻', label: 'Technology' },
-    conflict:  { icon: '⚔', label: 'Geopolitical' },
-    commodity: { icon: '⚙', label: 'Commodities' },
-    markets:   { icon: '📉', label: 'Markets' },
-    supply:    { icon: '🏭', label: 'Supply Chain' },
-    default:   { icon: '📡', label: 'Global Event' }
+// Lens → approximate sector cluster lat/lng (for transmission arcs)
+const LENS_TARGET = {
+    energy:        [19.0760, 72.8777],   // Reliance / Mumbai oil cluster
+    metals:        [22.5726, 88.3639],   // Kolkata / east-coast steel
+    agri:          [28.6139, 77.2090],   // Delhi NCR agri ministries
+    geopolitics:   [28.6139, 77.2090],   // Delhi defense ministry
+    central_banks: [18.9220, 72.8347],   // RBI Mumbai
+    trade:         [19.0760, 72.8777],   // Mumbai port
+    tech:          [12.9716, 77.5946],   // Bengaluru
 };
 
-function getTypeMeta(type) {
-    return TYPE_META[type] || TYPE_META.default;
-}
+// Lens icons (Material Symbols)
+const LENS_ICON = {
+    energy:        'local_gas_station',
+    metals:        'precision_manufacturing',
+    agri:          'agriculture',
+    geopolitics:   'warning',
+    central_banks: 'account_balance',
+    trade:         'directions_boat',
+    tech:          'memory',
+};
 
-function getTypeFromDesc(desc) {
-    const d = (desc || '').toLowerCase();
-    if (d.match(/rate|rbi|fed|ecb|boj|monetary|repo|interest/)) return 'monetary';
-    if (d.match(/oil|crude|opec|brent|wti|petroleum/)) return 'oil';
-    if (d.match(/war|conflict|military|sanction|geopolit|attack/)) return 'conflict';
-    if (d.match(/earnings|results|profit|revenue|q[1-4]/)) return 'earnings';
-    if (d.match(/trade|export|import|tariff|cepa|fta/)) return 'trade';
-    if (d.match(/tech|chip|semicond|ai|software|it |infosys|wipro/)) return 'tech';
-    if (d.match(/gold|iron|copper|lithium|palm|soy|wheat|commodity/)) return 'commodity';
-    if (d.match(/nifty|s&p|dow|market|futures/)) return 'markets';
-    if (d.match(/supply|production|flood|disruption|factory/)) return 'supply';
-    return 'policy';
-}
-
-// ── Map init ──────────────────────────────────────────────
+// ── Map init ─────────────────────────────────────────────────────────────
 function initMap() {
-    map = L.map('map', {
-        center: [25, 55],
-        zoom: 3,
-        minZoom: 2,
-        maxZoom: 10,
-        zoomControl: true
+    geoMap = L.map('map', {
+        center: [22, 65], zoom: 3, minZoom: 2, maxZoom: 9,
+        zoomControl: true, worldCopyJump: true,
     });
-
     L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OSM</a>',
-        maxZoom: 20
-    }).addTo(map);
-
-    // India highlight
-    L.circle(INDIA, {
-        radius: 900000,
-        color: '#adc6ff',
-        fillColor: '#adc6ff',
-        fillOpacity: 0.04,
-        weight: 0.8,
-        opacity: 0.25
-    }).addTo(map);
-
-    // Mumbai financial center
-    L.circle([18.9388, 72.8354], {
-        radius: 200000,
-        color: '#4edea3',
-        fillColor: '#4edea3',
-        fillOpacity: 0.06,
-        weight: 0.5,
-        opacity: 0.3
-    }).addTo(map);
+        attribution: '&copy; Stadia &copy; OSM',
+        maxZoom: 20,
+    }).addTo(geoMap);
+    pinLayer = L.layerGroup().addTo(geoMap);
+    // Faint India highlight
+    L.circle(INDIA, { radius: 900000, color: '#8eb4e0', fillColor: '#8eb4e0', fillOpacity: 0.04, weight: 0.6, opacity: 0.25 }).addTo(geoMap);
 }
 
-// ── Filter toggle ─────────────────────────────────────────
-function toggleFilter(level) {
-    if (activeFilters.has(level)) {
-        if (activeFilters.size === 1) return; // keep at least one
-        activeFilters.delete(level);
-        document.getElementById(`filter-${level}`).classList.remove('active');
-    } else {
-        activeFilters.add(level);
-        document.getElementById(`filter-${level}`).classList.add('active');
-    }
-    renderMapEvents(allEvents);
-}
+// ── Lens chips render (with live event counts) ─────────────────────────
+function renderLensChips() {
+    const host = document.getElementById('lensChips');
+    const counts = {};
+    for (const e of allEvents) counts[e.lens] = (counts[e.lens] || 0) + 1;
+    const totalCount = allEvents.length;
 
-// ── Merge DB + base events ────────────────────────────────
-function mergeEvents(dbEvents) {
-    const now = new Date().toISOString();
-    // Convert base events to the same schema
-    const base = BASE_EVENTS.map((e, i) => ({
-        id: `base_${i}`,
-        country: e.country,
-        event_description: e.desc,
-        impact: e.impact,
-        latitude: e.lat,
-        longitude: e.lng,
-        event_type: e.type,
-        related_assets: e.assets || '',
-        created_at: now,
-        source: 'Context'
-    }));
-
-    // DB events take priority (they're real scraped events)
-    // Deduplicate by approximate lat/lng to avoid overlap with base events
-    const result = [...(dbEvents || [])];
-    const usedCoords = new Set(result.map(e => `${Math.round(e.latitude)},${Math.round(e.longitude)}`));
-
-    for (const b of base) {
-        const key = `${Math.round(b.latitude)},${Math.round(b.longitude)}`;
-        if (!usedCoords.has(key)) {
-            result.push(b);
-            usedCoords.add(key);
-        }
-    }
-
-    return result;
-}
-
-// ── Render markers + heat ─────────────────────────────────
-function renderMapEvents(events) {
-    // Clear
-    markers.forEach(m => map.removeLayer(m));
-    connections.forEach(c => map.removeLayer(c));
-    if (heatLayer) map.removeLayer(heatLayer);
-    markers = [];
-    connections = [];
-
-    const visible = events.filter(e => activeFilters.has(e.impact || 'medium'));
-
-    const heatPoints = [];
-
-    visible.forEach(e => {
-        const lat = parseFloat(e.latitude || 0);
-        const lng = parseFloat(e.longitude || 0);
-        if (!lat && !lng) return;
-
-        const impact = e.impact || 'medium';
-        const style  = IMPACT_STYLES[impact];
-        const type   = e.event_type || getTypeFromDesc(e.event_description);
-        const meta   = getTypeMeta(type);
-        const desc   = e.event_description || '';
-        const assets = e.related_assets || '';
-        const src    = e.source || '';
-
-        heatPoints.push([lat, lng, impact === 'high' ? 1.0 : impact === 'medium' ? 0.55 : 0.25]);
-
-        const markerHtml = `
-            <div class="pulse-marker pulse-${impact}" style="
-                width:${style.size}px;height:${style.size}px;
-                background:radial-gradient(circle,${style.color}cc,${style.color}33);
-                border:1.5px solid ${style.color}99;
-                box-shadow:0 0 14px ${style.glow};
-                display:flex;align-items:center;justify-content:center;
-                border-radius:50%;font-size:${style.iconSize}px;line-height:1;
-            ">${meta.icon}</div>`;
-
-        const markerIcon = L.divIcon({
-            className: '',
-            html: markerHtml,
-            iconSize: [style.size, style.size],
-            iconAnchor: [style.size / 2, style.size / 2]
+    const all = `<button class="lens-chip ${activeLens === null ? 'active' : ''}" data-lens="" style="${activeLens === null ? 'background:rgba(141,180,224,0.2);border-color:rgba(141,180,224,0.5);color:#fff;' : ''}">All <span class="lens-count">${totalCount}</span></button>`;
+    const chips = Object.entries(lensesMeta).map(([id, m]) => {
+        const isActive = activeLens === id;
+        const c = counts[id] || 0;
+        const bg = isActive ? `background:${m.color}33;border-color:${m.color};color:#fff;` : '';
+        const dim = c === 0 ? 'opacity:0.4;' : '';
+        return `<button class="lens-chip ${isActive ? 'active' : ''}" data-lens="${id}" style="${bg}${dim}">
+            <span class="lens-mono" style="background:${m.color};">${m.monogram}</span>
+            ${m.label} <span class="lens-count">${c}</span>
+        </button>`;
+    }).join('');
+    host.innerHTML = all + chips;
+    host.querySelectorAll('.lens-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const v = btn.dataset.lens || null;
+            activeLens = (activeLens === v) ? null : v;
+            renderLensChips();
+            renderPins();
+            if (heatOn) refreshHeatLayer();
         });
-
-        const impactColor = impact === 'high' ? '#ff6b6b' : impact === 'medium' ? '#adc6ff' : '#4edea3';
-        const popup = `
-            <div style="min-width:230px;max-width:280px;font-family:'DM Sans',sans-serif;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <span style="font-size:14px;">${meta.icon}</span>
-                    <span style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">${e.country || '?'} · ${meta.label}</span>
-                </div>
-                <div style="font-size:13px;font-weight:700;color:#dfe2eb;line-height:1.35;margin-bottom:8px;">${desc}</div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <span style="font-size:8px;padding:2px 7px;border-radius:4px;background:${impactColor}22;color:${impactColor};font-weight:800;text-transform:uppercase;">${impact} impact</span>
-                    ${src ? `<span style="font-size:8px;color:#424754;font-weight:600;">${src}</span>` : ''}
-                </div>
-                ${assets ? `<div style="font-size:9px;color:#8c909f;border-top:1px solid #262a31;padding-top:6px;margin-top:4px;">
-                    <span style="color:#adc6ff;font-weight:700;">Affected stocks:</span><br/>
-                    <span style="color:#c2c6d6;">${assets}</span>
-                </div>` : ''}
-            </div>`;
-
-        const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(map).bindPopup(popup, { maxWidth: 300 });
-        markers.push(marker);
-
-        // Flow lines to India for non-India events
-        const isIndia = Math.abs(lat - INDIA[0]) < 8 && Math.abs(lng - INDIA[1]) < 15;
-        if (!isIndia && impact !== 'low') {
-            const opacity = impact === 'high' ? 0.4 : 0.18;
-            const weight  = impact === 'high' ? 1.5 : 0.9;
-            const line = L.polyline([[lat, lng], INDIA], {
-                color: style.color,
-                weight,
-                opacity,
-                dashArray: '6,5',
-            }).addTo(map);
-            connections.push(line);
-        }
     });
-
-    // Heat layer
-    if (heatPoints.length > 0) {
-        heatLayer = L.heatLayer(heatPoints, {
-            radius: 45,
-            blur: 35,
-            maxZoom: 8,
-            max: 1.0,
-            gradient: {
-                0.0: 'transparent',
-                0.2: '#0d1020',
-                0.4: '#1a2050',
-                0.6: '#2d4080',
-                0.8: '#4d6ec9',
-                0.95: '#adc6ff',
-                1.0: '#ff6b6b'
-            }
-        }).addTo(map);
-    }
-
-    updateSidebar(visible, events.length);
 }
 
-// ── Sidebar ───────────────────────────────────────────────
-function updateSidebar(visible, total) {
-    document.getElementById('eventCount').textContent = `${total} events`;
-    document.getElementById('feedCount').textContent = `${visible.length} shown`;
+// ── Pin rendering ────────────────────────────────────────────────────────
+function pinSize(severity) {
+    const s = Math.max(1, Math.min(10, severity || 5));
+    return 18 + Math.round(s * 1.4);    // 19 → 32 px
+}
 
-    // Region hotspot bar chart
-    const regions = {};
-    visible.forEach(e => { const c = e.country || 'Unknown'; regions[c] = (regions[c] || 0) + 1; });
-    const sorted = Object.entries(regions).sort((a, b) => b[1] - a[1]);
-    const maxCount = sorted[0]?.[1] || 1;
+function makePin(ev) {
+    const lensCfg = lensesMeta[ev.lens] || { color: '#8eb4e0', monogram: '??' };
+    const size = pinSize(ev.severity);
+    const isWatch = pinHitsWatchlist(ev);
+    const cls = ['geo-pin'];
+    if (ev.is_new) cls.push('is-new');
+    if (isWatch) cls.push('is-watchlist');
+    if ((ev.severity || 0) >= 8) cls.push('is-high');
+    const html = `<div class="${cls.join(' ')}" style="width:${size}px;height:${size}px;--c:${lensCfg.color};">${lensCfg.monogram}</div>`;
+    return L.divIcon({ className: '', html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
+}
 
-    document.getElementById('regionStats').innerHTML = sorted.slice(0, 8).map(([country, count]) => {
-        const pct = Math.round(count / maxCount * 100);
-        const impactColor = '#adc6ff';
+function pinHitsWatchlist(ev) {
+    if (!watchlistTickers.size) return false;
+    // Quick string match — companies field on live events; affected list looked up on click for evergreen
+    const txt = ((ev.companies || '') + ' ' + (ev.title || '') + ' ' + (ev.summary || '')).toUpperCase();
+    for (const t of watchlistTickers) {
+        if (t && txt.includes(t)) return true;
+    }
+    return false;
+}
+
+function renderPins() {
+    pinLayer.clearLayers();
+    let visible = allEvents;
+    if (activeLens) visible = visible.filter(e => e.lens === activeLens);
+    if (watchlistOnly) visible = visible.filter(pinHitsWatchlist);
+
+    visible.forEach(ev => {
+        if (!ev.lat || !ev.lng) return;
+        const m = L.marker([ev.lat, ev.lng], { icon: makePin(ev) }).addTo(pinLayer);
+        const labelLoc = ev.country || ev.state || '';
+        m.bindTooltip(`<strong>${escapeHtml(labelLoc)}</strong> · ${ev.lens}<br/>${escapeHtml((ev.title || '').slice(0, 80))}`, {
+            offset: [0, -10], direction: 'top', className: 'leaflet-tooltip-dark',
+        });
+        m.on('click', () => selectEvent(ev));
+    });
+    document.getElementById('eventCount').textContent =
+        `${visible.length} event${visible.length === 1 ? '' : 's'}` +
+        (activeLens ? ` · ${(lensesMeta[activeLens] || {}).label || activeLens}` : '');
+}
+
+// ── Pin selection → fetch transmission chain ─────────────────────────────
+async function selectEvent(ev) {
+    selectedEventId = ev.event_id;
+    // Right rail header
+    const lensCfg = lensesMeta[ev.lens] || {};
+    document.getElementById('rrTitle').textContent = ev.title || ev.country || 'Event';
+    document.getElementById('rrLensTag').className = 'mt-1.5';
+    document.getElementById('rrLensTag').innerHTML =
+        `<span class="text-[8.5px] uppercase tracking-widest font-black px-1.5 py-0.5 rounded" style="background:${(lensCfg.color || '#8eb4e0')}26;color:${lensCfg.color || '#8eb4e0'};">${lensCfg.label || ev.lens}</span>` +
+        `<span class="text-[9px] text-on-surface-variant/60 ml-2">${ev.country || ''} ${ev.is_new ? '· NEW' : ''}</span>`;
+    document.getElementById('rrClose').classList.remove('hidden');
+    document.getElementById('rrGrid').innerHTML = `<div class="p-6 text-center text-on-surface-variant/50 text-xs">Loading transmission…</div>`;
+
+    // Map: zoom to event
+    if (ev.lat && ev.lng) geoMap.flyTo([ev.lat, ev.lng], Math.max(geoMap.getZoom(), 4), { duration: 0.6 });
+
+    try {
+        const res = await fetch(`/api/geo/transmission/${encodeURIComponent(ev.event_id)}`);
+        const j = await res.json();
+        if (!j.success) throw new Error(j.error || 'failed');
+        renderTransmission(j.data, ev);
+        // Draw transmission arcs from source to lens-target sector cluster
+        if (ev.lat && ev.lng) drawArcs(ev.lat, ev.lng, (j.data.event && j.data.event.lens) || ev.lens);
+        updateWatchlistHitChip(j.data.affected || []);
+    } catch (e) {
+        document.getElementById('rrGrid').innerHTML = `<div class="p-6 text-center text-bear text-xs">${escapeHtml(String(e))}</div>`;
+    }
+}
+
+function clearSelection() {
+    selectedEventId = null;
+    document.getElementById('rrTitle').textContent = 'Click a pin on the map';
+    document.getElementById('rrLensTag').className = 'hidden';
+    document.getElementById('rrLensTag').innerHTML = '';
+    document.getElementById('rrClose').classList.add('hidden');
+    document.getElementById('rrGridHead').classList.add('hidden');
+    document.getElementById('rrGrid').innerHTML = `<div class="p-6 text-center text-on-surface-variant/50 text-xs">
+        <span class="material-symbols-outlined block mb-2" style="font-size:32px;color:#3d4a5c;">touch_app</span>
+        Select an event pin to see which Indian stocks it affects, ranked by historical sensitivity.
+    </div>`;
+    document.getElementById('eventDetail').classList.add('hidden');
+    document.getElementById('watchHitChip').classList.add('hidden');
+    clearArcs();
+}
+
+// ── Transmission render ──────────────────────────────────────────────────
+function renderTransmission(payload, ev) {
+    const evMeta = payload.event || {};
+    const affected = payload.affected || [];
+
+    // Right rail grid
+    document.getElementById('rrGridHead').classList.remove('hidden');
+    if (!affected.length) {
+        document.getElementById('rrGrid').innerHTML = `<div class="p-6 text-center text-on-surface-variant/50 text-xs">No transmission rules configured for this lens yet.</div>`;
+    } else {
+        document.getElementById('rrGrid').innerHTML = affected.map(t => {
+            const isWatch = watchlistTickers.has(t.ticker);
+            const alpha = (typeof t.alpha_score === 'number') ? t.alpha_score.toFixed(0) : '--';
+            const alphaColor = (typeof t.alpha_score === 'number')
+                ? (t.alpha_score >= 50 ? '#2dd4aa' : t.alpha_score >= 25 ? '#e6b84a' : '#8a94a8')
+                : '#5a6373';
+            const px = (typeof t.last_price === 'number' && t.last_price > 0)
+                ? '₹' + t.last_price.toFixed(t.last_price >= 1000 ? 0 : 1) : '--';
+            const beta = (typeof t.beta === 'number')
+                ? (t.beta > 0 ? '+' : '') + t.beta.toFixed(2) : '--';
+            const betaColor = (typeof t.beta === 'number')
+                ? (t.beta > 0 ? '#2dd4aa' : '#f26b6b') : '#8a94a8';
+            return `
+                <div class="ticker-row ${isWatch ? 'is-watchlist' : ''}" data-ticker="${t.ticker}">
+                    <div class="rank">${t.rank ?? ''}</div>
+                    <div>
+                        <div class="tk">${t.ticker}${isWatch ? ' <span class="material-symbols-outlined" style="font-size:10px;color:#e6b84a;vertical-align:middle;">star</span>' : ''}</div>
+                        <div class="reason">${escapeHtml(t.reason || '')}</div>
+                        <span class="reaction-pill is-loading" data-tk-react="${t.ticker}" style="background:rgba(60,72,90,0.2);color:#5a6373;border-color:rgba(60,72,90,0.4);">
+                            <span class="react-dot" style="background:#5a6373;"></span>checking…
+                        </span>
+                    </div>
+                    <div class="px">${px}</div>
+                    <div class="alpha" style="color:${alphaColor};">${alpha}</div>
+                    <div class="beta" style="color:${betaColor};">${beta}</div>
+                </div>`;
+        }).join('');
+        document.getElementById('rrGrid').querySelectorAll('.ticker-row').forEach(row => {
+            row.addEventListener('click', () => {
+                window.location.href = `stock.html?ticker=${encodeURIComponent(row.dataset.ticker)}`;
+            });
+        });
+    }
+
+    // Bottom event-detail card
+    const lensCfg = lensesMeta[evMeta.lens] || {};
+    const det = document.getElementById('eventDetail');
+    det.classList.remove('hidden');
+    document.getElementById('edMono').textContent = lensCfg.monogram || '??';
+    document.getElementById('edMono').style.background = lensCfg.color || '#8eb4e0';
+    // Meta line: country · lens · severity, plus a timing pill (when published_at known)
+    const metaTxt = `${evMeta.country || ''} · ${lensCfg.label || evMeta.lens || ''} · ${ev.is_new ? 'NEW · ' : ''}severity ${ev.severity || '?'}/10`;
+    const ts = ev.published_at || ev.as_of || evMeta.as_of;
+    const tPill = (ts && window.NewsTime) ? NewsTime.renderPill(ts, { showAge: true }) : '';
+    document.getElementById('edMeta').innerHTML = `<span class="align-middle">${escapeHtml(metaTxt)}</span>${tPill ? `<span class="ml-2 align-middle">${tPill}</span>` : ''}`;
+    document.getElementById('edTitle').textContent = evMeta.title || ev.title || '';
+    document.getElementById('edSummary').textContent = stripHtml(evMeta.summary || ev.summary || '');
+    const link = document.getElementById('edSourceLink');
+    if (evMeta.link || ev.link) {
+        link.href = evMeta.link || ev.link;
+        link.classList.remove('hidden');
+    } else {
+        link.classList.add('hidden');
+    }
+
+    // Reasoning chain (rules-based, derived from lens)
+    const chain = buildReasoningChain(evMeta.lens || ev.lens, ev, affected);
+    document.getElementById('edChain').innerHTML = chain.map((step, i) => `
+        <div class="chain-step">
+            <div class="step-n">${i + 1}</div>
+            <div class="text-on-surface leading-relaxed">${step}</div>
+        </div>`).join('');
+
+    // Top 3 affected stocks (compact)
+    document.getElementById('edTopAffected').innerHTML = (affected.slice(0, 4)).map(t => {
+        const px = (typeof t.last_price === 'number' && t.last_price > 0)
+            ? '₹' + t.last_price.toFixed(t.last_price >= 1000 ? 0 : 1) : '—';
+        const alpha = (typeof t.alpha_score === 'number') ? t.alpha_score.toFixed(0) : '--';
         return `
-        <div class="flex items-center gap-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity group" onclick="flyToCountry('${country}')">
-            <span class="text-[10px] text-on-surface font-medium w-28 truncate group-hover:text-primary transition-colors">${country}</span>
-            <div class="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-                <div class="h-full bg-primary/50 rounded-full transition-all" style="width:${pct}%"></div>
-            </div>
-            <span class="text-[9px] font-mono text-on-surface-variant/60 w-4 text-right">${count}</span>
-        </div>`;
+            <a href="stock.html?ticker=${encodeURIComponent(t.ticker)}" class="flex items-center justify-between gap-3 px-3 py-2 bg-surface-container hover:bg-surface-container-high rounded-lg border border-outline-variant/10 transition-colors">
+                <div class="min-w-0">
+                    <div class="font-bold text-sm text-on-surface">${t.ticker} <span class="text-[9px] text-on-surface-variant/60 font-normal">· ${escapeHtml(t.reason || '')}</span></div>
+                    <span class="reaction-pill is-loading" data-tk-react="${t.ticker}" style="background:rgba(60,72,90,0.2);color:#5a6373;border-color:rgba(60,72,90,0.4);">
+                        <span class="react-dot" style="background:#5a6373;"></span>checking…
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-[11px] font-mono text-on-surface-variant">${px}</span>
+                    <span class="text-[11px] font-mono font-bold" style="color:${(typeof t.beta === 'number' && t.beta < 0) ? '#f26b6b' : '#2dd4aa'};">α ${alpha}</span>
+                </div>
+            </a>`;
     }).join('');
 
-    // Event feed — all events, no hard limit
-    const container = document.getElementById('map-events');
-    if (visible.length === 0) {
-        container.innerHTML = '<div class="text-center py-8 text-on-surface-variant/40 text-xs">No events match current filters</div>';
+    // Fire reaction-status enrichment in the background (non-blocking)
+    enrichWithReactions(affected, ev.sentiment || evMeta.sentiment, ev.severity || 5);
+}
+
+// ── Reaction status enrichment (live %change vs expected direction) ────
+async function enrichWithReactions(affected, eventSentiment, magnitude) {
+    if (!affected || !affected.length) return;
+
+    // Per-ticker expected direction = sign(beta) × event sentiment.
+    // Group tickers by expected direction so we can call the API with the
+    // right `sentiment=` for each group.
+    const baseSent = (eventSentiment || '').toLowerCase() === 'bearish' ? -1 : 1;
+    const bullishTk = [];
+    const bearishTk = [];
+    for (const t of affected) {
+        const beta = typeof t.beta === 'number' ? t.beta : 1;
+        const expDir = (beta >= 0 ? 1 : -1) * baseSent;
+        if (expDir > 0) bullishTk.push(t.ticker);
+        else            bearishTk.push(t.ticker);
+    }
+
+    const calls = [];
+    if (bullishTk.length) {
+        calls.push(fetch(`/api/reactions?tickers=${bullishTk.join(',')}&sentiment=bullish&magnitude=${magnitude}`).then(r => r.json()));
+    }
+    if (bearishTk.length) {
+        calls.push(fetch(`/api/reactions?tickers=${bearishTk.join(',')}&sentiment=bearish&magnitude=${magnitude}`).then(r => r.json()));
+    }
+
+    let merged = {};
+    try {
+        const results = await Promise.all(calls);
+        for (const r of results) {
+            if (r && r.success) Object.assign(merged, r.data || {});
+        }
+    } catch (e) {
+        console.warn('reactions enrich:', e);
         return;
     }
 
-    // Sort by impact priority then country
-    const sorted_ev = [...visible].sort((a, b) => {
-        const iPri = { high: 0, medium: 1, low: 2 };
-        return (iPri[a.impact] || 1) - (iPri[b.impact] || 1);
+    for (const t of affected) {
+        const data = merged[t.ticker];
+        if (!data) continue;
+        const els = document.querySelectorAll(`[data-tk-react="${t.ticker}"]`);
+        els.forEach(el => {
+            el.classList.remove('is-loading');
+            el.outerHTML = renderReactionPill(t.ticker, data);
+        });
+    }
+}
+
+function renderReactionPill(ticker, r) {
+    const c = r.color || '#5a6373';
+    const chg = r.change_pct;
+    const chgStr = (chg !== null && chg !== undefined)
+        ? `<span class="react-chg">${chg > 0 ? '+' : ''}${chg.toFixed(2)}%</span>` : '';
+    const tip = r.tooltip || '';
+    return `<span class="reaction-pill" data-tk-react="${ticker}" title="${escapeHtml(tip)}"
+        style="background:${c}1f;color:${c};border-color:${c}66;">
+        <span class="react-dot" style="background:${c};"></span>
+        ${escapeHtml(r.label || '—')}${chgStr}
+    </span>`;
+}
+
+// ── Reasoning chain templates (lens-driven, hand-crafted for traders) ────
+function buildReasoningChain(lens, ev, affected) {
+    const top = affected.slice(0, 3).map(a => a.ticker).join(', ') || 'sector tickers';
+    const sev = ev.severity || 5;
+    const direction = (ev.sentiment === 'bullish') ? 'rises' : (ev.sentiment === 'bearish') ? 'falls' : 'shifts';
+    const country = ev.country || 'the source region';
+
+    switch ((lens || '').toLowerCase()) {
+        case 'energy': return [
+            `Energy event in ${country} disrupts crude / gas pricing channel.`,
+            `Brent ${direction} (severity ${sev}/10); Indian refiners' margins compress on $-spike, while upstream gains.`,
+            `First-order: refining stocks (BPCL, HPCL, IOC) feel margin pain; ONGC benefits.`,
+            `Watch: ${top}. Petrochem inputs flow through to RELIANCE; gas pricing affects GAIL.`,
+        ];
+        case 'metals': return [
+            `Metals supply/demand event in ${country}.`,
+            `Iron ore / aluminium / copper price ${direction}; severity ${sev}/10.`,
+            `Indian metals exporters (TATASTEEL, JSWSTEEL, HINDALCO) re-rate on global demand signal.`,
+            `Watch: ${top}. China stimulus typically lifts the entire bucket.`,
+        ];
+        case 'agri': return [
+            `Weather / agricultural event affecting ${country}.`,
+            `Crop yields, fertilizer demand, or edible-oil supply ${direction}; severity ${sev}/10.`,
+            `Agri-input plays (UPL, COROMANDEL, CHAMBLFERT) move with fertilizer demand.`,
+            `Watch: ${top}. Edible-oil disruption pressures HUL, Marico margins.`,
+        ];
+        case 'geopolitics': return [
+            `Geopolitical event in ${country} (severity ${sev}/10).`,
+            `Defense procurement, shipping insurance costs, oil insurance premia all reprice.`,
+            `Defense names (BEL, HAL) gain on procurement spend; aviation (INDIGO) and hotels (INDHOTEL) face headwinds.`,
+            `Watch: ${top}. Red Sea / Hormuz disruption flows into refining margin chain too.`,
+        ];
+        case 'central_banks': return [
+            `Central bank action in ${country} (severity ${sev}/10).`,
+            `Rate decision shifts INR, bond yields, and FII flows; ${direction} bias.`,
+            `BFSI re-rates on NIM expectations; NBFCs sensitive to borrowing-cost moves.`,
+            `Watch: ${top}. USD/INR move creates IT export tailwind/headwind for TCS, INFY.`,
+        ];
+        case 'trade': return [
+            `Trade / tariff event involving ${country}.`,
+            `Export-import economics shift; severity ${sev}/10.`,
+            `IT services (TCS, INFY, WIPRO) move on visa/tariff news; pharma exporters on US generics regulation.`,
+            `Watch: ${top}. India CEPA agreements typically benefit jewelry, textiles, pharma.`,
+        ];
+        case 'tech': return [
+            `Tech / semiconductor supply-chain event in ${country}.`,
+            `Chip availability, EMS demand, and AI-capex spend ${direction}; severity ${sev}/10.`,
+            `India EMS plays (DIXON, KAYNES, AMBER) ride global semis cycle.`,
+            `Watch: ${top}. ASML / Taiwan disruption tightens the entire chain.`,
+        ];
+        default: return [
+            `Event in ${country} with severity ${sev}/10.`,
+            `Cross-sector reading: monitor flow into Indian equities via FII proxies.`,
+            `Watch: ${top}.`,
+        ];
+    }
+}
+
+// ── Watchlist load (best-effort) ─────────────────────────────────────────
+async function loadWatchlist() {
+    try {
+        const res = await fetch('/api/watchlist');
+        if (!res.ok) return;
+        const j = await res.json();
+        const items = (j && (j.data || j.watchlist)) || [];
+        watchlistTickers = new Set(items.map(it => (typeof it === 'string' ? it : (it.ticker || it.symbol || '')).toUpperCase()).filter(Boolean));
+    } catch (e) { /* anonymous user — empty watchlist */ }
+}
+
+// ── Loaders ─────────────────────────────────────────────────────────────
+async function loadGeoEvents() {
+    try {
+        const res = await fetch(`/api/geo/events?hours=${lookbackHours}`);
+        const j = await res.json();
+        if (!j.success) throw new Error(j.error || 'load failed');
+        allEvents = j.data || [];
+        lensesMeta = j.lenses || {};
+        stateSummary = [];
+        renderLensChips();
+        renderPins();
+        if (heatOn) refreshHeatLayer();
+    } catch (e) {
+        document.getElementById('eventCount').textContent = 'Load failed';
+        console.error('geo events load:', e);
+    }
+}
+
+async function loadIndiaEvents() {
+    try {
+        const res = await fetch(`/api/geo/india?hours=${lookbackHours}`);
+        const j = await res.json();
+        if (!j.success) throw new Error(j.error || 'load failed');
+        allEvents = (j.data || []).map(e => ({
+            ...e,
+            country: e.state,
+            kind:    'live',
+            is_new:  false,
+        }));
+        lensesMeta = j.lenses || {};
+        stateSummary = j.states || [];
+        renderLensChips();
+        renderPins();
+        renderStateIntelligencePanel();
+        if (heatOn) refreshHeatLayer();
+    } catch (e) {
+        document.getElementById('eventCount').textContent = 'Load failed';
+        console.error('india events load:', e);
+    }
+}
+
+// ── Macro ribbon ────────────────────────────────────────────────────────
+async function loadMacroRibbon() {
+    const host = document.getElementById('macroRibbon');
+    try {
+        const res = await fetch('/api/global/markets');
+        const j = await res.json();
+        const data = j.data || {};
+        const idx = data.indices || [];
+        const fx  = data.fx || [];
+        const cdt = data.commodities || [];
+
+        const find = (arr, names) => {
+            for (const n of names) {
+                const m = arr.find(x => (x.name || '').toLowerCase().includes(n.toLowerCase()));
+                if (m) return m;
+            }
+            return null;
+        };
+        const cells = [
+            find(idx, ['Nifty 50', 'Nifty50', 'Nifty']),
+            find(idx, ['Sensex', 'BSE Sensex']),
+            find(idx, ['S&P 500', 'S&P']),
+            find(cdt, ['Brent']),
+            find(cdt, ['Gold']),
+            find(fx,  ['USD/INR', 'USDINR']),
+        ].filter(Boolean);
+
+        if (!cells.length) { host.innerHTML = ''; return; }
+        host.innerHTML = cells.map(c => {
+            const chg = c.change_pct || 0;
+            const dir = chg > 0.05 ? 'up' : chg < -0.05 ? 'dn' : 'flat';
+            const arrow = chg > 0.05 ? '▲' : chg < -0.05 ? '▼' : '·';
+            const px = (typeof c.price === 'number') ? c.price.toLocaleString('en-IN', {maximumFractionDigits: c.price >= 100 ? 0 : 2}) : '--';
+            return `<div class="macro-cell ${dir}">
+                <span class="lbl">${escapeHtml(c.name || '')}</span>
+                <span class="px">${px}</span>
+                <span class="chg">${arrow} ${chg.toFixed(2)}%</span>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        host.innerHTML = '<div class="macro-cell flat"><span class="lbl">Macro feed offline</span><span class="px">--</span></div>';
+        console.warn('macro ribbon:', e);
+    }
+}
+
+// ── Heatmap ──────────────────────────────────────────────────────────────
+function refreshHeatLayer() {
+    if (!geoMap || !L.heatLayer) return;
+    if (heatLayer) { geoMap.removeLayer(heatLayer); heatLayer = null; }
+    if (!heatOn) return;
+    const points = (allEvents || []).filter(e => e.lat && e.lng).map(e => {
+        const intensity = Math.max(0.15, Math.min(1, (e.severity || 5) / 10));
+        return [e.lat, e.lng, intensity];
+    });
+    heatLayer = L.heatLayer(points, {
+        radius: 30, blur: 22, maxZoom: 8, max: 1.0,
+        gradient: { 0.0: 'transparent', 0.3: '#1a2050', 0.5: '#3a6ea8', 0.7: '#8eb4e0', 0.9: '#e6b84a', 1.0: '#f26b6b' },
+    }).addTo(geoMap);
+}
+
+// ── Transmission arcs (animated curved polylines) ────────────────────────
+function clearArcs() { if (arcLayer) { geoMap.removeLayer(arcLayer); arcLayer = null; } }
+
+function drawArcs(fromLat, fromLng, lensId) {
+    clearArcs();
+    if (!arcsOn) return;
+    arcLayer = L.layerGroup().addTo(geoMap);
+
+    const target = LENS_TARGET[lensId] || INDIA;
+    const lensCfg = lensesMeta[lensId] || { color: '#8eb4e0' };
+    const color = lensCfg.color;
+
+    // Bezier-ish curved arc via offset midpoint
+    const dLat = target[0] - fromLat;
+    const dLng = target[1] - fromLng;
+    const distance = Math.sqrt(dLat * dLat + dLng * dLng);
+    const midLat = (fromLat + target[0]) / 2 + (Math.abs(distance) * 0.18);
+    const midLng = (fromLng + target[1]) / 2;
+
+    const pts = [];
+    for (let t = 0; t <= 1; t += 0.05) {
+        const lat = (1 - t) * (1 - t) * fromLat + 2 * (1 - t) * t * midLat + t * t * target[0];
+        const lng = (1 - t) * (1 - t) * fromLng + 2 * (1 - t) * t * midLng + t * t * target[1];
+        pts.push([lat, lng]);
+    }
+    L.polyline(pts, { color, weight: 1.5, opacity: 0.85, dashArray: '6 5' }).addTo(arcLayer);
+    L.circleMarker(target, { radius: 6, color, weight: 2, fillColor: color, fillOpacity: 0.5 }).addTo(arcLayer);
+}
+
+// ── Watchlist hit counter (active when a pin is selected) ───────────────
+function updateWatchlistHitChip(affected) {
+    const chip = document.getElementById('watchHitChip');
+    const txt  = document.getElementById('watchHitText');
+    if (!affected || !affected.length || !watchlistTickers.size) {
+        chip.classList.add('hidden');
+        return;
+    }
+    const hit = affected.filter(t => watchlistTickers.has(t.ticker)).length;
+    txt.textContent = `${hit} of ${affected.length} affected on watchlist`;
+    chip.classList.remove('hidden');
+}
+
+// ── Mode switching (World ↔ India) ──────────────────────────────────────
+function setMode(next) {
+    if (mode === next) return;
+    mode = next;
+
+    // Toggle button styles
+    const btnW = document.getElementById('modeWorld');
+    const btnI = document.getElementById('modeIndia');
+    const activeStyle = 'background:#8eb4e0;color:#0a0e14;';
+    const idleStyle   = '';
+    if (next === 'world') {
+        btnW.setAttribute('style', activeStyle);
+        btnW.classList.add('font-black'); btnW.classList.remove('font-bold','text-on-surface-variant');
+        btnI.setAttribute('style', idleStyle);
+        btnI.classList.add('font-bold','text-on-surface-variant'); btnI.classList.remove('font-black');
+        document.getElementById('modeHint').textContent = 'Click a pin → transmission chain to affected Indian stocks';
+        geoMap.flyTo([22, 65], 3, { duration: 0.8 });
+        loadGeoEvents();
+    } else {
+        btnI.setAttribute('style', activeStyle);
+        btnI.classList.add('font-black'); btnI.classList.remove('font-bold','text-on-surface-variant');
+        btnW.setAttribute('style', idleStyle);
+        btnW.classList.add('font-bold','text-on-surface-variant'); btnW.classList.remove('font-black');
+        document.getElementById('modeHint').textContent = 'India state-level news & policy intelligence';
+        geoMap.flyTo([22.5, 80], 5, { duration: 0.8 });
+        loadIndiaEvents();
+    }
+    clearSelection();
+}
+
+// ── State intelligence panel (India mode) ───────────────────────────────
+function renderStateIntelligencePanel() {
+    const head = document.getElementById('rrGridHead');
+    const grid = document.getElementById('rrGrid');
+    document.getElementById('rrTitle').textContent = 'State Intelligence';
+    document.getElementById('rrLensTag').className = 'mt-1.5';
+    document.getElementById('rrLensTag').innerHTML =
+        `<span class="text-[9px] text-on-surface-variant/70">${stateSummary.length} states · ${allEvents.length} events</span>`;
+    head.classList.add('hidden');
+
+    if (!stateSummary.length) {
+        grid.innerHTML = `<div class="p-6 text-center text-on-surface-variant/50 text-xs">No state-tagged events in the lookback window.</div>`;
+        return;
+    }
+    grid.innerHTML = stateSummary.map(s => {
+        const policy = s.policy || 0;
+        const earnings = s.earnings || 0;
+        const sev = s.max_severity || 0;
+        const sevColor = sev >= 7 ? '#f26b6b' : sev >= 4 ? '#e6b84a' : '#2dd4aa';
+        return `
+            <div class="state-row p-3 border-b border-outline-variant/15 hover:bg-surface-container/40 cursor-pointer transition-colors" data-state="${escapeHtml(s.state)}" data-lat="${s.lat}" data-lng="${s.lng}">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                    <div class="font-bold text-sm text-on-surface truncate">${escapeHtml(s.state)}</div>
+                    <div class="text-[10px] font-mono font-bold" style="color:${sevColor};">sev ${sev}</div>
+                </div>
+                <div class="flex items-center gap-3 text-[9px]">
+                    <span class="text-on-surface-variant">${s.count} events</span>
+                    ${policy ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold" style="background:rgba(141,180,224,0.18);color:#8eb4e0;">${policy} policy</span>` : ''}
+                    ${earnings ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold" style="background:rgba(45,212,170,0.15);color:#2dd4aa;">${earnings} earnings</span>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+    // Click row → fly + show events for that state
+    grid.querySelectorAll('.state-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const lat = parseFloat(row.dataset.lat), lng = parseFloat(row.dataset.lng);
+            if (!isNaN(lat) && !isNaN(lng)) geoMap.flyTo([lat, lng], 7, { duration: 0.7 });
+            showStateEvents(row.dataset.state);
+        });
+    });
+}
+
+function showStateEvents(stateName) {
+    const evs = allEvents.filter(e => e.state === stateName);
+    if (!evs.length) return;
+    const det = document.getElementById('eventDetail');
+    det.classList.remove('hidden');
+    document.getElementById('edMono').textContent = (stateName || 'IN').slice(0, 2).toUpperCase();
+    document.getElementById('edMono').style.background = '#8eb4e0';
+    document.getElementById('edMeta').textContent = `${stateName} · ${evs.length} events · India`;
+    document.getElementById('edTitle').textContent = `${stateName} state intelligence`;
+    document.getElementById('edSummary').textContent = `Recent news & policy events tagged to ${stateName}.`;
+    document.getElementById('edSourceLink').classList.add('hidden');
+
+    // Reasoning chain → use latest 4 events as a chronological feed
+    const sorted = [...evs].sort((a, b) => (a.as_of < b.as_of ? 1 : -1)).slice(0, 5);
+    document.getElementById('edChain').innerHTML = sorted.map((e, i) => {
+        const lensCfg = lensesMeta[e.lens] || {};
+        const tag = lensCfg.label || e.lens || '';
+        const tagColor = lensCfg.color || '#8eb4e0';
+        const sent = e.sentiment === 'bullish' ? '#2dd4aa' : e.sentiment === 'bearish' ? '#f26b6b' : '#8a94a8';
+        return `
+            <div class="chain-step">
+                <div class="step-n" style="color:${tagColor};background:${tagColor}26;">${i + 1}</div>
+                <div class="leading-relaxed text-on-surface">
+                    ${e.link ? `<a href="${escapeHtml(e.link)}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(stripHtml(e.title || ''))}</a>` : escapeHtml(stripHtml(e.title || ''))}
+                    <div class="text-[9px] mt-0.5">
+                        <span class="font-bold uppercase tracking-widest" style="color:${tagColor};">${escapeHtml(tag)}</span>
+                        <span class="text-on-surface-variant/60 ml-2">${escapeHtml(e.source || '')}</span>
+                        ${e.sentiment ? `<span class="ml-2 font-bold" style="color:${sent};">${escapeHtml(e.sentiment)}</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+    document.getElementById('edTopAffected').innerHTML = `<div class="text-[10px] text-on-surface-variant/60 italic">Affected stock view available in World mode (transmission chain). Click a state row → see policy/earnings flow.</div>`;
+}
+
+function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function stripHtml(s) {
+    return String(s || '').replace(/<[^>]*>/g, '').trim();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    initMap();
+    loadWatchlist();             // non-blocking
+    loadMacroRibbon();           // non-blocking
+    await loadGeoEvents();
+
+    document.getElementById('rrClose').addEventListener('click', clearSelection);
+    document.getElementById('watchlistToggle').addEventListener('change', (e) => {
+        watchlistOnly = e.target.checked;
+        renderPins();
+    });
+    document.getElementById('modeWorld').addEventListener('click', () => setMode('world'));
+    document.getElementById('modeIndia').addEventListener('click', () => setMode('india'));
+
+    // Time-window pills
+    document.querySelectorAll('.tw-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tw-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            lookbackHours = parseInt(btn.dataset.hours, 10) || 168;
+            if (mode === 'world') loadGeoEvents(); else loadIndiaEvents();
+        });
     });
 
-    container.innerHTML = sorted_ev.map(e => {
-        const impact = e.impact || 'medium';
-        const style  = IMPACT_STYLES[impact];
-        const type   = e.event_type || getTypeFromDesc(e.event_description);
-        const meta   = getTypeMeta(type);
-        const desc   = e.event_description || '';
-        const lat    = parseFloat(e.latitude || 0);
-        const lng    = parseFloat(e.longitude || 0);
-        const isLive = !e.source || e.source !== 'Context';
-        return `
-        <div class="p-2.5 rounded-lg cursor-pointer transition-all hover:bg-surface-container border border-transparent hover:border-outline-variant/10"
-             style="background:#10141a55;"
-             onclick="flyToEvent(${lat},${lng})">
-            <div class="flex items-start gap-2">
-                <span class="text-sm mt-0.5 flex-shrink-0">${meta.icon}</span>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                        <span class="text-[9px] font-bold" style="color:${style.color};">${e.country || '?'}</span>
-                        <span class="w-1 h-1 rounded-full flex-shrink-0" style="background:${style.color};opacity:0.6;"></span>
-                        <span class="text-[8px] text-on-surface-variant/50 uppercase">${meta.label}</span>
-                        ${isLive ? '<span class="text-[7px] px-1 py-0.5 rounded bg-secondary/10 text-secondary border border-secondary/20 font-bold">LIVE</span>' : ''}
-                    </div>
-                    <p class="text-[10px] text-on-surface-variant leading-tight">${desc}</p>
-                </div>
-                <span class="w-2 h-2 rounded-full flex-shrink-0 mt-1" style="background:${style.color};opacity:0.8;min-width:8px;"></span>
-            </div>
-        </div>`;
-    }).join('');
-}
+    // Heatmap toggle
+    document.getElementById('heatBtn').addEventListener('click', () => {
+        heatOn = !heatOn;
+        document.getElementById('heatBtn').classList.toggle('active', heatOn);
+        refreshHeatLayer();
+    });
 
-// ── Fly helpers ───────────────────────────────────────────
-function flyToEvent(lat, lng) {
-    if (map && lat && lng) {
-        map.flyTo([lat, lng], 5, { duration: 1.1 });
-        SoundFX.pop();
-    }
-}
+    // Arcs toggle
+    document.getElementById('arcsBtn').addEventListener('click', () => {
+        arcsOn = !arcsOn;
+        document.getElementById('arcsBtn').classList.toggle('active', arcsOn);
+        if (!arcsOn) clearArcs();
+    });
 
-function flyToCountry(country) {
-    const ev = allEvents.find(e => e.country === country);
-    if (ev) flyToEvent(parseFloat(ev.latitude), parseFloat(ev.longitude));
-}
+    // Quick zoom presets
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const p = ZOOM_PRESETS[btn.dataset.preset];
+            if (p) geoMap.flyTo(p.center, p.zoom, { duration: 0.7 });
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
 
-// ── Exchange status ───────────────────────────────────────
-function updateExchangeStatus() {
-    const now = new Date();
-    const utcH = now.getUTCHours();
-    const utcM = now.getUTCMinutes();
-    const utcTime = utcH * 60 + utcM;
-    const day = now.getUTCDay();
-    const isWeekday = day >= 1 && day <= 5;
+    // Auto-refresh: events every 90s, macro ribbon every 60s
+    setInterval(() => {
+        if (mode === 'world') loadGeoEvents(); else loadIndiaEvents();
+    }, 90000);
+    setInterval(loadMacroRibbon, 60000);
 
-    const status = [
-        { name: 'NSE',   open: isWeekday && utcTime >= 225 && utcTime <= 600 },
-        { name: 'NYSE',  open: isWeekday && utcTime >= 810 && utcTime <= 1200 },
-        { name: 'LSE',   open: isWeekday && utcTime >= 480 && utcTime <= 960 },
-        { name: 'SGX',   open: isWeekday && utcTime >= 60  && utcTime <= 540 },
-    ];
-
-    document.getElementById('exchangeStatus').innerHTML = status.map(ex =>
-        `<span class="exchange-badge ${ex.open ? 'exchange-open' : 'exchange-closed'}">
-            <span class="w-1.5 h-1.5 rounded-full ${ex.open ? 'bg-secondary animate-pulse' : 'bg-outline-variant'}"></span>
-            ${ex.name}
-        </span>`
-    ).join('');
-}
-
-// ── Load ──────────────────────────────────────────────────
-async function loadMapPage() {
-    const dbEvents = await LiveData.getGeoEvents();
-    allEvents = mergeEvents(dbEvents);
-    renderMapEvents(allEvents);
-    updateExchangeStatus();
-}
-
-// ── State-level India events overlay ─────────────────────────────────
-async function renderIndiaStateEvents() {
-    let host = document.getElementById('stateEventsPanel');
-    if (!host) {
-        host = document.createElement('section');
-        host.id = 'stateEventsPanel';
-        host.style.cssText = 'margin:18px;padding:14px 16px;background:#0d1118;border:1px solid #1f2336;border-radius:10px;';
-        const main = document.querySelector('main') || document.body;
-        main.appendChild(host);
-    }
-    const r = await fetch('/api/geo/india');
-    const j = await r.json();
-    const items = (j && j.data) || [];
-    host.innerHTML = `<div style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">India · state-level events (last 3 days)</div>` +
-        (items.length === 0
-            ? '<div style="color:#5a5d6a;font-size:11px;">No state-tagged events recently.</div>'
-            : '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">' +
-              items.slice(0, 24).map(it => {
-                  const c = it.sentiment === 'bullish' ? '#4ee6b8' : it.sentiment === 'bearish' ? '#ff7a8a' : '#9aa0c8';
-                  return `<a href="${it.link || '#'}" target="_blank" rel="noopener" style="display:block;background:#0a0e14;border:1px solid #1f2336;border-left:3px solid ${c};border-radius:6px;padding:8px 10px;text-decoration:none;color:#dde3ef;">
-                      <div style="font-size:10px;color:#9aa0c8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">${it.state} · mag ${it.magnitude || '?'}/10</div>
-                      <div style="font-size:11px;line-height:1.4;">${(it.title || '').slice(0, 110)}</div>
-                  </a>`;
-              }).join('') + '</div>');
-}
-
-// ── Boot ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    SoundFX.init();
-    initMap();
-    DataRefresher.start(() => { loadMapPage(); renderIndiaStateEvents(); }, 90000);
-    Auth.updateAuthUI();
-    setInterval(updateExchangeStatus, 60000);
+    if (window.Auth && Auth.updateAuthUI) Auth.updateAuthUI();
 });
 </script>
 </body>

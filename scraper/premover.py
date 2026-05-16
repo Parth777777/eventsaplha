@@ -40,34 +40,37 @@ logger = logging.getLogger(__name__)
 
 WEIGHTS: Dict[str, Dict[str, float]] = {
     "1D": {
-        "accumulation":   0.22,
-        "insider":        0.10,
-        "oi_buildup":     0.25,
-        "vol_divergence": 0.20,
-        "catalyst":       0.08,
-        "valuation":      0.05,
+        "accumulation":   0.18,
+        "insider":        0.08,
+        "oi_buildup":     0.22,
+        "vol_divergence": 0.18,
+        "catalyst":       0.07,
+        "news_catalyst":  0.13,
+        "valuation":      0.04,
         "low_attention":  0.04,
         "sector_tailwind":0.06,
     },
     "5D": {
-        "accumulation":   0.22,
-        "insider":        0.18,
-        "oi_buildup":     0.15,
-        "vol_divergence": 0.12,
-        "catalyst":       0.12,
+        "accumulation":   0.18,
+        "insider":        0.15,
+        "oi_buildup":     0.12,
+        "vol_divergence": 0.10,
+        "catalyst":       0.10,
+        "news_catalyst":  0.15,
         "valuation":      0.10,
-        "low_attention":  0.06,
+        "low_attention":  0.05,
         "sector_tailwind":0.05,
     },
     "20D": {
-        "accumulation":   0.15,
-        "insider":        0.18,
-        "oi_buildup":     0.05,
-        "vol_divergence": 0.05,
-        "catalyst":       0.18,
-        "valuation":      0.20,
-        "low_attention":  0.12,
-        "sector_tailwind":0.07,
+        "accumulation":   0.12,
+        "insider":        0.16,
+        "oi_buildup":     0.04,
+        "vol_divergence": 0.04,
+        "catalyst":       0.15,
+        "news_catalyst":  0.15,
+        "valuation":      0.18,
+        "low_attention":  0.10,
+        "sector_tailwind":0.06,
     },
 }
 
@@ -280,6 +283,45 @@ def _catalyst_factor(db, ticker_to_sector: Dict[str, str]) -> Dict[str, Tuple[fl
         if t in out or sec not in sector_score:
             continue
         out[t] = sector_score[sec]
+    return out
+
+
+def _news_catalyst_factor(db) -> Dict[str, Tuple[float, str]]:
+    """Tickers with multiple recent moderate-to-high alpha signals.
+
+    Pre-mover concept: when a name accumulates several α≥40 catalysts within
+    a few days, the next leg is more likely than for a one-off mention. Acts
+    as a baseline factor when the specialized feeds (bulk deals, F&O, insider
+    filings) haven't populated yet.
+    """
+    rows = _safe_query(db, """
+        SELECT ticker,
+               COUNT(*) AS n,
+               MAX(alpha_score) AS top_alpha,
+               AVG(alpha_score) AS avg_alpha
+        FROM signals
+        WHERE created_at >= datetime('now', '-7 days')
+          AND alpha_score >= 40
+          AND ticker IS NOT NULL AND ticker != ''
+        GROUP BY ticker
+        HAVING n >= 1
+    """, label="news_catalyst")
+    out: Dict[str, Tuple[float, str]] = {}
+    for r in rows:
+        n = int(r.get("n") or 0)
+        top = float(r.get("top_alpha") or 0)
+        avg = float(r.get("avg_alpha") or 0)
+        # Score blends signal density (count) with quality (alpha):
+        #   1 signal @ α60  → 0.45;  3 signals @ avg α55 → 0.71; 5+ @ α70 → ~1.0
+        density = min(1.0, math.log1p(n) / math.log1p(6.0))
+        quality = min(1.0, avg / 75.0)
+        score = round(0.55 * quality + 0.45 * density, 3)
+        if score <= 0:
+            continue
+        out[r["ticker"]] = (
+            score,
+            f"{n} catalyst(s) in 7d · top α{top:.0f} · avg α{avg:.0f}",
+        )
     return out
 
 
@@ -509,6 +551,7 @@ def compute_premover_scores(db,
         "oi_buildup":     _oi_buildup_factor(db),
         "vol_divergence": _vol_divergence_factor(db),
         "catalyst":       _catalyst_factor(db, ticker_to_sector),
+        "news_catalyst":  _news_catalyst_factor(db),
         "low_attention":  _low_attention_factor(db, ticker_to_sector),
         "sector_tailwind":_sector_tailwind_factor(db, ticker_to_sector),
     }
@@ -517,7 +560,7 @@ def compute_premover_scores(db,
     # low_attention and sector_tailwind alone are too weak to qualify (they'd
     # otherwise pull in every under-covered ticker from the universe).
     SUBSTANTIVE = ("accumulation", "insider", "oi_buildup",
-                   "vol_divergence", "catalyst")
+                   "vol_divergence", "catalyst", "news_catalyst")
     candidate_set: Set[str] = set()
     for k in SUBSTANTIVE:
         candidate_set.update(factor_maps[k].keys())

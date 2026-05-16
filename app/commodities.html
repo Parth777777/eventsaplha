@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tickwave | Commodities</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -19,10 +24,11 @@
                 "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
                 "outline": "#3d4a5c", "outline-variant": "#253040",
                 "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
-            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
@@ -69,17 +75,67 @@
             white-space: nowrap;
         }
 
-        /* Commodity card */
+        /* Premium commodity card — glass with brand-tinted accent */
         .comm-card {
-            background: var(--s1);
-            border: 1px solid var(--b1);
-            border-radius: 6px;
-            transition: border-color 120ms ease, background 120ms ease;
-            cursor: default;
+            position: relative;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.025), transparent 60%),
+                rgba(17, 21, 28, 0.92);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.07),
+                0 1px 2px rgba(0,0,0,0.35),
+                0 4px 12px rgba(0,0,0,0.25);
+            transition: transform 280ms cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 220ms cubic-bezier(0.32,0.72,0,1),
+                        border-color 200ms ease;
+            cursor: pointer;
+            overflow: hidden;
         }
-        .comm-card:hover { background: var(--s2); border-color: var(--b2); }
-        .comm-card.up   { border-left: 2px solid var(--bull); }
-        .comm-card.down { border-left: 2px solid var(--bear); }
+        .comm-card::before {
+            content: '';
+            position: absolute; top: 0; left: 12px; right: 12px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+            pointer-events: none;
+        }
+        .comm-card::after {
+            /* Brand-color glow tint set per-card via inline --c CSS var */
+            content: '';
+            position: absolute;
+            top: 0; right: 0; width: 60%; height: 70%;
+            background: radial-gradient(circle at 100% 0%,
+                var(--c, transparent) 0%,
+                transparent 65%);
+            opacity: 0.10;
+            pointer-events: none;
+        }
+        .comm-card:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.10),
+                0 12px 32px rgba(0,0,0,0.45),
+                0 2px 4px rgba(0,0,0,0.5);
+            border-color: rgba(255,255,255,0.12);
+        }
+        .comm-card:hover::after { opacity: 0.18; }
+
+        /* Branded icon badge — luxury feel */
+        .comm-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 38px; height: 38px; border-radius: 11px;
+            position: relative; flex-shrink: 0;
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.18),
+                0 2px 6px rgba(0,0,0,0.4),
+                0 0 12px var(--c-glow, transparent);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+        .comm-badge .material-symbols-outlined {
+            font-size: 22px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
 
         /* Category tabs */
         .cat-tab {
@@ -198,27 +254,39 @@
         svg.popup-chart text { font-family: 'DM Sans', sans-serif; fill: #5a6478; font-size: 9px; }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">Tickwave</h1>
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
         <p class="sidebar-brand-sub">Precision Quant</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link active" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link active" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div id="authStatus" style="margin-top:auto;padding:12px 20px;border-top:1px solid var(--b0);font-size:10px;color:var(--t3);letter-spacing:0.04em;"></div>
 </aside>
@@ -605,22 +673,10 @@ const COMMODITY_CATALOG = {
     ]
 };
 
-// Mock prices (backend fallback)
-const MOCK_COMMODITY_PRICES = {
-    GOLD:        { price: 92450, change: 320,   change_pct: 0.35,  week_pct: 2.1,  month_pct: 5.4,  history: [91200,91500,91800,92100,91900,92300,92450] },
-    SILVER:      { price: 95800, change: -320,  change_pct: -0.33, week_pct: -0.8, month_pct: 3.2,  history: [96800,96400,96100,95900,96200,95900,95800] },
-    COPPER:      { price: 830,   change: 9.5,   change_pct: 1.16,  week_pct: 3.2,  month_pct: 8.1,  history: [795,802,808,815,820,823,830] },
-    ALUMINIUM:   { price: 218,   change: -1.8,  change_pct: -0.82, week_pct: -1.4, month_pct: 2.1,  history: [222,221,220,219,218,218,218] },
-    ZINC:        { price: 252,   change: 2.1,   change_pct: 0.84,  week_pct: 1.8,  month_pct: 4.5,  history: [244,246,248,250,250,252,252] },
-    NICKEL:      { price: 1485,  change: -12,   change_pct: -0.80, week_pct: -2.3, month_pct: -1.1, history: [1510,1505,1498,1492,1490,1488,1485] },
-    LEAD:        { price: 178,   change: 0.9,   change_pct: 0.51,  week_pct: 0.9,  month_pct: 1.8,  history: [175,176,176,177,177,178,178] },
-    CRUDEOIL:    { price: 6320,  change: -95,   change_pct: -1.48, week_pct: -3.2, month_pct: -5.8, history: [6650,6590,6540,6490,6440,6380,6320] },
-    NATURALGAS:  { price: 218,   change: 4.2,   change_pct: 1.96,  week_pct: 5.1,  month_pct: 12.3, history: [200,205,208,210,214,215,218] },
-    CRUDPALMOIL: { price: 855,   change: 6.5,   change_pct: 0.77,  week_pct: 1.5,  month_pct: 3.4,  history: [828,832,838,842,848,851,855] },
-    COTTON:      { price: 58200, change: -200,  change_pct: -0.34, week_pct: -0.6, month_pct: 1.2,  history: [58800,58700,58500,58400,58300,58200,58200] },
-    CHANA:       { price: 5450,  change: 40,    change_pct: 0.74,  week_pct: 1.2,  month_pct: 2.8,  history: [5350,5380,5400,5410,5430,5440,5450] },
-    MENTHAOIL:   { price: 945,   change: -8,    change_pct: -0.84, week_pct: -2.1, month_pct: -0.5, history: [968,962,958,954,950,948,945] },
-};
+// All prices, alpha and event counts now come from /api/commodities/all and
+// /api/feed?category=commodity. No hardcoded fallback — if the live feed is
+// unavailable the page renders an honest empty state instead of fake values.
+const MOCK_COMMODITY_PRICES = {};
 
 let allPrices = {};
 let currentCategory = 'metals';
@@ -872,73 +928,61 @@ function renderEventsFeed() {
     const sentColors   = { bull: '#2dd4aa', bear: '#f26b6b', neut: '#8a94a8' };
     const sentIcons    = { bull: '▲', bear: '▼', neut: '→' };
 
-    el.innerHTML = COMM_EVENTS.map((ev, idx) => {
-        const tc  = typeColors[ev.type]  || '#8a94a8';
-        const tbg = typeBg[ev.type]      || 'rgba(138,148,168,0.1)';
-        const ic  = impactColors[ev.impact] || '#8a94a8';
-        const commPills = ev.commodities.map(c => {
-            const found = Object.values(COMMODITY_CATALOG).flat().find(x => x.id === c);
-            return `<span onclick="openPopup('${c}')" style="cursor:pointer;font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(142,180,224,0.1);color:#8eb4e0;border:1px solid rgba(142,180,224,0.2);" title="View ${found?.name || c}">${found?.name || c}</span>`;
-        }).join('');
-
-        const newsHtml = (ev.news || []).map(n => {
-            const sc = sentColors[n.sentiment] || '#8a94a8';
-            return `<div class="ev-news-item">
-                <span style="color:${sc};font-size:10px;font-weight:900;flex-shrink:0;margin-top:1px;">${sentIcons[n.sentiment] || '→'}</span>
-                <div class="flex-1 min-w-0">
-                    <p class="text-[11px] text-on-surface leading-snug">${n.title}</p>
-                    <div class="flex items-center gap-2 mt-0.5">
-                        <span class="text-[9px] font-bold text-on-surface-variant/50">${n.source}</span>
-                        <span class="text-[8px] text-on-surface-variant/35">${n.time}</span>
+    // Live-data version: pull from /api/feed?category=commodity. The hardcoded
+    // COMM_EVENTS array (with baked-in 2025 dates and fake news quotes) is no
+    // longer used. Each row is a real event from the scraper.
+    el.innerHTML = '<div class="text-on-surface-variant/40 text-xs px-3 py-6">Loading commodity events…</div>';
+    fetch('/api/feed?category=commodity&hours=168&limit=30', { credentials: 'same-origin' })
+        .then(r => r.json()).catch(() => null)
+        .then(json => {
+            const items = (json && json.data) || [];
+            if (!items.length) {
+                el.innerHTML = `<div class="text-on-surface-variant/40 text-xs px-3 py-8 text-center">
+                    No commodity-classified events in the last 7 days. The unified feed populates as the scraper picks up new items.
+                </div>`;
+                return;
+            }
+            el.innerHTML = items.map(ev => {
+                const sent = (ev.sentiment || 'neutral').toLowerCase();
+                const sentCol = sent === 'bullish' ? '#2dd4aa' : sent === 'bearish' ? '#f26b6b' : '#8a94a8';
+                const impact = Number(ev.impact_score || 0);
+                const impactCol = impact >= 75 ? '#f26b6b' : impact >= 50 ? '#e6b84a' : '#8a94a8';
+                const tickers = (ev.companies || []).slice(0, 4);
+                const tickerPills = tickers.map(t =>
+                    `<span data-ticker="${t}" style="cursor:pointer;font-size:9px;font-family:'Geist Mono',monospace;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(142,180,224,0.1);color:#8eb4e0;border:1px solid rgba(142,180,224,0.2);">${t}</span>`
+                ).join('');
+                const ts = ev.published_at || ev.created_at;
+                const tsLabel = (window.NewsTime && NewsTime.classify) ? NewsTime.classify(ts).label : '';
+                const titleEsc = (ev.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                const summaryEsc = (ev.summary || '').slice(0, 220).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+                const link = ev.link || '#';
+                const target = ev.link ? '_blank' : '_self';
+                return `
+                <div class="ev-feed-card">
+                  <div class="flex flex-col sm:flex-row">
+                    <div class="sm:w-20 flex sm:flex-col items-center sm:justify-center p-3 sm:p-4 gap-2 sm:gap-1" style="background:rgba(255,255,255,0.025);border-right:1px solid rgba(61,74,92,0.2);">
+                      <span class="text-[8px] font-black text-on-surface-variant/60 uppercase tracking-wider">Impact</span>
+                      <span class="text-2xl font-black font-headline" style="color:${impactCol};">${impact || '—'}</span>
+                      ${ev.alpha_score != null ? `<span style="font-size:9px;font-family:'Geist Mono',monospace;color:${sentCol};">α ${Math.round(ev.alpha_score)}</span>` : ''}
                     </div>
-                </div>
-            </div>`;
-        }).join('');
-
-        return `
-        <div class="ev-feed-card">
-            <!-- Card Header -->
-            <div class="flex flex-col sm:flex-row">
-                <!-- Impact score column -->
-                <div class="sm:w-20 flex sm:flex-col items-center sm:justify-center p-3 sm:p-4 gap-2 sm:gap-1" style="background:rgba(255,255,255,0.025);border-right:1px solid rgba(61,74,92,0.2);">
-                    <span class="text-[8px] font-black text-on-surface-variant/60 uppercase tracking-wider">Impact</span>
-                    <span class="text-2xl font-black font-headline" style="color:${ic};">${ev.impactScore}</span>
-                    <span style="font-size:7px;background:${tbg};color:${tc};border:1px solid ${tc}30;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;padding:1px 5px;border-radius:3px;white-space:nowrap;">${typeLabels[ev.type]}</span>
-                </div>
-                <!-- Main content -->
-                <div class="flex-1 p-4">
-                    <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+                    <div class="flex-1 p-4">
+                      <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
                         <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span style="font-size:9px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:${ic};">${ev.impact.toUpperCase()} IMPACT</span>
-                                ${ev.sector ? `<span class="text-[9px] text-on-surface-variant/50 bg-surface-container px-1.5 py-0.5 rounded">${ev.sector}</span>` : ''}
-                            </div>
-                            <h3 class="font-bold text-sm text-on-surface leading-snug">${ev.title}</h3>
+                          <div class="flex items-center gap-2 mb-1">
+                            <span style="font-size:9px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:${sentCol};">${sent.toUpperCase()}</span>
+                            ${ev.source ? `<span class="text-[9px] text-on-surface-variant/50 bg-surface-container px-1.5 py-0.5 rounded">${(ev.source||'').replace(/_/g,' ')}</span>` : ''}
+                            ${tsLabel ? `<span class="text-[9px] text-on-surface-variant/40">${tsLabel}</span>` : ''}
+                          </div>
+                          <a href="${link}" target="${target}" rel="noopener" class="font-bold text-sm text-on-surface leading-snug hover:underline">${titleEsc}</a>
                         </div>
-                        <div class="text-right flex-shrink-0">
-                            <div class="text-[9px] font-mono text-on-surface-variant/60">Next: <span class="font-bold text-caution">${ev.nextDate}</span></div>
-                        </div>
+                      </div>
+                      ${summaryEsc ? `<p class="text-xs text-on-surface-variant/70 leading-relaxed mb-2">${summaryEsc}</p>` : ''}
+                      ${tickerPills ? `<div class="flex flex-wrap gap-1 mb-1">${tickerPills}</div>` : ''}
                     </div>
-                    <!-- Commodity pills -->
-                    <div class="flex flex-wrap gap-1 mb-2">${commPills}</div>
-                    <!-- Detail text -->
-                    <p class="text-xs text-on-surface-variant/70 leading-relaxed mb-2">${ev.detail}</p>
-                    <!-- Reasoning (collapsible) -->
-                    <div class="bg-surface-container-lowest/60 rounded-lg p-2.5 border-l-2 border-caution/40">
-                        <p class="text-[10px] text-on-surface-variant/60 leading-relaxed"><span class="text-caution font-bold text-[9px] uppercase tracking-wider">Trading Reasoning → </span>${ev.reasoning}</p>
-                    </div>
-                </div>
-            </div>
-            <!-- News strip -->
-            ${newsHtml ? `
-            <div style="border-top:1px solid rgba(61,74,92,0.2);padding:6px 0;background:rgba(6,10,15,0.5);">
-                <div class="px-4 py-1">
-                    <span class="text-[8px] uppercase tracking-widest text-on-surface-variant/40 font-black">📰 Related News</span>
-                </div>
-                ${newsHtml}
-            </div>` : ''}
-        </div>`;
-    }).join('');
+                  </div>
+                </div>`;
+            }).join('');
+        });
 }
 
 // ── Market Hours Logic ─────────────────────────────────────
@@ -1105,64 +1149,153 @@ function renderBarChart(prices) {
     }).join('');
 }
 
-// ── Commodity Card ─────────────────────────────────────────
-function renderCommodityCard(comm, price) {
-    if (!price) return '';
-    const pos = price.change_pct >= 0;
-    const color = pos ? 'var(--bull)' : 'var(--bear)';
+// ── Currency formatter — derives symbol from the API's `unit` field
+// ('USD/oz', 'USD/lb', 'INR/10g', 'MYR/MT', 'USD/barrel'…). We never assume.
+function _commodityPriceFmt(price, unit) {
+    if (price == null || isNaN(price)) return '—';
+    const u = String(unit || '').toUpperCase();
+    let sym = '$';                    // default: most yfinance commodities are USD
+    if (u.startsWith('INR'))        sym = '₹';
+    else if (u.startsWith('MYR'))   sym = 'RM';
+    else if (u.startsWith('EUR'))   sym = '€';
+    else if (u.startsWith('GBP'))   sym = '£';
+    else if (u.startsWith('USD'))   sym = '$';
+    const n = Number(price);
+    if (n >= 10000)     return sym + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    if (n >= 100)       return sym + n.toFixed(1);
+    return sym + n.toFixed(2);
+}
+
+// Map static-catalog → static-catalog `impactStocks` if available, else []
+function _commodityStocks(id) {
+    for (const cat of Object.keys(COMMODITY_CATALOG)) {
+        const hit = (COMMODITY_CATALOG[cat] || []).find(c => c.id === id);
+        if (hit) return { impact: hit.impactStocks || [], headwind: hit.headwindStocks || [] };
+    }
+    return { impact: [], headwind: [] };
+}
+
+// ── Commodity Card (premium, brand-tinted, API-shape driven) ─────────────
+// row = a single entry from /api/commodities/all (has id, name, price, unit,
+//       change_pct, alpha_score, events_in_window, bull_count, bear_count,
+//       sentiment, category).
+function renderCommodityCard(row) {
+    if (!row) return '';
+    const pos = (row.change_pct ?? 0) >= 0;
+    const dirColor = pos ? 'var(--bull)' : 'var(--bear)';
     const arrow = pos ? '▲' : '▼';
     const cls   = pos ? 'up' : 'down';
-    const spark  = sparkline(price.history, color);
-    const impactTickers = [...comm.impactStocks.slice(0, 3)].map(t =>
-        `<span class="text-[9px] font-mono font-bold" style="color:${color};">${t}</span>`
-    ).join(' · ');
 
-    // Format price nicely
-    const fmt = (n) => n >= 10000
-        ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-        : '₹' + n.toFixed(1);
+    // Brand identity for this commodity (Gold #d4af37 etc.) — falls back to
+    // a neutral grey badge if the id isn't in the catalogue yet.
+    const visuals = (window.MarketVisuals && MarketVisuals.commodityIcon)
+        ? MarketVisuals.commodityIcon(row.id)
+        : { color: '#8a94a8', dark: '#3d4a5c', icon: 'inventory_2', tint: 'rgba(138,148,168,0.08)' };
+    const brandColor = visuals.color;
+
+    const stocks = _commodityStocks(row.id);
+    const impactTickers = stocks.impact.slice(0, 3).map(t =>
+        `<span data-ticker="${t}" class="text-[9px] font-mono font-bold cursor-pointer hover:underline" style="color:${dirColor};">${t}</span>`
+    ).join('<span class="text-on-surface-variant/30"> · </span>');
+
+    const px = _commodityPriceFmt(row.price, row.unit);
+    const chgStr = (row.change_pct == null || isNaN(row.change_pct))
+        ? '—'
+        : `${arrow} ${Math.abs(row.change_pct).toFixed(2)}%`;
+
+    // Real signal-derived metrics (replace the fake week_pct/month_pct)
+    const alpha = row.alpha_score;
+    const alphaColor = alpha == null ? '#5a6373'
+                     : alpha >= 65 ? '#2dd4aa'
+                     : alpha >= 50 ? '#e6b84a' : '#8a94a8';
+    const eventCount = row.events_in_window || 0;
+    const sentLabel = row.sentiment || 'neutral';
+    const sentColor = sentLabel === 'bullish' ? '#2dd4aa'
+                    : sentLabel === 'bearish' ? '#f26b6b' : '#8a94a8';
+
+    const unitDisplay = (row.unit || '').replace('/', ' / ');
+    const isDarkBadge = brandColor === '#1f2933' || brandColor === '#5d6470';
 
     return `
-    <div class="comm-card ${cls}" onclick="openPopup('${comm.id}')" title="Click for detailed view">
-        <div class="p-3">
-            <div class="flex items-start justify-between mb-2">
-                <div>
-                    <div class="flex items-center gap-1.5 mb-0.5">
-                        <span class="material-symbols-outlined text-sm" style="color:${color};">${comm.icon}</span>
-                        <span class="text-xs font-bold text-on-surface">${comm.name}</span>
+    <div class="comm-card ${cls}" onclick="openPopup('${row.id}')"
+         style="--c:${brandColor};">
+        <div class="p-4">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="flex items-start gap-3 min-w-0">
+                    <span class="comm-badge" style="
+                        background: linear-gradient(135deg, ${brandColor}, ${visuals.dark});
+                        --c-glow: ${brandColor}40;
+                        color: ${isDarkBadge ? '#fff' : '#0a0e14'};
+                    ">
+                        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1, 'wght' 500;">${visuals.icon}</span>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="font-bold text-[13px] text-on-surface truncate" style="letter-spacing:-0.012em;">${row.name || row.id}</div>
+                        <div class="text-[9px] text-on-surface-variant/60 uppercase tracking-widest mt-0.5">${unitDisplay || '—'}</div>
                     </div>
-                    <div class="text-[9px] text-on-surface-variant/60 uppercase tracking-wider">MCX · ${comm.unit}</div>
                 </div>
-                <div class="text-right">
-                    <div class="font-mono font-bold text-base text-on-surface leading-none">${fmt(price.price)}</div>
-                    <div class="font-mono text-xs font-bold mt-0.5" style="color:${color};">${arrow} ${Math.abs(price.change_pct).toFixed(2)}%</div>
+                <div class="text-right flex-shrink-0">
+                    <div class="font-mono font-bold text-[15px] text-on-surface leading-none" style="letter-spacing:-0.018em;">${px}</div>
+                    <div class="font-mono text-[11px] font-bold mt-1" style="color:${dirColor};">${chgStr}</div>
                 </div>
             </div>
-            <!-- Sparkline -->
-            <div class="flex items-end justify-between mt-2">
-                <div class="space-y-1">
-                    <div class="flex gap-3 text-[9px]">
-                        <span class="text-on-surface-variant">7D <span class="font-mono font-bold" style="color:${price.week_pct >= 0 ? 'var(--bull)' : 'var(--bear)'}">${price.week_pct >= 0 ? '+' : ''}${price.week_pct}%</span></span>
-                        <span class="text-on-surface-variant">30D <span class="font-mono font-bold" style="color:${price.month_pct >= 0 ? 'var(--bull)' : 'var(--bear)'}">${price.month_pct >= 0 ? '+' : ''}${price.month_pct}%</span></span>
+            <!-- Signal-derived stats: alpha + events + sentiment -->
+            <div class="flex items-end justify-between mt-3 gap-3">
+                <div class="space-y-1.5 min-w-0">
+                    <div class="flex gap-3 text-[9.5px] items-center">
+                        ${alpha != null ? `<span class="text-on-surface-variant/70">α <span class="font-mono font-bold" style="color:${alphaColor};">${alpha.toFixed(0)}</span></span>` : ''}
+                        ${eventCount > 0 ? `<span class="text-on-surface-variant/70">${eventCount} ev</span>` : ''}
+                        <span class="text-[8.5px] font-bold uppercase tracking-widest" style="color:${sentColor};">${sentLabel}</span>
                     </div>
-                    ${comm.impactStocks.length > 0 ? `<div class="text-[9px] text-on-surface-variant/50">→ ${impactTickers}</div>` : ''}
+                    ${stocks.impact.length > 0
+                        ? `<div class="text-[9px] flex items-center gap-1 flex-wrap"><span class="text-on-surface-variant/40 mr-0.5">→</span>${impactTickers}</div>`
+                        : `<div class="text-[9px] text-on-surface-variant/30 italic">${row.category || 'Commodity'}</div>`}
                 </div>
-                <div>${spark}</div>
-            </div>
-            <!-- Click hint -->
-            <div class="mt-2 pt-2 border-t border-outline-variant/10 flex items-center justify-between">
-                <span class="text-[8px] text-on-surface-variant/30 italic">Click for detail view</span>
-                <span class="material-symbols-outlined text-xs text-on-surface-variant/30">open_in_full</span>
             </div>
         </div>
     </div>`;
 }
 
 // ── Render Grid ────────────────────────────────────────────
+// Render the grid from the API rows (allCommodityRows) — drives off the
+// real data, not the static catalog. The static catalog only contributes
+// impactStocks mapping for the few we've curated.
+//
+// Category filter maps the page's 3 chips → API's `category` field values.
+// "metals" matches Metals, Mining, Base Metals.
+// "energy" matches Energy. "agri" matches Agri, Softs, Grains.
+const _CAT_GROUPS = {
+    metals: ['Metals', 'Mining', 'Base Metals', 'Precious Metals'],
+    energy: ['Energy'],
+    agri:   ['Agri', 'Softs', 'Grains', 'Soft Commodities'],
+};
+
 function renderGrid() {
     const grid = document.getElementById('commodityGrid');
-    const items = COMMODITY_CATALOG[currentCategory] || [];
-    grid.innerHTML = items.map(comm => renderCommodityCard(comm, allPrices[comm.id])).join('');
+    if (!grid) return;
+    const wanted = _CAT_GROUPS[currentCategory] || [];
+    let rows = (allCommodityRows || []).filter(r => {
+        const cat = r.category || '';
+        return wanted.some(w => cat.toLowerCase().includes(w.toLowerCase()));
+    });
+    // Fallback: if our category labels don't match the API's, show all rows
+    // when the chip-filter would otherwise return zero.
+    if (!rows.length && allCommodityRows && allCommodityRows.length) {
+        rows = allCommodityRows;
+    }
+    // Sort: prices-with-data first, then by alpha desc, then by abs change
+    rows.sort((a, b) => {
+        const pa = a.price == null ? 1 : 0, pb = b.price == null ? 1 : 0;
+        if (pa !== pb) return pa - pb;
+        return (b.alpha_score || 0) - (a.alpha_score || 0);
+    });
+    if (!rows.length) {
+        grid.innerHTML = `<div class="col-span-full p-8 text-center text-on-surface-variant/60 text-sm">
+            No live commodity data right now. Feed will populate as yfinance returns prices.
+        </div>`;
+        return;
+    }
+    grid.innerHTML = rows.map(r => renderCommodityCard(r)).join('');
 }
 
 function switchCategory(cat, btn) {
@@ -1289,39 +1422,52 @@ function updateSummary(prices) {
 }
 
 // ── Main Load ──────────────────────────────────────────────
+// /api/commodities/all returns: id, name, category, price, change_pct,
+// alpha_score, events_in_window, sentiment. We map it into the price dict
+// the rest of the page expects, and stash the alpha/event counts so the
+// grid + matrix can show real signal-derived numbers per row.
+let allCommodityRows = [];
+
 async function loadPage() {
-    // Live first: try the new /commodities/prices endpoint, fall back to /commodities
-    // (api_ext), and last resort show the catalog with stale-state markers so
-    // users always know whether they're seeing real prices or a placeholder.
-    let prices = {};
     let stale = true;
     let asOf = null;
-    let liveRes = await API.get('/commodities/prices');
-    if (liveRes?.success && liveRes.data) {
-        prices = liveRes.data;
-        stale = !!liveRes.stale;
-        asOf = liveRes.as_of || null;
-    } else {
-        const res = await API.get('/commodities');
-        if (res?.success && res.data) {
-            prices = res.data;
+    let prices = {};
+    try {
+        const r = await API.get('/commodities/all?hours=168');
+        const rows = (r && r.data) || [];
+        if (rows.length) {
+            allCommodityRows = rows;
+            for (const row of rows) {
+                if (row.price == null) continue;
+                prices[row.id] = {
+                    price: row.price,
+                    change: row.change ?? null,
+                    change_pct: row.change_pct ?? 0,
+                    alpha_score: row.alpha_score,
+                    events_in_window: row.events_in_window,
+                    bull_count: row.bull_count,
+                    bear_count: row.bear_count,
+                    sentiment: row.sentiment,
+                    category: row.category,
+                };
+            }
             stale = false;
+            asOf = r.as_of;
         }
-    }
-    // Final fallback: old mock catalog so the page renders, but flag it.
-    if (!prices || Object.keys(prices).length === 0) {
-        prices = MOCK_COMMODITY_PRICES;
-        stale = true;
-    }
+    } catch (e) { /* fall through to empty state */ }
+
     allPrices = prices;
     window.__commoditiesStale = stale;
     window.__commoditiesAsOf = asOf;
-    // Drop a small banner near the top so the user knows.
+
+    // Banner — always honest about what's live vs unavailable
     const banner = document.createElement('div');
     banner.style.cssText = 'margin:8px 12px;padding:8px 12px;border-radius:8px;font-size:11px;font-family:monospace;' +
-        (stale ? 'background:#3a1f1f;color:#ff9466;border:1px solid #ff946655;' : 'background:#1f3a2c;color:#4ee6b8;border:1px solid #4ee6b855;');
-    banner.textContent = stale ? 'LIVE FEED UNAVAILABLE — showing last-known catalog. Prices may be stale.'
-                                : ('LIVE · prices as of ' + (asOf || 'now'));
+        (stale ? 'background:#3a1f1f;color:#ff9466;border:1px solid #ff946655;'
+               : 'background:#1f3a2c;color:#4ee6b8;border:1px solid #4ee6b855;');
+    banner.textContent = stale
+        ? 'LIVE FEED UNAVAILABLE — yfinance/scraper down, table will populate when prices return.'
+        : `LIVE · ${Object.keys(prices).length} commodities · prices as of ${asOf || 'now'} · alpha from last 168h of events`;
     const main = document.querySelector('main') || document.body;
     main.insertBefore(banner, main.firstChild);
 
@@ -1331,7 +1477,6 @@ async function loadPage() {
     renderImpactMatrix(prices);
     renderBarChart(prices);
 
-    // Personalized
     const wl = await LiveData.getWatchlist();
     renderWatchlistInsights(prices, wl);
 }
@@ -1418,8 +1563,16 @@ function openPopup(commId) {
     const comm = allComms.find(c => c.id === commId);
     if (!comm) return;
 
-    const price = allPrices[commId] || MOCK_COMMODITY_PRICES[commId];
-    if (!price) return;
+    const price = allPrices[commId];
+    if (!price) {
+        // No live data for this commodity — popup will show empty state
+        // rather than fabricated values.
+        const lbl = document.getElementById('popupName');
+        if (lbl) lbl.textContent = comm.name + ' — no live price';
+        const overlay = document.getElementById('popupOverlay');
+        if (overlay) overlay.classList.add('open');
+        return;
+    }
 
     currentPopupId = commId;
     SoundFX.pop && SoundFX.pop();
@@ -1601,5 +1754,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Auth.updateAuthUI();
 });
 </script>
+<script src="./shared/js/company-logo.js" defer></script>
+<script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/market-visuals.js"></script>
+<script src="./shared/js/news-time.js"></script>
 </body>
 </html>

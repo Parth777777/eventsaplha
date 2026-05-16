@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tickwave | Global Markets Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -19,17 +24,20 @@
                 "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
                 "outline": "#3d4a5c", "outline-variant": "#253040",
                 "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
-            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
+    <script src="./shared/js/charts.js"></script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .mc { background: #111720; border: 1px solid rgba(61,74,92,0.3); border-radius: 12px; padding: 16px; }
         .session-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
-        .heat-cell { width:100%; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family: 'JetBrains Mono', monospace; transition: transform 0.1s; cursor:default; }
+        .heat-cell { width:100%; height:36px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family: 'Geist Mono', monospace; transition: transform 0.1s; cursor:default; }
         .heat-cell:hover { transform: scale(1.05); }
         .news-card { background:#111720; border:1px solid rgba(61,74,92,0.25); border-radius:10px; padding:12px 14px; transition: border-color 0.15s; }
         .news-card:hover { border-color:rgba(142,180,224,0.3); }
@@ -57,28 +65,40 @@
         .fade-up { animation: fadeUp 0.4s ease both; }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <!-- ── Sidebar ────────────────────────────────────────── -->
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">Tickwave</h1>
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
         <p class="sidebar-brand-sub">Global Markets</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link active" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">science</span>Simulator</a>
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link active" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
 </aside>
@@ -193,7 +213,10 @@
     </script>
     <!-- ============ END GLOBAL INSIGHT STUDIO ============ -->
 
-<!-- ── Market Overview Grid (9 indices) ──────────────── -->
+<!-- ── Market Overview Table (live indices · sparkline per row) ──────────────── -->
+<!-- Replaces the old 9-card grid with a screener-style table that pulls
+     /api/global/markets + /api/global/history. Each row gets a real
+     30-day sparkline rendered via the shared Charts.spark wrapper. -->
 <section class="px-4 mb-8">
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
@@ -202,19 +225,92 @@
         </h2>
         <div id="overviewUpdated" class="text-[10px] text-on-surface-variant/50"></div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
-            <span class="session-dot bg-info"></span>United States
-        </div>
-        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
-            <span class="session-dot bg-caution"></span>Europe
-        </div>
-        <div class="text-[9px] uppercase tracking-widest text-on-surface-variant/50 font-bold px-1 flex items-center gap-1.5">
-            <span class="session-dot" style="background:#b28cff;"></span>Asia-Pacific
-        </div>
+    <div class="gm-table-card">
+      <div class="gm-table-scroll">
+        <table class="gm-table" id="indexTable">
+          <thead>
+            <tr>
+              <th class="gm-th">Index</th>
+              <th class="gm-th gm-th--num">Day %</th>
+              <th class="gm-th gm-th--num">Price</th>
+              <th class="gm-th gm-th--spark">30-day chart</th>
+              <th class="gm-th gm-th--num">Daily change</th>
+            </tr>
+          </thead>
+          <tbody id="indexTableBody">
+            <tr><td colspan="5" class="gm-loading">Loading global indices…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div id="indexGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
 </section>
+
+<style>
+.gm-table-card {
+  background: var(--rf-card, #111);
+  border: 1px solid var(--rf-line, rgba(255,255,255,0.07));
+  border-radius: 14px;
+  overflow: hidden;
+}
+.gm-table-scroll { overflow-x: auto; }
+.gm-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  color: var(--rf-text, #fafafa);
+  font: 500 13px/1.4 'Inter', sans-serif;
+}
+.gm-table thead { background: rgba(255,255,255,0.02); }
+.gm-th {
+  text-align: left;
+  font: 500 10px/1 'Inter', sans-serif;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--rf-text-dim, rgba(255,255,255,0.35));
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rf-line, rgba(255,255,255,0.07));
+  white-space: nowrap;
+}
+.gm-th--num { text-align: right; }
+.gm-th--spark { width: 140px; text-align: left; }
+.gm-row { border-bottom: 1px solid var(--rf-line, rgba(255,255,255,0.04)); transition: background 0.15s; }
+.gm-row:last-child { border-bottom: none; }
+.gm-row:hover { background: rgba(255,255,255,0.025); }
+.gm-row td { padding: 12px 18px; vertical-align: middle; }
+.gm-row__name { display:flex; align-items:center; gap:14px; }
+.gm-row__flag {
+  width: 30px; height: 30px;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(255,255,255,0.05);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+  border: 1px solid var(--rf-line, rgba(255,255,255,0.06));
+}
+.gm-row__title {
+  font-weight: 500; color: var(--rf-text, #fafafa);
+  font-size: 14px; letter-spacing: -0.005em;
+}
+.gm-row__sub {
+  font-size: 11px; color: var(--rf-text-mute, rgba(255,255,255,0.55));
+  margin-top: 2px;
+}
+.gm-num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.gm-num--big { font-weight: 600; font-size: 14px; color: var(--rf-text, #fafafa); }
+.gm-pill {
+  display: inline-flex; align-items: center;
+  font: 600 11px/1 'Geist Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-variant-numeric: tabular-nums;
+}
+.gm-pill.up   { color: var(--rf-bull, #4ade80); border-color: color-mix(in oklab, var(--rf-bull, #4ade80) 30%, transparent); background: color-mix(in oklab, var(--rf-bull, #4ade80) 10%, transparent); }
+.gm-pill.down { color: var(--rf-bear, #f87171); border-color: color-mix(in oklab, var(--rf-bear, #f87171) 30%, transparent); background: color-mix(in oklab, var(--rf-bear, #f87171) 10%, transparent); }
+.gm-pill.flat { color: var(--rf-text-mute, rgba(255,255,255,0.55)); border-color: var(--rf-line, rgba(255,255,255,0.07)); }
+.gm-spark { height: 32px; width: 120px; }
+.gm-loading { padding: 28px; text-align: center; color: var(--rf-text-dim, rgba(255,255,255,0.35)); font-size: 12px; }
+.gm-row__name__txt { display:flex; flex-direction:column; min-width:0; }
+.gm-empty { padding: 28px; text-align: center; color: var(--rf-text-dim); font-size: 12px; }
+</style>
 
 <!-- ── Main: Forecast + News ──────────────────────────── -->
 <div class="px-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -312,7 +408,8 @@
                     <span class="material-symbols-outlined text-tertiary text-base">feed</span>
                     Global News Feed
                 </h2>
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-2">
+                    <a href="events.html?category=geopolitical" class="text-[10px] text-on-surface-variant hover:text-on-surface underline decoration-dotted underline-offset-2">View all in Newsroom →</a>
                     <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
                     <span class="text-[9px] text-secondary">LIVE</span>
                 </div>
@@ -443,97 +540,82 @@
 <div data-alpha="global-overnight" class="jargon-scan" style="padding:16px;margin:16px 0;border:1px solid #2a3142;border-radius:10px;background:#0f1420"></div>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/stock-popup.js"></script>
+<script src="./shared/js/market-visuals.js"></script>
+<script src="./shared/js/news-time.js"></script>
 <script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/phase_1_5.js"></script>
+<script src="./shared/js/event-card.js"></script>
 <script>
 // ══════════════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════════════
 
-const INDEX_DATA = {
-    US: [
-        { id:'nasdaq', name:'NASDAQ', price:17892.4, change:0.82, prev:17747.1, color:'#6ba3d6', region:'US', sparkSeed:42 },
-        { id:'sp500',  name:'S&P 500', price:5234.2, change:0.65, prev:5200.1, color:'#8eb4e0', region:'US', sparkSeed:17 },
-        { id:'dow',    name:'Dow Jones', price:38905.1, change:0.48, prev:38718.6, color:'#adc6ff', region:'US', sparkSeed:33 },
-    ],
-    EU: [
-        { id:'dax',  name:'DAX',     price:18125.6, change:0.31, prev:18069.4, color:'#e6b84a', region:'EU', sparkSeed:55 },
-        { id:'ftse', name:'FTSE 100',price:8234.7,  change:-0.12,prev:8244.6,  color:'#c9a63a', region:'EU', sparkSeed:28 },
-        { id:'cac',  name:'CAC 40',  price:8012.3,  change:0.44, prev:7977.0,  color:'#ddb84a', region:'EU', sparkSeed:61 },
-    ],
-    ASIA: [
-        { id:'nikkei',   name:'Nikkei 225',  price:38450.8, change:1.23, prev:38983.2, color:'#b28cff', region:'JP', sparkSeed:74 },
-        { id:'hsi',      name:'Hang Seng',   price:17234.5, change:-0.88,prev:17388.0, color:'#f26b6b', region:'CN', sparkSeed:81 },
-        { id:'shanghai', name:'Shanghai',    price:3078.2,  change:-0.43,prev:3091.5,  color:'#f28c6b', region:'CN', sparkSeed:92 },
-    ]
+// All page data is fetched live — no hardcoded prices/correlations/calendars.
+// Loaders below populate these in-place once the API responds.
+let ALL_INDICES = [];      // /api/global/markets → [{id, name, price, change, region, color}]
+let MODEL_WEIGHTS = [];    // derived from /api/global/correlations (top-5 by |corr|)
+let CORRELATIONS_DATA = []; // /api/global/correlations
+let SECTOR_HEATMAP = [];    // populated from /api/sectors when available; section hidden if empty
+
+// Stable color palette by index id — used when the API doesn't supply a color
+const _IDX_COLOR = {
+    nasdaq:'#6ba3d6', sp500:'#8eb4e0', dow:'#adc6ff',
+    dax:'#e6b84a', ftse:'#c9a63a', cac:'#ddb84a',
+    nikkei:'#b28cff', hangseng:'#f26b6b', shanghai:'#f28c6b',
+    nifty:'#2dd4aa', sensex:'#2dd4aa',
+};
+const _SYMBOL_TO_ID = {
+    '^IXIC':'nasdaq', '^GSPC':'sp500', '^DJI':'dow',
+    '^GDAXI':'dax', '^FTSE':'ftse',
+    '^N225':'nikkei', '^HSI':'hangseng', '000001.SS':'shanghai',
+    '^NSEI':'nifty', '^BSESN':'sensex',
 };
 
-const ALL_INDICES = [...INDEX_DATA.US, ...INDEX_DATA.EU, ...INDEX_DATA.ASIA];
+// NEWS_DATA used to be a hardcoded mock array. It is now populated live from
+// /api/feed?category=geopolitical (the unified Newsroom feed). The shape kept
+// here is purely for the legacy renderNewsFeed and renderSentimentDonut helpers
+// — region/sectors are inferred from title text since the unified backend
+// doesn't tag region itself.
+let NEWS_DATA = [];
 
-// Model weights for Nifty prediction
-const MODEL_WEIGHTS = [
-    { id:'nasdaq',   label:'NASDAQ',    weight:0.35, color:'#6ba3d6' },
-    { id:'nikkei',   label:'SGX/Nikkei',weight:0.25, color:'#b28cff' },
-    { id:'hsi',      label:'Hang Seng', weight:0.15, color:'#f26b6b' },
-    { id:'dax',      label:'DAX',       weight:0.15, color:'#e6b84a' },
-    { id:'ftse',     label:'FTSE 100',  weight:0.10, color:'#c9a63a' },
-];
+const _GLOBAL_REGION_KEYWORDS = {
+    US: ['fed', 'fomc', 'us treasury', 'wall street', 'nasdaq', 's&p', 'sp 500', 'dow ',
+         'nvidia', 'microsoft', 'alphabet', 'apple', 'amazon', 'tesla', 'biden', 'trump',
+         'powell', 'us-', 'us cpi', 'us pmi', 'jobless claims'],
+    EU: ['ecb', 'european central', 'european commission', 'germany', 'dax', 'ftse',
+         'london', 'frankfurt', 'eurozone', 'eu ', 'lagarde', 'pound sterling'],
+    CN: ['china', 'shanghai', 'pboc', 'beijing', 'evergrande', 'hong kong', 'hang seng',
+         'yuan', 'renminbi', 'csrc'],
+    JP: ['japan', 'tokyo', 'nikkei', 'yen', 'boj', 'bank of japan'],
+};
+function _detectRegion(text) {
+    const t = (text || '').toLowerCase();
+    for (const [r, keys] of Object.entries(_GLOBAL_REGION_KEYWORDS)) {
+        if (keys.some(k => t.includes(k))) return r;
+    }
+    return 'GL';
+}
+function _detectSentimentTag(s) {
+    const v = (s || '').toLowerCase();
+    if (v === 'bullish' || v === 'positive') return 'bull';
+    if (v === 'bearish' || v === 'negative') return 'bear';
+    return 'neut';
+}
 
-const CORRELATIONS_DATA = [
-    { id:'nasdaq',   label:'NASDAQ',    corr:0.72, beta:0.41, color:'#6ba3d6' },
-    { id:'sp500',    label:'S&P 500',   corr:0.68, beta:0.38, color:'#8eb4e0' },
-    { id:'nikkei',   label:'Nikkei 225',corr:0.63, beta:0.35, color:'#b28cff' },
-    { id:'dax',      label:'DAX',       corr:0.51, beta:0.28, color:'#e6b84a' },
-    { id:'ftse',     label:'FTSE 100',  corr:0.46, beta:0.25, color:'#c9a63a' },
-    { id:'hsi',      label:'Hang Seng', corr:0.44, beta:0.24, color:'#f26b6b' },
-    { id:'shanghai', label:'Shanghai',  corr:0.31, beta:0.17, color:'#f28c6b' },
-];
-
-const SECTOR_HEATMAP = [
-    { name:'IT / Tech',    nasdaq:0.81, sp500:0.74, dax:0.38, ftse:0.31, nikkei:0.55, hsi:0.29, shanghai:0.18, driver:'NASDAQ' },
-    { name:'Metals',       nasdaq:0.32, sp500:0.35, dax:0.41, ftse:0.38, nikkei:0.47, hsi:0.68, shanghai:0.72, driver:'Shanghai' },
-    { name:'Pharma',       nasdaq:0.61, sp500:0.58, dax:0.44, ftse:0.52, nikkei:0.39, hsi:0.22, shanghai:0.16, driver:'NASDAQ' },
-    { name:'Auto',         nasdaq:0.44, sp500:0.41, dax:0.71, ftse:0.55, nikkei:0.62, hsi:0.38, shanghai:0.31, driver:'DAX' },
-    { name:'Banking',      nasdaq:0.28, sp500:0.32, dax:0.34, ftse:0.48, nikkei:0.31, hsi:0.51, shanghai:0.42, driver:'FTSE' },
-    { name:'Energy',       nasdaq:0.24, sp500:0.28, dax:0.33, ftse:0.44, nikkei:0.35, hsi:0.57, shanghai:0.48, driver:'Hang Seng' },
-    { name:'FMCG',         nasdaq:0.18, sp500:0.22, dax:0.24, ftse:0.31, nikkei:0.21, hsi:0.18, shanghai:0.14, driver:'Domestic' },
-    { name:'Real Estate',  nasdaq:0.31, sp500:0.34, dax:0.27, ftse:0.29, nikkei:0.28, hsi:0.41, shanghai:0.38, driver:'Mixed' },
-];
-
-const NEWS_DATA = [
-    { h:'Fed signals patience on rate cuts as inflation stays sticky above 3%', region:'US', sentiment:'bear', sectors:['IT','Banking'], time:'1h ago', impact:'Negative for rate-sensitive sectors' },
-    { h:'Microsoft and Alphabet both beat Q4 earnings estimates by wide margins', region:'US', sentiment:'bull', sectors:['IT'], time:'2h ago', impact:'Positive for Indian IT majors: TCS, Infy' },
-    { h:'China PMI surprise: manufacturing expands at fastest pace in 8 months', region:'CN', sentiment:'bull', sectors:['Metals','Energy'], time:'3h ago', impact:'Positive for metals: JSW, Hindalco, SAIL' },
-    { h:'European Central Bank signals two more rate cuts before year-end', region:'EU', sentiment:'bull', sectors:['Banking','Auto'], time:'4h ago', impact:'Risk-on for global equities' },
-    { h:'US Treasury yields climb to 4.8% as jobs data exceeds expectations', region:'US', sentiment:'bear', sectors:['IT','FMCG'], time:'5h ago', impact:'DXY strength negative for FII flows' },
-    { h:'Bank of Japan holds rates steady, yen weakens past 155/USD', region:'JP', sentiment:'neut', sectors:['Auto'], time:'6h ago', impact:'Neutral for Indian markets' },
-    { h:'Oil extends gains on OPEC+ supply discipline and China demand revival', region:'GL', sentiment:'bull', sectors:['Energy'], time:'7h ago', impact:'Positive for ONGC, Oil India; negative for OMCs' },
-    { h:'Nvidia guidance tops estimates — AI capex cycle still accelerating', region:'US', sentiment:'bull', sectors:['IT'], time:'8h ago', impact:'Positive for IT, Semiconductor plays' },
-    { h:'UK retail sales disappoint; FTSE dips on consumer spending worry', region:'EU', sentiment:'bear', sectors:['FMCG','Auto'], time:'9h ago', impact:'Limited India impact — domestic-driven' },
-    { h:'China property sector: Evergrande liquidation orders upheld by court', region:'CN', sentiment:'bear', sectors:['Metals','Real Estate'], time:'11h ago', impact:'Negative for steel, cement, real estate' },
-    { h:'Global risk appetite improves as VIX falls below 15-month lows', region:'GL', sentiment:'bull', sectors:['Banking','Auto','IT'], time:'12h ago', impact:'FII buying expected in large-caps' },
-    { h:'ECB minutes: majority favored gradual easing, no rush on pace', region:'EU', sentiment:'neut', sectors:['Banking'], time:'14h ago', impact:'Neutral — India not directly impacted' },
-];
-
-const WEEK_EVENTS = [
-    { day:'Mon', label:'US ISM Manufacturing PMI', region:'US', impact:'high' },
-    { day:'Tue', label:'RBI MPC Minutes Release', region:'IN', impact:'high' },
-    { day:'Wed', label:'US Fed Beige Book', region:'US', impact:'med' },
-    { day:'Wed', label:'China Trade Balance', region:'CN', impact:'high' },
-    { day:'Thu', label:'US Initial Jobless Claims', region:'US', impact:'med' },
-    { day:'Thu', label:'ECB Policy Decision', region:'EU', impact:'high' },
-    { day:'Fri', label:'US Non-Farm Payrolls', region:'US', impact:'high' },
-    { day:'Fri', label:'India CPI Data', region:'IN', impact:'high' },
-];
+// Populated live from /api/global/calendar → real policy / earnings /
+// IPO catalysts surfaced from the events table. No hardcoded calendar.
+let WEEK_EVENTS = [];
 
 const SESSIONS = [
-    { name:'Tokyo (TSE)', open:'09:00', close:'15:30', tz:'Asia/Tokyo', color:'#b28cff', flag:'🇯🇵' },
-    { name:'Shanghai (SSE)', open:'09:30', close:'15:00', tz:'Asia/Shanghai', color:'#f26b6b', flag:'🇨🇳' },
-    { name:'Frankfurt (XETRA)', open:'09:00', close:'17:30', tz:'Europe/Berlin', color:'#e6b84a', flag:'🇩🇪' },
-    { name:'London (LSE)', open:'08:00', close:'16:30', tz:'Europe/London', color:'#c9a63a', flag:'🇬🇧' },
-    { name:'New York (NYSE)', open:'09:30', close:'16:00', tz:'America/New_York', color:'#6ba3d6', flag:'🇺🇸' },
-    { name:'GIFT Nifty', open:'06:00', close:'05:30+1', tz:'Asia/Kolkata', color:'#2dd4aa', flag:'🇮🇳' },
+    { name:'Tokyo (TSE)',       open:'09:00', close:'15:30', tz:'Asia/Tokyo',       color:'#b28cff', region:'JPN' },
+    { name:'Shanghai (SSE)',    open:'09:30', close:'15:00', tz:'Asia/Shanghai',    color:'#f26b6b', region:'CHN' },
+    { name:'Frankfurt (XETRA)', open:'09:00', close:'17:30', tz:'Europe/Berlin',    color:'#e6b84a', region:'DEU' },
+    { name:'London (LSE)',      open:'08:00', close:'16:30', tz:'Europe/London',    color:'#c9a63a', region:'GBR' },
+    { name:'New York (NYSE)',   open:'09:30', close:'16:00', tz:'America/New_York', color:'#6ba3d6', region:'USA' },
+    { name:'GIFT Nifty',        open:'06:00', close:'05:30+1', tz:'Asia/Kolkata',   color:'#2dd4aa', region:'IND' },
 ];
 
 // Seeded PRNG for deterministic sparklines
@@ -806,8 +888,11 @@ function renderSessionBar() {
         if (isEU)    open = istHour >= 13 && istHour < 22;  // 13:30–21:30 IST ≈ EU open
         if (isAsia)  open = istHour >= 5  && istHour < 12;  // 5:00–12:00 IST ≈ Asia open
 
+        const flagChip = (window.MarketVisuals && MarketVisuals.flag)
+            ? MarketVisuals.flag(s.region, { size: 'sm', label: false })
+            : '';
         return `<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container text-xs">
-            <span>${s.flag}</span>
+            ${flagChip}
             <span class="text-on-surface-variant/80 font-medium">${s.name}</span>
             <span class="session-dot ${open ? 'bg-secondary animate-pulse' : 'bg-surface-bright'}"></span>
             <span class="${open ? 'text-secondary' : 'text-on-surface-variant/40'} font-mono text-[10px]">${open ? 'OPEN' : 'CLOSED'}</span>
@@ -823,40 +908,159 @@ function getISTHour() {
     return ist.getHours();
 }
 
-function renderIndexGrid() {
-    const grid = document.getElementById('indexGrid');
-    const regions = ['US', 'EU', 'ASIA'];
-    let cols = ['', '', ''];
+// Replaces the legacy 9-card mock grid with a real-data table that pulls
+// /api/global/markets (live prices + day %) and /api/global/history
+// (30-day series for the per-row sparkline). Mounts via Charts.spark so
+// every page on the site shares one chart language.
+const FLAG_BY_REGION = {
+    USA: '🇺🇸', UK: '🇬🇧', JPN: '🇯🇵', HKG: '🇭🇰', CHN: '🇨🇳',
+    DEU: '🇩🇪', FRA: '🇫🇷', IND: '🇮🇳', GLB: '🌐',
+};
 
-    regions.forEach((reg, ri) => {
-        INDEX_DATA[reg].forEach(idx => {
-            const spark = gen30D(idx.sparkSeed, 1.8, idx.change > 0 ? 0.05 : -0.05);
-            const up = idx.change >= 0;
-            const col = up ? '#2dd4aa' : '#f26b6b';
-            cols[ri] += `<div class="idx-card fade-up">
-                <div class="flex items-start justify-between mb-2">
-                    <div>
-                        <div class="font-black text-[11px] text-on-surface">${idx.name}</div>
-                        <div class="font-mono text-lg font-black mt-0.5">${idx.price.toLocaleString('en-IN', {maximumFractionDigits:1})}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}">${up ? '+' : ''}${idx.change.toFixed(2)}%</div>
-                        <div class="text-[9px] text-on-surface-variant/50 mt-0.5">${up ? '▲' : '▼'} ${Math.abs((idx.price - idx.prev)).toFixed(1)}</div>
-                    </div>
+// Map yfinance symbols to history-endpoint keys so we can hand each row
+// the right sparkline series without a second round-trip.
+const SYMBOL_TO_HISTORY_KEY = {
+    '^IXIC': 'nasdaq', '^GSPC': 'sp500', '^DJI': 'dow',
+    '^GDAXI': 'dax', '^FTSE': 'ftse', '^N225': 'nikkei',
+    '^HSI': 'hangseng', '000001.SS': 'shanghai', '^NSEI': 'nifty',
+};
+
+async function renderIndexGrid() {
+    const tbody = document.getElementById('indexTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" class="gm-loading">Loading global indices…</td></tr>';
+
+    let markets = null, history = null;
+    try {
+        const [mr, hr] = await Promise.all([
+            fetch('/api/global/markets').then(r => r.json()).catch(() => null),
+            fetch('/api/global/history?days=30').then(r => r.json()).catch(() => null),
+        ]);
+        markets = (mr && mr.data) || null;
+        history = (hr && hr.data) || null;
+    } catch (e) { /* fall through to empty state */ }
+
+    const indices = (markets && markets.indices) || [];
+    if (!indices.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="gm-empty">Couldn\'t load global indices — backend offline or rate-limited.</td></tr>';
+        return;
+    }
+
+    // Update "as_of" stamp
+    if (markets.as_of) {
+        const upd = document.getElementById('overviewUpdated');
+        if (upd) upd.textContent = 'Updated ' + new Date(markets.as_of).toLocaleTimeString('en-IN');
+    }
+
+    // Render rows; defer Charts.spark until after the row is in the DOM
+    tbody.innerHTML = indices.map((idx, i) => {
+        // Premium CSS-stripe flag chip (no emoji, per design rules)
+        const flagChip = (window.MarketVisuals && MarketVisuals.flag)
+            ? MarketVisuals.flag(idx.region, { size: 'md', label: false })
+            : '<span class="gm-row__flag-fallback"></span>';
+        const accent = (window.MarketVisuals && MarketVisuals.regionAccent)
+            ? MarketVisuals.regionAccent(idx.region) : '#8eb4e0';
+        const pct = Number(idx.change_pct || 0);
+        const dir = pct > 0.001 ? 'up' : pct < -0.001 ? 'down' : 'flat';
+        const sign = pct >= 0 ? '+' : '';
+        const price = Number(idx.price || 0);
+        const sparkId = `gm-spark-${i}`;
+        return `
+          <tr class="gm-row">
+            <td>
+              <div class="gm-row__name">
+                <div class="gm-row__flag" style="border:none;background:transparent;padding:0;">${flagChip}</div>
+                <div class="gm-row__name__txt">
+                  <div class="gm-row__title">${idx.name || idx.symbol}</div>
+                  <div class="gm-row__sub" style="color:${accent}99;">${idx.region || ''} · ${idx.symbol}</div>
                 </div>
-                ${sparklineSVG(spark, col, 100, 28)}
-            </div>`;
-        });
+              </div>
+            </td>
+            <td class="gm-num"><span class="gm-pill ${dir}">${sign}${pct.toFixed(2)}%</span></td>
+            <td class="gm-num gm-num--big">${price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</td>
+            <td><div id="${sparkId}" class="gm-spark"></div></td>
+            <td class="gm-num" style="color:${dir === 'up' ? 'var(--rf-bull,#4ade80)' : dir === 'down' ? 'var(--rf-bear,#f87171)' : 'var(--rf-text-mute)'};">${sign}${(price * pct / 100).toFixed(2)}</td>
+          </tr>`;
+    }).join('');
+
+    // Render sparklines from the history payload — fall back to a tiny
+    // synthesized series if the index isn't in the history response.
+    indices.forEach((idx, i) => {
+        const key = SYMBOL_TO_HISTORY_KEY[idx.symbol];
+        const series = history && history.indices && key && history.indices[key]
+            ? history.indices[key].series.map(s => s.close)
+            : null;
+        const points = series && series.length >= 3 ? series : null;
+        const target = document.getElementById(`gm-spark-${i}`);
+        if (!target) return;
+        if (!points) {
+            target.innerHTML = '<div style="color:var(--rf-text-dim);font-size:10px;line-height:32px;">no series</div>';
+            return;
+        }
+        if (window.Charts && Charts.spark) {
+            Charts.spark(target, points, {
+                height: 32,
+                color: idx.change_pct >= 0 ? undefined : undefined,
+                disableAnim: true,
+            });
+        }
+    });
+}
+
+// Pulls live indices, correlations and calendar in parallel and maps each
+// payload onto the in-page state arrays. Every consumer below this line
+// reads the shared globals (ALL_INDICES, CORRELATIONS_DATA, MODEL_WEIGHTS,
+// WEEK_EVENTS) so swapping in real data once at load time is enough.
+async function loadGlobalState() {
+    let markets = null, corrs = null, cal = null;
+    try {
+        const [mr, cr, kr] = await Promise.all([
+            fetch('/api/global/markets').then(r => r.json()).catch(() => null),
+            fetch('/api/global/correlations?days=60').then(r => r.json()).catch(() => null),
+            fetch('/api/global/calendar?days=7').then(r => r.json()).catch(() => null),
+        ]);
+        markets = (mr && mr.data) || null;
+        corrs = (cr && cr.data) || null;
+        cal = (kr && kr.data) || null;
+    } catch (_) {}
+
+    // 1) ALL_INDICES from /api/global/markets — every downstream renderer
+    //    keys off `id` and `change` so we map them directly.
+    const indices = (markets && markets.indices) || [];
+    ALL_INDICES = indices.map(idx => {
+        const id = _SYMBOL_TO_ID[idx.symbol] || (idx.symbol || '').toLowerCase();
+        return {
+            id, name: idx.name || idx.symbol, region: idx.region || '',
+            price: idx.price, change: Number(idx.change_pct || 0),
+            color: _IDX_COLOR[id] || '#8eb4e0',
+        };
     });
 
-    grid.innerHTML = `
-        <div class="space-y-2">${cols[0]}</div>
-        <div class="space-y-2">${cols[1]}</div>
-        <div class="space-y-2">${cols[2]}</div>
-    `;
+    // 2) CORRELATIONS_DATA from /api/global/correlations — already in the
+    //    right shape, just attach a stable colour by id.
+    CORRELATIONS_DATA = (Array.isArray(corrs) ? corrs : []).map(c => ({
+        id: c.id, label: c.label, corr: Number(c.corr || 0), beta: Number(c.beta || 0),
+        color: _IDX_COLOR[c.id] || '#8eb4e0',
+    }));
+
+    // 3) MODEL_WEIGHTS derived from the correlations: the top-5 absolute
+    //    correlations get weights normalised to sum to 1. This keeps the
+    //    forecast model honest — weights move with the data, not a baked-in
+    //    array.
+    const top = CORRELATIONS_DATA.slice(0, 5);
+    const totalAbs = top.reduce((s, c) => s + Math.abs(c.corr), 0) || 1;
+    MODEL_WEIGHTS = top.map(c => ({
+        id: c.id, label: c.label,
+        weight: +(Math.abs(c.corr) / totalAbs).toFixed(3),
+        color: c.color,
+    }));
+
+    // 4) WEEK_EVENTS from /api/global/calendar — already day/label/region/impact.
+    WEEK_EVENTS = (cal || []).slice(0, 8);
 }
 
 function computePrediction() {
+    if (!MODEL_WEIGHTS.length || !ALL_INDICES.length) return 0;
     let pred = 0;
     MODEL_WEIGHTS.forEach(w => {
         const idx = ALL_INDICES.find(i => i.id === w.id);
@@ -987,43 +1191,49 @@ function filterSentiment(s) {
     renderNewsFeed();
 }
 
+async function loadGeopoliticalNews() {
+    // Pull from the unified feed; cache in NEWS_DATA so filter buttons can
+    // re-render without refetching, and the donut helper has data.
+    const items = await EventCard.fetchFeed({ category: 'geopolitical', hours: 24, limit: 80 });
+    NEWS_DATA = items.map(it => ({
+        ...it,
+        region: _detectRegion((it.title || '') + ' ' + (it.summary || '') + ' ' + (it.source || '')),
+        _sent: _detectSentimentTag(it.sentiment),
+    }));
+    renderNewsFeed();
+}
+
 function renderNewsFeed() {
     const filtered = NEWS_DATA.filter(n => {
         const regionOk = activeRegion === 'ALL' || n.region === activeRegion;
-        const sentOk = activeSentiment === 'ALL' || n.sentiment === activeSentiment;
+        const sentOk = activeSentiment === 'ALL' || n._sent === activeSentiment;
         return regionOk && sentOk;
     });
+    const feedEl = document.getElementById('newsFeed');
+    if (!feedEl) return;
 
-    const sentClass = { bull:'sentiment-bull', bear:'sentiment-bear', neut:'sentiment-neut' };
-    const sentLabel = { bull:'Bullish for India', bear:'Bearish for India', neut:'Neutral' };
-    const regClass  = { US:'region-us', EU:'region-eu', CN:'region-cn', JP:'region-jp', GL:'region-gl' };
-    const regLabel  = { US:'US', EU:'Europe', CN:'China', JP:'Japan', GL:'Global' };
-
-    document.getElementById('newsFeed').innerHTML = filtered.length ? filtered.map(n => `
-        <div class="news-card">
-            <div class="flex flex-wrap gap-1.5 mb-1.5">
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${regClass[n.region] || 'region-gl'}">${regLabel[n.region] || n.region}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${sentClass[n.sentiment]}">${sentLabel[n.sentiment]}</span>
-            </div>
-            <p class="text-xs text-on-surface leading-snug mb-1.5">${n.h}</p>
-            <div class="flex items-center justify-between">
-                <p class="text-[9px] text-on-surface-variant/50 italic">${n.impact}</p>
-                <span class="text-[9px] text-on-surface-variant/40">${n.time}</span>
-            </div>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-                ${n.sectors.map(s => `<span class="text-[8px] px-1 py-0.5 rounded bg-surface-container-high text-on-surface-variant/60">${s}</span>`).join('')}
-            </div>
-        </div>
-    `).join('') : `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news matches the selected filters.</div>`;
-
+    if (!NEWS_DATA.length) {
+        feedEl.innerHTML = `<div class="ec-empty">
+            <div class="ec-empty-title">No geopolitical news yet</div>
+            <div class="ec-empty-sub">The unified feed is empty for this window. Check the Newsroom for cross-category items.</div>
+        </div>`;
+        renderSentimentDonut();
+        return;
+    }
+    if (!filtered.length) {
+        feedEl.innerHTML = `<div class="text-center py-8 text-on-surface-variant/40 text-xs">No news matches the selected filters.</div>`;
+        renderSentimentDonut();
+        return;
+    }
+    feedEl.innerHTML = EventCard.renderList(filtered);
     renderSentimentDonut();
 }
 
 function renderSentimentDonut() {
     const filtered = NEWS_DATA.filter(n => activeRegion === 'ALL' || n.region === activeRegion);
-    const bull = filtered.filter(n => n.sentiment === 'bull').length;
-    const bear = filtered.filter(n => n.sentiment === 'bear').length;
-    const neut = filtered.filter(n => n.sentiment === 'neut').length;
+    const bull = filtered.filter(n => n._sent === 'bull').length;
+    const bear = filtered.filter(n => n._sent === 'bear').length;
+    const neut = filtered.filter(n => n._sent === 'neut').length;
     const total = filtered.length || 1;
 
     const segs = [
@@ -1076,16 +1286,26 @@ function renderHeatmap() {
         return '#5a6478';
     }
 
-    document.getElementById('heatmapBody').innerHTML = SECTOR_HEATMAP.map(row => `
+    const body = document.getElementById('heatmapBody');
+    if (!SECTOR_HEATMAP.length) {
+        // Sector × global-index correlations require sector-ETF history.
+        // Until a backend computation is wired, the table renders an honest
+        // empty state instead of fabricating numbers.
+        body.innerHTML = `<tr><td colspan="${cols.length + 2}" class="py-6 px-3 text-center text-[11px] text-on-surface-variant/50">
+            Sector correlation matrix loads when the sector-ETF history pipeline ships.
+        </td></tr>`;
+        return;
+    }
+    body.innerHTML = SECTOR_HEATMAP.map(row => `
         <tr class="border-t border-outline-variant/10">
             <td class="py-2 pr-4 text-[11px] font-semibold text-on-surface/90 whitespace-nowrap">${row.name}</td>
             ${cols.map(c => `
                 <td class="py-1.5 px-1.5">
-                    <div class="heat-cell" style="background:${heatColor(row[c])};color:${textColor(row[c])};">${row[c].toFixed(2)}</div>
+                    <div class="heat-cell" style="background:${heatColor(row[c])};color:${textColor(row[c])};">${(row[c] ?? 0).toFixed(2)}</div>
                 </td>
             `).join('')}
             <td class="py-1.5 px-2">
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver || '—'}</span>
             </td>
         </tr>
     `).join('');
@@ -1128,18 +1348,23 @@ function renderRiskGauge() {
 
 function renderWeekEvents() {
     const impactColor = { high:'text-bear', med:'text-caution', low:'text-on-surface-variant/50' };
-    const regColor = { US:'text-info', IN:'text-secondary', EU:'text-caution', CN:'text-bear' };
+    const regColor = { US:'text-info', IN:'text-secondary', EU:'text-caution', CN:'text-bear', JP:'text-info' };
     const days = ['Mon','Tue','Wed','Thu','Fri'];
     const today = days[Math.min(new Date().getDay() - 1, 4)] || 'Mon';
-
-    document.getElementById('weekEvents').innerHTML = WEEK_EVENTS.map(e => `
+    const root = document.getElementById('weekEvents');
+    if (!root) return;
+    if (!WEEK_EVENTS.length) {
+        root.innerHTML = `<div class="text-[10px] text-on-surface-variant/50 px-2 py-3">No upcoming high-impact catalysts in the live feed.</div>`;
+        return;
+    }
+    root.innerHTML = WEEK_EVENTS.map(e => `
         <div class="flex items-start gap-2 p-2 rounded-lg ${e.day === today ? 'bg-surface-container border border-outline-variant/20' : ''}">
-            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day}</div>
+            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day || '—'}</div>
             <div class="flex-1 min-w-0">
-                <div class="text-[10px] font-medium text-on-surface leading-snug">${e.label}</div>
+                <div class="text-[10px] font-medium text-on-surface leading-snug">${(e.label || '').replace(/</g,'&lt;')}</div>
                 <div class="flex items-center gap-1.5 mt-0.5">
-                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region}</span>
-                    <span class="text-[8px] ${impactColor[e.impact]}">${e.impact.toUpperCase()} IMPACT</span>
+                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region || '—'}</span>
+                    <span class="text-[8px] ${impactColor[e.impact] || ''}">${(e.impact || 'low').toUpperCase()} IMPACT</span>
                 </div>
             </div>
         </div>
@@ -1177,27 +1402,35 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(renderSessionBar, 60000);
 
     renderSessionBar();
-    renderIndexGrid();
-    renderForecast();
-    renderCorrList();
-    renderNewsFeed();
-    renderHeatmap();
-    renderWeightPie();
-    renderRiskGauge();
-    renderWeekEvents();
-    renderGiftNifty();
+    renderIndexGrid();         // table → /api/global/markets + history
+    loadGeopoliticalNews();    // /api/feed?category=geopolitical
 
-    // Charts need a tick to measure width
-    setTimeout(() => {
-        renderCorrChart();
-        renderOvernightChart();
-    }, 100);
+    // Everything below depends on live state pulled via loadGlobalState().
+    // Run it once on boot, then call all the dependent renderers.
+    (async () => {
+        await loadGlobalState();
+        renderForecast();
+        renderCorrList();
+        renderHeatmap();        // shows empty state when no real data
+        renderWeightPie();
+        renderRiskGauge();
+        renderWeekEvents();
+        renderGiftNifty();
+        // Charts need a tick to measure width
+        setTimeout(() => {
+            renderCorrChart();
+            renderOvernightChart();
+        }, 80);
+    })();
 
     Auth.updateAuthUI();
-    DataRefresher.start(() => {
+    DataRefresher.start(async () => {
         renderSessionBar();
         renderGiftNifty();
-    }, 30000);
+        loadGeopoliticalNews();
+        await loadGlobalState();
+        renderForecast(); renderCorrList(); renderRiskGauge();
+    }, 60000);
 });
 </script>
 </body>

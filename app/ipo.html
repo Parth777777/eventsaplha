@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickwave — IPOs</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
+    <script src="./shared/js/theme.js"></script>
+</head>
+<body class="rf-page">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
+        <p class="sidebar-brand-sub">IPO Tracker</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link active" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+    </nav>
+    <div id="authStatus" class="mt-auto pt-4 border-t px-6" style="border-color: var(--rf-line);"></div>
+</aside>
+
+<main class="main-content">
+    <header class="rf-hero">
+        <div class="rf-hero-eyebrow">Live · NSE</div>
+        <h1 class="rf-hero-title">IPOs.</h1>
+        <p class="rf-hero-sub">Subscription momentum, sector signals and grey-market premium — distilled into one alpha score. Listings auto-promote into your ticker feed. <a href="events.html?category=ipo" style="color:var(--rf-text);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;">View all in Newsroom →</a></p>
+    </header>
+
+    <section class="rf-section-tight">
+        <div class="rf-kpi-row">
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">Open</div>
+                <div class="rf-kpi-value" id="kpiOpen">—</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">Upcoming</div>
+                <div class="rf-kpi-value" id="kpiUpcoming">—</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">Recently listed</div>
+                <div class="rf-kpi-value" id="kpiListed">—</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">Avg α</div>
+                <div class="rf-kpi-value" id="kpiAvgAlpha">—</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rf-section">
+        <div class="rf-section-head">
+            <h2>Activity</h2>
+            <span class="rf-section-head-meta" id="eventsMeta">—</span>
+        </div>
+        <div id="eventTimeline" class="rf-timeline">
+            <div class="rf-skel" style="height: 76px; border-radius: 0; border: none;"></div>
+            <div class="rf-skel" style="height: 76px; border-radius: 0; border: none;"></div>
+            <div class="rf-skel" style="height: 76px; border-radius: 0; border: none;"></div>
+        </div>
+    </section>
+
+    <!-- Visual breakdown — pipeline + sectors -->
+    <section class="rf-section">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Pipeline funnel -->
+            <div class="rf-card rf-card-pad">
+                <div class="rf-section-head" style="margin-bottom: 8px;">
+                    <h2>Pipeline</h2>
+                    <span class="rf-section-head-meta" id="pipelineTotal">—</span>
+                </div>
+                <p class="rf-text-mute" style="font-size: 13px; line-height: 1.5; margin: 0 0 8px;">Funnel from announcement to listing.</p>
+                <div class="rf-stacked-bar" id="pipelineBar"></div>
+                <div class="rf-stacked-legend" id="pipelineLegend">
+                    <div class="item"><span class="swatch open"></span>open <strong id="legOpen">0</strong></div>
+                    <div class="item"><span class="swatch upcoming"></span>upcoming <strong id="legUpcoming">0</strong></div>
+                    <div class="item"><span class="swatch allotment"></span>allotment <strong id="legAllotment">0</strong></div>
+                    <div class="item"><span class="swatch listed"></span>listed <strong id="legListed">0</strong></div>
+                </div>
+            </div>
+
+            <!-- Top sectors -->
+            <div class="rf-card rf-card-pad">
+                <div class="rf-section-head" style="margin-bottom: 8px;">
+                    <h2>By sector</h2>
+                    <span class="rf-section-head-meta" id="sectorTotal">—</span>
+                </div>
+                <p class="rf-text-mute" style="font-size: 13px; line-height: 1.5; margin: 0 0 16px;">Top sectors by issue count.</p>
+                <div class="rf-bar-list" id="sectorChart">
+                    <div class="rf-skel" style="height: 12px; border-radius: 0; border: none;"></div>
+                    <div class="rf-skel" style="height: 12px; border-radius: 0; border: none;"></div>
+                    <div class="rf-skel" style="height: 12px; border-radius: 0; border: none;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rf-section">
+        <div class="rf-section-head">
+            <h2>All issues</h2>
+            <div style="margin-left: auto; display: flex; gap: 12px; align-items: center;">
+                <div class="rf-chips" id="statusChips">
+                    <button class="rf-chip active" data-filter="all">All</button>
+                    <button class="rf-chip" data-filter="open">Open</button>
+                    <button class="rf-chip" data-filter="upcoming">Upcoming</button>
+                    <button class="rf-chip" data-filter="listed">Listed</button>
+                </div>
+                <select id="sectorSelect" class="rf-select">
+                    <option value="all">All sectors</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="ipoGrid" class="rf-ipo-grid">
+            <div class="rf-skel" style="height: 240px; border-radius: 0; border: none;"></div>
+        </div>
+        <div id="resultCount" style="margin-top: 14px; font-size: 12px; color: var(--rf-text-dim);">—</div>
+    </section>
+
+    <div style="height: 80px;"></div>
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/auth.js"></script>
+<script src="./shared/js/sound.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script>
+    let allIPOs = [];
+    let allEvents = [];
+    let activeStatusFilter = 'all';
+    let activeSectorFilter = 'all';
+
+    const fmtPrice = v => v == null || isNaN(v) ? '—' : '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    const fmtCr    = v => v == null || isNaN(v) ? '—' : '₹' + Number(v).toFixed(0) + 'Cr';
+    const fmtDate  = s => {
+        if (!s) return '—';
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    };
+    const alphaClass = s => s >= 70 ? 'high' : (s >= 50 ? 'mid' : 'low');
+    const escHtml    = s => s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+    function animateNumber(el, target, duration = 800) {
+        if (!el || target == null) return;
+        const startTime = performance.now();
+        const isFloat = !Number.isInteger(target);
+        function tick(now) {
+            const t = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const v = target * eased;
+            el.textContent = isFloat ? v.toFixed(1) : Math.round(v).toLocaleString('en-IN');
+            if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    async function fetchAll() {
+        try {
+            const [ipoRes, evRes, statsRes] = await Promise.all([
+                fetch('/api/ipos?limit=200'),
+                fetch('/api/ipos/events?limit=20'),
+                fetch('/api/ipos/stats'),
+            ]);
+            const [ipo, ev, stats] = await Promise.all([ipoRes.json(), evRes.json(), statsRes.json()]);
+
+            if (ipo && ipo.success) {
+                allIPOs = ipo.data || [];
+                populateSectors();
+                renderGrid();
+                renderPipeline();
+                renderSectorChart();
+            } else { showGridError(ipo && ipo.error || 'Failed to load IPOs'); }
+
+            if (ev && ev.success) { allEvents = ev.data || []; renderTimeline(); }
+
+            if (stats && stats.success && stats.data) {
+                animateNumber(document.getElementById('kpiOpen'), stats.data.open || 0);
+                animateNumber(document.getElementById('kpiUpcoming'), stats.data.upcoming || 0);
+                animateNumber(document.getElementById('kpiListed'), stats.data.listed || 0);
+                animateNumber(document.getElementById('kpiAvgAlpha'), stats.data.avg_alpha || 0);
+            }
+        } catch (err) {
+            console.error(err);
+            showGridError('Network error: ' + err.message);
+        }
+    }
+
+    function showGridError(msg) {
+        document.getElementById('ipoGrid').innerHTML =
+            `<div class="rf-empty">
+                <div class="rf-empty-title">Couldn't load IPOs</div>
+                <div class="rf-empty-sub">${escHtml(msg)}</div>
+            </div>`;
+    }
+
+    function populateSectors() {
+        const sel = document.getElementById('sectorSelect');
+        const sectors = Array.from(new Set(allIPOs.map(i => i.sector).filter(Boolean))).sort();
+        sel.innerHTML = '<option value="all">All sectors</option>' +
+            sectors.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+    }
+
+    function renderTimeline() {
+        const el = document.getElementById('eventTimeline');
+        document.getElementById('eventsMeta').textContent =
+            allEvents.length === 0 ? 'no events' : `${allEvents.length} events`;
+        if (allEvents.length === 0) {
+            el.innerHTML = `<div class="rf-empty">
+                <div class="rf-empty-title">Quiet calendar</div>
+                <div class="rf-empty-sub">No subscription opens, closes, or listings in the past 21 days.</div>
+            </div>`;
+            return;
+        }
+        el.innerHTML = allEvents.map((ev, i) => renderEventRow(ev, i)).join('');
+        el.querySelectorAll('.rf-event').forEach(node => {
+            node.addEventListener('click', () => {
+                const ticker = node.dataset.ticker;
+                const sym = node.dataset.symbol;
+                if (ticker) window.location.href = `stock.html?ticker=${encodeURIComponent(ticker)}`;
+                else if (sym) {
+                    const card = document.querySelector(`[data-ipo-symbol="${sym}"]`);
+                    if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.style.background = 'var(--rf-card-hi)';
+                        setTimeout(() => { card.style.background = ''; }, 1400);
+                    }
+                }
+            });
+        });
+    }
+
+    function renderEventRow(ev, i) {
+        const score = Math.round(ev.alpha || 0);
+        const sCls = alphaClass(score);
+        const sectorChip = ev.sector ? `<span class="sep">·</span><span>${escHtml(ev.sector)}</span>` : '';
+        const tickerChip = ev.ticker ? `<span class="sep">·</span><span class="rf-mono">${escHtml(ev.ticker)}</span>` : '';
+        const autoBadge  = ev.auto_added ? `<span class="sep">·</span><span style="color: var(--rf-text);">↪ added to ticker DB</span>` : '';
+        return `
+            <div class="rf-event rf-fade-in" data-symbol="${escHtml(ev.symbol || '')}" data-ticker="${escHtml(ev.ticker || '')}" style="animation-delay: ${0.04 + Math.min(i, 8) * 0.03}s;">
+                <div class="rf-event-time">
+                    <strong>${escHtml(ev.ts_display || '')}</strong>
+                    <span>${fmtDate(ev.ts)}</span>
+                </div>
+                <div class="rf-event-body">
+                    <span class="rf-event-tag tag-${escHtml(ev.tag || '')}">${escHtml(ev.tag_label || '')}</span>
+                    <p class="rf-event-title">${ev.title || ''}</p>
+                    <div class="rf-event-meta">
+                        ${escHtml(ev.detail || '')}${tickerChip}${sectorChip}${autoBadge}
+                    </div>
+                </div>
+                <div class="rf-event-trail">
+                    <span class="rf-event-score ${sCls}">${score || '—'}</span>
+                    <span class="rf-event-score-label">α</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPipeline() {
+        const counts = { open: 0, upcoming: 0, allotment: 0, listed: 0 };
+        allIPOs.forEach(i => {
+            if (counts[i.status] !== undefined) counts[i.status]++;
+        });
+        const total = counts.open + counts.upcoming + counts.allotment + counts.listed;
+        const bar = document.getElementById('pipelineBar');
+        if (total === 0) {
+            bar.innerHTML = '<div class="seg" style="width: 100%; background: var(--rf-line);"></div>';
+        } else {
+            bar.innerHTML = ['open','upcoming','allotment','listed'].map(s => {
+                const w = (counts[s] / total * 100).toFixed(2);
+                if (counts[s] === 0) return '';
+                return `<div class="seg ${s}" style="width: ${w}%;" title="${s}: ${counts[s]}"></div>`;
+            }).join('');
+        }
+        document.getElementById('pipelineTotal').textContent = `${total} total`;
+        document.getElementById('legOpen').textContent = counts.open;
+        document.getElementById('legUpcoming').textContent = counts.upcoming;
+        document.getElementById('legAllotment').textContent = counts.allotment;
+        document.getElementById('legListed').textContent = counts.listed;
+    }
+
+    function renderSectorChart() {
+        const sectors = {};
+        allIPOs.forEach(i => {
+            const s = i.sector || 'Unclassified';
+            sectors[s] = (sectors[s] || 0) + 1;
+        });
+        const sorted = Object.entries(sectors).sort((a, b) => b[1] - a[1]);
+        const top = sorted.slice(0, 6);
+        const otherCount = sorted.slice(6).reduce((acc, [, c]) => acc + c, 0);
+        if (otherCount > 0) top.push(['Other', otherCount]);
+        const max = top.length > 0 ? top[0][1] : 1;
+        const total = sorted.reduce((acc, [, c]) => acc + c, 0);
+        document.getElementById('sectorTotal').textContent = `${sorted.length} sectors`;
+
+        const el = document.getElementById('sectorChart');
+        if (top.length === 0) {
+            el.innerHTML = '<div class="rf-text-mute" style="font-size: 13px;">No sector data yet.</div>';
+            return;
+        }
+        el.innerHTML = top.map(([name, count]) => {
+            const pct = (count / max * 100).toFixed(1);
+            return `
+                <div class="rf-bar-row">
+                    <div class="label">${escHtml(name)}</div>
+                    <div class="value">${count}</div>
+                    <div class="track"><div class="fill" style="width: ${pct}%;"></div></div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderGrid() {
+        const filtered = allIPOs.filter(ipo => {
+            if (activeStatusFilter !== 'all' && ipo.status !== activeStatusFilter) return false;
+            if (activeSectorFilter !== 'all' && ipo.sector !== activeSectorFilter) return false;
+            return true;
+        });
+        document.getElementById('resultCount').textContent = `${filtered.length} of ${allIPOs.length} issues`;
+        const grid = document.getElementById('ipoGrid');
+        if (filtered.length === 0) {
+            grid.innerHTML = `<div class="rf-empty">
+                <div class="rf-empty-title">No issues match these filters</div>
+                <div class="rf-empty-sub">Try clearing filters.</div>
+            </div>`;
+            return;
+        }
+        const statusOrder = { open: 0, upcoming: 1, allotment: 2, listed: 3, withdrawn: 4 };
+        filtered.sort((a, b) => {
+            const sd = (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
+            if (sd !== 0) return sd;
+            return (b.ipo_alpha_score || 0) - (a.ipo_alpha_score || 0);
+        });
+        grid.innerHTML = filtered.map((ipo, i) => renderIPOCard(ipo, i)).join('');
+        grid.querySelectorAll('.rf-ipo').forEach(card => {
+            card.addEventListener('click', e => {
+                if (e.target.closest('a, button')) return;
+                const ticker = card.dataset.ticker;
+                if (ticker) window.location.href = `stock.html?ticker=${encodeURIComponent(ticker)}`;
+            });
+        });
+    }
+
+    function renderIPOCard(ipo, i) {
+        const score = Math.round(ipo.ipo_alpha_score || 0);
+        const sCls = alphaClass(score);
+        const status = ipo.status || 'upcoming';
+        let band = '—';
+        if (ipo.issue_price_low && ipo.issue_price_high) {
+            band = ipo.issue_price_low === ipo.issue_price_high
+                ? fmtPrice(ipo.issue_price_low)
+                : `${fmtPrice(ipo.issue_price_low)}–${fmtPrice(ipo.issue_price_high)}`;
+        }
+        let dateLabel = '', dateValue = '';
+        if (status === 'open') { dateLabel = 'closes'; dateValue = fmtDate(ipo.close_date); }
+        else if (status === 'upcoming') { dateLabel = 'opens'; dateValue = fmtDate(ipo.open_date); }
+        else if (status === 'listed') { dateLabel = 'listed'; dateValue = fmtDate(ipo.listing_date); }
+        else { dateLabel = 'allotment'; dateValue = fmtDate(ipo.allotment_date || ipo.listing_date); }
+
+        let listingMeta = '';
+        if (status === 'listed' && ipo.listing_gain_pct != null) {
+            const lg = Number(ipo.listing_gain_pct);
+            const color = lg >= 0 ? 'var(--rf-bull)' : 'var(--rf-bear)';
+            listingMeta = `<span style="color: ${color}; font-weight: 500;">${lg >= 0 ? '+' : ''}${lg.toFixed(1)}%</span>`;
+        }
+
+        return `
+            <article class="rf-ipo rf-fade-in" data-status="${status}" data-ipo-symbol="${escHtml(ipo.symbol)}" data-ticker="${escHtml(ipo.ticker || '')}" style="animation-delay: ${0.04 + Math.min(i, 12) * 0.02}s;">
+                <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;">
+                    ${(window.CompanyLogo && (ipo.ticker || ipo.symbol)) ? CompanyLogo.img(ipo.ticker || ipo.symbol, { size: 32, round: false }) : ''}
+                    <div style="min-width:0;">
+                        <div class="rf-ipo-name">${escHtml(ipo.company_name || ipo.symbol)}</div>
+                        <div class="rf-ipo-sub">
+                            <span class="rf-status-pill ${status}">${status}</span>
+                            ${ipo.sector ? `<span>${escHtml(ipo.sector)}</span>` : ''}
+                            ${listingMeta}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="rf-ipo-stat-label">issue</div>
+                    <div class="rf-ipo-stat-value">${band}</div>
+                </div>
+                <div>
+                    <div class="rf-ipo-stat-label">size</div>
+                    <div class="rf-ipo-stat-value">${ipo.issue_size_cr ? fmtCr(ipo.issue_size_cr) : '—'}</div>
+                </div>
+                <div>
+                    <div class="rf-ipo-stat-label">${dateLabel}</div>
+                    <div class="rf-ipo-stat-value">${dateValue}</div>
+                </div>
+                <div class="rf-ipo-score">
+                    <span class="rf-ipo-score-num ${sCls}">${score}</span>
+                    <span class="rf-ipo-score-label">α</span>
+                </div>
+            </article>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#statusChips .rf-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('#statusChips .rf-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeStatusFilter = chip.dataset.filter;
+                renderGrid();
+            });
+        });
+        document.getElementById('sectorSelect').addEventListener('change', e => {
+            activeSectorFilter = e.target.value;
+            renderGrid();
+        });
+        fetchAll();
+        if (window.Auth && Auth.updateAuthUI) Auth.updateAuthUI();
+    });
+</script>
+
+<script src="./shared/js/stock-popup.js" defer></script>
+</body>
+</html>

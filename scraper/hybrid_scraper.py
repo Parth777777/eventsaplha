@@ -864,7 +864,67 @@ class PolicyParser:
         re.IGNORECASE,
     )
 
-    def extract_entities(self, text: str) -> Dict:
+    # Phrases that, when they immediately precede a ticker mention, indicate
+    # the ticker is an agent/intermediary rather than the article's subject.
+    # "Tata Steel was audited by Stanley" \u2192 Stanley is the agent, not the subject.
+    _AGENT_PREFIXES = (
+        'audited by', 'advised by', 'underwritten by', 'led by',
+        'managed by', 'represented by', 'cleared by', 'rated by',
+        'covered by', 'recommended by', 'analyzed by', 'tracked by',
+        'reviewed by', 'sponsored by', 'guaranteed by', 'arranged by',
+        'flagged by', 'noted by', 'commented by', 'researched by',
+        'according to', 'as per', 'per note from', 'per a report by',
+        'brokerage', 'broker at', 'analyst at', 'note from',
+    )
+
+    def _ticker_name_forms(self, ticker: str) -> set:
+        """Collect lowercase name variants a ticker can be referenced by."""
+        forms = {ticker.lower()}
+        for sn, t in UNIVERSE_SHORT_NAMES.items():
+            if t == ticker:
+                forms.add(sn.lower())
+        company = STOCK_COMPANIES.get(ticker, '')
+        if company:
+            first = company.split(' ')[0].strip().lower()
+            if len(first) > 3:
+                forms.add(first)
+        return forms
+
+    def _is_subject_ticker(self, ticker: str, text: str, title_zone: str) -> bool:
+        """Decide if a ticker is the SUBJECT of the article vs incidental mention.
+
+        Subject if: appears in title, OR mentioned \u22652 times in body, OR
+        mentioned once but NOT preceded by an agent/intermediary phrase.
+
+        "Tata Steel audited by Stanley" \u2192 Stanley single-mention, agent role \u2192 not subject.
+        """
+        names = self._ticker_name_forms(ticker)
+        title_lc = title_zone.lower()
+        text_lc = text.lower()
+
+        # Rule A: any name form in the title zone \u2192 strong subject signal.
+        for n in names:
+            if re.search(r'\b' + re.escape(n) + r'\b', title_lc):
+                return True
+
+        # Rule B/C: count body mentions and check agent-role context.
+        total = 0
+        agent_hits = 0
+        for n in names:
+            for m in re.finditer(r'\b' + re.escape(n) + r'\b', text_lc):
+                total += 1
+                preceding = text_lc[max(0, m.start() - 30):m.start()]
+                if any(p in preceding for p in self._AGENT_PREFIXES):
+                    agent_hits += 1
+
+        if total == 0:
+            return False
+        if total >= 2:
+            return True
+        # Single mention: subject iff not in an agent phrase.
+        return agent_hits == 0
+
+    def extract_entities(self, text: str, title: str = '') -> Dict:
         """Extract companies from text using the full 500-stock universe.
 
         Prevents false matches for foreign articles while catching
@@ -881,6 +941,8 @@ class PolicyParser:
              match appears as a proper noun (capitalised in the original text),
              except for curated overrides (tata, adani, \u2026) where the lowercase
              form is itself unambiguous.
+          4. Subject-promotion: a ticker mentioned only as an agent of the
+             real subject ("audited by X", "advised by X") is dropped.
         """
         entities = {'companies': []}
         text_lower = text.lower()
@@ -927,6 +989,16 @@ class PolicyParser:
                 if not m.group(0)[0].isupper():
                     continue
                 entities['companies'].append(ticker)
+
+        # ── Pass 3: subject-promotion filter ──────────────────────────────
+        # Drop tickers that are only mentioned in agent/intermediary roles.
+        # Use the explicit title when available, else fall back to first 200
+        # chars of the combined text (parse_articles puts title first).
+        title_zone = title if title else text[:200]
+        entities['companies'] = [
+            t for t in entities['companies']
+            if self._is_subject_ticker(t, text, title_zone)
+        ]
 
         return entities
 
@@ -1056,7 +1128,7 @@ class PolicyParser:
 
             event_type, event_conf = self.classify_event_type(text)
             sentiment, sent_conf = self.analyze_sentiment(text)
-            entities = self.extract_entities(text)
+            entities = self.extract_entities(text, title=article.get('title', ''))
             magnitude = self.estimate_magnitude(text, sent_conf)
             geo = self.classify_geo_event(text)
             macro = self.detect_macro_theme(text)
@@ -1274,7 +1346,8 @@ class SignalEngine:
                             volatility=market_data.volatility,
                             regime=regime,
                             sentiment=company_sentiment,
-                            horizon=horizon
+                            horizon=horizon,
+                            stock_context=stock_ctx
                         )
                         return_pct = float(pred['predicted_return_pct'])
                         rec = {
@@ -1502,6 +1575,15 @@ class DataPipeline:
         except Exception as phase_exc:
             logger.warning(f"Phase 1.5 enrichment skipped: {phase_exc}")
 
+        # Step 5.6: M&A deal lifecycle refresh — independent ingestion (filings + news).
+        # Fail-soft; never blocks the pipeline.
+        try:
+            from ma_scraper import refresh_ma_deals
+            ma_summary = refresh_ma_deals(self.db, days=7)
+            logger.info(f"  M&A: {ma_summary}")
+        except Exception as ma_exc:
+            logger.warning(f"M&A refresh skipped: {ma_exc}")
+
         # Build output
         sorted_signals = sorted(signals, key=lambda x: x['alpha_score'], reverse=True)
         output = {
@@ -1579,12 +1661,17 @@ class DataPipeline:
         signal_count = 0
         deduped = 0
         cooldown_h = int(os.getenv('SIGNAL_COOLDOWN_HOURS', '24'))
+        # Policy events come from RBI/SEBI which publish multiple distinct
+        # circulars per day. Apply a much shorter cooldown so the feed stays
+        # fresh — the previous 24h window dropped every same-day update.
+        policy_cooldown_h = int(os.getenv('POLICY_SIGNAL_COOLDOWN_HOURS', '2'))
         for signal in signals:
             # Cooldown: skip if same (ticker, event_type, sentiment) is already active
             # within the cooldown window. Stops the same news re-firing every cycle.
-            if cooldown_h > 0 and self.db.recent_signal_exists(
+            effective_cd = policy_cooldown_h if signal['event_type'] == 'policy' else cooldown_h
+            if effective_cd > 0 and self.db.recent_signal_exists(
                 signal['ticker'], signal['event_type'], signal.get('sentiment', 'neutral'),
-                hours=cooldown_h,
+                hours=effective_cd,
             ):
                 deduped += 1
                 continue

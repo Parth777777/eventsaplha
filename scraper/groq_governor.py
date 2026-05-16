@@ -111,6 +111,11 @@ class _Governor:
             weight = 0.02
         return int(self._tpd * weight)
 
+    # Modules considered ESSENTIAL — they keep flowing even in save mode.
+    # Anything not in this set is paused once we cross 80% TPD.
+    _SAVE_MODE_PROTECTED = {"verification", "reasoning"}
+    _SAVE_MODE_THRESHOLD = 0.80   # at 80% TPD, refuse non-essential calls
+
     def can_spend(self, module: str, est_tokens: int = 600) -> bool:
         """Return True if the call is allowed to proceed."""
         with self._lock:
@@ -120,6 +125,12 @@ class _Governor:
                 return False  # circuit breaker open
             total_used = sum(self._spent.values())
             if total_used + est_tokens > int(self._tpd * SAFETY_MARGIN):
+                return False
+            # Save Mode: when overall usage is high, ration tokens to essential
+            # work only. Frees budget for verification + reasoning when it
+            # matters most (e.g. late in the trading day).
+            if (total_used / max(self._tpd, 1)) >= self._SAVE_MODE_THRESHOLD \
+                    and module not in self._SAVE_MODE_PROTECTED:
                 return False
             mod_cap = self._module_cap(module)
             mod_used = self._spent.get(module, 0)

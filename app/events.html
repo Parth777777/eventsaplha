@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tickwave | Events</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Tickwave | Newsroom</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -19,10 +24,12 @@
                 "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
                 "outline": "#3d4a5c", "outline-variant": "#253040",
                 "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
-            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["JetBrains Mono"] } } }
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/search-bar.css">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
@@ -31,53 +38,176 @@
         svg.sparkline.negative { filter: drop-shadow(0 0 2px rgba(255, 180, 171, 0.3)); }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
-        <h1 class="sidebar-brand">Tickwave</h1>
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
         <p class="sidebar-brand-sub">Precision Intelligence</p>
     </div>
     <nav class="sidebar-nav">
-        <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-        <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-        <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-        <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-        <a class="sidebar-link active" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-        <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
-        <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-        <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-        <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
-        <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-        <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-        <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">analytics</span>Edge Analytics</a>
-        <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-        <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link active" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
     </nav>
     <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
 </aside>
 
 <main class="main-content">
     <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-8">
-        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6">
-            <div>
-                <h1 class="text-4xl font-black font-headline text-on-surface mb-2">EVENTS</h1>
-                <p class="text-on-surface-variant text-sm">Advanced signal processing and quantitative impact analysis.</p>
+        <div class="flex flex-col gap-4 mb-2">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div style="flex:1;min-width:280px;">
+                    <h1 class="text-4xl font-black font-headline text-on-surface mb-2">Newsroom</h1>
+                    <p class="text-on-surface-variant text-sm mb-4">Every news, alert, and event in one place — filings, policy, geopolitical, social, IPO, F&amp;O.</p>
+                    <!-- Global search — auto-mounted by shared/js/search-bar.js -->
+                    <div data-tw-search></div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="newsroomHours" class="rf-select" title="Lookback window">
+                        <option value="1">Last 1h</option>
+                        <option value="24" selected>Last 24h</option>
+                        <option value="168">Last 7d</option>
+                        <option value="720">Last 30d</option>
+                    </select>
+                    <select id="newsroomMinAlpha" class="rf-select" title="Minimum alpha score">
+                        <option value="">Any alpha</option>
+                        <option value="50">α ≥ 50</option>
+                        <option value="65">α ≥ 65</option>
+                        <option value="80">α ≥ 80</option>
+                    </select>
+                    <label class="flex items-center gap-2 text-xs text-on-surface-variant rf-mono" style="padding:6px 12px;border:1px solid var(--rf-line);border-radius:6px;cursor:pointer">
+                        <input type="checkbox" id="newsroomT1" style="margin:0;">T1 only
+                    </label>
+                </div>
             </div>
-            <div class="flex items-center gap-2 p-1 bg-surface-container-lowest rounded-lg border border-outline-variant/15" id="eventFilters">
-                <button onclick="filterEvents('all')" data-filter="all" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-black rounded bg-primary text-on-primary-container">ALL</button>
-                <button onclick="filterEvents('earnings')" data-filter="earnings" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">EARNINGS</button>
-                <button onclick="filterEvents('policy')" data-filter="policy" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">POLICY</button>
-                <button onclick="filterEvents('order_win')" data-filter="order_win" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">ORDERS</button>
-                <button onclick="filterEvents('supply')" data-filter="supply" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">SUPPLY</button>
-                <button onclick="filterEvents('merger')" data-filter="merger" class="ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors">M&amp;A</button>
+            <div class="ec-chips" id="newsroomChips">
+                <button class="ec-chip active" data-cat="">All</button>
+                <button class="ec-chip" data-cat="corporate">Corporate</button>
+                <button class="ec-chip" data-cat="earnings">Earnings</button>
+                <button class="ec-chip" data-cat="policy">Policy</button>
+                <button class="ec-chip" data-cat="ipo">IPO</button>
+                <button class="ec-chip" data-cat="geopolitical">Geopolitical</button>
+                <button class="ec-chip" data-cat="social">Social</button>
+                <button class="ec-chip" data-cat="commodity">Commodities</button>
+                <button class="ec-chip" data-cat="forensic">Forensic</button>
+                <button class="ec-chip" data-cat="bulk_deal">Bulk deals</button>
+                <button class="ec-chip" data-cat="fo">F&amp;O</button>
             </div>
         </div>
     </header>
-    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'events'}); });</script>
-    
-    <!-- ============ EVENTS INSIGHT STUDIO (page-unique) ============ -->
-    <section class="mb-8" id="eventsStudio">
+    <!-- ============ INDIA PULSE · Policy & Government (newsroom hero strip) ============ -->
+    <div class="mb-6" id="indiaPulseSection" style="display:none;">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#ff9933;">flag</span>
+            <h3 class="font-headline font-bold text-base text-on-surface">India Pulse</h3>
+            <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                  style="background:rgba(255,153,51,0.15);color:#ff9933;border:1px solid rgba(255,153,51,0.3);">
+                PM · Cabinet · RBI · Budget
+            </span>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <button onclick="setCategory('policy')" class="text-[10px] text-primary font-bold hover:underline uppercase tracking-widest">Filter feed → Policy</button>
+        </div>
+        <div id="indiaPulseList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </div>
+    <script>
+    (async function(){
+      const sec = document.getElementById('indiaPulseSection');
+      const list = document.getElementById('indiaPulseList');
+      if (!sec || !list) return;
+      const MACRO_PAT = /\b(pm\s*modi|prime\s*minister|modi['’]?s?\s+speech|pmo|cabinet|parliament|lok\s*sabha|rajya\s*sabha|finance\s*minister|sitharaman|union\s*budget|interim\s*budget|gst\s*council|niti\s*aayog|mpc(\s+meeting|\s+decision)?|repo\s*rate|rbi\b|sebi\b|pib\b|address\s+to\s+the?\s*nation|ordinance|gazette|pli\s*scheme|cci\s*approval)\b/i;
+      function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+      function timeAgo(iso){if(!iso)return '';const t=new Date(iso).getTime();if(!t)return '';const d=Math.max(0,Date.now()-t);const m=Math.floor(d/60000);if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
+      let items=[];
+      try{const r=await fetch('/api/events?type=policy&limit=20').then(r=>r.json());items=(r&&r.data)||[];}catch(_){}
+      if(items.length<3){
+        try{const r=await fetch('/api/events?limit=150').then(r=>r.json());const all=(r&&r.data)||[];const seen=new Set(items.map(i=>i.id||i.title));
+          for(const e of all){const blob=(e.title||'')+' '+(e.summary||'');if(MACRO_PAT.test(blob)&&!seen.has(e.id||e.title)){items.push(e);seen.add(e.id||e.title);}if(items.length>=9)break;}
+        }catch(_){}
+      }
+      items.sort((a,b)=>new Date(b.published_at||b.created_at||0)-new Date(a.published_at||a.created_at||0));
+      items=items.slice(0,6);
+      if(!items.length)return;
+      sec.style.display='';
+      list.innerHTML=items.map(e=>{
+        const title=esc(e.title||'Untitled');
+        const summary=esc((e.summary||'').slice(0,140));
+        const ts=timeAgo(e.published_at||e.created_at);
+        const impact=Math.round(Number(e.impact_score||0));
+        const impactColor=impact>=65?'#f26b6b':impact>=40?'#e6b84a':'#8eb4e0';
+        const blob=(e.title||'')+' '+(e.summary||'');
+        let tag='Policy';
+        if(/pm\s*modi|prime\s*minister|pmo|address\s+to\s+the?\s*nation/i.test(blob))tag='PM';
+        else if(/finance\s*minister|sitharaman|budget|gst\s*council/i.test(blob))tag='Finance Min';
+        else if(/\brbi\b|mpc|repo\s*rate/i.test(blob))tag='RBI';
+        else if(/sebi/i.test(blob))tag='SEBI';
+        else if(/cabinet|parliament|lok\s*sabha|rajya\s*sabha/i.test(blob))tag='Cabinet';
+        return `<div class="p-4 rounded-lg border" style="background:linear-gradient(135deg,rgba(255,153,51,0.05),rgba(19,136,8,0.04));border-color:rgba(255,153,51,0.18);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style="background:rgba(255,153,51,0.18);color:#ff9933;">${tag}</span>
+            <span class="text-[10px] font-mono" style="color:${impactColor};">α ${impact||'—'}</span>
+          </div>
+          <div class="font-headline font-bold text-sm text-on-surface mb-1" style="line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${title}</div>
+          <div class="text-[11px] text-on-surface-variant/80" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">${summary}</div>
+          <div class="text-[10px] text-on-surface-variant/50 font-mono mt-2">${ts}</div>
+        </div>`;
+      }).join('');
+    })();
+    </script>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Event Feed -->
+        <div class="flex-1 space-y-6" id="eventsFeed">
+            <!-- Events will be inserted here -->
+        </div>
+        
+        <!-- Right Sidebar: Alpha Movers & Sentiment -->
+        <aside class="w-full lg:w-80 space-y-6">
+            <!-- Alpha Movers -->
+            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
+                <h4 class="font-headline font-black text-on-surface mb-4 text-sm flex items-center justify-between">
+                    Alpha Movers
+                    <span class="material-symbols-outlined text-xs text-primary">auto_graph</span>
+                </h4>
+                <div class="space-y-4" id="alphaMovers">
+                    <!-- Alpha movers will be inserted here -->
+                </div>
+            </div>
+            
+            <!-- Sector Sentiment Heatmap -->
+            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
+                <h4 class="font-headline font-black text-on-surface mb-4 text-sm">Global Sector Sentiment</h4>
+                <div class="grid grid-cols-3 gap-1" id="sectorHeatmap">
+                    <!-- Heatmap cells will be inserted here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ============ EVENTS INSIGHT STUDIO (page-unique, moved below feed) ============ -->
+    <section class="mb-8 mt-10" id="eventsStudio">
       <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr;gap:14px;">
         <div class="widget" style="min-height:240px;">
           <div class="widget__head">
@@ -127,7 +257,6 @@
         const events = (evRes && evRes.data) || [];
         const sigs = (sigRes && sigRes.data) || [];
 
-        // Event type rings
         const typeBuckets = {};
         for (const e of events) {
           const t = (e.event_type || 'news').replace(/_/g, ' ');
@@ -139,7 +268,6 @@
           {onClick: 'evRingFilter'}
         );
 
-        // Net sentiment donut from signals
         const bull = sigs.filter(s => s.sentiment === 'bullish').length;
         const bear = sigs.filter(s => s.sentiment === 'bearish').length;
         const total = sigs.length;
@@ -147,16 +275,13 @@
         Widgets.donut(document.getElementById('evDonut'), pct,
           {sublabel: bull + ' bull · ' + bear + ' bear'});
 
-        // Velocity heatmap
         Widgets.heatmap(document.getElementById('evHeat'), events.map(e => ({ts: e.created_at || e.published_at})));
 
-        // Sources histogram (events don't carry sector — use source domain instead)
         const srcBuckets = {};
         for (const e of events) {
           let src = (e.source || 'unknown').toString();
-          // Trim long URLs to host
           try { src = new URL(src).hostname.replace(/^www\./, ''); } catch (_) {}
-          src = src.split('.')[0]; // first label
+          src = src.split('.')[0];
           srcBuckets[src] = (srcBuckets[src] || 0) + 1;
         }
         const topSrc = Object.entries(srcBuckets).sort((a,b) => b[1]-a[1]).slice(0, 8);
@@ -167,42 +292,11 @@
       } catch(e) { console.warn('events studio:', e); }
     })();
     function evRingFilter(label) {
-      // Map ring label back to event type filter
-      const norm = label.toLowerCase().replace(/ /g, '_');
-      const btn = document.querySelector(`button[data-filter="${norm}"]`);
+      const cat = label.toLowerCase().replace(/ /g, '_');
+      const btn = document.querySelector(`#newsroomChips .ec-chip[data-cat="${cat}"]`);
       if (btn) btn.click();
     }
     </script>
-    <!-- ============ END EVENTS INSIGHT STUDIO ============ -->
-
-    <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Main Event Feed -->
-        <div class="flex-1 space-y-6" id="eventsFeed">
-            <!-- Events will be inserted here -->
-        </div>
-        
-        <!-- Right Sidebar: Alpha Movers & Sentiment -->
-        <aside class="w-full lg:w-80 space-y-6">
-            <!-- Alpha Movers -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
-                <h4 class="font-headline font-black text-on-surface mb-4 text-sm flex items-center justify-between">
-                    Alpha Movers
-                    <span class="material-symbols-outlined text-xs text-primary">auto_graph</span>
-                </h4>
-                <div class="space-y-4" id="alphaMovers">
-                    <!-- Alpha movers will be inserted here -->
-                </div>
-            </div>
-            
-            <!-- Sector Sentiment Heatmap -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
-                <h4 class="font-headline font-black text-on-surface mb-4 text-sm">Global Sector Sentiment</h4>
-                <div class="grid grid-cols-3 gap-1" id="sectorHeatmap">
-                    <!-- Heatmap cells will be inserted here -->
-                </div>
-            </div>
-        </aside>
-    </div>
 
 </main>
 
@@ -216,275 +310,178 @@
 </div>
 
 <script src="./shared/js/app.js"></script>
+<script src="./shared/js/news-time.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/stock-popup.js"></script>
 <script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/phase_1_5.js"></script>
 <script src="./shared/js/realtime.js"></script>
+<script src="./shared/js/event-card.js"></script>
+<script src="./shared/js/search-bar.js" defer></script>
 <script>
-let allEvents = [];
+// Newsroom — single unified feed for every category. Reads /api/feed (which
+// transparently UNIONs events + signals + bulk_deals + IPO state + F&O).
+let currentCategory = '';
+let currentHours = 24;
+let currentMinAlpha = null;
+let currentT1Only = false;
 let sigByTicker = {};
-let currentFilter = 'all';
 let sseSub = null;
 
-function filterEvents(type) {
-    SoundFX.pop();
-    currentFilter = type;
-    // Update button styles
-    document.querySelectorAll('.ev-filter').forEach(btn => {
-        if (btn.dataset.filter === type) {
-            btn.className = 'ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-black rounded bg-primary text-on-primary-container';
-        } else {
-            btn.className = 'ev-filter px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors';
-        }
+const VALID_CATS = ['', 'corporate', 'earnings', 'policy', 'ipo', 'geopolitical',
+                    'social', 'commodity', 'forensic', 'bulk_deal', 'fo'];
+
+function setCategory(cat) {
+    currentCategory = cat;
+    document.querySelectorAll('#newsroomChips .ec-chip').forEach(btn => {
+        btn.classList.toggle('active', (btn.dataset.cat || '') === cat);
     });
-    renderEvents();
+    loadFeed();
 }
 
-function renderEvents() {
-    const feedDiv = document.getElementById('eventsFeed');
-    let filtered = allEvents;
-    if (currentFilter !== 'all') {
-        filtered = allEvents.filter(e => e.event_type === currentFilter);
+// Cluster-as-one: collapse near-duplicate events by Jaccard similarity of
+// titles so the same wire story from multiple sources doesn't pad the feed.
+function clusterFeed(list) {
+    function tokenize(s) {
+        return new Set((s || '').toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length >= 3));
     }
-    // Cluster-as-one: collapse near-duplicate events by content hash of title.
-    // We keep the highest-impact event as the head, attach the rest as `_co_sources`.
-    const clustered = (function clusterFeed(list) {
-        function tokenize(s) {
-            return new Set((s || '').toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t.length >= 3));
-        }
-        function jaccard(a, b) {
-            if (!a.size || !b.size) return 0;
-            let inter = 0; for (const t of a) if (b.has(t)) inter++;
-            return inter / (a.size + b.size - inter);
-        }
-        const out = [];
-        const tokens = [];
-        const TH = 0.45;
-        for (const e of list) {
-            const ts = tokenize(e.title);
-            let merged = false;
-            for (let i = 0; i < out.length; i++) {
-                if (jaccard(ts, tokens[i]) >= TH) {
-                    const head = out[i];
-                    head._co_sources = head._co_sources || [];
-                    head._co_sources.push({ source: e.source, link: e.link, published: e.published_at || e.timestamp });
-                    if ((e.impact_score || 0) > (head.impact_score || 0)) {
-                        // Promote this one to head, demote previous
-                        const prev = head;
-                        out[i] = e; out[i]._co_sources = (prev._co_sources || []).concat([{ source: prev.source, link: prev.link }]);
-                        tokens[i] = ts;
-                    }
-                    merged = true; break;
+    function jaccard(a, b) {
+        if (!a.size || !b.size) return 0;
+        let inter = 0; for (const t of a) if (b.has(t)) inter++;
+        return inter / (a.size + b.size - inter);
+    }
+    const out = []; const tokens = []; const TH = 0.45;
+    for (const e of list) {
+        const ts = tokenize(e.title); let merged = false;
+        for (let i = 0; i < out.length; i++) {
+            if (jaccard(ts, tokens[i]) >= TH) {
+                const head = out[i];
+                head._co_sources = head._co_sources || [];
+                head._co_sources.push({ source: e.source, link: e.link });
+                if ((e.impact_score || 0) > (head.impact_score || 0)) {
+                    const prev = head;
+                    out[i] = e; out[i]._co_sources = (prev._co_sources || []).concat([{source: prev.source, link: prev.link}]);
+                    tokens[i] = ts;
                 }
+                merged = true; break;
             }
-            if (!merged) { out.push(e); tokens.push(ts); }
         }
-        return out;
-    })(filtered);
-    filtered = clustered;
-    if (filtered.length === 0) {
-        feedDiv.innerHTML = '<div class="text-center py-12 text-on-surface-variant/50 text-sm">No events matching this filter.</div>';
-        return;
+        if (!merged) { out.push(e); tokens.push(ts); }
     }
-    feedDiv.innerHTML = filtered.map(event => {
-        const sent = event.sentiment || 'neutral';
-        const color = sent === 'bullish' ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
-        const title = event.title || 'Event';
-        const summary = event.summary || '';
-        const score = event.impact_score || 50;
-        const conf = event.event_confidence || event.confidence || 0;
-        const confLabel = conf <= 1 ? (conf * 100).toFixed(0) + '%' : String(conf);
-        const companies = typeof event.companies === 'string' ? event.companies.split(',').filter(Boolean) : [];
-        const evType = (event.event_type || 'news').replace(/_/g, ' ');
-
-        // Match signals for affected stocks
-        const matchedSigs = companies.map(t => sigByTicker[t.trim()]).filter(Boolean);
-        const bestAlpha = matchedSigs.length > 0 ? Math.max(...matchedSigs.map(s => s.alpha_score || 0)) : null;
-
-        let stockSection = '';
-        if (matchedSigs.length > 0) {
-            stockSection = `
-            <div class="mt-3 p-3 bg-surface-container-lowest/50 rounded-lg border border-outline-variant/5">
-                <span class="text-[8px] font-black text-on-surface-variant/60 uppercase tracking-widest">Affected Stocks</span>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    ${matchedSigs.sort((a,b) => (b.alpha_score||0) - (a.alpha_score||0)).slice(0, 6).map(sig => {
-                        const sc = sig.sentiment === 'bullish' ? 'secondary' : sig.sentiment === 'bearish' ? 'error' : 'primary';
-                        return `<div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-${sc}/8 border border-${sc}/15 rounded-lg">
-                            <span data-ticker="${sig.ticker}" class="font-mono font-bold text-xs cursor-pointer hover:underline" style="color:var(--color-${sc},#adc6ff);">${sig.ticker}</span>
-                            <span class="text-[8px] text-on-surface-variant/50 ml-0.5">${(sig.company || '').split(' ')[0]}</span>
-                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded" style="background:${UIHelper.alphaColor(sig.alpha_score||0)}22;color:${UIHelper.alphaColor(sig.alpha_score||0)};">${(sig.alpha_score||0).toFixed(0)}</span>
-                            <span class="text-[8px] text-on-surface-variant/50">${sig.sentiment === 'bullish' ? '↑' : sig.sentiment === 'bearish' ? '↓' : '→'}</span>
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>`;
-        } else if (companies.length > 0) {
-            stockSection = `
-            <div class="flex flex-wrap gap-1.5 mt-3">
-                ${companies.slice(0, 5).map(t => `<span data-ticker="${t.trim()}" class="px-2 py-1 bg-surface-container-highest rounded text-[9px] font-bold text-on-surface-variant cursor-pointer hover:text-primary hover:bg-primary/10 transition-all">${t.trim()}</span>`).join('')}
-            </div>`;
-        }
-
-        return `
-        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-primary/40 transition-all overflow-hidden">
-            <div class="flex flex-col md:flex-row">
-                <div class="md:w-20 bg-surface-container-high/30 flex md:flex-col items-center justify-center p-4 border-b md:border-b-0 md:border-r border-outline-variant/10 gap-1">
-                    <span class="text-[8px] font-black text-on-surface-variant uppercase">Impact</span>
-                    <span class="text-2xl font-black font-headline text-${color}">${score}</span>
-                    ${bestAlpha !== null ? `<div class="mt-1 text-center">
-                        <span class="text-xs font-black font-mono" style="color:${UIHelper.alphaColor(bestAlpha)}">${bestAlpha.toFixed(0)}</span>
-                        <span class="block text-[7px] text-on-surface-variant/40">alpha</span>
-                    </div>` : ''}
-                </div>
-                <div class="flex-1 p-5">
-                    <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
-                        <div>
-                            <div class="flex items-center flex-wrap gap-2 mb-1">
-                                <span class="text-[10px] font-black tracking-widest text-${color} uppercase">${evType}</span>
-                                <span class="text-[9px] text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5 rounded">${(event.source || '').replace(/_/g, ' ')}</span>
-                                ${(() => {
-                                    if (!window.Realtime) return '';
-                                    const out = [];
-                                    const fresh = Realtime.freshness(event.published_at || event.created_at || event.timestamp);
-                                    if (fresh.label) out.push(Realtime.badgeChip(fresh.label, fresh.color));
-                                    if (event.source_tier) {
-                                        const tb = Realtime.tierBadge(event.source_tier);
-                                        if (tb.label) out.push(Realtime.badgeChip(tb.label, tb.color));
-                                    }
-                                    if (event.confirmation) {
-                                        const cb = Realtime.sourceConfirmationBadge(event.confirmation);
-                                        if (cb) out.push(Realtime.badgeChip(cb.label, cb.color));
-                                    }
-                                    if (event.forensic_band) {
-                                        const fb = Realtime.forensicBadge(event.forensic_band);
-                                        if (fb) out.push(Realtime.badgeChip(fb.label, fb.color));
-                                    }
-                                    if (event.high_velocity) {
-                                        out.push(Realtime.badgeChip('HOT ' + (event.news_velocity_per_hour||0).toFixed(0) + '/h', '#ff7a8a'));
-                                    }
-                                    return out.join(' ');
-                                })()}
-                            </div>
-                            <h3 class="font-headline text-base font-bold text-on-background leading-snug">${title}</h3>
-                        </div>
-                        <span class="text-[10px] font-black text-${color} uppercase bg-${color}/10 px-2 py-1 rounded">${sent}</span>
-                    </div>
-                    <p class="text-xs text-on-surface-variant leading-relaxed mb-1">${summary}</p>
-                    ${stockSection}
-                    <div class="flex items-center justify-between text-[9px] mt-3 pt-2 border-t border-outline-variant/5">
-                        <span class="text-on-surface-variant/40">${UIHelper.formatTime(event.created_at || event.timestamp)}</span>
-                        <div class="flex gap-3">
-                            <span class="text-on-surface-variant/40">Confidence: ${confLabel}</span>
-                            <span class="text-on-surface-variant/40">Magnitude: ${event.magnitude || '?'}/10</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
+    return out;
 }
-
-async function loadEventsPage() {
+async function loadFeed() {
     const feedDiv = document.getElementById('eventsFeed');
-    if (!allEvents.length) UIHelper.showLoading(feedDiv);
+    feedDiv.innerHTML = `<div class="ec-loading">Loading…</div>`;
+    const params = {
+        category: currentCategory || '',
+        hours: currentHours,
+        limit: 150,
+    };
+    if (currentMinAlpha) params.min_alpha = currentMinAlpha;
+    if (currentT1Only) params.source_tier = 1;
+    let items = await EventCard.fetchFeed(params);
+    items = clusterFeed(items);
+    feedDiv.innerHTML = EventCard.renderList(items, {
+        emptyTitle: 'Nothing here yet',
+        emptySub: currentCategory
+            ? 'No ' + EventCard.categoryLabel(currentCategory) + ' items in the selected window.'
+            : 'No items in the selected window.',
+    });
 
-    const events = await LiveData.getLatestEvents(50);
-    if (events && events.length > 0) allEvents = events;
-
-    // Load signals for cross-referencing with events
-    const sigs = await LiveData.getTopSignals(100);
-    if (sigs) {
-        sigByTicker = {};
-        for (const s of sigs) {
-            if (!sigByTicker[s.ticker] || (s.alpha_score || 0) > (sigByTicker[s.ticker].alpha_score || 0)) {
-                sigByTicker[s.ticker] = s;
-            }
-        }
-    }
-
-    if (!allEvents.length) {
-        UIHelper.showEmpty(feedDiv, 'No events yet. Waiting for scraper data...');
-    } else {
-        renderEvents();
-    }
-
-    // Alpha Movers (top signals by alpha)
-    const signals = await LiveData.getTopSignals(5);
-    const moversDiv = document.getElementById('alphaMovers');
-    if (signals && signals.length > 0) {
-        moversDiv.innerHTML = signals.slice(0, 4).map(sig => `
-            <div class="p-3 bg-surface-container-high rounded-lg border border-outline-variant/5">
-                <div class="flex items-center justify-between mb-1">
-                    <div>
-                        <span class="block text-xs font-black text-on-background">${sig.ticker}</span>
-                        <span class="text-[10px] text-on-surface-variant">${(sig.event_type || '').replace(/_/g, ' ')}</span>
+    // Alpha Movers + sector heatmap (right rail) — best effort, doesn't block feed
+    try {
+        const signals = await LiveData.getTopSignals(5);
+        const moversDiv = document.getElementById('alphaMovers');
+        if (moversDiv && signals && signals.length) {
+            moversDiv.innerHTML = signals.slice(0, 4).map(sig => `
+                <div class="p-3 bg-surface-container-high rounded-lg border border-outline-variant/5">
+                    <div class="flex items-center justify-between mb-1">
+                        <div>
+                            <span class="block text-xs font-black text-on-background">${sig.ticker}</span>
+                            <span class="text-[10px] text-on-surface-variant">${(sig.event_type || '').replace(/_/g, ' ')}</span>
+                        </div>
+                        <span class="text-secondary font-mono font-black text-sm">${(sig.alpha_score || 0).toFixed(1)}</span>
                     </div>
-                    <span class="text-secondary font-mono font-black text-sm">${(sig.alpha_score || 0).toFixed(1)}</span>
+                    <span class="block mt-1 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">${sig.sentiment || 'neutral'}</span>
                 </div>
-                <span class="block mt-1 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">${sig.sentiment || 'neutral'}</span>
+            `).join('');
+            sigByTicker = {};
+            for (const s of signals) sigByTicker[s.ticker] = s;
+        }
+    } catch (e) { /* sidebar best-effort */ }
+
+    // Sector sentiment heatmap — live from /api/sectors (real bullish/bearish
+    // counts per sector). Falls back to a clean empty state when the API
+    // returns nothing — no hardcoded sectors.
+    try {
+        const heatDiv = document.getElementById('sectorHeatmap');
+        if (!heatDiv) return;
+        const r = await fetch('/api/sectors').then(x => x.json()).catch(() => null);
+        const rows = (r && r.data) || [];
+        if (!rows.length) {
+            heatDiv.innerHTML = '<div class="col-span-3 text-[10px] text-on-surface-variant/50 text-center py-3">No sector signals yet.</div>';
+            return;
+        }
+        // Compute net bullish share for each sector → drives cell colour.
+        const cells = rows
+            .map(s => {
+                const bull = Number(s.bullish || s.bull || 0);
+                const bear = Number(s.bearish || s.bear || 0);
+                const total = bull + bear || 1;
+                const netBull = bull / total;
+                const sector = (s.sector || s.name || '').slice(0, 5).toUpperCase();
+                const cls = netBull >= 0.6 ? 'secondary'
+                          : netBull <= 0.4 ? 'error'
+                          : 'on-surface-variant';
+                return { sector, cls, score: netBull };
+            })
+            .filter(c => c.sector)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 9);
+        heatDiv.innerHTML = cells.map(c => `
+            <div class="h-8 bg-${c.cls}/30 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface border border-${c.cls}/20 hover:border-${c.cls}/40 transition-all" title="${(c.score*100).toFixed(0)}% bullish">
+                ${c.sector}
             </div>
         `).join('');
-    } else {
-        UIHelper.showEmpty(moversDiv, 'No movers yet');
-    }
-
-    // Sector Sentiment (static for now, could be derived from signals)
-    const sectors = MockData.getSectorSentiment();
-    document.getElementById('sectorHeatmap').innerHTML = sectors.map(sec => `
-        <div class="h-8 bg-${sec.color}/30 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface border border-${sec.color}/20 hover:border-${sec.color}/40 transition-all">
-            ${sec.sector}
-        </div>
-    `).join('');
+    } catch (e) { /* sidebar best-effort */ }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    DataRefresher.start(loadEventsPage, 60000);
+    // Deep-link via URL hash or ?category=X — power-users land on exact view.
+    const url = new URL(location.href);
+    let initial = (url.searchParams.get('category') || location.hash.replace('#', '') || '').toLowerCase();
+    if (!VALID_CATS.includes(initial)) initial = '';
+    currentCategory = initial;
+    document.querySelectorAll('#newsroomChips .ec-chip').forEach(btn => {
+        btn.classList.toggle('active', (btn.dataset.cat || '') === currentCategory);
+        btn.addEventListener('click', () => setCategory(btn.dataset.cat || ''));
+    });
+
+    document.getElementById('newsroomHours').addEventListener('change', (e) => {
+        currentHours = parseInt(e.target.value, 10) || 24; loadFeed();
+    });
+    document.getElementById('newsroomMinAlpha').addEventListener('change', (e) => {
+        currentMinAlpha = e.target.value || null; loadFeed();
+    });
+    document.getElementById('newsroomT1').addEventListener('change', (e) => {
+        currentT1Only = !!e.target.checked; loadFeed();
+    });
+
+    DataRefresher.start(loadFeed, 60000);
     Auth.updateAuthUI();
 
-    // Live SSE subscription: push new events into the feed without polling.
-    // Stage-1 ('news') prepends a placeholder; stage-2 ('scored') upgrades it.
+    // Live SSE: prepend new items to the visible feed when they match the
+    // active category. Falls back gracefully if /api/stream is offline.
     if (window.Realtime) {
         sseSub = Realtime.subscribe({
             channels: ['news', 'scored', 'alert'],
             replay: 10,
-            onEvent: (ev) => {
-                if (ev.channel === 'news' && ev.event_id) {
-                    const idx = allEvents.findIndex(e => e.event_id === ev.event_id);
-                    const enriched = {
-                        event_id: ev.event_id,
-                        title: ev.title,
-                        summary: ev.summary,
-                        source: ev.source_name || ev.source,
-                        link: ev.link,
-                        event_type: ev.event_type || 'news',
-                        sentiment: ev.sentiment,
-                        magnitude: ev.magnitude,
-                        impact_score: (ev.magnitude || 5) * 10,
-                        companies: (ev.tickers || []).join(','),
-                        published_at: ev.published_at,
-                        timestamp: ev.published_at,
-                        source_tier: ev.source_tier,
-                        confirmation: ev.confirmation,
-                        freshness_label: ev.freshness_label,
-                    };
-                    if (idx >= 0) allEvents[idx] = { ...allEvents[idx], ...enriched };
-                    else allEvents.unshift(enriched);
-                    renderEvents();
-                } else if (ev.channel === 'scored' && ev.event_id) {
-                    const idx = allEvents.findIndex(e => e.event_id === ev.event_id);
-                    if (idx >= 0) {
-                        allEvents[idx].forensic_band = ev.forensic_band || allEvents[idx].forensic_band;
-                        allEvents[idx].alpha_score = ev.alpha_score || allEvents[idx].alpha_score;
-                        renderEvents();
-                    }
-                    if (ev.ticker) {
-                        sigByTicker[ev.ticker] = {
-                            ticker: ev.ticker, company: ev.company,
-                            alpha_score: ev.alpha_score, sentiment: ev.sentiment,
-                            event_type: ev.event_type,
-                        };
-                    }
-                }
+            onEvent: () => {
+                // Cheapest correct path: refresh the visible window when new
+                // events arrive. The scraper rate (~1/min) makes this safe.
+                loadFeed();
             },
         });
     }

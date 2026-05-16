@@ -1,4 +1,4 @@
-// Tickwave - Shared Router, API, LiveData & Utilities
+﻿// Tickwave - Shared Router, API, LiveData & Utilities
 
 // ============ ROUTER ============
 class Router {
@@ -654,8 +654,13 @@ class UIHelper {
   }
 }
 
-// ============ STOCK POPUP ============
-class StockPopup {
+// ============ STOCK POPUP (legacy stub) ============
+// The actual quick-view modal now lives in shared/js/stock-popup.js, which
+// is injected on every page that has ticker chips. Keeping the StockPopup
+// global as a soft no-op stub so any old call-sites (e.g. third-party widgets
+// looking for `StockPopup.show`) don't blow up during the transition window.
+// Remove this block once nothing references StockPopup.show externally.
+class _StockPopupLegacy {
   static _modal = null;
 
   static _createModal() {
@@ -715,8 +720,8 @@ class StockPopup {
         const hitColor = pr.hit_target === true ? 'var(--bull)' : pr.hit_target === false ? 'var(--bear)' : 'var(--t3)';
         predRows += `<tr style="border-bottom:1px solid #42475422;">
           <td style="padding:10px 12px;font-weight:700;color:#dfe2eb;font-size:13px;">${h}</td>
-          <td style="padding:10px 12px;color:${retColor};font-weight:700;font-family:'JetBrains Mono',monospace;font-size:13px;">${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%</td>
-          <td style="padding:10px 12px;color:#c2c6d6;font-family:'JetBrains Mono',monospace;font-size:12px;">${tp > 0 ? '₹' + tp.toFixed(2) : '—'}</td>
+          <td style="padding:10px 12px;color:${retColor};font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;">${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%</td>
+          <td style="padding:10px 12px;color:#c2c6d6;font-family:'Geist Mono',monospace;font-size:12px;">${tp > 0 ? '₹' + tp.toFixed(2) : '—'}</td>
           <td style="padding:10px 12px;color:#8c909f;font-size:11px;">${conf}%</td>
           <td style="padding:10px 12px;text-align:center;color:${hitColor};font-size:14px;">${hitIcon}</td>
         </tr>`;
@@ -748,7 +753,7 @@ class StockPopup {
         <div style="display:flex;gap:16px;margin-bottom:20px;padding:16px;background:#10141a;border-radius:12px;border:1px solid #42475422;">
           <div style="flex:1;">
             <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Current Price</div>
-            <div style="font-size:28px;font-weight:900;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">${p.price ? '₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2}) : '—'}</div>
+            <div style="font-size:28px;font-weight:900;color:#dfe2eb;font-family:'Geist Mono',monospace;">${p.price ? '₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2}) : '—'}</div>
             <div style="font-size:13px;font-weight:700;color:${priceColor};">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</div>
           </div>
           ${sig ? `<div style="text-align:right;">
@@ -761,19 +766,19 @@ class StockPopup {
         ${p.price ? `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
           <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
             <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day High</div>
-            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">₹${(p.day_high||0).toFixed(0)}</div>
+            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'Geist Mono',monospace;">₹${(p.day_high||0).toFixed(0)}</div>
           </div>
           <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
             <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day Low</div>
-            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'JetBrains Mono',monospace;">₹${(p.day_low||0).toFixed(0)}</div>
+            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'Geist Mono',monospace;">₹${(p.day_low||0).toFixed(0)}</div>
           </div>
           <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
             <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W High</div>
-            <div style="font-size:12px;font-weight:700;color:#4edea3;font-family:'JetBrains Mono',monospace;">₹${(p.fifty_two_week_high||0).toFixed(0)}</div>
+            <div style="font-size:12px;font-weight:700;color:#4edea3;font-family:'Geist Mono',monospace;">₹${(p.fifty_two_week_high||0).toFixed(0)}</div>
           </div>
           <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
             <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W Low</div>
-            <div style="font-size:12px;font-weight:700;color:#ffb4ab;font-family:'JetBrains Mono',monospace;">₹${(p.fifty_two_week_low||0).toFixed(0)}</div>
+            <div style="font-size:12px;font-weight:700;color:#ffb4ab;font-family:'Geist Mono',monospace;">₹${(p.fifty_two_week_low||0).toFixed(0)}</div>
           </div>
         </div>` : ''}
 
@@ -979,7 +984,7 @@ class StockPopup {
           let hitIcon = '';
           if (hit === true || hit === 1) hitIcon = '&check;';
           else if (hit === false || hit === 0) hitIcon = '&times;';
-          predChips += `<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:${retColor}12;color:${retColor};font-family:JetBrains Mono,monospace;">${h}:${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%${hitIcon ? ' ' + hitIcon : ''}</span>`;
+          predChips += `<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:${retColor}12;color:${retColor};font-family:Geist Mono,monospace;">${h}:${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%${hitIcon ? ' ' + hitIcon : ''}</span>`;
         }
       }
 
@@ -1004,7 +1009,7 @@ class StockPopup {
             </div>
             <!-- Alpha bar -->
             <div style="flex-shrink:0;width:50px;text-align:right;">
-              <div style="font-size:10px;font-weight:800;font-family:JetBrains Mono,monospace;color:${UIHelper.alphaColor(alpha)};margin-bottom:2px;">${alpha.toFixed(0)}</div>
+              <div style="font-size:10px;font-weight:800;font-family:Geist Mono,monospace;color:${UIHelper.alphaColor(alpha)};margin-bottom:2px;">${alpha.toFixed(0)}</div>
               <div style="width:100%;height:3px;background:#42475422;border-radius:2px;overflow:hidden;">
                 <div style="width:${alphaPct}%;height:100%;background:${UIHelper.alphaColor(alpha)};border-radius:2px;"></div>
               </div>
@@ -1101,7 +1106,7 @@ class StockPopup {
       octx.fillRect(overlay.width - 52, py - 8, 50, 16);
       octx.strokeStyle = '#42475444';
       octx.strokeRect(overlay.width - 52, py - 8, 50, 16);
-      octx.font = '8px JetBrains Mono';
+      octx.font = '8px Geist Mono';
       octx.fillStyle = '#adc6ff';
       octx.textAlign = 'center';
       octx.fillText('₹' + pt.close, overlay.width - 27, py + 3);
@@ -1115,7 +1120,7 @@ class StockPopup {
       tip.style.left = Math.min(mx + 12, rect.width - 140) + 'px';
       tip.innerHTML = `
         <div style="font-weight:700;margin-bottom:3px;">${pt.date}</div>
-        <div style="font-size:14px;font-weight:800;color:#dfe2eb;font-family:JetBrains Mono,monospace;">₹${pt.close.toLocaleString('en-IN')}</div>
+        <div style="font-size:14px;font-weight:800;color:#dfe2eb;font-family:Geist Mono,monospace;">₹${pt.close.toLocaleString('en-IN')}</div>
         <div style="color:${changeColor};font-size:10px;font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)</div>
         <div style="color:#8c909f55;font-size:8px;margin-top:2px;">H: ₹${pt.high} &nbsp; L: ₹${pt.low}</div>
         ${pt.volume ? `<div style="color:#8c909f44;font-size:8px;">Vol: ${(pt.volume/1e6).toFixed(1)}M</div>` : ''}`;
@@ -1221,7 +1226,7 @@ class StockPopup {
     }
 
     // Price labels
-    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.font = '9px Geist Mono, monospace';
     ctx.fillStyle = '#8c909f66';
     ctx.textAlign = 'left';
     ctx.fillText('₹' + max.toFixed(0), pad.left + 4, pad.top + 10);
@@ -1366,7 +1371,7 @@ class StockPopup {
                 stroke-dasharray="${circ}" stroke-dashoffset="${circ}"
                 transform="rotate(-90 36 36)"/>
               <text id="pumpScoreText" x="36" y="41" text-anchor="middle"
-                    font-family="JetBrains Mono,monospace" font-size="20" font-weight="700"
+                    font-family="Geist Mono,monospace" font-size="20" font-weight="700"
                     fill="${pumpColor}">0</text>
             </svg>
           </div>
@@ -1377,7 +1382,7 @@ class StockPopup {
         <!-- Manipulation card -->
         <div style="padding:12px;background:#10141a;border:1px solid #42475422;border-radius:10px">
           <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em">Latest article</div>
-          <div style="font-size:24px;font-weight:700;color:${manipColor};font-family:'JetBrains Mono',monospace;margin:4px 0">
+          <div style="font-size:24px;font-weight:700;color:${manipColor};font-family:'Geist Mono',monospace;margin:4px 0">
             ${latest?.score != null ? latest.score : '—'}
           </div>
           <div style="font-size:10px;color:${manipColor};text-transform:uppercase;font-weight:700;margin-bottom:6px">
@@ -1433,7 +1438,7 @@ class StockPopup {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
         <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
           <div style="font-size:8px;color:#8c909f;text-transform:uppercase">Surge vs 20d</div>
-          <div style="font-size:13px;font-weight:700;color:${surgeColor};font-family:'JetBrains Mono',monospace">${surge.toFixed(2)}×</div>
+          <div style="font-size:13px;font-weight:700;color:${surgeColor};font-family:'Geist Mono',monospace">${surge.toFixed(2)}×</div>
         </div>
         <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
           <div style="font-size:8px;color:#8c909f;text-transform:uppercase">OBV divergence</div>
@@ -1533,7 +1538,7 @@ class StockPopup {
     const statBox = (label, value, color) => `
       <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
         <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em">${label}</div>
-        <div style="font-size:14px;font-weight:700;color:${color};font-family:'JetBrains Mono',monospace;margin-top:2px">${value == null ? '—' : value.toFixed(2) + '%'}</div>
+        <div style="font-size:14px;font-weight:700;color:${color};font-family:'Geist Mono',monospace;margin-top:2px">${value == null ? '—' : value.toFixed(2) + '%'}</div>
       </div>`;
 
     const eventsHtml = (events.slice(0, 5).map(e => `
@@ -1676,14 +1681,9 @@ class StockPopup {
   }
 }
 
-// Global click handler — any element with data-ticker opens the popup
-document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-ticker]');
-  if (el) {
-    e.preventDefault();
-    StockPopup.show(el.dataset.ticker);
-  }
-});
+// (Legacy global click handler that called StockPopup.show was removed —
+//  the canonical handler lives in shared/js/stock-popup.js, attached on
+//  window in capture phase so it wins over every other delegated handler.)
 
 
 // ============ MARKET TICKER ============

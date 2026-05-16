@@ -1,12 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tickwave | Social Feed</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <style>
@@ -25,19 +31,35 @@
 .ticker-pill { display:inline-block; padding:2px 8px; background:#1f2336; color:#dde3ef; border-radius:4px; font-family:monospace; font-size:11px; font-weight:700; margin-right:4px; }
 </style>
 </head>
-<body class="bg-background text-on-surface font-body" style="background:#080c12;color:#dde3ef;">
+<body class="bg-background text-on-surface font-body rf-page" style="background:#080c12;color:#dde3ef;">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <aside class="sidebar hidden md:flex">
-  <div class="sidebar-header"><h1 class="sidebar-brand">Tickwave</h1><p class="sidebar-brand-sub">Social Feed</p></div>
+  <div class="sidebar-header"><img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo><p class="sidebar-brand-sub">Social Feed</p></div>
   <nav class="sidebar-nav">
     <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <div class="sidebar-section">Markets</div>
     <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
-    <a class="sidebar-link active" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+    <div class="sidebar-section">News</div>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+    <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+    <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+    <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+    <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+    <div class="sidebar-section">Tools</div>
     <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
     <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications</span>Alerts</a>
-    <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+    <div class="sidebar-section">Insights</div>
+    <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+    <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
     <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
   </nav>
 </aside>
@@ -55,6 +77,7 @@
     <b style="color:#ff4500;">Reddit (serious-news subs only)</b> ·
     <b style="color:#2aabee;">Telegram (serious channels only)</b>.
     Pump-and-dump style content is filtered out.
+    <a href="events.html?category=social" style="color:#5b6cff;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;margin-left:6px;">View all in Newsroom →</a>
   </p>
 </header>
 
@@ -162,7 +185,7 @@ function renderPost(p) {
   return `
     <div class="${cls}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-        <span style="font-family:'JetBrains Mono',monospace;color:${platform === 'x' ? '#1da1f2' : platform === 'reddit' ? '#ff4500' : '#2aabee'};font-weight:800;">${platformIcon}</span>
+        <span style="font-family:'Geist Mono',monospace;color:${platform === 'x' ? '#1da1f2' : platform === 'reddit' ? '#ff4500' : '#2aabee'};font-weight:800;">${platformIcon}</span>
         <a href="${handleLink}" target="_blank" rel="noopener" class="handle-link" style="font-weight:800;color:#dde3ef;">${handleLabel}</a>
         ${chips.join('')}
         <span style="margin-left:auto;font-size:10px;color:#5a5d6a;font-family:monospace;">${ago} ${eng}</span>
@@ -244,5 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(loadFeed, 60000);
 });
 </script>
+<script src="./shared/js/company-logo.js" defer></script>
+<script src="./shared/js/stock-popup.js" defer></script>
 </body>
 </html>

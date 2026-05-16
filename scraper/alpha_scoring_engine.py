@@ -130,6 +130,22 @@ REGIME_WEIGHTS = {
     }
 }
 
+# IPO listing weights (additive - signals from newly-listed IPOs).
+# IPOs pop in bull/spike-up regimes, struggle in crisis/bear-strong.
+_IPO_LISTING_WEIGHTS = {
+    MarketRegime.BULL_STRONG:    0.12,
+    MarketRegime.BULL_WEAK:      0.10,
+    MarketRegime.BEAR_STRONG:    0.06,
+    MarketRegime.BEAR_WEAK:      0.07,
+    MarketRegime.SIDEWAYS_CALM:  0.10,
+    MarketRegime.SIDEWAYS_CHOPPY: 0.09,
+    MarketRegime.SPIKE_UP:       0.14,
+    MarketRegime.SPIKE_DOWN:     0.06,
+    MarketRegime.CRISIS:         0.05,
+}
+for _regime, _w in _IPO_LISTING_WEIGHTS.items():
+    REGIME_WEIGHTS[_regime]['ipo_listing'] = _w
+
 # ============ SENTIMENT MULTIPLIERS ============
 # 9 regimes × 3 sentiments: how much to boost/penalize alpha
 SENTIMENT_BOOST = {
@@ -558,13 +574,43 @@ class PredictionEngine:
     }
     
     @staticmethod
+    def stock_gain_adjustment(sentiment: str, stock_change_pct: float) -> float:
+        """Adjust predicted move when the stock has already rallied strongly.
+
+        Recent price gains should temper bullish predictions and amplify bearish
+        predictions for extended names, so the model does not always assume
+        continued upside after a big rally.
+        """
+        if stock_change_pct is None:
+            return 1.0
+
+        if sentiment == 'bullish':
+            if stock_change_pct > 25:
+                return 0.65
+            if stock_change_pct > 12:
+                return max(0.75, 1.0 - ((stock_change_pct - 12) / 80.0))
+            if stock_change_pct > 5:
+                return max(0.85, 1.0 - ((stock_change_pct - 5) / 50.0))
+            return 1.0
+
+        if sentiment == 'bearish':
+            if stock_change_pct > 15:
+                return min(1.25, 1.15 + ((stock_change_pct - 15) / 40.0))
+            if stock_change_pct > 8:
+                return min(1.12, 1.08 + ((stock_change_pct - 8) / 40.0))
+            return 1.0
+
+        return 1.0
+
+    @staticmethod
     def predict_return(
         event_type: str,
         alpha_score: float,
         volatility: float,
         regime: MarketRegime,
         sentiment: str,
-        horizon: str = '20D'
+        horizon: str = '20D',
+        stock_context: 'StockContext | None' = None
     ) -> Dict:
         """
         Predict expected return for given horizon
@@ -572,10 +618,11 @@ class PredictionEngine:
         Args:
             event_type: Type of event
             alpha_score: Calculated alpha score (0-100)
-            volatility: Market volatility (0-1)
+            volatility: float
             regime: Detected regime
             sentiment: bullish/bearish/neutral
             horizon: Time horizon ('1D', '3D', '5D', '20D')
+            stock_context: Per-stock context including recent price change
             
         Returns:
             Dict with predicted return, confidence, target price info
@@ -619,6 +666,15 @@ class PredictionEngine:
         # Previously regime_adj was always > 0 and multiplied magnitude only.
         # Now we preserve its direction-agnostic role (adjusts magnitude of move, not direction)
         predicted_return = direction * base_return * alpha_factor * vol_mult * regime_adj * vol_scale
+
+        # Price gain penalty / downside adjustment for stocks that have already
+        # rallied strongly. Bullish signals on extended names should be tempered.
+        if stock_context is not None and stock_context.stock_change_pct:
+            gain_adj = PredictionEngine.stock_gain_adjustment(
+                sentiment, stock_context.stock_change_pct
+            )
+            predicted_return *= gain_adj
+
         # Apply data-driven magnitude calibration (learned weekly from resolved
         # predictions). Multiplier defaults to 1.0 until the first fit.
         predicted_return *= _MAGNITUDE_MULT.get(horizon, 1.0)

@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tickwave | Stock</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script id="tailwind-config">
@@ -15,11 +20,14 @@
     "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
     "outline":"#3d4a5c","outline-variant":"#253040",
     "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
-  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["JetBrains Mono"] } } } }
+  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["Geist Mono"] } } } }
 </script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
+<script src="./shared/js/charts.js"></script>
 <style>
 .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
 
@@ -79,31 +87,38 @@
 @keyframes skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 </style>
 </head>
-<body class="bg-background text-on-surface font-body">
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <aside class="sidebar hidden md:flex">
   <div class="sidebar-header">
-    <h1 class="sidebar-brand">Tickwave</h1>
+    <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
     <p class="sidebar-brand-sub">Alpha Terminal</p>
   </div>
   <nav class="sidebar-nav">
     <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <div class="sidebar-section">Markets</div>
     <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
     <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Map</a>
-    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global Markets</a>
+    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
     <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <div class="sidebar-section">News</div>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
     <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
-    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">event</span>Events</a>
+    <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+    <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+    <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+    <div class="sidebar-section">Tools</div>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
     <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
     <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
-    <a class="sidebar-link" href="portfolio.html"><span class="material-symbols-outlined sidebar-icon">account_balance_wallet</span>Portfolio</a>
-    <a class="sidebar-link" href="paper.html"><span class="material-symbols-outlined sidebar-icon">credit_score</span>Paper Trading</a>
-    <a class="sidebar-link" href="simulator.html"><span class="material-symbols-outlined sidebar-icon">calculate</span>Simulator</a>
+    <div class="sidebar-section">Insights</div>
     <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
-    <a class="sidebar-link" href="social.html"><span class="material-symbols-outlined sidebar-icon">forum</span>Social</a>
+    <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
     <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
   </nav>
   <div id="authStatus" style="margin-top:auto;padding:12px 20px;border-top:1px solid var(--b0);font-size:10px;color:var(--t3);"></div>
@@ -114,6 +129,7 @@
 <!-- ======================= HEADER + PRICE ======================= -->
 <header style="position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--b1);padding:14px 0;margin-bottom:18px;">
   <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div id="stockLogo" style="width:56px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
     <div style="flex:1;min-width:240px;">
       <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
         <h1 id="stockTicker" style="font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--t1);"><span class="skel" style="display:inline-block;width:140px;height:28px;"></span></h1>
@@ -128,8 +144,22 @@
     </div>
   </div>
 
+  <!-- In-page search — filters every section by typed query -->
+  <div style="margin-top:14px;display:flex;align-items:center;gap:8px;background:var(--s1);
+              border:1px solid var(--b1);border-radius:8px;padding:8px 12px;">
+    <span class="material-symbols-outlined" style="font-size:16px;color:var(--t3);">search</span>
+    <input id="stockPageSearch" type="text" placeholder="Search this stock: news headlines, events, financial rows, peers…"
+      style="flex:1;background:transparent;border:0;outline:0;font:500 13px var(--font-ui);color:var(--t1);
+             min-width:0;" autocomplete="off">
+    <span id="stockPageSearchHits" style="font:600 10px var(--font-mono);color:var(--t3);
+                                          padding:2px 8px;border-radius:999px;background:transparent;display:none;"></span>
+    <button id="stockPageSearchClear" type="button"
+      style="background:transparent;border:0;color:var(--t3);cursor:pointer;display:none;font-size:14px;line-height:1;padding:2px 6px;">×</button>
+  </div>
+
   <div style="margin-top:14px;display:flex;gap:0;border-bottom:1px solid var(--b1);overflow-x:auto;">
     <button class="tab-btn active" data-tab="events"><span class="material-symbols-outlined">bolt</span>Event Track Record</button>
+    <button class="tab-btn" data-tab="intelligence"><span class="material-symbols-outlined">lightbulb</span>Intelligence</button>
     <button class="tab-btn" data-tab="overview"><span class="material-symbols-outlined">dashboard</span>Overview</button>
     <button class="tab-btn" data-tab="chart"><span class="material-symbols-outlined">show_chart</span>Chart</button>
     <button class="tab-btn" data-tab="financials"><span class="material-symbols-outlined">account_balance</span>Financials</button>
@@ -138,6 +168,7 @@
     <button class="tab-btn" data-tab="shareholding"><span class="material-symbols-outlined">pie_chart</span>Shareholding</button>
     <button class="tab-btn" data-tab="corp"><span class="material-symbols-outlined">redeem</span>Corp Actions</button>
     <button class="tab-btn" data-tab="news"><span class="material-symbols-outlined">newspaper</span>News</button>
+    <button class="tab-btn" data-tab="documents"><span class="material-symbols-outlined">description</span>Documents</button>
     <button class="tab-btn" data-tab="forensics"><span class="material-symbols-outlined">shield</span>Forensics</button>
   </div>
 </header>
@@ -150,7 +181,15 @@
   </div>
 
   <!-- EVENT-THEMED PASTEL KPI STRIP — re-uses .pastel-card system -->
-  <div id="eventKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;"></div>
+  <!-- Initial children = 6 skeleton tiles so the strip never appears empty -->
+  <div id="eventKpiStrip" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;">
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+    <div class="skel" style="height:96px;border-radius:14px;"></div>
+  </div>
 
   <!-- Two-column: hit-rate donut + activity heatmap -->
   <div style="display:grid;grid-template-columns:1.1fr 1fr 1.4fr;gap:14px;margin-bottom:18px;" class="evt-row">
@@ -161,7 +200,9 @@
           <div class="widget__meta">resolved across all horizons</div>
         </div>
       </div>
-      <div id="hitRateDonut" style="flex:1;"></div>
+      <div id="hitRateDonut" style="flex:1;display:flex;align-items:center;justify-content:center;">
+        <div class="skel" style="width:140px;height:140px;border-radius:50%;"></div>
+      </div>
     </div>
     <div class="widget" style="min-height:240px;">
       <div class="widget__head">
@@ -170,7 +211,12 @@
           <div class="widget__meta">avg return % per horizon</div>
         </div>
       </div>
-      <div id="predVsActual" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+      <div id="predVsActual" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:8px 12px;">
+        <div class="skel" style="height:14px;border-radius:4px;"></div>
+        <div class="skel" style="height:14px;border-radius:4px;width:80%;"></div>
+        <div class="skel" style="height:14px;border-radius:4px;width:65%;"></div>
+        <div class="skel" style="height:14px;border-radius:4px;width:50%;"></div>
+      </div>
     </div>
     <div class="widget" style="min-height:240px;">
       <div class="widget__head">
@@ -180,13 +226,135 @@
         </div>
         <span class="widget__year-pill" id="evtVelPill">— total</span>
       </div>
-      <div id="evtHeatmap" style="margin-top:8px;"></div>
+      <div id="evtHeatmap" style="margin-top:8px;display:grid;grid-template-columns:repeat(10,1fr);gap:3px;">
+        <!-- Initial heatmap skeleton — 30 cells -->
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+        <div class="skel" style="aspect-ratio:1;border-radius:3px;"></div>
+      </div>
     </div>
   </div>
 
   <h3 class="section-header">Event Timeline · predicted vs actual</h3>
   <div id="eventList"><div class="skel" style="height:80px;"></div></div>
 </section>
+
+<!-- ============================ TAB: INTELLIGENCE ============================ -->
+<!-- Auto-generated thesis: pros/cons/drivers from signals + forensic flags +
+     bulk deals + F&O. Plus a "Summarize headline" button that calls Groq.
+     The whole section is grounded — every bullet links to the row that
+     produced it; no hand-waving. -->
+<section class="tab-pane" data-pane="intelligence">
+  <div class="event-banner">
+    <span class="material-symbols-outlined" style="color:var(--info);">lightbulb</span>
+    <span>Auto-generated thesis. Each bullet is grounded in a real signal, event, forensic flag, bulk deal, or F&amp;O row — no hand-waving.</span>
+  </div>
+
+  <div id="intelHeader" style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:18px;padding:18px;border:1px solid var(--b1);border-radius:var(--r-lg);background:var(--card);">
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;padding:14px 20px;border-right:1px solid var(--b1);">
+      <div id="intelScore" style="font-family:var(--font-mono);font-size:38px;font-weight:700;letter-spacing:-0.03em;line-height:1;color:var(--t1);">—</div>
+      <div id="intelStance" style="margin-top:6px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t3);">thesis</div>
+    </div>
+    <div style="flex:1;min-width:220px;">
+      <div id="intelNarrative" style="font-size:14px;color:var(--t1);line-height:1.55;font-weight:500;">Loading thesis…</div>
+      <div id="intelMeta" style="margin-top:8px;font-size:11px;color:var(--t3);font-family:var(--font-mono);"></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;" class="intel-grid">
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title" style="color:var(--secondary);">Drivers · Pros</div><div class="widget__meta">what supports the bull case</div></div>
+        <span class="widget__year-pill" id="intelProsCount">—</span>
+      </div>
+      <ul id="intelPros" class="intel-list"></ul>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title" style="color:var(--error);">Risks · Cons</div><div class="widget__meta">what could break the call</div></div>
+        <span class="widget__year-pill" id="intelConsCount">—</span>
+      </div>
+      <ul id="intelCons" class="intel-list"></ul>
+    </div>
+  </div>
+
+  <div class="widget" style="min-height:auto;margin-bottom:18px;">
+    <div class="widget__head">
+      <div><div class="widget__title">What to watch</div><div class="widget__meta">upcoming catalysts on this ticker</div></div>
+    </div>
+    <div id="intelWatch" style="margin-top:8px;font-size:13px;color:var(--t2);"></div>
+  </div>
+
+  <h3 class="section-header" style="display:flex;align-items:center;gap:12px;">
+    <span>Recent headlines · with TL;DR</span>
+    <span style="font-size:10px;font-weight:500;color:var(--t3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.08em;">click summarize for AI tldr</span>
+  </h3>
+  <div id="intelHeadlines"><div class="skel" style="height:80px;"></div></div>
+</section>
+
+<style>
+.intel-list { list-style:none; padding:0; margin:8px 0 0; }
+.intel-list li {
+  display:grid; grid-template-columns:auto 1fr auto; gap:10px;
+  align-items:flex-start;
+  padding:10px 0;
+  border-bottom:1px solid var(--b1);
+  font-size:13px;
+}
+.intel-list li:last-child { border-bottom:none; }
+.intel-list .ipill {
+  font:600 9px/1 var(--font-mono);
+  letter-spacing:0.08em; text-transform:uppercase;
+  padding:3px 6px; border-radius:4px;
+  border:1px solid var(--b1);
+  color:var(--t3); background:transparent;
+  white-space:nowrap;
+}
+.intel-list .ipill.strong { color:var(--accent-bright,var(--secondary)); border-color:color-mix(in oklab, var(--secondary) 40%, transparent); }
+.intel-list .ipill.moderate { color:var(--caution); border-color:color-mix(in oklab, var(--caution) 40%, transparent); }
+.intel-list .ipill.weak { color:var(--t3); }
+.intel-list .ibody { color:var(--t1); line-height:1.5; min-width:0; }
+.intel-list .imeta { font:500 11px/1 var(--font-mono); color:var(--t3); white-space:nowrap; }
+.intel-headline {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:14px 0;
+  border-bottom:1px solid var(--b1);
+}
+.intel-headline:last-child { border-bottom:none; }
+.intel-headline__main { flex:1; min-width:0; }
+.intel-headline__title { font-size:14px; color:var(--t1); font-weight:500; line-height:1.45; }
+.intel-headline__meta { font-size:11px; color:var(--t3); margin-top:4px; font-family:var(--font-mono); }
+.intel-headline__tldr { margin-top:8px; font-size:13px; color:var(--t2); line-height:1.55; padding:8px 12px; border-left:2px solid var(--secondary); background:color-mix(in oklab, var(--secondary) 8%, transparent); border-radius:0 6px 6px 0; }
+.intel-headline__btn { flex:0 0 auto; cursor:pointer; }
+@media (max-width:760px) { .intel-grid { grid-template-columns:1fr !important; } }
+</style>
 
 <!-- ============================ TAB: OVERVIEW ============================ -->
 <section class="tab-pane" data-pane="overview">
@@ -213,9 +381,73 @@
     <div id="aboutBlock" style="font-size:13px;color:var(--t2);line-height:1.65;"></div>
   </div>
 
+  <!-- Screener-style Pros / Cons summary — pulled from /api/stock/<t>/intelligence
+       so the user sees the bull/bear thesis at a glance without leaving Overview. -->
+  <div class="screener-pc-grid">
+    <div class="screener-pc screener-pc--pros">
+      <div class="screener-pc__head">PROS</div>
+      <ul id="overviewPros" class="screener-pc__list">
+        <li class="screener-pc__loading">Loading thesis…</li>
+      </ul>
+    </div>
+    <div class="screener-pc screener-pc--cons">
+      <div class="screener-pc__head">CONS</div>
+      <ul id="overviewCons" class="screener-pc__list">
+        <li class="screener-pc__loading">Loading thesis…</li>
+      </ul>
+    </div>
+  </div>
+  <div id="overviewProsConsFoot" style="margin-top:6px;margin-bottom:14px;font-size:11px;color:var(--t3);">
+    The pros and cons are auto-generated from signals, forensic flags, bulk deals and F&amp;O.
+    <a href="#intelligence" onclick="document.querySelector('.tab-btn[data-tab=\'intelligence\']').click();return false;" style="color:var(--info);">See full thesis →</a>
+  </div>
+
   <h3 class="section-header">Key Officers</h3>
   <div id="officersBlock" style="font-size:13px;color:var(--t2);"></div>
 </section>
+
+<style>
+.screener-pc-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-top: 14px;
+}
+.screener-pc {
+  border: 1px solid var(--b1);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  background: var(--card);
+}
+.screener-pc--pros { border-color: color-mix(in oklab, var(--secondary) 25%, var(--b1)); }
+.screener-pc--cons { border-color: color-mix(in oklab, var(--error)     25%, var(--b1)); }
+.screener-pc__head {
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 0.10em;
+  margin-bottom: 10px;
+}
+.screener-pc--pros .screener-pc__head { color: var(--secondary); }
+.screener-pc--cons .screener-pc__head { color: var(--error); }
+.screener-pc__list { list-style: none; padding: 0; margin: 0; }
+.screener-pc__list li {
+  position: relative;
+  padding: 6px 0 6px 18px;
+  font-size: 13px; color: var(--t1); line-height: 1.5;
+  border-bottom: 1px solid var(--b1);
+}
+.screener-pc__list li:last-child { border-bottom: none; }
+.screener-pc__list li::before {
+  content: "•";
+  position: absolute; left: 4px; top: 6px;
+  color: currentColor; opacity: 0.5;
+}
+.screener-pc--pros .screener-pc__list li { color: var(--t1); }
+.screener-pc--cons .screener-pc__list li { color: var(--t1); }
+.screener-pc__list li small {
+  display: block; font-size: 10px; color: var(--t3); margin-top: 2px;
+  font-family: var(--font-mono);
+}
+.screener-pc__loading { color: var(--t3); font-style: italic; }
+@media (max-width: 760px) { .screener-pc-grid { grid-template-columns: 1fr; } }
+</style>
 
 <!-- ============================ TAB: CHART ============================ -->
 <section class="tab-pane" data-pane="chart">
@@ -240,10 +472,10 @@
         <button class="range-period" data-period="max">Max</button>
       </div>
     </div>
-    <div id="priceChartWrap" style="height:420px;position:relative;user-select:none;cursor:crosshair;touch-action:none;">
-      <canvas id="priceChart" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
-      <div id="chartLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:12px;">Loading chart…</div>
-      <div id="chartHint" style="position:absolute;left:10px;bottom:8px;font-size:10px;color:var(--t3);font-family:var(--font-ui);pointer-events:none;opacity:.7;">drag to measure · double-click to reset</div>
+    <div id="priceChartWrap" style="height:460px;position:relative;">
+      <div id="priceChartHost" style="position:absolute;inset:0;"></div>
+      <div id="chartLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:12px;background:transparent;pointer-events:none;">Loading chart…</div>
+      <div id="chartHint" style="position:absolute;left:14px;bottom:8px;font-size:10px;color:var(--t3);font-family:var(--font-ui);pointer-events:none;opacity:.7;">drag to zoom · double-click to reset</div>
     </div>
   </div>
   <div id="chartStats" style="margin-top:14px;" class="kv-grid"></div>
@@ -368,6 +600,73 @@
   </div>
 </section>
 
+<!-- ============================ TAB: DOCUMENTS ============================ -->
+<!-- Screener-style document hub: Announcements, Annual Reports, Credit
+     Ratings, Concalls. Pulled from /api/stock/<ticker>/documents which
+     buckets the events table by title/source heuristics. -->
+<section class="tab-pane" data-pane="documents">
+  <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:14px;" class="docs-grid">
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Announcements</div><div class="widget__meta">BSE / NSE filings</div></div>
+        <span class="widget__year-pill" id="docsAnnouncementsCount">—</span>
+      </div>
+      <div id="docsAnnouncements" class="docs-list"><div class="skel" style="height:60px;"></div></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Annual Reports</div><div class="widget__meta">AGM, presentations</div></div>
+        <span class="widget__year-pill" id="docsAnnualCount">—</span>
+      </div>
+      <div id="docsAnnualReports" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Credit Ratings</div><div class="widget__meta">CRISIL · ICRA · CARE · Fitch</div></div>
+        <span class="widget__year-pill" id="docsRatingsCount">—</span>
+      </div>
+      <div id="docsRatings" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Concalls</div><div class="widget__meta">earnings · investor calls</div></div>
+        <span class="widget__year-pill" id="docsConcallsCount">—</span>
+      </div>
+      <div id="docsConcalls" class="docs-list"></div>
+    </div>
+  </div>
+  <div style="margin-top:14px;font-size:11px;color:var(--t3);">
+    Tip: each item links to the original filing. The list updates as new filings hit the scraper (typically within minutes of publication).
+  </div>
+</section>
+
+<style>
+.docs-list { font-size:13px; }
+.docs-list .doc-row {
+  padding:10px 0; border-bottom:1px solid var(--b1); display:block;
+  color:var(--t1); text-decoration:none;
+}
+.docs-list .doc-row:last-child { border-bottom:none; }
+.docs-list .doc-row:hover { color:var(--info); }
+.docs-list .doc-row__date {
+  font: 600 10px/1 var(--font-mono);
+  color: var(--t3); letter-spacing:0.06em;
+  margin-bottom: 4px; text-transform:uppercase;
+}
+.docs-list .doc-row__title {
+  font-size:13px; line-height:1.4; font-weight:500;
+}
+.docs-list .doc-row__src {
+  font-size:11px; color:var(--t3); margin-top:4px;
+}
+.docs-list .doc-empty {
+  padding:24px 4px; text-align:center; color:var(--t3); font-size:12px;
+  border:1px dashed var(--b1); border-radius:6px;
+}
+@media (max-width:1100px) { .docs-grid { grid-template-columns:1fr 1fr !important; } }
+@media (max-width:680px)  { .docs-grid { grid-template-columns:1fr !important; } }
+</style>
+
 <!-- ============================ TAB: FORENSICS ============================ -->
 <section class="tab-pane" data-pane="forensics">
   <div class="widget" style="min-height:auto;margin-bottom:14px;">
@@ -388,12 +687,15 @@
 
 <script src="./shared/js/app.js"></script>
 <script src="./shared/js/bootstrap.js"></script>
+<script src="./shared/js/company-logo.js"></script>
 <script>
 const TICKER = (new URLSearchParams(location.search).get('t') ||
                 new URLSearchParams(location.search).get('ticker') ||
                 'RELIANCE').trim().toUpperCase();
 document.getElementById('stockTicker').textContent = TICKER;
 document.title = 'Tickwave | ' + TICKER;
+// Inject the company logo (parqet -> disk cache -> SVG initials)
+document.getElementById('stockLogo').innerHTML = CompanyLogo.img(TICKER, { size: 56, round: true });
 
 const fmt = {
   num: v => v == null ? '—' : (typeof v === 'number'
@@ -606,7 +908,26 @@ async function loadEvents() {
       </div>`;
     }).join('');
   } catch (e) {
-    list.innerHTML = '<div style="padding:20px;color:var(--bear);font-size:12px;">Failed to load events: ' + e.message + '</div>';
+    // Replace every container with a visible error + Retry instead of
+    // leaving skeletons spinning forever or showing a tiny red line.
+    const errHtml = (where) => `
+      <div style="padding:24px;text-align:center;color:var(--t2);font-size:12px;">
+        <div style="font-size:22px;margin-bottom:6px;">⚠</div>
+        <div style="margin-bottom:10px;">Couldn't load ${where} for ${TICKER}.</div>
+        <button onclick="loadEvents()" class="rf-btn" style="font-size:11px;padding:5px 12px;
+          border:1px solid var(--info);background:transparent;color:var(--info);
+          border-radius:6px;cursor:pointer;">Retry</button>
+      </div>`;
+    const strip = document.getElementById('eventKpiStrip');
+    if (strip) strip.innerHTML = `<div style="grid-column:1/-1;">${errHtml('event metrics')}</div>`;
+    const hit = document.getElementById('hitRateDonut');
+    if (hit) hit.innerHTML = errHtml('hit-rate');
+    const pva = document.getElementById('predVsActual');
+    if (pva) pva.innerHTML = errHtml('predictions');
+    const heat = document.getElementById('evtHeatmap');
+    if (heat) heat.innerHTML = errHtml('event velocity');
+    list.innerHTML = errHtml('event timeline');
+    try { console.error('[stock.loadEvents]', e); } catch(_){}
   }
 }
 
@@ -663,6 +984,30 @@ async function loadOverview() {
     } catch (_) {}
 
     document.getElementById('aboutBlock').textContent = prof.summary || 'No business summary available.';
+
+    // Screener-style Pros / Cons — auto-generated thesis at a glance
+    (async () => {
+      const elPros = document.getElementById('overviewPros');
+      const elCons = document.getElementById('overviewCons');
+      if (!elPros || !elCons) return;
+      try {
+        const r = await API.get(`/stock/${TICKER}/intelligence?days=30`);
+        const d = (r && r.data) || {};
+        const pros = (d.pros || []).slice(0, 4);
+        const cons = (d.cons || []).slice(0, 4);
+        function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        elPros.innerHTML = pros.length
+          ? pros.map(it => `<li>${esc(it.label)}${it.detail ? `<small>${esc(it.detail)}</small>` : (it.alpha != null ? `<small>α ${it.alpha} · ${esc(it.weight||'')}</small>` : '')}</li>`).join('')
+          : '<li style="color:var(--t3);">No bullish drivers in last 30 days.</li>';
+        elCons.innerHTML = cons.length
+          ? cons.map(it => `<li>${esc(it.label)}${it.detail ? `<small>${esc(it.detail)}</small>` : (it.alpha != null ? `<small>α ${it.alpha} · ${esc(it.weight||'')}</small>` : '')}</li>`).join('')
+          : '<li style="color:var(--t3);">No risks or forensic flags detected.</li>';
+      } catch (_) {
+        elPros.innerHTML = '<li style="color:var(--t3);">Couldn\'t load thesis.</li>';
+        elCons.innerHTML = '';
+      }
+    })();
+
     const off = prof.officers || [];
     document.getElementById('officersBlock').innerHTML = off.length
       ? '<table class="fin-table"><thead><tr><th>Name</th><th style="text-align:left;">Title</th><th>Age</th></tr></thead><tbody>' +
@@ -678,6 +1023,13 @@ async function loadOverview() {
 const StockChart = (() => {
   const wrap = document.getElementById('priceChartWrap');
   const canvas = document.getElementById('priceChart');
+  // The page now renders via Apex into #priceChartHost — the legacy canvas
+  // element no longer exists. Bail out cleanly instead of throwing on
+  // canvas.addEventListener (which previously killed the rest of the script
+  // including TAB_LOADERS, breaking every tab click).
+  if (!wrap || !canvas) {
+    return { setData: () => {}, redraw: () => {} };
+  }
   const readoutPrice = document.getElementById('chartReadoutPrice');
   const readoutChange = document.getElementById('chartReadoutChange');
   const readoutDate = document.getElementById('chartReadoutDate');
@@ -772,7 +1124,7 @@ const StockChart = (() => {
 
     // Y gridlines + labels
     const yTicks = niceTicks(yMin, yMax, 5);
-    ctx.font = '500 10px JetBrains Mono, monospace';
+    ctx.font = '500 10px Geist Mono, monospace';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'right';
     yTicks.forEach(t => {
@@ -831,7 +1183,7 @@ const StockChart = (() => {
       const pillColor = delta >= 0 ? '#2dd4aa' : '#f26b6b';
       const sign = delta >= 0 ? '+' : '';
       const txt = `${sign}${fmtPrice(delta)}  (${sign}${pct.toFixed(2)}%)`;
-      ctx.font = '600 11px JetBrains Mono, monospace';
+      ctx.font = '600 11px Geist Mono, monospace';
       const tw = ctx.measureText(txt).width;
       const px = Math.min(W - PAD.r - tw - 16, Math.max(PAD.l + 6, (x1 + x2) / 2 - tw / 2 - 8));
       const py = PAD.t + 4;
@@ -859,7 +1211,7 @@ const StockChart = (() => {
 
     // Last-price tag on right axis
     const lastY = ys[ys.length - 1];
-    ctx.font = '600 10px JetBrains Mono, monospace';
+    ctx.font = '600 10px Geist Mono, monospace';
     const lastTxt = fmtPrice(last).replace('₹', '');
     const ltw = ctx.measureText(lastTxt).width;
     ctx.fillStyle = lineColor;
@@ -959,6 +1311,7 @@ const StockChart = (() => {
 })();
 
 let chartActivePeriod = '3mo';
+let _activeChart = null;  // Apex chart instance — destroyed on each reload to avoid memory churn
 async function loadChart(period) {
   chartActivePeriod = period || chartActivePeriod;
   document.querySelectorAll('[data-period]').forEach(b =>
@@ -970,7 +1323,16 @@ async function loadChart(period) {
     const r = await API.get(`/stock/${TICKER}/chart?period=${chartActivePeriod}`);
     const rows = (r && r.data) || [];
     if (!r || !r.success || !rows.length) { loading.textContent = 'No chart data.'; return; }
-    StockChart.setData(rows);
+
+    // Use the shared ApexCharts wrapper. It draws an area chart of closes
+    // with a column chart of volumes underneath, plus crosshair tooltip
+    // and built-in drag-to-zoom on the time axis.
+    if (_activeChart && typeof _activeChart.destroy === 'function') {
+      try { _activeChart.destroy(); } catch (_) {}
+    }
+    _activeChart = (window.Charts && Charts.price)
+      ? Charts.price('priceChartHost', rows, { height: 440 })
+      : null;
     loading.style.display = 'none';
 
     const closes = rows.map(x => x.close);
@@ -1470,10 +1832,188 @@ async function toggleWatch() {
   } catch (e) { console.error(e); }
 }
 
+// ── Intelligence tab loader: pros / cons / what-to-watch + AI TL;DRs ──
+async function loadIntelligence() {
+  const elScore = document.getElementById('intelScore');
+  const elStance = document.getElementById('intelStance');
+  const elNarrative = document.getElementById('intelNarrative');
+  const elMeta = document.getElementById('intelMeta');
+  const elPros = document.getElementById('intelPros');
+  const elCons = document.getElementById('intelCons');
+  const elWatch = document.getElementById('intelWatch');
+  const elHeads = document.getElementById('intelHeadlines');
+  const elProsCount = document.getElementById('intelProsCount');
+  const elConsCount = document.getElementById('intelConsCount');
+
+  function pill(weight) { return `<span class="ipill ${weight || 'weak'}">${weight || 'weak'}</span>`; }
+  function tsAgo(s) {
+    if (!s) return '';
+    const t = Date.parse(String(s).replace(' ', 'T'));
+    if (!t || isNaN(t)) return '';
+    const m = (Date.now() - t) / 60000;
+    if (m < 60) return Math.floor(m) + 'm ago';
+    const h = m / 60;
+    if (h < 24) return Math.floor(h) + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+  function escape(s) {
+    return (s == null ? '' : String(s))
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // 1) Pros / cons / drivers
+  try {
+    const r = await API.get(`/stock/${TICKER}/intelligence?days=30`);
+    const d = (r && r.data) || {};
+    const score = d.thesis_score != null ? d.thesis_score : 50;
+    const stance = (d.stance || 'neutral');
+    const stanceColor = stance === 'bullish' ? 'var(--secondary)' : stance === 'bearish' ? 'var(--error)' : 'var(--t2)';
+
+    elScore.textContent = score;
+    elScore.style.color = stanceColor;
+    elStance.textContent = stance;
+    elStance.style.color = stanceColor;
+    elNarrative.textContent = d.narrative || 'No narrative available.';
+    elMeta.innerHTML = `${d.signals_seen||0} signals · ${d.events_seen||0} events · last ${d.lookback_days||30}d`;
+
+    const pros = d.pros || [];
+    const cons = d.cons || [];
+    elProsCount.textContent = pros.length + (pros.length === 1 ? ' driver' : ' drivers');
+    elConsCount.textContent = cons.length + (cons.length === 1 ? ' risk' : ' risks');
+
+    function renderItem(it) {
+      const a = it.alpha != null ? `<span class="imeta">α ${it.alpha}</span>` : `<span class="imeta">${escape(it.kind || '')}</span>`;
+      return `<li>${pill(it.weight)}<span class="ibody">${escape(it.label || '')}${it.detail ? `<div style="margin-top:3px;font-size:11px;color:var(--t3);">${escape(it.detail)}</div>` : ''}</span>${a}</li>`;
+    }
+    elPros.innerHTML = pros.length
+      ? pros.map(renderItem).join('')
+      : '<li style="color:var(--t3);font-size:13px;padding:12px 0;">No bullish signals in the lookback window.</li>';
+    elCons.innerHTML = cons.length
+      ? cons.map(renderItem).join('')
+      : '<li style="color:var(--t3);font-size:13px;padding:12px 0;">No bearish signals or forensic flags.</li>';
+
+    const watch = d.what_to_watch || [];
+    elWatch.innerHTML = watch.length
+      ? watch.map(w => `<div style="padding:8px 0;border-bottom:1px solid var(--b1);"><span class="ipill">${escape(w.kind || '')}</span><span style="margin-left:10px;">${escape(w.label || '')}</span><span style="float:right;color:var(--t3);font-family:var(--font-mono);font-size:11px;">${tsAgo(w.ts)}</span></div>`).join('')
+      : '<div style="color:var(--t3);font-size:13px;">No upcoming catalysts detected.</div>';
+  } catch (e) {
+    elNarrative.textContent = 'Couldn\'t load intelligence — backend offline?';
+    console.error(e);
+  }
+
+  // 2) Recent headlines + on-demand summarize button
+  try {
+    const r = await API.get(`/stock/${TICKER}/news`);
+    const events = (r && r.data && r.data.events) || [];
+    if (!events.length) {
+      elHeads.innerHTML = '<div style="padding:12px 0;color:var(--t3);font-size:13px;">No tracked headlines for this ticker.</div>';
+      return;
+    }
+    elHeads.innerHTML = events.slice(0, 8).map(ev => {
+      const id = ev.event_id || '';
+      const src = (ev.source || '').replace(/_/g, ' ');
+      const sent = (ev.sentiment || 'neutral');
+      const sentColor = sent === 'bullish' ? 'var(--secondary)' : sent === 'bearish' ? 'var(--error)' : 'var(--t2)';
+      return `
+        <div class="intel-headline" data-event-id="${escape(id)}">
+          <div class="intel-headline__main">
+            <div class="intel-headline__title">${escape(ev.title || '')}</div>
+            <div class="intel-headline__meta">${escape(src)} · <span style="color:${sentColor};">${sent}</span> · ${tsAgo(ev.created_at)}</div>
+            <div class="intel-tldr-mount" data-tldr-mount style="display:none;"></div>
+          </div>
+          <button class="range-period intel-headline__btn" data-summarize="${escape(id)}"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;">auto_awesome</span> TL;DR</button>
+        </div>`;
+    }).join('');
+
+    // Wire up summarize buttons (event delegation)
+    elHeads.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-summarize]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-summarize');
+      if (!id) return;
+      const mount = btn.closest('.intel-headline').querySelector('[data-tldr-mount]');
+      if (mount.dataset.loaded === '1') {
+        mount.style.display = mount.style.display === 'none' ? 'block' : 'none';
+        return;
+      }
+      btn.disabled = true;
+      const prev = btn.innerHTML;
+      btn.innerHTML = '…';
+      try {
+        const res = await fetch(`/api/news/summarize?event_id=${encodeURIComponent(id)}`);
+        const j = await res.json();
+        const summary = (j && j.data && j.data.summary) || 'No summary available.';
+        const src = (j && j.data && j.data.source) || 'extractive';
+        mount.innerHTML = `<div class="intel-headline__tldr"><strong style="color:var(--secondary);font-size:10px;font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;">${src === 'groq' ? 'AI · GROQ' : 'TL;DR'}</strong><br>${escape(summary)}</div>`;
+        mount.dataset.loaded = '1';
+        mount.style.display = 'block';
+      } catch (err) {
+        mount.innerHTML = `<div class="intel-headline__tldr" style="border-left-color:var(--error);">Couldn't summarize this article.</div>`;
+        mount.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = prev;
+      }
+    }, { once: false });
+  } catch (e) {
+    elHeads.innerHTML = '<div style="padding:12px 0;color:var(--t3);font-size:13px;">Couldn\'t load headlines.</div>';
+  }
+}
+
+// ── Documents tab loader: filings, concalls, ratings, annual reports ──
+async function loadDocuments() {
+  const ESC = (s) => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function fmtDate(s) {
+    if (!s) return '';
+    const t = Date.parse(String(s).replace(' ', 'T'));
+    if (!t || isNaN(t)) return String(s).slice(0, 10);
+    const d = new Date(t);
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function renderRow(it) {
+    const link = it.link || '#';
+    const ext = !!it.link;
+    return `<a class="doc-row" href="${ESC(link)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
+        <div class="doc-row__date">${ESC(fmtDate(it.date))}</div>
+        <div class="doc-row__title">${ESC(it.title || '')}</div>
+        <div class="doc-row__src">${ESC((it.source || '').replace(/_/g, ' '))}</div>
+      </a>`;
+  }
+  function renderBucket(elId, items, emptyMsg) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!items || !items.length) {
+      el.innerHTML = `<div class="doc-empty">${ESC(emptyMsg)}</div>`;
+      return;
+    }
+    el.innerHTML = items.map(renderRow).join('');
+  }
+  try {
+    const r = await API.get(`/stock/${TICKER}/documents?days=540`);
+    const d = (r && r.data) || {};
+    document.getElementById('docsAnnouncementsCount').textContent = (d.counts && d.counts.announcements) || 0;
+    document.getElementById('docsAnnualCount').textContent       = (d.counts && d.counts.annual_reports) || 0;
+    document.getElementById('docsRatingsCount').textContent      = (d.counts && d.counts.ratings) || 0;
+    document.getElementById('docsConcallsCount').textContent     = (d.counts && d.counts.concalls) || 0;
+
+    renderBucket('docsAnnouncements',  d.announcements,  'No filings tracked yet for this ticker.');
+    renderBucket('docsAnnualReports',  d.annual_reports, 'No annual reports yet.');
+    renderBucket('docsRatings',        d.ratings,        'No rating actions detected.');
+    renderBucket('docsConcalls',       d.concalls,       'No concall transcripts yet.');
+  } catch (e) {
+    ['docsAnnouncements','docsAnnualReports','docsRatings','docsConcalls'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="doc-empty">Couldn\'t load documents — backend offline?</div>';
+    });
+  }
+}
+
 const TAB_LOADERS = {
-  events: loadEvents, overview: loadOverview, chart: () => loadChart(chartActivePeriod),
+  events: loadEvents, intelligence: loadIntelligence,
+  overview: loadOverview, chart: () => loadChart(chartActivePeriod),
   financials: loadFinancials, ratios: loadRatios, peers: loadPeers,
-  shareholding: loadShareholding, corp: loadCorp, news: loadNews, forensics: loadForensics,
+  shareholding: loadShareholding, corp: loadCorp, news: loadNews,
+  documents: loadDocuments, forensics: loadForensics,
 };
 TAB_LOADERS.events._loaded = true;
 
@@ -1484,6 +2024,473 @@ if (initialHash && TAB_LOADERS[initialHash]) {
   const btn = document.querySelector(`.tab-btn[data-tab="${initialHash}"]`);
   if (btn) btn.click();
 }
+
+// ── In-page search ───────────────────────────────────────────────────────
+// Filter every section by typed query — touches news cards, event timeline
+// rows, financial-table rows, peer rows, and document rows. Match by
+// text-content, hide non-matching rows, dim the surrounding panels.
+(function () {
+  const input   = document.getElementById('stockPageSearch');
+  const hits    = document.getElementById('stockPageSearchHits');
+  const clearBt = document.getElementById('stockPageSearchClear');
+  if (!input) return;
+
+  // Selector → "row-like" element under it. We hide individual rows
+  // when they don't match, and dim entire panes when zero matches.
+  const SEARCHABLE = [
+    '#eventList > div',
+    '#newsHeadlines a, #newsHeadlines .news-row, #newsHeadlines li',
+    '.fin-table tbody tr',
+    '#peersTableWrap tr, #peersTableWrap > div',
+    '#docsAnnualReports .doc-row, #docsRatings .doc-row, #docsConcalls .doc-row',
+    '.tab-pane[data-pane="intelligence"] li, .tab-pane[data-pane="intelligence"] p',
+    '.tab-pane[data-pane="corp"] tr, .tab-pane[data-pane="corp"] > div',
+    '.tab-pane[data-pane="forensics"] .doc-row, .tab-pane[data-pane="forensics"] tr',
+  ];
+
+  function flatRows() {
+    const set = [];
+    SEARCHABLE.forEach(sel => set.push(...document.querySelectorAll(sel)));
+    return set;
+  }
+
+  let timer;
+  function applyFilter() {
+    const q = (input.value || '').trim().toLowerCase();
+    const showAll = q.length < 2;
+    const rows = flatRows();
+    let matched = 0;
+    rows.forEach(r => {
+      const t = (r.textContent || '').toLowerCase();
+      const ok = showAll || t.includes(q);
+      r.style.display = ok ? '' : 'none';
+      if (ok && !showAll) matched++;
+    });
+    if (showAll) {
+      hits.style.display = 'none';
+      clearBt.style.display = 'none';
+    } else {
+      hits.style.display = 'inline-block';
+      hits.textContent = matched + ' hit' + (matched === 1 ? '' : 's');
+      hits.style.background = matched > 0 ? 'rgba(45,212,170,0.12)' : 'rgba(242,107,107,0.12)';
+      hits.style.color = matched > 0 ? '#2dd4aa' : '#f26b6b';
+      clearBt.style.display = 'inline-block';
+    }
+  }
+  function debouncedFilter() {
+    clearTimeout(timer);
+    timer = setTimeout(applyFilter, 140);
+  }
+  input.addEventListener('input', debouncedFilter);
+  clearBt.addEventListener('click', () => {
+    input.value = '';
+    applyFilter();
+    input.focus();
+  });
+  // Re-apply filter every time a tab opens (rows may have just rendered)
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.addEventListener('click', () => setTimeout(applyFilter, 800));
+  });
+  // Cmd/Ctrl+K focuses the search bar
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+})();
+</script>
+
+<!-- ============================================================
+     FINANCIAL TERM TOOLTIPS — hover any label to get a plain-
+     English explanation. Self-contained; no external deps.
+     ============================================================ -->
+<style>
+#finTooltip {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  max-width: 300px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(13,17,24,0.97);
+  border: 1px solid rgba(142,180,224,0.22);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+#finTooltip .ft-term {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #8eb4e0;
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+#finTooltip .ft-body {
+  font-size: 12px;
+  color: #c8d0e0;
+  line-height: 1.55;
+}
+#finTooltip .ft-note {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: #6a7488;
+  line-height: 1.45;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 5px;
+}
+[data-finterm] {
+  cursor: help;
+  border-bottom: 1px dotted rgba(142,180,224,0.45);
+  transition: border-color 0.1s;
+}
+[data-finterm]:hover { border-bottom-color: rgba(142,180,224,0.9); }
+</style>
+
+<div id="finTooltip"></div>
+
+<script>
+(function () {
+  const G = {
+    // ── Valuation ──────────────────────────────────────────────────────────
+    'p/e':
+      ['Price / Earnings (P/E)',
+       'How many rupees you pay for every ₹1 the company earns. P/E 25 → market values the stock at 25× annual profit.',
+       'Trader note: compare within the same sector — a P/E of 30 is cheap in IT but expensive in FMCG.'],
+    'forward p/e':
+      ['Forward P/E',
+       'Like P/E, but uses next year\'s estimated earnings. More relevant for fast-growing companies whose profits are still catching up.',
+       'Lower than trailing P/E = analysts expect earnings to grow. Higher = expected earnings dip.'],
+    'p/b':
+      ['Price / Book (P/B)',
+       'Share price divided by book value per share (assets minus liabilities). P/B 2 → you\'re paying ₹2 for every ₹1 of net assets.',
+       'Trader note: P/B < 1 can mean undervaluation or hidden problems. Common benchmark for banks and financial stocks.'],
+    'p/s':
+      ['Price / Sales (P/S)',
+       'Market cap divided by annual revenue. Used when a company has no profits yet (startups, turnarounds).',
+       'Lower P/S = cheaper relative to sales. Useful for high-growth companies burning cash.'],
+    'peg':
+      ['PEG Ratio',
+       'P/E divided by earnings growth rate. Adjusts the P/E for how fast the company is growing.',
+       'PEG < 1 is generally considered undervalued; PEG > 2 may be expensive for the growth on offer.'],
+    'ev/ebitda':
+      ['EV / EBITDA',
+       'Enterprise Value (total company value including debt) divided by EBITDA. Compares companies regardless of capital structure.',
+       'Trader note: lower is cheaper. Useful for comparing capital-intensive businesses like infra or telecom.'],
+    'ev/revenue':
+      ['EV / Revenue',
+       'Enterprise Value divided by annual revenue. Similar to P/S but uses EV, so it accounts for debt.',
+       'Used when EBITDA is negative (early-stage or distressed companies).'],
+    'book value':
+      ['Book Value per Share',
+       'Net assets (total assets minus total liabilities) divided by number of shares. What each share would theoretically be worth if the company liquidated.',
+       'Rising book value over time signals the company is building real wealth.'],
+    'eps':
+      ['Earnings Per Share (EPS)',
+       'Net profit divided by total shares outstanding. Higher EPS = more profit per share you own.',
+       'Growing EPS quarter-over-quarter is one of the strongest signals institutions watch.'],
+    'eps forward':
+      ['Forward EPS',
+       'Analyst consensus estimate of earnings per share for the next 12 months.',
+       'A big gap between TTM EPS and Forward EPS indicates expected earnings change — either growth or a likely miss.'],
+    'market cap':
+      ['Market Capitalisation',
+       'Current share price × total shares outstanding. The market\'s total valuation of the company.',
+       'Large-cap: > ₹20,000 Cr · Mid-cap: ₹5,000–20,000 Cr · Small-cap: < ₹5,000 Cr (SEBI definitions).'],
+    'shares out':
+      ['Shares Outstanding',
+       'Total number of shares issued by the company and held by all investors (promoters + institutions + public).',
+       'Watch for dilution: if this number keeps rising, EPS gets divided across more shares.'],
+
+    // ── Profitability ──────────────────────────────────────────────────────
+    'roe':
+      ['Return on Equity (ROE)',
+       'Net profit ÷ shareholders\' equity × 100. How much profit the company generates for every ₹100 of shareholder money.',
+       'Trader note: consistently above 15% is considered good. Very high ROE (>40%) with high debt can be a red flag.'],
+    'roa':
+      ['Return on Assets (ROA)',
+       'Net profit ÷ total assets × 100. Measures how efficiently the company uses its entire asset base to generate profit.',
+       'More useful than ROE when comparing companies with different debt levels.'],
+    'operating margin':
+      ['Operating Margin',
+       'Operating profit (revenue minus costs, before interest and tax) ÷ revenue × 100.',
+       'Shows core business profitability. Expanding margins = business improving efficiency.'],
+    'net margin':
+      ['Net Profit Margin',
+       'Net profit ÷ revenue × 100. What\'s left after every cost — expenses, interest, tax.',
+       'The cleanest profitability measure. 10%+ is generally good; varies heavily by sector.'],
+    'gross margin':
+      ['Gross Margin',
+       'Revenue minus cost of goods sold (COGS), expressed as % of revenue. Measures production profitability before operating costs.',
+       'Software has 70–90% gross margins; auto/commodity businesses often 15–25%.'],
+    'ebitda margin':
+      ['EBITDA Margin',
+       'EBITDA ÷ revenue × 100. Profitability before non-cash charges (depreciation/amortisation) and financing costs.',
+       'Best for comparing operational efficiency across capital-intensive sectors.'],
+    'ebitda':
+      ['EBITDA',
+       'Earnings Before Interest, Tax, Depreciation & Amortisation. A proxy for operating cash generation.',
+       'Not a substitute for free cash flow — companies can have strong EBITDA but weak cash flow if capex is high.'],
+    'net income':
+      ['Net Income / PAT',
+       'Profit After Tax — the bottom line. What remains for shareholders after all expenses, interest, and taxes.',
+       'Track growth QoQ and YoY. A PAT beat vs analyst estimates often triggers sharp price moves.'],
+    'total revenue':
+      ['Total Revenue',
+       'All money earned from core operations (sales, services, licensing) before any deductions.',
+       'Revenue growth without margin expansion can signal competitive pressure. Watch both together.'],
+    'operating income':
+      ['Operating Income / EBIT',
+       'Revenue minus operating expenses, before interest and taxes. Shows how profitable the core business is.',
+       'Earnings Before Interest and Tax (EBIT) — excludes financing and tax effects.'],
+    'gross profit':
+      ['Gross Profit',
+       'Revenue minus the direct cost of making/delivering goods (COGS). The starting point for all other profit margins.',
+       'Gross profit declining faster than revenue → input cost pressure squeezing margins.'],
+
+    // ── Leverage / Liquidity ────────────────────────────────────────────────
+    'debt/equity':
+      ['Debt / Equity Ratio',
+       'Total debt ÷ shareholders\' equity. Measures financial leverage — how much borrowed money the company uses vs its own.',
+       'D/E > 1 = more debt than equity. High D/E in rate-rising environments raises default risk. Normal varies by sector.'],
+    'current ratio':
+      ['Current Ratio',
+       'Current assets ÷ current liabilities. Can the company pay its short-term bills using short-term assets?',
+       'Below 1 = potential liquidity stress. Above 2 = possibly too conservative (idle cash). 1.2–1.8 is usually healthy.'],
+    'quick ratio':
+      ['Quick Ratio (Acid Test)',
+       'Same as current ratio but excludes inventory (which can be hard to sell fast). Stricter liquidity test.',
+       'Quick ratio < 1 is a caution sign — the company may struggle to meet immediate obligations without selling inventory.'],
+    'total debt':
+      ['Total Debt',
+       'All short-term and long-term borrowings. A rising debt pile alongside falling revenue is a stress signal.',
+       'Compare with EBITDA: Debt/EBITDA > 4× is considered high leverage for most industries.'],
+    'total cash':
+      ['Total Cash & Equivalents',
+       'Cash on hand plus liquid short-term investments. The buffer for operations, capex, and emergencies.',
+       'Net cash = total cash minus total debt. A company with net cash has strong balance sheet flexibility.'],
+    'free cash flow':
+      ['Free Cash Flow (FCF)',
+       'Operating cash flow minus capital expenditure. The actual cash the business generates after maintaining/growing its assets.',
+       'The most honest measure of a company\'s financial health — harder to manipulate than earnings.'],
+
+    // ── Cash Flow Statement ─────────────────────────────────────────────────
+    'operating cash flow':
+      ['Operating Cash Flow',
+       'Cash generated from the company\'s core operations, before capex or financing activities.',
+       'Should ideally exceed net income. Consistently negative → the business is burning cash to stay alive.'],
+    'capital expenditure':
+      ['Capital Expenditure (Capex)',
+       'Money spent on buying, maintaining, or upgrading physical assets (factories, equipment, tech infrastructure).',
+       'High capex industries: infra, manufacturing, telecom. Low capex: software, services. Capex drives future capacity.'],
+    'cash dividends paid':
+      ['Cash Dividends Paid',
+       'Total cash returned to shareholders as dividends during the period.',
+       'Rising dividends signal confidence. Dividends paid while taking on debt is a red flag.'],
+
+    // ── Balance Sheet ───────────────────────────────────────────────────────
+    'total assets':
+      ['Total Assets',
+       'Everything the company owns: cash, inventory, property, equipment, intangibles, investments.',
+       'Growth in total assets financed by equity = healthy. Financed by debt = leverage increasing.'],
+    'total liabilities':
+      ['Total Liabilities',
+       'Everything the company owes: loans, payables, deferred revenue, other obligations.',
+       'Watch the trend. Fast-rising liabilities vs stable assets → balance sheet deterioration.'],
+    'stockholders equity':
+      ['Shareholders\' Equity / Net Worth',
+       'Total assets minus total liabilities. The theoretical book value belonging to shareholders.',
+       'Consistently growing equity = company is building value. Negative equity (rare) = liabilities exceed assets.'],
+
+    // ── Growth ──────────────────────────────────────────────────────────────
+    'revenue growth':
+      ['Revenue Growth (YoY)',
+       'How much revenue grew compared to the same period last year, in percentage.',
+       'Compare with margin trends: growing revenue + stable/expanding margins = quality growth.'],
+    'earnings growth':
+      ['Earnings Growth (YoY)',
+       'Net profit growth compared to the same period last year.',
+       'High earnings growth + low PEG ratio is one of the best combinations for growth investors.'],
+
+    // ── Market / Price Data ─────────────────────────────────────────────────
+    'beta':
+      ['Beta',
+       'Measures how much the stock moves relative to the overall market (Nifty 50). Beta 1 = moves in line; Beta 1.5 = 50% more volatile; Beta 0.5 = half as volatile.',
+       'High beta stocks move faster in both directions. Low beta = defensive. Negative beta = inversely correlated (rare).'],
+    '52w high':
+      ['52-Week High',
+       'The highest price the stock has traded at in the past 52 weeks.',
+       'Breaking above the 52W high on high volume is a classic momentum signal — "new all-time high" territory.'],
+    '52w low':
+      ['52-Week Low',
+       'The lowest price the stock has traded at in the past 52 weeks.',
+       'A stock near its 52W low can mean opportunity or a value trap — check fundamentals before assuming recovery.'],
+    '200d avg':
+      ['200-Day Moving Average',
+       'The average closing price over the last 200 trading days. A key long-term trend indicator.',
+       'Price above 200D avg = bullish trend. Price crossing below = potential trend reversal (death cross).'],
+    'day high':
+      ['Day\'s High',
+       'The highest price the stock reached during the current trading session.'],
+    'day low':
+      ['Day\'s Low',
+       'The lowest price the stock reached during the current trading session.'],
+    'last price':
+      ['Last Traded Price (LTP)',
+       'The most recent price at which the stock was bought or sold on the exchange.'],
+
+    // ── Dividends ────────────────────────────────────────────────────────────
+    'dividend yield':
+      ['Dividend Yield',
+       'Annual dividend per share ÷ current share price × 100. The return you get just from dividends, as a % of what you paid.',
+       'High yield (>5%) can be attractive but verify it\'s sustainable — a falling share price can artificially inflate yield.'],
+    'payout ratio':
+      ['Dividend Payout Ratio',
+       'What fraction of net profit is paid out as dividends. Payout 60% → company returns 60 paise of every rupee earned.',
+       'Very high payout (>80%) may limit reinvestment. Very low (<20%) signals the company prefers to retain capital for growth.'],
+    'dividend / share':
+      ['Dividend per Share',
+       'Total annual dividend distributed, per share held.',
+       'Track the trend — rising DPS over years = company rewarding shareholders consistently.'],
+    'dividend history':
+      ['Dividend History',
+       'Record of past dividend payments. Uninterrupted dividends over many years signal financial stability.',
+       'Companies that cut dividends often see sharp price drops — institutions re-rate the stock immediately.'],
+
+    // ── Ownership / Shareholding ─────────────────────────────────────────────
+    'promoter / insiders':
+      ['Promoter Holding',
+       'Percentage of shares owned by the company\'s founders/controlling family and key insiders.',
+       'Higher promoter holding = more skin in the game. Falling promoter stake quarter-over-quarter is a red flag.'],
+    'institutions':
+      ['Institutional Holding',
+       'Percentage held by mutual funds, insurance companies, and other institutional investors.',
+       'Rising institutional ownership = smart money moving in. Declining = funds exiting.'],
+    'fii':
+      ['Foreign Institutional Investor (FII / FPI)',
+       'Foreign portfolio investors — foreign funds, sovereign wealth funds, hedge funds investing in Indian markets.',
+       'FII flows are a major driver of Nifty direction. Sustained FII selling = market headwind.'],
+    'dii':
+      ['Domestic Institutional Investor (DII)',
+       'Indian mutual funds, insurance companies (LIC), and pension funds investing in Indian equities.',
+       'DIIs often buy when FIIs sell, providing a cushion. Rising DII + falling FII = domestic confidence vs foreign caution.'],
+    'promoter':
+      ['Promoter',
+       'The founding family or controlling shareholders of an Indian company. They typically hold a large stake.',
+       'SEBI requires promoters to disclose all share transactions. Pledging shares for personal loans is disclosed separately.'],
+    'pledged':
+      ['Pledged Shares',
+       'Promoter shares pledged as collateral for loans. If the stock price falls, lenders can force-sell these shares.',
+       'High pledge % (>30%) + falling stock = margin call risk. Watch for sudden large block deals as a warning sign.'],
+    'pledge rising':
+      ['Rising Pledge',
+       'The percentage of promoter shares pledged as loan collateral is increasing.',
+       'Bearish signal: promoters may be under financial stress and borrowing against their holding.'],
+    'promoter diluting':
+      ['Promoter Dilution',
+       'Promoters are reducing their shareholding by selling shares.',
+       'Not always bearish (could be planned), but sustained selling by promoters warrants scrutiny.'],
+    'fii exiting':
+      ['FII Exit',
+       'Foreign institutional investors are reducing their position in this stock.',
+       'Could signal valuation concerns or portfolio rebalancing. More meaningful when combined with negative news.'],
+    'promoter buying':
+      ['Promoter Increasing Stake',
+       'Promoters are buying more of their own company\'s shares.',
+       'Bullish signal — insiders have the most information. Promoter buying after a correction is often a strong buy cue.'],
+
+    // ── Signal / Alpha terms ─────────────────────────────────────────────────
+    'alpha score':
+      ['Alpha Score',
+       'Tickwave\'s proprietary 0–100 signal strength score. Combines price move magnitude, volume anomaly, news sentiment, and sector context.',
+       '≥ 70 = high conviction · 45–70 = moderate · < 45 = speculative or low evidence.'],
+    'active alpha':
+      ['Active Alpha',
+       'Number of high-confidence signals currently active on this ticker.',
+       'Multiple simultaneous signals from different sources (news + price + volume) reinforce each other.'],
+    'confidence':
+      ['Signal Confidence',
+       'NLP model confidence (0–100%) that the detected sentiment and event type are correctly classified.',
+       '≥ 80% = strong classification. Low confidence means the headline was ambiguous — treat with caution.'],
+  };
+
+  // Normalise a label string to a glossary key
+  function normalise(text) {
+    return text
+      .toLowerCase()
+      .replace(/\s*\([^)]*\)/g, '')   // strip (TTM), (YoY), etc.
+      .replace(/[^a-z0-9\/% ]/g, ' ') // collapse punctuation
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Find the best glossary match: exact first, then prefix
+  function findEntry(raw) {
+    const k = normalise(raw);
+    if (G[k]) return G[k];
+    // Try prefix match for compound labels like "Revenue Growth (YoY)"
+    for (const key of Object.keys(G)) {
+      if (k.startsWith(key) || k.includes(key)) return G[key];
+    }
+    return null;
+  }
+
+  function annotateFinTerms() {
+    document.querySelectorAll(
+      '.kv-label, .kv-val, .fin-table td:first-child, .section-header'
+    ).forEach(el => {
+      if (el.dataset.annotated) return;
+      const entry = findEntry(el.textContent);
+      if (!entry) return;
+      el.dataset.finterm = '1';
+      el.dataset.annotated = '1';
+      el._ftEntry = entry;
+    });
+  }
+
+  // Tooltip element
+  const tip = document.getElementById('finTooltip');
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-finterm]');
+    if (!el || !el._ftEntry) return;
+    const [termName, body, note] = el._ftEntry;
+    tip.innerHTML =
+      `<div class="ft-term">${termName}</div>` +
+      `<div class="ft-body">${body}</div>` +
+      (note ? `<div class="ft-note">${note}</div>` : '');
+    tip.style.display = 'block';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (tip.style.display === 'none') return;
+    const pad = 14;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const left = e.clientX + pad + tw > vw ? e.clientX - tw - pad : e.clientX + pad;
+    const top  = e.clientY + pad + th > vh ? e.clientY - th - pad : e.clientY + pad;
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  });
+
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('[data-finterm]')) tip.style.display = 'none';
+  });
+
+  // Run once after content loads, then watch for dynamic tab loads
+  setTimeout(annotateFinTerms, 800);
+  setTimeout(annotateFinTerms, 2500);
+
+  const obs = new MutationObserver(() => annotateFinTerms());
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // Also re-run on every tab click (belt + suspenders)
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.addEventListener('click', () => setTimeout(annotateFinTerms, 400))
+  );
+})();
 </script>
 </body>
 </html>

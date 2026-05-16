@@ -1,0 +1,416 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | M&amp;A</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script id="tailwind-config">
+  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
+    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
+    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
+    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
+    "outline":"#3d4a5c","outline-variant":"#253040",
+    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
+  }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["Geist Mono"] } } } }
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<link rel="stylesheet" href="./shared/css/refined.css">
+<link rel="stylesheet" href="./shared/css/search-bar.css">
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/widgets.js"></script>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
+.ma-card { background: var(--rf-card); border: 1px solid var(--rf-line); border-radius: 12px; padding: 16px 18px; }
+.ma-deal { background: var(--rf-card); border: 1px solid var(--rf-line); border-radius: 10px; padding: 14px 16px;
+           display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; cursor: pointer;
+           transition: background 0.15s, border-color 0.15s; }
+.ma-deal:hover { background: var(--rf-card-hi); border-color: var(--rf-text-dim); }
+.ma-deal-parties { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ma-deal-acq, .ma-deal-tgt { font: 600 14px 'DM Sans',sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ma-deal-arrow { color: var(--rf-text-dim); flex-shrink: 0; }
+.ma-deal-meta { font-size: 12px; color: var(--rf-text-dim); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+.ma-status { display:inline-flex; align-items:center; padding:3px 10px; border-radius:8px; border:1px solid;
+             font: 600 10px/1 'Geist Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; }
+.ma-status.rumor       { color: var(--rf-text-dim);  border-color: var(--rf-line); }
+.ma-status.announced   { color: var(--rf-info);      border-color: color-mix(in oklab, var(--rf-info) 35%, transparent); background: color-mix(in oklab, var(--rf-info) 10%, transparent); }
+.ma-status.sebi_filed  { color: var(--rf-caution);   border-color: color-mix(in oklab, var(--rf-caution) 35%, transparent); background: color-mix(in oklab, var(--rf-caution) 10%, transparent); }
+.ma-status.approved    { color: var(--rf-bull);      border-color: color-mix(in oklab, var(--rf-bull) 35%, transparent); background: color-mix(in oklab, var(--rf-bull) 10%, transparent); }
+.ma-status.effective   { color: var(--rf-bull);      border-color: var(--rf-bull); background: color-mix(in oklab, var(--rf-bull) 18%, transparent); }
+.ma-status.withdrawn   { color: var(--rf-bear);      border-color: color-mix(in oklab, var(--rf-bear) 35%, transparent); background: color-mix(in oklab, var(--rf-bear) 8%, transparent); }
+.ma-alpha { display:inline-flex; align-items:center; justify-content:center; min-width:42px; padding:4px 10px;
+            border-radius:8px; border:1px solid; font: 700 16px 'Plus Jakarta Sans',sans-serif; }
+.ma-alpha.hi  { color: var(--rf-bull); border-color: color-mix(in oklab, var(--rf-bull) 35%, transparent); background: color-mix(in oklab, var(--rf-bull) 12%, transparent); }
+.ma-alpha.mid { color: var(--rf-caution); border-color: color-mix(in oklab, var(--rf-caution) 35%, transparent); background: color-mix(in oklab, var(--rf-caution) 10%, transparent); }
+.ma-alpha.lo  { color: var(--rf-text-dim); border-color: var(--rf-line); background: transparent; }
+.ma-timeline { position: relative; padding-left: 22px; }
+.ma-timeline::before { content:''; position:absolute; left: 7px; top: 4px; bottom: 4px; width: 2px; background: var(--rf-line); }
+.ma-timeline-item { position: relative; padding: 6px 0 14px; }
+.ma-timeline-item::before { content:''; position: absolute; left: -19px; top: 12px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--rf-card); border: 2px solid var(--rf-text-dim); }
+.ma-timeline-item.hi::before { border-color: var(--rf-bull); background: color-mix(in oklab, var(--rf-bull) 25%, var(--rf-card)); }
+.ma-factor { display: grid; grid-template-columns: 110px 60px 1fr; gap: 10px; align-items: center; padding: 8px 0;
+             border-bottom: 1px solid var(--rf-line); font-size: 13px; }
+.ma-factor:last-child { border-bottom: none; }
+.ma-factor-bar { height: 6px; background: var(--rf-line); border-radius: 3px; overflow: hidden; }
+.ma-factor-bar > div { height: 100%; background: var(--rf-bull); }
+@media (max-width: 700px) { .ma-deal { grid-template-columns: 1fr; gap: 8px; } }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div><div class="rf-dot-grid"></div>
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header"><img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo><p class="sidebar-brand-sub">M&amp;A Tracker</p></div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <div class="sidebar-section">Markets</div>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+    <div class="sidebar-section">News</div>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+    <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+    <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+    <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+    <a class="sidebar-link active" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+    <div class="sidebar-section">Tools</div>
+    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+    <div class="sidebar-section">Insights</div>
+    <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+    <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+    <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+  </nav>
+  <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content" style="max-width:1200px;">
+
+<header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-6">
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+    <div style="flex:1;min-width:280px;">
+      <h1 class="text-4xl font-black font-headline text-on-surface mb-2">M&amp;A</h1>
+      <p class="text-on-surface-variant text-sm mb-4">
+        Mergers, acquisitions, open offers, schemes of arrangement and delistings — tracked from filings + news, scored on size, synergy and acquirer track record.
+      </p>
+      <div data-tw-search></div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="refreshBtn" class="rf-chip" title="Trigger fresh scrape">↻ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<!-- KPI strip -->
+<section class="px-6 mb-6">
+  <div class="rf-bento" style="margin: 0;">
+    <div class="rf-kpi"><div class="rf-kpi-label">Deals · 90d</div><div class="rf-kpi-value" id="kpiTotal">—</div><div class="rf-kpi-delta">tracked</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Total value</div><div class="rf-kpi-value" id="kpiValue">—</div><div class="rf-kpi-delta">crore INR</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Active</div><div class="rf-kpi-value" id="kpiActive">—</div><div class="rf-kpi-delta">in flight</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Top sector</div><div class="rf-kpi-value" id="kpiTopSector" style="font-size:18px;">—</div><div class="rf-kpi-delta" id="kpiTopSectorN">—</div></div>
+  </div>
+</section>
+
+<!-- Status filter chips -->
+<section class="px-6 mb-4">
+  <div class="rf-chips" id="statusChips">
+    <button class="rf-chip active" data-status="all">All</button>
+    <button class="rf-chip" data-status="rumor">Rumor</button>
+    <button class="rf-chip" data-status="announced">Announced</button>
+    <button class="rf-chip" data-status="sebi_filed">SEBI filed</button>
+    <button class="rf-chip" data-status="approved">Approved</button>
+    <button class="rf-chip" data-status="effective">Effective</button>
+  </div>
+</section>
+
+<!-- Deal list -->
+<section class="px-6 mb-8">
+  <div id="dealList" style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="rf-skel" style="height: 64px; border-radius: 10px;"></div>
+    <div class="rf-skel" style="height: 64px; border-radius: 10px;"></div>
+    <div class="rf-skel" style="height: 64px; border-radius: 10px;"></div>
+  </div>
+  <div id="dealCount" style="margin-top: 14px; font-size: 12px; color: var(--rf-text-dim);">—</div>
+</section>
+
+<!-- Drill panel (deep-linkable via ?deal=<id>) -->
+<section class="px-6 mb-8" id="drillSection" style="display:none;">
+  <div class="ma-card" style="padding: 0;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--rf-line);gap:14px;">
+      <div style="min-width: 0;">
+        <div style="font: 700 20px 'Plus Jakarta Sans',sans-serif;color:var(--rf-text);" id="drillTitle">—</div>
+        <div style="font-size: 12px; color:var(--rf-text-dim); margin-top: 4px;" id="drillSub">—</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="drillClose" class="rf-chip">Close</button>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 18px; padding: 18px 20px;" id="drillGrid">
+      <div>
+        <h3 style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--rf-text);">Timeline</h3>
+        <div class="ma-timeline" id="drillTimeline"></div>
+      </div>
+      <div>
+        <h3 style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--rf-text);">Alpha breakdown</h3>
+        <div id="drillFactors"></div>
+      </div>
+      <div>
+        <h3 style="font-size:13px;font-weight:600;margin:0 0 12px;color:var(--rf-text);">Sources</h3>
+        <div id="drillSources" style="font-size:13px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/search-bar.js" defer></script>
+<script>
+const escape = s => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const fmtCr = v => v == null || isNaN(v) ? '—' : '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 }) + ' cr';
+const fmtCrShort = v => {
+  if (v == null || isNaN(v)) return '—';
+  const n = Number(v);
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + ' lakh cr';
+  if (n >= 1000) return '₹' + (n/1000).toFixed(1) + 'k cr';
+  return '₹' + n.toFixed(0) + ' cr';
+};
+const fmtDate = s => {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const daysSince = s => {
+  if (!s) return null;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+};
+const alphaClass = a => a == null ? 'lo' : (a >= 70 ? 'hi' : (a >= 50 ? 'mid' : 'lo'));
+
+let allDeals = [];
+let activeStatus = 'all';
+
+async function loadAll() {
+  try {
+    const [stRes, listRes] = await Promise.all([
+      fetch('/api/ma/stats?days=90').then(r => r.json()).catch(() => null),
+      fetch('/api/ma?days=365&limit=200').then(r => r.json()).catch(() => null),
+    ]);
+    if (stRes && stRes.success && stRes.data) renderKpis(stRes.data);
+    allDeals = (listRes && listRes.success) ? (listRes.data || []) : [];
+    renderDealList();
+  } catch (err) { console.error(err); }
+}
+
+function renderKpis(s) {
+  document.getElementById('kpiTotal').textContent = s.total ?? '—';
+  document.getElementById('kpiValue').textContent = fmtCrShort(s.total_value_cr);
+  document.getElementById('kpiActive').textContent = s.active ?? '—';
+  const top = (s.top_sectors || [])[0];
+  document.getElementById('kpiTopSector').textContent = top ? top.sector : '—';
+  document.getElementById('kpiTopSectorN').textContent = top ? top.n + ' deals' : '—';
+}
+
+function renderDealList() {
+  const filtered = activeStatus === 'all' ? allDeals : allDeals.filter(d => d.status === activeStatus);
+  const el = document.getElementById('dealList');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="ma-card" style="text-align:center;color:var(--rf-text-dim);padding:36px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;">No M&amp;A deals${activeStatus !== 'all' ? ' in <code>' + activeStatus + '</code>' : ''}</div>
+      <div style="font-size:12px;">Click <strong>↻ Refresh</strong> above to scrape fresh filings + news.</div>
+    </div>`;
+    document.getElementById('dealCount').textContent = '0 deals';
+    return;
+  }
+  el.innerHTML = filtered.map(d => {
+    const a = d.alpha_score != null ? Math.round(d.alpha_score) : null;
+    const dage = daysSince(d.announcement_date);
+    const ageStr = dage == null ? '' : (dage === 0 ? 'today' : dage === 1 ? '1d ago' : dage + 'd ago');
+    return `<div class="ma-deal" data-id="${escape(d.deal_id)}">
+      <div style="min-width:0;">
+        <div class="ma-deal-parties">
+          ${CompanyLogo.img(d.acquirer_ticker || d.acquirer_name, { size: 24, round: true })}
+          <span class="ma-deal-acq">${escape(d.acquirer_name || '—')}</span>
+          <span class="ma-deal-arrow material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+          ${CompanyLogo.img(d.target_ticker || d.target_name, { size: 24, round: true })}
+          <span class="ma-deal-tgt">${escape(d.target_name || '—')}</span>
+        </div>
+        <div class="ma-deal-meta">
+          <span style="text-transform:capitalize;">${escape((d.deal_type || '').replace(/_/g, ' '))}</span>
+          ${d.deal_value_cr ? `<span>· ${escape(fmtCr(d.deal_value_cr))}</span>` : ''}
+          ${d.stake_pct ? `<span>· ${d.stake_pct.toFixed(1)}%</span>` : ''}
+          ${d.consideration_type ? `<span>· ${escape(d.consideration_type)}</span>` : ''}
+          ${ageStr ? `<span>· ${ageStr}</span>` : ''}
+        </div>
+      </div>
+      <span class="ma-status ${escape(d.status || 'rumor')}">${escape((d.status || 'rumor').replace(/_/g, ' '))}</span>
+      <span class="ma-alpha ${alphaClass(a)}">${a != null ? a : '—'}</span>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.ma-deal').forEach(node => {
+    node.addEventListener('click', () => openDrill(node.dataset.id));
+  });
+  document.getElementById('dealCount').textContent = filtered.length + ' deals' + (activeStatus !== 'all' ? ' · status: ' + activeStatus : '');
+}
+
+document.getElementById('statusChips').addEventListener('click', e => {
+  const btn = e.target.closest('.rf-chip');
+  if (!btn) return;
+  document.querySelectorAll('#statusChips .rf-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeStatus = btn.dataset.status;
+  renderDealList();
+});
+
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('refreshBtn');
+  btn.textContent = 'scraping…';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/ma/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ days: 7 })
+    });
+    const j = await r.json();
+    if (j && j.success) {
+      btn.textContent = `✓ ${j.data.new || 0} new, ${j.data.merged || 0} merged`;
+      await loadAll();
+    } else {
+      btn.textContent = '✗ ' + (j && j.error || 'failed');
+    }
+  } catch (e) {
+    btn.textContent = '✗ network';
+  }
+  setTimeout(() => { btn.textContent = '↻ Refresh'; btn.disabled = false; }, 4000);
+});
+
+// --- Drill view ---
+async function openDrill(dealId) {
+  if (!dealId) return;
+  history.replaceState(null, '', '?deal=' + encodeURIComponent(dealId));
+  const sec = document.getElementById('drillSection');
+  sec.style.display = '';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('drillTitle').textContent = 'Loading…';
+  document.getElementById('drillSub').textContent = '';
+  document.getElementById('drillTimeline').innerHTML = '<div class="rf-skel" style="height: 80px; border-radius: 8px;"></div>';
+  document.getElementById('drillFactors').innerHTML = '<div class="rf-skel" style="height: 60px; border-radius: 8px;"></div>';
+  document.getElementById('drillSources').innerHTML = '';
+  try {
+    const r = await fetch('/api/ma/deal/' + encodeURIComponent(dealId));
+    const j = await r.json();
+    if (!j || !j.success) {
+      document.getElementById('drillTitle').textContent = 'Deal not found';
+      document.getElementById('drillSub').textContent = j && j.error || '';
+      return;
+    }
+    renderDrill(j.data);
+  } catch (err) {
+    document.getElementById('drillTitle').textContent = 'Error';
+    document.getElementById('drillSub').textContent = err.message;
+  }
+}
+
+function renderDrill(deal) {
+  const a = deal.alpha_score != null ? Math.round(deal.alpha_score) : null;
+  document.getElementById('drillTitle').innerHTML =
+    `<span style="display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">` +
+    `${CompanyLogo.img(deal.acquirer_ticker || deal.acquirer_name, { size: 28 })}` +
+    `${escape(deal.acquirer_name || '—')}` +
+    `</span> <span class="material-symbols-outlined" style="font-size:18px;color:var(--rf-text-dim);vertical-align:middle;">arrow_forward</span> ` +
+    `<span style="display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">` +
+    `${CompanyLogo.img(deal.target_ticker || deal.target_name, { size: 28 })}` +
+    `${escape(deal.target_name || '—')}` +
+    `</span>` +
+    `&nbsp;<span class="ma-status ${escape(deal.status || 'rumor')}" style="vertical-align:middle;">${escape((deal.status || 'rumor').replace(/_/g, ' '))}</span>` +
+    `&nbsp;<span class="ma-alpha ${alphaClass(a)}" style="vertical-align:middle;">${a != null ? a : '—'}</span>`;
+  const subBits = [];
+  if (deal.deal_type) subBits.push(deal.deal_type.replace(/_/g, ' '));
+  if (deal.deal_value_cr) subBits.push(fmtCr(deal.deal_value_cr));
+  if (deal.stake_pct) subBits.push(deal.stake_pct.toFixed(1) + '%');
+  if (deal.consideration_type) subBits.push(deal.consideration_type);
+  if (deal.announcement_date) subBits.push('announced ' + fmtDate(deal.announcement_date));
+  document.getElementById('drillSub').textContent = subBits.join(' · ');
+
+  // Timeline
+  const events = (deal.events || []).slice().sort((a,b) => (a.event_date || '').localeCompare(b.event_date || ''));
+  const tl = document.getElementById('drillTimeline');
+  if (!events.length) {
+    tl.innerHTML = '<div style="font-size:13px;color:var(--rf-text-dim);">No timeline events yet.</div>';
+  } else {
+    tl.innerHTML = events.map((e, i) => `
+      <div class="ma-timeline-item ${i === events.length - 1 ? 'hi' : ''}">
+        <div style="font-size: 12px; color: var(--rf-text-dim); font-family: 'Geist Mono', monospace;">${escape(fmtDate(e.event_date))}</div>
+        <div style="font-size: 13px; font-weight: 600; margin-top: 2px;">${escape((e.event_type || '').replace(/_/g, ' ').replace(/:/g, ' → '))}</div>
+        ${e.description ? `<div style="font-size:12px;color:var(--rf-text-mute);margin-top:4px;">${escape(e.description)}</div>` : ''}
+        ${e.source_url ? `<a href="${escape(e.source_url)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--rf-text-dim);text-decoration:underline;">source</a>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // Factor breakdown
+  const factors = (deal.payload && deal.payload._factors) || {};
+  const fEl = document.getElementById('drillFactors');
+  if (!Object.keys(factors).length) {
+    fEl.innerHTML = '<div style="font-size:13px;color:var(--rf-text-dim);">No factor breakdown — re-run scoring to populate.</div>';
+  } else {
+    fEl.innerHTML = Object.entries(factors).map(([k, v]) => {
+      const score = Math.round(v.score || 0);
+      return `<div class="ma-factor">
+        <div style="text-transform:capitalize;color:var(--rf-text-mute);">${escape(k.replace(/_/g, ' '))}</div>
+        <div style="font-family:'Geist Mono',monospace;text-align:right;">${score}</div>
+        <div>
+          <div class="ma-factor-bar"><div style="width:${score}%;"></div></div>
+          <div style="font-size:11px;color:var(--rf-text-dim);margin-top:2px;">${escape(v.why || '')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Sources
+  const links = new Set();
+  if (deal.source_url) links.add(deal.source_url);
+  events.forEach(e => { if (e.source_url) links.add(e.source_url); });
+  const sEl = document.getElementById('drillSources');
+  if (!links.size) {
+    sEl.innerHTML = '<div style="color:var(--rf-text-dim);">No source URLs captured.</div>';
+  } else {
+    sEl.innerHTML = Array.from(links).map(u =>
+      `<div style="margin: 4px 0;"><a href="${escape(u)}" target="_blank" rel="noopener" style="color:var(--rf-text);text-decoration:underline;text-decoration-style:dotted;">${escape(u)}</a></div>`
+    ).join('');
+  }
+}
+
+document.getElementById('drillClose').addEventListener('click', () => {
+  document.getElementById('drillSection').style.display = 'none';
+  history.replaceState(null, '', location.pathname);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  if (window.Auth) Auth.updateAuthUI();
+  const params = new URLSearchParams(location.search);
+  if (params.get('deal')) openDrill(params.get('deal'));
+});
+</script>
+<script src="./shared/js/stock-popup.js" defer></script>
+</body>
+</html>

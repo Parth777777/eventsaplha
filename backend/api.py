@@ -42,6 +42,403 @@ app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret')
 
+# ── NaN-safe JSON ─────────────────────────────────────────────────────────
+# Python's default json.dumps emits literal NaN / Infinity which the browser
+# rejects ("Unexpected token 'N'…is not valid JSON"). We walk the response
+# tree and replace NaN/Infinity with None before serialization, so /api/stock
+# and friends produce strict-JSON-compliant responses.
+import math
+def _strict_json_clean(obj):
+    if isinstance(obj, float):
+        if obj != obj or obj == math.inf or obj == -math.inf:
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {k: _strict_json_clean(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_strict_json_clean(v) for v in obj]
+    return obj
+try:
+    from flask.json.provider import DefaultJSONProvider
+    class _StrictJSONProvider(DefaultJSONProvider):
+        def dumps(self, obj, **kwargs):
+            return super().dumps(_strict_json_clean(obj), **kwargs)
+    app.json = _StrictJSONProvider(app)
+except Exception:
+    # Older Flask (<2.2) — fall back to overriding json_encoder.
+    import json as _json
+    class _StrictJSONEncoder(_json.JSONEncoder):
+        def iterencode(self, o, _one_shot=False):
+            return super().iterencode(_strict_json_clean(o), _one_shot)
+    app.json_encoder = _StrictJSONEncoder
+
+# ============ MARKET CLOCK ============
+# Single source of truth for "is the market live?" — used by the in-app banner
+# and by any data-staleness UI ("last close · 15:30 IST" vs "live · streaming").
+from market_clock import clock_payload as _market_clock_payload, is_market_open as _is_market_open
+
+@app.route('/api/market/clock', methods=['GET'])
+def market_clock():
+    return jsonify({'success': True, 'data': _market_clock_payload()})
+
+# ============ NOTIFICATION RETRY (admin visibility) ============
+
+@app.route('/api/admin/notifications/queue', methods=['GET'])
+def admin_notif_queue():
+    try:
+        from notification_retry import queue_status
+        return jsonify({'success': True, 'data': queue_status()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/admin/notifications/drain', methods=['POST'])
+def admin_notif_drain():
+    """Manually drain pending retries — handy for ops."""
+    try:
+        from notification_retry import process_pending
+        stats = process_pending(limit=50)
+        return jsonify({'success': True, 'data': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============ F&O OPTION CHAIN ============
+# Three endpoints for the F&O page — all read-only and cached briefly.
+
+_OC_VALID = {'NIFTY', 'BANKNIFTY', 'FINNIFTY'}
+
+@app.route('/api/fo/option-chain/<symbol>', methods=['GET'])
+def fo_option_chain_summary(symbol):
+    sym = (symbol or '').upper().strip()
+    if sym not in _OC_VALID:
+        return jsonify({'success': False, 'error': 'unsupported symbol'}), 400
+    try:
+        from nse_option_chain import latest_summary
+        row = latest_summary(sym)
+        if not row:
+            return jsonify({'success': True, 'data': None, 'note': 'no snapshot yet'})
+        return jsonify({'success': True, 'data': row})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/fo/option-chain/<symbol>/oi-shifts', methods=['GET'])
+def fo_option_chain_shifts(symbol):
+    sym = (symbol or '').upper().strip()
+    if sym not in _OC_VALID:
+        return jsonify({'success': False, 'error': 'unsupported symbol'}), 400
+    try:
+        from nse_option_chain import recent_oi_shifts
+        top = max(3, min(30, int(request.args.get('top', '10'))))
+        return jsonify({'success': True, 'data': recent_oi_shifts(sym, top=top)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/fo/option-chain/refresh', methods=['POST'])
+def fo_option_chain_refresh():
+    """Manual ingest trigger — useful when market just opened or for ops."""
+    try:
+        from nse_option_chain import ingest_all_symbols
+        return jsonify({'success': True, 'data': ingest_all_symbols()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============ DATA FRESHNESS MONITOR ============
+# One-stop "is every data source healthy?" endpoint. Probes the freshest row
+# from each table the trader actually depends on and reports staleness.
+
+def _freshness_row(name: str, sql: str, ok_max_min: int, warn_max_min: int):
+    """Run a SELECT MAX(<ts_col>) and bucket its age into status."""
+    try:
+        db = get_db()
+        cur = db.conn.cursor()
+        cur.execute(sql)
+        r = cur.fetchone()
+        ts = r[0] if r else None
+    except Exception as e:
+        return {'name': name, 'status': 'error', 'error': str(e)[:120],
+                'last_row_at': None, 'age_min': None}
+    if not ts:
+        return {'name': name, 'status': 'empty', 'last_row_at': None, 'age_min': None}
+    try:
+        # SQLite returns string, Postgres returns datetime
+        if isinstance(ts, str):
+            ts_dt = datetime.fromisoformat(ts.replace('Z', '+00:00').split('+')[0])
+        else:
+            ts_dt = ts
+        age = (datetime.utcnow() - ts_dt.replace(tzinfo=None)).total_seconds() / 60.0
+    except Exception:
+        return {'name': name, 'status': 'unknown', 'last_row_at': str(ts), 'age_min': None}
+    status = 'ok' if age <= ok_max_min else 'warn' if age <= warn_max_min else 'stale'
+    return {'name': name, 'status': status,
+            'last_row_at': str(ts), 'age_min': round(age, 1),
+            'ok_threshold_min': ok_max_min, 'warn_threshold_min': warn_max_min}
+
+
+@app.route('/api/admin/data-status', methods=['GET'])
+def admin_data_status():
+    """Returns a freshness probe per data source."""
+    probes = [
+        _freshness_row('events',     "SELECT MAX(created_at) FROM events",                       60,   240),
+        _freshness_row('signals',    "SELECT MAX(created_at) FROM signals",                      60,   240),
+        _freshness_row('predictions', "SELECT MAX(created_at) FROM predictions",                240,  1440),
+        _freshness_row('articles',   "SELECT MAX(first_seen_at) FROM scraped_articles",          30,   180),
+        _freshness_row('notifications', "SELECT MAX(sent_at) FROM notification_log",            1440, 10080),
+    ]
+    # Also probe non-main-DB sources (separate sqlite files)
+    fo_probe = {'name': 'option_chain', 'status': 'empty', 'last_row_at': None, 'age_min': None}
+    try:
+        import sqlite3 as _s
+        oc_db = os.path.join(os.path.dirname(__file__), '..', 'fo.db')
+        if os.path.exists(oc_db):
+            c = _s.connect(oc_db, timeout=5); c.row_factory = _s.Row
+            row = c.execute("SELECT MAX(fetched_at) AS m FROM oc_snapshot").fetchone()
+            c.close()
+            if row and row['m']:
+                ts_dt = datetime.fromisoformat(str(row['m']).split('+')[0])
+                age = (datetime.utcnow() - ts_dt).total_seconds() / 60.0
+                fo_probe.update({'last_row_at': row['m'], 'age_min': round(age, 1),
+                                 'status': 'ok' if age <= 10 else 'warn' if age <= 60 else 'stale',
+                                 'ok_threshold_min': 10, 'warn_threshold_min': 60})
+    except Exception as e:
+        fo_probe['status'] = 'error'; fo_probe['error'] = str(e)[:120]
+    probes.append(fo_probe)
+    waitlist_probe = {'name': 'waitlist', 'status': 'empty', 'last_row_at': None, 'age_min': None}
+    try:
+        with _WL_LOCK:
+            c = _wl_conn()
+            row = c.execute("SELECT MAX(joined_at) AS m, COUNT(*) AS n FROM waitlist").fetchone()
+            c.close()
+        if row and row['m']:
+            waitlist_probe.update({'last_row_at': row['m'], 'n': row['n'], 'status': 'ok'})
+    except Exception as e:
+        waitlist_probe['status'] = 'error'; waitlist_probe['error'] = str(e)[:120]
+    probes.append(waitlist_probe)
+
+    overall = 'ok'
+    for p in probes:
+        if p['status'] in ('error', 'stale'):
+            overall = 'stale'; break
+        if p['status'] in ('warn', 'unknown'):
+            overall = 'warn'
+    return jsonify({'success': True, 'overall': overall,
+                    'data': probes, 'served_at': datetime.utcnow().isoformat() + 'Z'})
+
+# ============ TRUST: per-event-type hit-rate ============
+# Lets the trust page show "earnings 64% (n=87) · policy 51% (n=42) · merger 71% (n=12)" etc.
+# All horizons or filterable per horizon. Reads from signals JOIN predictions.
+
+@app.route('/api/trust/hit-rate-by-event', methods=['GET'])
+def trust_hit_rate_by_event():
+    horizon = (request.args.get('horizon') or '').strip().upper()
+    days = max(1, min(365, int(request.args.get('days', '180'))))
+    db = get_db()
+    p = "%s" if getattr(db, "is_postgres", False) else "?"
+    horizon_sql = ""
+    params = [days]
+    if horizon and horizon in ('1D', '3D', '5D', '10D', '20D'):
+        horizon_sql = f" AND p.horizon = {p}"
+        params.append(horizon)
+    sql = f"""
+        SELECT s.event_type,
+               p.horizon,
+               COUNT(*) AS resolved,
+               SUM(CASE WHEN p.hit_target = 1 THEN 1 ELSE 0 END) AS hits,
+               AVG(p.predicted_return_pct) AS avg_pred,
+               AVG(p.actual_return_pct)    AS avg_actual
+          FROM signals s
+          JOIN predictions p ON s.event_id = p.signal_id
+         WHERE p.actual_return_pct IS NOT NULL
+           AND p.created_at >= datetime('now', '-{days} days')
+           {horizon_sql}
+         GROUP BY s.event_type, p.horizon
+         HAVING COUNT(*) >= 3
+         ORDER BY resolved DESC
+    """
+    # Postgres syntax slightly differs — use NOW() - INTERVAL when applicable.
+    if getattr(db, "is_postgres", False):
+        sql = sql.replace(
+            f"datetime('now', '-{days} days')",
+            f"NOW() - INTERVAL '{days} days'"
+        )
+    try:
+        cur = db.conn.cursor()
+        cur.execute(sql)
+        cols = [c[0] for c in cur.description]
+        rows = [dict(zip(cols, r)) if not isinstance(r, dict) else r for r in cur.fetchall()]
+    except Exception as e:
+        logger.warning(f"trust_hit_rate_by_event query failed: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    out = []
+    for r in rows:
+        resolved = r.get('resolved') or 0
+        hits = r.get('hits') or 0
+        out.append({
+            'event_type':       r.get('event_type') or 'unknown',
+            'horizon':          r.get('horizon'),
+            'resolved':         resolved,
+            'hits':             hits,
+            'hit_rate_pct':     round(100.0 * hits / resolved, 1) if resolved else None,
+            'avg_predicted_pct': round(float(r.get('avg_pred')   or 0), 2),
+            'avg_actual_pct':    round(float(r.get('avg_actual') or 0), 2),
+        })
+    return jsonify({
+        'success': True,
+        'data': out,
+        'days_window': days,
+        'horizon_filter': horizon or 'ALL',
+    })
+
+# ============ WAITLIST (landing page) ============
+# Self-contained block: own table, own routes. No coupling to the signal DB.
+import sqlite3 as _wl_sqlite
+import secrets as _wl_secrets
+import re as _wl_re
+import threading as _wl_threading
+_WL_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'waitlist.db')
+_WL_LOCK = _wl_threading.Lock()
+_WL_FOUNDER_CAP = 500
+
+def _wl_conn():
+    c = _wl_sqlite.connect(_WL_DB_PATH, timeout=10)
+    c.row_factory = _wl_sqlite.Row
+    return c
+
+def _wl_init():
+    with _WL_LOCK:
+        c = _wl_conn()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS waitlist (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                email           TEXT UNIQUE NOT NULL,
+                ref_code        TEXT UNIQUE NOT NULL,
+                referred_by     TEXT,
+                position        INTEGER NOT NULL,
+                source          TEXT,
+                ip_hash         TEXT,
+                joined_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                confirmed_at    TIMESTAMP,
+                referral_count  INTEGER DEFAULT 0,
+                founder_locked  INTEGER DEFAULT 0
+            )""")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_wl_email    ON waitlist(email)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_wl_ref      ON waitlist(ref_code)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_wl_position ON waitlist(position)")
+        c.commit()
+        c.close()
+_wl_init()
+
+_WL_EMAIL_RE = _wl_re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+_WL_BLACKLIST = {
+    'mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com',
+    'throwaway.email', 'yopmail.com', 'trashmail.com', 'getnada.com',
+}
+def _wl_email_ok(email: str) -> bool:
+    if not email or len(email) > 254 or not _WL_EMAIL_RE.match(email):
+        return False
+    domain = email.rsplit('@', 1)[-1].lower()
+    return domain not in _WL_BLACKLIST
+
+def _wl_ip_hash(req) -> str:
+    ip = (req.headers.get('X-Forwarded-For') or req.remote_addr or '').split(',')[0].strip()
+    return hashlib.sha256((ip + os.getenv('SECRET_KEY', 'dev-secret')).encode()).hexdigest()[:24]
+
+@app.route('/api/waitlist/join', methods=['POST'])
+def waitlist_join():
+    data = request.get_json(silent=True) or {}
+    email = (data.get('email') or '').strip().lower()
+    ref   = (data.get('ref')   or '').strip() or None
+    source = (data.get('source') or 'unknown')[:32]
+    if not _wl_email_ok(email):
+        return jsonify({'success': False, 'error': 'Invalid email.'}), 400
+    ip_hash = _wl_ip_hash(request)
+    with _WL_LOCK:
+        c = _wl_conn()
+        # If email already exists, return their position (idempotent).
+        row = c.execute("SELECT * FROM waitlist WHERE email = ?", (email,)).fetchone()
+        if row:
+            c.close()
+            return jsonify({
+                'success': True,
+                'position': row['position'],
+                'ref_code': row['ref_code'],
+                'share_url': f"{request.url_root.rstrip('/')}/?ref={row['ref_code']}",
+                'founder_locked': bool(row['founder_locked']),
+                'already': True,
+            })
+        # Validate ref (optional)
+        ref_row = c.execute("SELECT id FROM waitlist WHERE ref_code = ?", (ref,)).fetchone() if ref else None
+        referred_by = ref if ref_row else None
+        # Assign position = next sequential
+        total = c.execute("SELECT COUNT(*) AS n FROM waitlist").fetchone()['n']
+        position = total + 1
+        founder_locked = 1 if position <= _WL_FOUNDER_CAP else 0
+        # Unique ref code
+        ref_code = _wl_secrets.token_urlsafe(6)[:8]
+        while c.execute("SELECT 1 FROM waitlist WHERE ref_code = ?", (ref_code,)).fetchone():
+            ref_code = _wl_secrets.token_urlsafe(6)[:8]
+        try:
+            c.execute("""
+                INSERT INTO waitlist (email, ref_code, referred_by, position, source, ip_hash, founder_locked)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (email, ref_code, referred_by, position, source, ip_hash, founder_locked))
+            if referred_by:
+                c.execute("UPDATE waitlist SET referral_count = referral_count + 1 WHERE ref_code = ?", (referred_by,))
+            c.commit()
+        except _wl_sqlite.IntegrityError as e:
+            c.close()
+            logger.warning(f"waitlist insert failed: {e}")
+            return jsonify({'success': False, 'error': 'Could not save — try again.'}), 500
+        c.close()
+    share_url = f"{request.url_root.rstrip('/')}/?ref={ref_code}"
+    logger.info(f"waitlist join: position={position} founder={bool(founder_locked)} source={source}")
+    return jsonify({
+        'success': True,
+        'position': position,
+        'ref_code': ref_code,
+        'share_url': share_url,
+        'founder_locked': bool(founder_locked),
+    })
+
+@app.route('/api/waitlist/count', methods=['GET'])
+def waitlist_count():
+    with _WL_LOCK:
+        c = _wl_conn()
+        total   = c.execute("SELECT COUNT(*) AS n FROM waitlist").fetchone()['n']
+        claimed = c.execute("SELECT COUNT(*) AS n FROM waitlist WHERE founder_locked = 1").fetchone()['n']
+        c.close()
+    return jsonify({
+        'success': True,
+        'total': total,
+        'founder_claimed': claimed,
+        'founder_cap': _WL_FOUNDER_CAP,
+        'founder_remaining': max(0, _WL_FOUNDER_CAP - claimed),
+    })
+
+@app.route('/api/waitlist/leaderboard', methods=['GET'])
+def waitlist_leaderboard():
+    with _WL_LOCK:
+        c = _wl_conn()
+        rows = c.execute("""
+            SELECT email, ref_code, referral_count, position
+            FROM waitlist
+            WHERE referral_count > 0
+            ORDER BY referral_count DESC, position ASC
+            LIMIT 10
+        """).fetchall()
+        c.close()
+    def anon(email):
+        try:
+            local, dom = email.split('@', 1)
+            return local[0] + '***' + local[-1] + '@' + dom
+        except Exception:
+            return '***'
+    return jsonify({
+        'success': True,
+        'data': [
+            {'name': anon(r['email']), 'referrals': r['referral_count'], 'position': r['position']}
+            for r in rows
+        ]
+    })
+
 # ============ AUTH CONFIG ============
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET', '')
@@ -80,15 +477,56 @@ def _client_ip():
 
 
 @app.after_request
-def _no_cache_static(resp):
-    """Force the browser to revalidate HTML/JS/CSS so a fresh deploy is seen
-    immediately. Without this, cached app.js/index.html mask backend fixes.
+def _cache_and_compress(resp):
+    """Smart caching + gzip compression for snappier page loads.
+
+    HTML keeps `no-cache` so deploys are visible immediately. CSS/JS get a
+    short revalidate window (5 min) so repeat tab-switches don't refetch.
+    JSON responses are gzipped when the client accepts it — the unified
+    /api/feed payload typically shrinks 4-6x.
     """
     p = (request.path or '')
-    if p.endswith(('.html', '.js', '.css')) or p in ('/', ''):
-        resp.headers['Cache-Control'] = 'no-cache, must-revalidate'
-        resp.headers['Pragma'] = 'no-cache'
+    # Browser caching policy
+    if p.endswith('.html') or p in ('/', ''):
+        resp.headers.setdefault('Cache-Control', 'no-cache, must-revalidate')
+        resp.headers.setdefault('Pragma', 'no-cache')
+    elif p.endswith(('.css', '.js')):
+        # 5-min must-revalidate: instant repeat hits, but new deploys propagate fast.
+        resp.headers.setdefault('Cache-Control', 'public, max-age=300, must-revalidate')
+    elif p.endswith(('.png', '.jpg', '.jpeg', '.svg', '.webp', '.ico', '.woff', '.woff2', '.ttf')):
+        resp.headers.setdefault('Cache-Control', 'public, max-age=86400')
+
+    # gzip-compress JSON / HTML / JS / CSS when the client supports it.
+    # Skips already-encoded responses, streamed responses, and small payloads.
+    try:
+        accept_enc = request.headers.get('Accept-Encoding', '')
+        if (
+            'gzip' in accept_enc.lower()
+            and resp.status_code < 300
+            and 'Content-Encoding' not in resp.headers
+            and not resp.direct_passthrough
+            and (resp.mimetype or '').split(';')[0] in (
+                'application/json', 'text/html', 'application/javascript',
+                'text/javascript', 'text/css', 'text/event-stream',
+            )
+            and (resp.mimetype or '').split(';')[0] != 'text/event-stream'
+            and resp.content_length is not None and resp.content_length > 512
+        ):
+            import gzip
+            gz = gzip.compress(resp.get_data(), compresslevel=5)
+            resp.set_data(gz)
+            resp.headers['Content-Encoding'] = 'gzip'
+            resp.headers['Vary'] = 'Accept-Encoding'
+            resp.headers['Content-Length'] = str(len(gz))
+    except Exception:
+        # If compression fails, return the uncompressed body as-is.
+        pass
+
     return resp
+
+
+# Shared TTL cache decorator (reused by api_v2, api_v3, api_ext)
+from cache_util import ttl_cache  # noqa: E402  (import after Flask app exists)
 
 
 @app.before_request
@@ -572,6 +1010,32 @@ def start_scheduler():
         scheduler.add_job(_social_serious, 'interval', minutes=15,
                           id='social_serious', max_instances=1, coalesce=True)
 
+        # Notification retry drain — every 60s, picks up due-for-retry items
+        # from notifications.db and re-attempts Discord/Telegram sends.
+        def _notif_retry_drain():
+            try:
+                from notification_retry import process_pending
+                process_pending(limit=20)
+            except Exception as e:
+                logger.warning(f"notif retry drain failed: {e}")
+        scheduler.add_job(_notif_retry_drain, 'interval', seconds=60,
+                          id='notif_retry_drain', max_instances=1, coalesce=True)
+
+        # NSE option-chain ingestion — every 5 min during market hours.
+        # The job is cheap (3 HTTP requests), and the writer is gated on
+        # is_market_open() so we don't hammer NSE on weekends.
+        def _oc_ingest():
+            try:
+                from market_clock import is_market_open
+                if not is_market_open():
+                    return
+                from nse_option_chain import ingest_all_symbols
+                ingest_all_symbols()
+            except Exception as e:
+                logger.warning(f"option-chain ingest failed: {e}")
+        scheduler.add_job(_oc_ingest, 'interval', minutes=5,
+                          id='oc_ingest', max_instances=1, coalesce=True)
+
         scheduler.start()
         logger.info(f"Scheduler started: scraper every {interval}min, prediction tracker daily 10:30 UTC")
 
@@ -734,6 +1198,7 @@ def health():
 # ============ DASHBOARD ============
 
 @app.route('/api/dashboard', methods=['GET'])
+@ttl_cache(seconds=30)
 def dashboard():
     """Aggregated dashboard stats (single call for home page)"""
     try:
@@ -752,11 +1217,62 @@ def dashboard():
 # ============ SIGNALS ============
 
 @app.route('/api/signals', methods=['GET'])
+@ttl_cache(seconds=30)
 def get_signals():
-    """Get active trading signals"""
+    """Get active trading signals — joined with events.summary so the
+    client-side subject-mismatch filter has more text to chew on (not just
+    the 80-char title).
+    """
     try:
         limit = request.args.get('limit', 50, type=int)
         signals = get_db().get_active_signals(limit)
+        if not signals:
+            return jsonify({'success': True, 'count': 0, 'data': []})
+        # Enrich with the originating event's RSS summary (1-3 sentence preview).
+        # Signal event_id = "TICKER_TYPE_HASH"; events.event_id is just "HASH".
+        # We strip prefixes and match on the trailing hash component.
+        try:
+            def _hash_part(eid):
+                if not eid: return None
+                parts = str(eid).rsplit('_', 1)
+                return parts[-1] if parts else eid
+            hash_to_full = {}
+            for s in signals:
+                eid = s.get('event_id')
+                h = _hash_part(eid)
+                if h:
+                    hash_to_full.setdefault(h, []).append(s)
+            hashes = list(hash_to_full.keys())
+            if hashes:
+                placeholders = ','.join(['?'] * len(hashes))
+                cur = get_db().conn.cursor()
+                cur.execute(
+                    f"SELECT event_id, summary, title FROM events WHERE event_id IN ({placeholders})",
+                    hashes)
+                rows = cur.fetchall()
+                summary_by_hash = {}
+                title_by_hash = {}
+                for r in rows:
+                    if isinstance(r, dict):
+                        h = r.get('event_id')
+                        summary_by_hash[h] = r.get('summary') or ''
+                        title_by_hash[h]   = r.get('title')   or ''
+                    else:
+                        summary_by_hash[r[0]] = r[1] or ''
+                        title_by_hash[r[0]]   = r[2] or ''
+                for h, sig_list in hash_to_full.items():
+                    summ = summary_by_hash.get(h, '')
+                    title = title_by_hash.get(h, '')
+                    for s in sig_list:
+                        s['summary'] = summ
+                        # If signal.headline is empty, backfill from events.title
+                        if not s.get('headline') and title:
+                            s['headline'] = title
+        except Exception as e:
+            # Non-fatal — just don't enrich
+            logger.debug(f"signals summary-join skipped: {e}")
+            for s in signals:
+                s.setdefault('summary', '')
         return jsonify({
             'success': True,
             'count': len(signals),
@@ -782,11 +1298,38 @@ def get_signal(signal_id):
 # ============ EVENTS ============
 
 @app.route('/api/events', methods=['GET'])
+@ttl_cache(seconds=30)
 def get_events():
-    """Get events from database"""
+    """Get events from database with optional type filtering"""
     try:
         limit = request.args.get('limit', 50, type=int)
-        events = get_db().get_recent_events(limit)
+        event_type = request.args.get('type')
+
+        if event_type:
+            cur = get_db().conn.cursor()
+            # 'corporate' covers buyback/dividend/split/bonus/rights
+            if event_type == 'corporate':
+                cur.execute(
+                    """SELECT id, title, summary, event_type, impact_score, companies, published_at
+                       FROM events
+                       WHERE event_type IN ('buyback','dividend','split','bonus','rights')
+                       ORDER BY published_at DESC LIMIT ?""",
+                    (limit,))
+            else:
+                cur.execute(
+                    """SELECT id, title, summary, event_type, impact_score, companies, published_at
+                       FROM events WHERE event_type = ?
+                       ORDER BY published_at DESC LIMIT ?""",
+                    (event_type, limit))
+            rows = cur.fetchall()
+            events = [{
+                'id': r[0], 'title': r[1], 'summary': r[2], 'event_type': r[3],
+                'impact_score': float(r[4]) if r[4] else 0,
+                'companies': r[5], 'published_at': str(r[6]) if r[6] else None
+            } for r in rows]
+        else:
+            events = get_db().get_recent_events(limit)
+
         return jsonify({
             'success': True,
             'count': len(events),
@@ -943,6 +1486,7 @@ def get_stock_detail(ticker):
 # ============ SECTOR HEATMAP ============
 
 @app.route('/api/sectors', methods=['GET'])
+@ttl_cache(seconds=120)
 def get_sectors():
     """Get sector-level aggregated data for heatmap"""
     try:
@@ -1218,6 +1762,7 @@ def simulator_equity_curve():
 # ============ EARNINGS CALENDAR ============
 
 @app.route('/api/earnings', methods=['GET'])
+@ttl_cache(seconds=120)
 def get_earnings_calendar():
     """Get upcoming earnings dates for monitored stocks via yfinance"""
     try:
@@ -1346,6 +1891,7 @@ def get_stock_chart(ticker):
 # ============ STOCK SEARCH ============
 
 @app.route('/api/search', methods=['GET'])
+@ttl_cache(seconds=300)
 def search_stock():
     """Search stocks. Returns instant matches from universe + live price for exact match."""
     query = (request.args.get('q', '') or '').strip()
@@ -1409,6 +1955,7 @@ def search_stock():
 
 
 @app.route('/api/stocks/list', methods=['GET'])
+@ttl_cache(seconds=900)
 def get_stock_list():
     """Get full stock universe for frontend autocomplete"""
     try:
@@ -1640,6 +2187,7 @@ def trigger_scraper():
 _indices_cache = {'data': None, 'time': 0}
 
 @app.route('/api/market-indices', methods=['GET'])
+@ttl_cache(seconds=60)
 def get_market_indices():
     """Get live Nifty 50, Sensex, and other key Indian market indices via yfinance."""
     import time as _time
@@ -1650,13 +2198,28 @@ def get_market_indices():
 
     try:
         import yfinance as yf
+        # Expanded coverage — broad indexes + sector indexes + macro pair.
+        # 'group' is used by the UI to split macro vs sectors.
         indices_meta = [
-            {'symbol': '^NSEI',    'short': 'NIFTY 50'},
-            {'symbol': '^BSESN',   'short': 'SENSEX'},
-            {'symbol': '^NSEBANK', 'short': 'BANK NIFTY'},
-            {'symbol': '^CNXIT',   'short': 'NIFTY IT'},
-            {'symbol': '^INDIAVIX','short': 'INDIA VIX'},
-            {'symbol': 'USDINR=X', 'short': 'USD/INR'},
+            {'symbol': '^NSEI',     'short': 'NIFTY 50',        'group': 'broad'},
+            {'symbol': '^BSESN',    'short': 'SENSEX',          'group': 'broad'},
+            {'symbol': '^NSEBANK',  'short': 'BANK NIFTY',      'group': 'broad'},
+            {'symbol': '^CNXIT',    'short': 'NIFTY IT',        'group': 'sector'},
+            {'symbol': '^CNXAUTO',  'short': 'NIFTY AUTO',      'group': 'sector'},
+            {'symbol': '^CNXPHARMA','short': 'NIFTY PHARMA',    'group': 'sector'},
+            {'symbol': '^CNXMETAL', 'short': 'NIFTY METAL',     'group': 'sector'},
+            {'symbol': '^CNXENERGY','short': 'NIFTY ENERGY',    'group': 'sector'},
+            {'symbol': '^CNXFMCG',  'short': 'NIFTY FMCG',      'group': 'sector'},
+            {'symbol': '^CNXREALTY','short': 'NIFTY REALTY',    'group': 'sector'},
+            {'symbol': '^CNXMEDIA', 'short': 'NIFTY MEDIA',     'group': 'sector'},
+            {'symbol': '^CNXPSUBANK','short':'NIFTY PSU BANK',  'group': 'sector'},
+            {'symbol': '^CNXFIN',   'short': 'NIFTY FIN SERV',  'group': 'sector'},
+            {'symbol': 'NIFTY_MIDCAP_100.NS', 'short': 'NIFTY MIDCAP 100', 'group': 'broad'},
+            {'symbol': '^CNXSC',    'short': 'NIFTY SMALLCAP 100','group':'broad'},
+            {'symbol': '^NSMIDCP',  'short': 'NIFTY MIDCAP 50', 'group': 'broad'},
+            {'symbol': '^CNX100',   'short': 'NIFTY 100',       'group': 'broad'},
+            {'symbol': '^INDIAVIX', 'short': 'INDIA VIX',       'group': 'macro'},
+            {'symbol': 'USDINR=X',  'short': 'USD/INR',         'group': 'macro'},
         ]
 
         result = []
@@ -1671,6 +2234,7 @@ def get_market_indices():
                 result.append({
                     'symbol': meta['symbol'],
                     'short':  meta['short'],
+                    'group':  meta.get('group', 'sector'),
                     'price':  round(price, 2),
                     'change': round(chg, 2),
                     'change_pct': round(chg_pct, 2),
@@ -1678,6 +2242,7 @@ def get_market_indices():
             except Exception as e:
                 logger.warning(f"Indices fetch failed for {meta['symbol']}: {e}")
                 result.append({'symbol': meta['symbol'], 'short': meta['short'],
+                               'group': meta.get('group', 'sector'),
                                'price': 0, 'change': 0, 'change_pct': 0})
 
         _indices_cache['data'] = result
@@ -1688,9 +2253,58 @@ def get_market_indices():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+_index_detail_cache = {}
+
+@app.route('/api/market/index/<path:symbol>', methods=['GET'])
+def get_index_detail(symbol):
+    """Detail popup for an index: 5d sparkline + 52w range + open/high/low + day range."""
+    import time as _time
+    key = f"idx:{symbol}"
+    rec = _index_detail_cache.get(key)
+    if rec and (_time.time() - rec['t']) < 120:
+        return jsonify({'success': True, 'data': rec['v'], 'cached': True})
+
+    try:
+        import yfinance as yf
+        t = yf.Ticker(symbol)
+        fi = t.fast_info
+        hist = t.history(period="5d", interval="15m")
+        sparkline = []
+        if hist is not None and not hist.empty:
+            sparkline = [
+                {'t': str(idx), 'close': float(c)}
+                for idx, c in zip(hist.index[-60:], hist['Close'].iloc[-60:])
+                if c == c  # filter NaN
+            ]
+        # 52w range from a daily pull (fast_info exposes it sometimes)
+        try:
+            hist52 = t.history(period="1y", interval="1d")
+            high52 = float(hist52['High'].max()) if hist52 is not None and not hist52.empty else None
+            low52 = float(hist52['Low'].min()) if hist52 is not None and not hist52.empty else None
+        except Exception:
+            high52, low52 = None, None
+        out = {
+            'symbol': symbol,
+            'price': float(getattr(fi, 'last_price', 0) or 0),
+            'prev_close': float(getattr(fi, 'previous_close', 0) or 0),
+            'day_high': float(getattr(fi, 'day_high', 0) or 0),
+            'day_low': float(getattr(fi, 'day_low', 0) or 0),
+            'open': float(getattr(fi, 'open', 0) or 0),
+            'high_52w': high52,
+            'low_52w': low52,
+            'sparkline': sparkline,
+        }
+        _index_detail_cache[key] = {'t': _time.time(), 'v': out}
+        return jsonify({'success': True, 'data': out, 'cached': False})
+    except Exception as e:
+        logger.warning(f"Index detail failed for {symbol}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 200
+
+
 # ============ ANALYTICS (Jane Street-grade edge analysis) ============
 
 @app.route('/api/analytics', methods=['GET'])
+@ttl_cache(seconds=120)
 def get_analytics():
     """
     Comprehensive analytics — exposes the system's actual statistical edge.
@@ -2054,6 +2668,7 @@ def portfolio_longshort():
 # ============ STATS ============
 
 @app.route('/api/stats', methods=['GET'])
+@ttl_cache(seconds=60)
 def get_stats():
     """Get system statistics"""
     try:
@@ -2095,9 +2710,18 @@ except Exception as _rt_exc:
 try:
     import api_v3
     api_v3.register(app, get_db)
-    logger.info("api_v3 registered: /api/forensics/* /api/fo/* /api/bulk-deals /api/screeners/* /api/paper/* /api/telemetry /api/audit/* /api/onboarding/* /api/watchlist/tags /api/sectors/rotation /api/geo/india /api/earnings/* /api/compare/* /api/stock/<t>/(profile|financials|ratios|shareholding|corp-actions|news|peers-detail) /api/screener/(fields|run)")
+    logger.info("api_v3 registered: /api/forensics/* /api/fo/* /api/bulk-deals /api/screeners/* /api/paper/* /api/telemetry /api/audit/* /api/onboarding/* /api/watchlist/tags /api/sectors/rotation /api/geo/india /api/earnings/* /api/compare/* /api/stock/<t>/(profile|financials|ratios|shareholding|corp-actions|news|peers-detail) /api/screener/(fields|run) /api/fundamentals/score/<t>")
 except Exception as _v3_exc:
     logger.error(f"api_v3 init failed: {_v3_exc}")
+
+
+# ============ EDGE FEATURES (outcomes, leak, whisper, sector, insider, FII/DII, bulk-deal, call sentiment) ============
+try:
+    import edge_features
+    edge_features.init_app(app, get_db)
+    logger.info("edge_features registered: /api/edge/outcomes/* /api/edge/leak-check /api/edge/earnings/* /api/edge/sector-regime /api/edge/insider-buys /api/edge/fii-dii /api/edge/bulk-deal-crossref")
+except Exception as _edge_exc:
+    logger.error(f"edge_features init failed: {_edge_exc}")
 
 
 # ============ SMART ALERTS EVAL HOOK (called from scraper job) ============

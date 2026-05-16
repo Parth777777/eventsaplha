@@ -6,12 +6,73 @@
  *   2. Inject the SEBI compliance footer
  *   3. Telemetry beacon helper (window.Telemetry)
  *   4. Onboarding gate (redirect first-time users to /onboarding.html)
+ *   5. Inject cross-page section tabs (premium top strip)
  */
 (function () {
+  // ---- 0. Load shared cross-page section tabs.
+  // Loaded as a separate script (rather than inlined) so it stays cacheable
+  // and easy to disable. Best-effort: failure does not block any other init.
+  try {
+    if (!document.querySelector('script[data-tw-section-tabs]')) {
+      const s = document.createElement('script');
+      s.src = './shared/js/section-tabs.js';
+      s.defer = true;
+      s.setAttribute('data-tw-section-tabs', '1');
+      document.head.appendChild(s);
+    }
+  } catch (_) {}
+
+  // ---- 0b. Market clock banner — one tiny strip across every page that tells
+  // the trader where we are in the session (pre-open / live / post-close / weekend).
+  try {
+    if (!document.querySelector('script[data-tw-clock]')) {
+      const s = document.createElement('script');
+      s.src = './shared/js/market-clock.js';
+      s.defer = true;
+      s.setAttribute('data-tw-clock', '1');
+      document.head.appendChild(s);
+    }
+  } catch (_) {}
+
+  // ---- 0c. Breaking-news alert — site-wide watcher that pops a toast when
+  // a major (high-alpha, fresh, big-magnitude) signal lands.
+  try {
+    if (!document.querySelector('script[data-tw-breaking]')) {
+      const s = document.createElement('script');
+      s.src = './shared/js/breaking-alert.js';
+      s.defer = true;
+      s.setAttribute('data-tw-breaking', '1');
+      document.head.appendChild(s);
+    }
+  } catch (_) {}
+
+  // ---- 0d. Edge analyzer — site-wide [data-edge-analyze] click handler
+  // that opens the fundamental analysis modal on any page.
+  try {
+    if (!document.querySelector('script[data-tw-edge-analyzer]')) {
+      const s = document.createElement('script');
+      s.src = './shared/js/edge-analyzer.js';
+      s.defer = true;
+      s.setAttribute('data-tw-edge-analyzer', '1');
+      document.head.appendChild(s);
+    }
+  } catch (_) {}
+
   // ---- 1. Service worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+    // When a new SW activates and posts 'sw-activated', reload once so the
+    // page swaps stale JS/CSS for the freshly-cached shell. The guard
+    // prevents reload loops if multiple activations fire in one session.
+    let _reloaded = false;
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e && e.data && e.data.type === 'sw-activated' && !_reloaded) {
+        _reloaded = true;
+        try { console.log('[Tickwave] new SW activated → reloading for fresh shell', e.data.cache); } catch (_) {}
+        location.reload();
+      }
     });
   }
 

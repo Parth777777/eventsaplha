@@ -1,13 +1,19 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Welcome to Tickwave</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&family=DM+Sans&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&family=DM+Sans&family=Geist+Mono&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="stylesheet" href="./shared/css/refined.css">
 <style>
-  body { background:#080c12; color:#dde3ef; font-family:'DM Sans',sans-serif; min-height:100vh; }
+  body { background:#07080d; color:#f0f2f8; font-family:'DM Sans',sans-serif; min-height:100vh; }
   .step { display:none; }
   .step.active { display:block; }
   .pill { display:inline-block; padding:6px 14px; border-radius:999px; background:#1f2336; color:#9aa0c8; font-size:12px; font-weight:700; margin:4px; cursor:pointer; transition:all 0.15s; border:1px solid transparent; }
@@ -17,14 +23,16 @@
   button.ghost { background:transparent; color:#9aa0c8; border:1px solid #2a3142; border-radius:8px; padding:10px 20px; font-size:12px; font-weight:700; cursor:pointer; }
 </style>
 </head>
-<body>
+<body class="rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
 
 <main style="max-width:680px; margin:0 auto; padding:48px 24px;">
 
 <header style="margin-bottom:32px;">
   <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-    <span style="font-size:28px;">📈</span>
-    <span style="font-family:'Plus Jakarta Sans'; font-weight:900; font-size:22px; color:#4ee6b8;">Tickwave</span>
+    <img class="onboarding-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="40" height="40" style="border-radius:8px;" data-tw-logo>
   </div>
   <div style="display:flex; gap:6px;">
     <div class="step-bar" data-step="1" style="height:4px; flex:1; background:#4ee6b8; border-radius:2px;"></div>

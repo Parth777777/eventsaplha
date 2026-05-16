@@ -7,10 +7,12 @@ import json
 import logging
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, List, Optional
 
 from flask import Blueprint, g, jsonify, request
+
+from cache_util import ttl_cache  # response caching for hot endpoints
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +147,136 @@ def fo_refresh():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@bp.route("/api/fo/index/<symbol>", methods=["GET"])
+@ttl_cache(60)
+def fo_index_kpis(symbol: str):
+    """Index-level F&O KPIs for NIFTY/BANKNIFTY: spot, max pain, PCR, IV, implied move,
+    rollover, and the latest FII/DII derivatives row.
+    """
+    db = _get_db()
+    sym = (symbol or "").upper().strip()
+    if sym not in ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"):
+        return jsonify({"success": False, "error": "unsupported index"}), 400
+    try:
+        from fo_signals import latest_snapshot, fetch_rollover_data, recent_fii_dii_derivatives
+        snap = latest_snapshot(db, sym) or {}
+        rollover = fetch_rollover_data(sym, is_index=True) or {}
+        fii_dii = recent_fii_dii_derivatives(db, days=1) or []
+        return jsonify({
+            "success": True,
+            "data": {
+                "snapshot": snap,
+                "rollover": rollover,
+                "fii_dii_latest": (fii_dii[0] if fii_dii else None),
+            },
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/fo/scanner", methods=["GET"])
+@ttl_cache(60)
+def fo_scanner():
+    """Ranked list of tickers by F&O alpha score, joining unusual-OI flag count.
+    Filters: min_alpha, min_oi_change, sort, limit.
+    """
+    db = _get_db()
+    try:
+        limit = max(1, min(int(request.args.get("limit", "50")), 200))
+        min_alpha = float(request.args.get("min_alpha", "0"))
+        sort = request.args.get("sort", "alpha")  # alpha | iv_rank | pcr
+        sort_col = {
+            "alpha": "fo_alpha_score",
+            "iv_rank": "iv_rank",
+            "pcr": "pcr",
+        }.get(sort, "fo_alpha_score")
+        cur = db.conn.cursor()
+        # Latest snapshot per ticker
+        cur.execute(
+            f"""
+            WITH latest AS (
+              SELECT ticker, MAX(fetched_at) AS last_at
+              FROM fo_snapshot GROUP BY ticker
+            )
+            SELECT s.ticker, s.expiry, s.spot, s.atm_iv, s.pcr, s.implied_move_pct,
+                   s.max_pain, s.iv_rank, s.fo_alpha_score, s.fetched_at,
+                   (SELECT COUNT(*) FROM fo_unusual u
+                      WHERE u.ticker = s.ticker
+                        AND u.fetched_at >= datetime('now', '-24 hours')) AS unusual_24h
+            FROM fo_snapshot s
+            JOIN latest l ON s.ticker = l.ticker AND s.fetched_at = l.last_at
+            WHERE COALESCE(s.fo_alpha_score, 0) >= ?
+            ORDER BY COALESCE(s.{sort_col}, -1) DESC
+            LIMIT ?
+            """,
+            (min_alpha, limit),
+        )
+        rows = [dict(r) for r in cur.fetchall()]
+        return jsonify({"success": True, "data": rows, "count": len(rows)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/fo/ticker/<symbol>", methods=["GET"])
+@ttl_cache(120)
+def fo_ticker_drill(symbol: str):
+    """Per-ticker drill: latest snapshot (with full chain), unusual flags, IV history."""
+    db = _get_db()
+    sym = (symbol or "").upper().strip()
+    if not sym:
+        return jsonify({"success": False, "error": "ticker required"}), 400
+    try:
+        from fo_signals import latest_snapshot, recent_unusual
+        snap = latest_snapshot(db, sym)
+        if not snap:
+            return jsonify({"success": False, "error": "no snapshot for ticker"}), 404
+        unusual = recent_unusual(db, sym, hours=72)
+        cur = db.conn.cursor()
+        cur.execute(
+            "SELECT date, atm_iv FROM fo_iv_history WHERE ticker = ? ORDER BY date DESC LIMIT 90",
+            (sym,),
+        )
+        iv_history = [dict(r) for r in cur.fetchall()]
+        return jsonify({
+            "success": True,
+            "data": {
+                "snapshot": snap,
+                "unusual": unusual,
+                "iv_history": list(reversed(iv_history)),
+            },
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/fo/fii-dii", methods=["GET"])
+@ttl_cache(300)
+def fo_fii_dii():
+    """Recent FII/DII derivative net positions (default 30 days)."""
+    db = _get_db()
+    try:
+        from fo_signals import recent_fii_dii_derivatives
+        days = int(request.args.get("days", "30"))
+        return jsonify({"success": True, "data": recent_fii_dii_derivatives(db, days=days)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/fo/rollover/<symbol>", methods=["GET"])
+@ttl_cache(300)
+def fo_rollover(symbol: str):
+    """Current vs next-expiry OI rollover %. Useful in expiry week."""
+    try:
+        from fo_signals import fetch_rollover_data
+        is_index = (symbol.upper() in ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"))
+        data = fetch_rollover_data(symbol, is_index=is_index)
+        if not data:
+            return jsonify({"success": False, "error": "rollover data unavailable"}), 404
+        return jsonify({"success": True, "data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 # ============ SCREENERS =====================================================
 
 _SCREENERS = {
@@ -164,83 +296,116 @@ _SCREENERS = {
         """,
     },
     "smallcap_pledge_up": {
-        "name": "Smallcaps with promoter pledge ↑",
-        "description": "Promoter pledge increased ≥3pp in last 90d (any cap)",
+        "name": "Insider / promoter activity",
+        "description": "Insider-flavored signals (alpha ≥ 50) over the last 14 days",
         "sql": """
-            SELECT ph.ticker, ph.ticker AS company,
-                   MAX(ph.pledge_pct) - MIN(ph.pledge_pct) AS pledge_delta,
-                   MAX(ph.pledge_pct) AS current_pledge,
-                   MAX(ph.as_of_date) AS last_update
-            FROM promoter_holdings ph
-            WHERE ph.as_of_date >= date('now', '-90 days')
-            GROUP BY ph.ticker
-            HAVING pledge_delta >= 3
-            ORDER BY pledge_delta DESC LIMIT 50
+            SELECT s.ticker, s.company, s.alpha_score, s.sentiment,
+                   s.headline, s.created_at
+            FROM signals s
+            WHERE s.event_type = 'insider'
+              AND s.alpha_score >= 50
+              AND s.created_at >= datetime('now', '-14 days')
+              AND s.status = 'active'
+            ORDER BY s.alpha_score DESC LIMIT 50
         """,
     },
     "volume_spike_no_news": {
-        "name": "Volume spike + no news",
-        "description": "Tickers with recent volume z-score > 2 and no Tier-1 news",
+        "name": "Quiet alpha (under the radar)",
+        "description": "High-alpha signals (≥ 55) with light news coverage in the last 7 days",
         "sql": """
-            SELECT ticker, MAX(z_score) AS z, MAX(created_at) AS last_seen
-            FROM volume_anomalies
-            WHERE created_at >= datetime('now', '-3 days') AND z_score >= 2.0
-            GROUP BY ticker ORDER BY z DESC LIMIT 50
+            SELECT s.ticker, s.company, s.alpha_score, s.sentiment, s.event_type,
+                   (SELECT COUNT(*) FROM events e
+                      WHERE e.created_at >= datetime('now', '-7 days')
+                        AND ',' || IFNULL(e.companies, '') || ',' LIKE '%,' || s.ticker || ',%'
+                   ) AS news_7d,
+                   s.created_at
+            FROM signals s
+            WHERE s.alpha_score >= 55
+              AND s.created_at >= datetime('now', '-7 days')
+              AND s.status = 'active'
+              AND (SELECT COUNT(*) FROM events e
+                     WHERE e.created_at >= datetime('now', '-7 days')
+                       AND ',' || IFNULL(e.companies, '') || ',' LIKE '%,' || s.ticker || ',%'
+                  ) <= 2
+            ORDER BY s.alpha_score DESC LIMIT 50
         """,
     },
     "earnings_within_5d_high_alpha": {
-        "name": "Pre-earnings high-alpha",
-        "description": "Earnings within 5 days AND active alpha ≥ 60",
+        "name": "Hot earnings flow",
+        "description": "Earnings-tagged signals (alpha ≥ 60) in the last 7 days — pre/post print activity",
         "sql": """
-            SELECT s.ticker, s.company, s.alpha_score, s.sentiment,
-                   e.earnings_date
+            SELECT s.ticker, s.company, s.alpha_score, s.sentiment, s.headline, s.created_at
             FROM signals s
-            JOIN earnings_calendar e ON e.ticker = s.ticker
-            WHERE s.alpha_score >= 60
-              AND e.earnings_date BETWEEN date('now') AND date('now', '+5 days')
-            ORDER BY e.earnings_date ASC, s.alpha_score DESC LIMIT 50
+            WHERE s.event_type = 'earnings'
+              AND s.alpha_score >= 60
+              AND s.created_at >= datetime('now', '-7 days')
+              AND s.status = 'active'
+            ORDER BY s.created_at DESC, s.alpha_score DESC LIMIT 50
         """,
     },
     "manipulation_band": {
-        "name": "Likely manipulated (avoid)",
-        "description": "Forensic band = likely_manipulated OR active manipulation flag",
+        "name": "Forensic risk (elevated)",
+        "description": "Events with manipulation score ≥ 7 in the last 30 days — audit before trading",
         "sql": """
-            SELECT DISTINCT ticker, MAX(as_of) AS last_seen, GROUP_CONCAT(detector) AS detectors
-            FROM manipulation_flags
-            WHERE band IN ('likely_manipulated', 'suspicious')
-              AND as_of >= datetime('now', '-30 days')
-            GROUP BY ticker ORDER BY last_seen DESC LIMIT 50
+            SELECT s.ticker, s.company, ms.score, ms.band, ms.reasons,
+                   s.headline, ms.computed_at AS as_of
+            FROM manipulation_scores ms
+            JOIN signals s ON s.event_id = ms.event_id
+            WHERE ms.score >= 7
+              AND ms.computed_at >= datetime('now', '-30 days')
+            GROUP BY s.ticker
+            ORDER BY ms.score DESC, ms.computed_at DESC LIMIT 50
         """,
     },
     "bulk_deal_targets": {
-        "name": "Recent bulk-deal targets",
-        "description": "Stocks that saw a bulk deal ≥ ₹5cr in last 7 days",
+        "name": "M&A / corporate activity",
+        "description": "Merger / insider / dividend signals (alpha ≥ 40) in the last 14 days",
         "sql": """
-            SELECT ticker, company, SUM(value_cr) AS total_cr, COUNT(*) AS deal_count
-            FROM bulk_deals
-            WHERE deal_date >= date('now', '-7 days') AND value_cr >= 5
-            GROUP BY ticker ORDER BY total_cr DESC LIMIT 50
+            SELECT s.ticker, s.company, s.alpha_score, s.event_type, s.sentiment,
+                   s.headline, s.created_at
+            FROM signals s
+            WHERE s.event_type IN ('merger', 'insider', 'dividend')
+              AND s.alpha_score >= 40
+              AND s.created_at >= datetime('now', '-14 days')
+              AND s.status = 'active'
+            ORDER BY s.created_at DESC LIMIT 50
         """,
     },
     "fo_unusual_24h": {
-        "name": "Unusual options activity (24h)",
-        "description": "Tickers with 2σ+ OI build-up near spot in last 24h",
+        "name": "F&O / derivatives chatter",
+        "description": "Events mentioning F&O, options, futures, OI, or derivatives in last 3 days",
         "sql": """
-            SELECT ticker, MAX(signal_score) AS score,
-                   COUNT(*) AS strikes_flagged, MAX(fetched_at) AS last_seen
-            FROM fo_unusual
-            WHERE fetched_at >= datetime('now', '-24 hours')
-            GROUP BY ticker ORDER BY score DESC LIMIT 50
+            SELECT companies AS ticker, title AS headline, source, sentiment,
+                   impact_score, magnitude, created_at
+            FROM events
+            WHERE created_at >= datetime('now', '-3 days')
+              AND (
+                   LOWER(title) LIKE '%f&o%'        OR LOWER(title) LIKE '%options%'
+                OR LOWER(title) LIKE '%futures%'    OR LOWER(title) LIKE '%derivatives%'
+                OR LOWER(title) LIKE '%open interest%' OR LOWER(title) LIKE '%fno%'
+                OR LOWER(title) LIKE '%put writer%' OR LOWER(title) LIKE '%call writer%'
+              )
+              AND COALESCE(impact_score, 0) >= 30
+            ORDER BY impact_score DESC LIMIT 50
         """,
     },
     "filing_grade": {
-        "name": "Filing-grade events (Tier-1)",
-        "description": "Events confirmed by direct exchange/regulator filings",
+        "name": "Tier-1 financial press",
+        "description": "High-alpha signals (≥ 55) sourced from Mint / ET / Hindu / MoneyControl in last 7 days",
         "sql": """
-            SELECT s.ticker, s.company, s.alpha_score, s.event_type, s.created_at, s.headline
+            SELECT s.ticker, s.company, s.alpha_score, s.event_type, s.sentiment,
+                   s.source, s.headline, s.created_at
             FROM signals s
             WHERE s.created_at >= datetime('now', '-7 days')
-              AND (s.source LIKE 'BSE%' OR s.source LIKE 'NSE%' OR s.source LIKE 'SEBI%' OR s.source LIKE 'RBI%')
+              AND s.alpha_score >= 55
+              AND s.status = 'active'
+              AND (
+                   s.source LIKE 'mint_%'      OR s.source LIKE 'et_%'
+                OR s.source LIKE 'thehindu%'   OR s.source LIKE 'mc_%'
+                OR s.source LIKE 'business_standard%' OR s.source LIKE 'cnbctv18%'
+                OR s.source LIKE 'BSE%' OR s.source LIKE 'NSE%'
+                OR s.source LIKE 'SEBI%' OR s.source LIKE 'RBI%'
+              )
             ORDER BY s.alpha_score DESC LIMIT 50
         """,
     },
@@ -736,6 +901,7 @@ def watchlist_tag_remove():
 # ============ SECTOR ROTATION ===============================================
 
 @bp.route("/api/sectors/rotation", methods=["GET"])
+@ttl_cache(seconds=120)
 def sectors_rotation():
     """Returns 1W/1M/3M relative-strength snapshot per sector.
 
@@ -813,15 +979,25 @@ INDIA_STATES = {
 
 
 @bp.route("/api/geo/india", methods=["GET"])
+@ttl_cache(seconds=60)
 def geo_india_events():
-    """Tag recent events with Indian state coordinates by matching state names
-    in title/summary. Front-end map.html plots these as pins."""
+    """India-zoomed map data: events tagged with an Indian state.
+    Each event is also classified into a lens (policy / earnings / sector)
+    so the frontend can color-code by intent. Returns lens metadata too."""
+    # Lazy import — _load_geo_configs is defined later in the file
+    try:
+        evergreen, rules = _load_geo_configs()
+    except Exception:
+        evergreen, rules = [], {"lenses": {}}
     db = _get_db()
     cur = db.conn.cursor()
+    hours = min(int(request.args.get("hours", 168)), 720)  # default 7 days
+
     try:
         cur.execute(
-            """SELECT event_id, title, summary, source, link, companies, sentiment, magnitude, created_at
-               FROM events WHERE created_at >= datetime('now', '-3 days') ORDER BY created_at DESC LIMIT 500"""
+            """SELECT event_id, title, summary, source, link, companies, sentiment, magnitude, impact_score, event_type, created_at
+               FROM events WHERE created_at >= datetime('now', ?) ORDER BY created_at DESC LIMIT 800""",
+            (f"-{hours} hours",),
         )
         rows = [dict(r) for r in cur.fetchall()]
     except Exception:
@@ -829,22 +1005,77 @@ def geo_india_events():
 
     out = []
     for r in rows:
-        text = (((r.get("title") or "") + " " + (r.get("summary") or ""))).lower()
-        for state, (lat, lng) in INDIA_STATES.items():
-            if state in text:
-                out.append({
-                    "event_id": r["event_id"],
-                    "state": state.title(),
-                    "lat": lat, "lng": lng,
-                    "title": r["title"],
-                    "sentiment": r.get("sentiment"),
-                    "magnitude": r.get("magnitude"),
-                    "source": r.get("source"),
-                    "link": r.get("link"),
-                    "as_of": r.get("created_at"),
-                })
-                break
-    return jsonify({"success": True, "data": out})
+        text = ((r.get("title") or "") + " " + (r.get("summary") or ""))
+        loc = _geocode_india_state(text)
+        if not loc:
+            continue
+        state, lat, lng = loc
+
+        # Severity 1-10
+        severity = float(r.get("impact_score") or 0)
+        if severity == 0 and r.get("magnitude"):
+            severity = float(r["magnitude"]) * 10
+        severity = max(1, min(10, round(severity / 10)))
+
+        # Lens — prefer event_type if it's policy/earnings, else classify
+        ev_type = (r.get("event_type") or "").lower()
+        if ev_type == "policy":
+            lens = "central_banks" if any(k in text.lower() for k in ["rbi", "sebi", "monetary"]) else "trade"
+        elif ev_type == "earnings":
+            lens = "central_banks"  # default bucket
+        else:
+            lens = _classify_lens(text, rules) or "geopolitics"
+
+        out.append({
+            "event_id":   r["event_id"],
+            "state":      state,
+            "lat":        lat,
+            "lng":        lng,
+            "title":      (r.get("title") or "")[:200],
+            "summary":    (r.get("summary") or "")[:300],
+            "lens":       lens,
+            "event_type": r.get("event_type"),
+            "sentiment":  r.get("sentiment"),
+            "magnitude":  r.get("magnitude"),
+            "severity":   severity,
+            "source":     r.get("source"),
+            "link":       r.get("link"),
+            "companies":  r.get("companies"),
+            "as_of":      r.get("created_at"),
+        })
+
+    # Lens metadata for the frontend
+    lens_meta = {
+        lid: {"label": l.get("label"), "color": l.get("color"), "monogram": l.get("monogram")}
+        for lid, l in (rules.get("lenses") or {}).items()
+    }
+
+    # Aggregate by state for the right-rail "state intelligence" panel
+    by_state: Dict[str, Dict] = {}
+    for e in out:
+        s = e["state"]
+        if s not in by_state:
+            by_state[s] = {"state": s, "lat": e["lat"], "lng": e["lng"], "count": 0,
+                           "policy": 0, "earnings": 0, "other": 0, "max_severity": 0}
+        by_state[s]["count"] += 1
+        et = (e.get("event_type") or "").lower()
+        if et == "policy":
+            by_state[s]["policy"] += 1
+        elif et == "earnings":
+            by_state[s]["earnings"] += 1
+        else:
+            by_state[s]["other"] += 1
+        if e["severity"] > by_state[s]["max_severity"]:
+            by_state[s]["max_severity"] = e["severity"]
+    state_summary = sorted(by_state.values(), key=lambda x: -x["count"])
+
+    return jsonify({
+        "success": True,
+        "data":    out,
+        "count":   len(out),
+        "states":  state_summary,
+        "lenses":  lens_meta,
+    })
 
 
 # ============ EARNINGS (BSE/NSE direct calendar via DB cache) ===============
@@ -963,6 +1194,7 @@ def compare_recent_events(ticker: str):
 # ============ SOCIAL HUB (X verified / Reddit serious / Telegram serious) ===
 
 @bp.route("/api/social/feed", methods=["GET"])
+@ttl_cache(seconds=60)
 def social_feed():
     """Unified social feed.
 
@@ -1225,6 +1457,254 @@ def stock_ratios(ticker: str):
     return jsonify({"success": True, "data": data})
 
 
+# ── Fundamental score: aggregate of ratios + promoter pledge into a single ─
+# ── 0-100 grade with reasoning. Used to gate recommendations so we don't  ─
+# ── pump a structurally bad stock just because the news is good.          ─
+@bp.route("/api/fundamentals/score/<ticker>", methods=["GET"])
+def fundamentals_score(ticker: str):
+    """Return a 0-100 fundamental grade with reasoning + red flags.
+
+    Components (each contributes a positive or negative band):
+      - Valuation       (PE, PB)         ±15
+      - Profitability   (ROE, margins)   ±20
+      - Growth          (revenue, eps)   ±15
+      - Leverage        (D/E)            ±15
+      - Cashflow        (FCF positive)   ±10
+      - Promoter pledge (from DB)        ±15
+      - Institutional holding             ±10
+
+    Bands:
+      80-100  strong
+      60-79   decent
+      40-59   weak
+      0-39    avoid (recommendation gated)
+    """
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            info = _yf_ticker(ticker).info or {}
+        except Exception as e:
+            return {"error": str(e), "score": None}
+
+        score = 50  # neutral baseline
+        positives: List[str] = []
+        red_flags: List[str] = []
+        components: Dict[str, Dict] = {}
+
+        # ── Valuation ────────────────────────────────────────────────────
+        pe = info.get("trailingPE")
+        pb = info.get("priceToBook")
+        val_score = 0
+        if pe is not None:
+            try:
+                pe = float(pe)
+                if 0 < pe <= 18:
+                    val_score += 8; positives.append(f"PE {pe:.1f} — reasonably priced")
+                elif pe <= 30:
+                    val_score += 2
+                elif pe <= 60:
+                    val_score -= 4; red_flags.append(f"PE {pe:.1f} — rich")
+                else:
+                    val_score -= 8; red_flags.append(f"PE {pe:.1f} — very expensive")
+            except Exception: pass
+        if pb is not None:
+            try:
+                pb = float(pb)
+                if 0 < pb <= 3:
+                    val_score += 4
+                elif pb <= 8:
+                    val_score += 0
+                else:
+                    val_score -= 4; red_flags.append(f"PB {pb:.1f} — stretched")
+            except Exception: pass
+        components["valuation"] = {"score": val_score, "pe": pe, "pb": pb}
+        score += val_score
+
+        # ── Profitability (ROE + operating margin) ───────────────────────
+        roe = info.get("returnOnEquity")
+        op_m = info.get("operatingMargins")
+        prof_score = 0
+        if roe is not None:
+            try:
+                roe_pct = float(roe) * 100
+                if roe_pct >= 20:
+                    prof_score += 12; positives.append(f"ROE {roe_pct:.1f}% — high quality")
+                elif roe_pct >= 12:
+                    prof_score += 6; positives.append(f"ROE {roe_pct:.1f}% — solid")
+                elif roe_pct >= 5:
+                    prof_score += 0
+                elif roe_pct >= 0:
+                    prof_score -= 6; red_flags.append(f"ROE {roe_pct:.1f}% — weak")
+                else:
+                    prof_score -= 12; red_flags.append(f"ROE {roe_pct:.1f}% — destroying capital")
+            except Exception: pass
+        if op_m is not None:
+            try:
+                m = float(op_m) * 100
+                if m >= 20: prof_score += 6; positives.append(f"Op margin {m:.1f}% — strong")
+                elif m >= 10: prof_score += 3
+                elif m >= 0: pass
+                else: prof_score -= 8; red_flags.append(f"Op margin {m:.1f}% — operating losses")
+            except Exception: pass
+        components["profitability"] = {"score": prof_score, "roe_pct": (roe or 0) * 100 if roe else None,
+                                        "operating_margin_pct": (op_m or 0) * 100 if op_m else None}
+        score += prof_score
+
+        # ── Growth ───────────────────────────────────────────────────────
+        rev_g = info.get("revenueGrowth")
+        eps_g = info.get("earningsGrowth")
+        grow_score = 0
+        if rev_g is not None:
+            try:
+                g = float(rev_g) * 100
+                if g >= 20: grow_score += 8; positives.append(f"Revenue +{g:.1f}% YoY")
+                elif g >= 8: grow_score += 4; positives.append(f"Revenue +{g:.1f}% YoY")
+                elif g >= 0: grow_score += 0
+                else: grow_score -= 6; red_flags.append(f"Revenue {g:.1f}% YoY — shrinking")
+            except Exception: pass
+        if eps_g is not None:
+            try:
+                g = float(eps_g) * 100
+                if g >= 25: grow_score += 7; positives.append(f"EPS +{g:.1f}%")
+                elif g >= 10: grow_score += 3
+                elif g >= 0: grow_score += 0
+                else: grow_score -= 5; red_flags.append(f"EPS {g:.1f}% — declining")
+            except Exception: pass
+        components["growth"] = {"score": grow_score,
+                                 "revenue_growth_pct": (rev_g or 0) * 100 if rev_g else None,
+                                 "earnings_growth_pct": (eps_g or 0) * 100 if eps_g else None}
+        score += grow_score
+
+        # ── Leverage (debt/equity) ───────────────────────────────────────
+        de = info.get("debtToEquity")
+        lev_score = 0
+        if de is not None:
+            try:
+                de_v = float(de)
+                # yfinance reports as ratio*100 sometimes — normalise
+                if de_v > 10: de_v = de_v / 100.0
+                if de_v <= 0.3:
+                    lev_score += 8; positives.append(f"D/E {de_v:.2f} — almost debt-free")
+                elif de_v <= 0.8:
+                    lev_score += 3
+                elif de_v <= 1.5:
+                    lev_score -= 4; red_flags.append(f"D/E {de_v:.2f} — high leverage")
+                else:
+                    lev_score -= 10; red_flags.append(f"D/E {de_v:.2f} — over-leveraged")
+            except Exception: pass
+        components["leverage"] = {"score": lev_score, "debt_to_equity": de}
+        score += lev_score
+
+        # ── Cashflow ─────────────────────────────────────────────────────
+        fcf = info.get("freeCashflow")
+        ocf = info.get("operatingCashflow")
+        cf_score = 0
+        try:
+            if fcf is not None and float(fcf) > 0:
+                cf_score += 6; positives.append("Free cash flow positive")
+            elif fcf is not None and float(fcf) < 0:
+                cf_score -= 6; red_flags.append("Free cash flow negative")
+        except Exception: pass
+        try:
+            if ocf is not None and float(ocf) > 0:
+                cf_score += 2
+            elif ocf is not None and float(ocf) < 0:
+                cf_score -= 4; red_flags.append("Operating cash flow negative")
+        except Exception: pass
+        components["cashflow"] = {"score": cf_score, "free_cashflow": fcf, "operating_cashflow": ocf}
+        score += cf_score
+
+        # ── Promoter pledge (from DB if available) ──────────────────────
+        pledge_score = 0
+        pledge_pct = None
+        try:
+            db = _get_db() if _get_db else None
+            if db is not None and getattr(db, "conn", None) is not None:
+                cur = db.conn.cursor()
+                p = "%s" if getattr(db, "is_postgres", False) else "?"
+                cur.execute(
+                    f"SELECT promoter_pledge_pct, promoter_pct FROM promoter_holdings "
+                    f"WHERE ticker = {p} ORDER BY quarter_end DESC LIMIT 1",
+                    (ticker,),
+                )
+                row = cur.fetchone()
+                if row:
+                    pledge_pct = float(row[0] or 0) if not isinstance(row, dict) else float(row.get("promoter_pledge_pct") or 0)
+                    if pledge_pct <= 1:
+                        pledge_score += 6; positives.append("No promoter pledge")
+                    elif pledge_pct <= 10:
+                        pledge_score += 0
+                    elif pledge_pct <= 25:
+                        pledge_score -= 6; red_flags.append(f"Promoter pledge {pledge_pct:.1f}%")
+                    else:
+                        pledge_score -= 12; red_flags.append(f"Promoter pledge {pledge_pct:.1f}% — critical")
+        except Exception as e:
+            logger.debug("pledge lookup failed: %s", e)
+        components["promoter_pledge"] = {"score": pledge_score, "pledge_pct": pledge_pct}
+        score += pledge_score
+
+        # ── Institutional holding ────────────────────────────────────────
+        inst = info.get("heldPercentInstitutions")
+        inst_score = 0
+        try:
+            if inst is not None:
+                inst_v = float(inst) * 100
+                if inst_v >= 30:
+                    inst_score += 5; positives.append(f"Institutions hold {inst_v:.0f}%")
+                elif inst_v >= 10:
+                    inst_score += 2
+                elif inst_v < 3:
+                    inst_score -= 3
+        except Exception: pass
+        components["institutional"] = {"score": inst_score,
+                                        "held_pct_institutions": (inst or 0) * 100 if inst else None}
+        score += inst_score
+
+        # ── Final clamp + tier ───────────────────────────────────────────
+        final = max(0, min(100, int(round(score))))
+        if final >= 80:
+            tier, label = "strong", "Strong fundamentals"
+        elif final >= 60:
+            tier, label = "decent", "Decent fundamentals"
+        elif final >= 40:
+            tier, label = "weak", "Weak fundamentals — be cautious"
+        else:
+            tier, label = "avoid", "Poor fundamentals — avoid"
+
+        return {
+            "ticker": ticker,
+            "score": final,
+            "tier": tier,
+            "label": label,
+            "positives": positives[:6],
+            "red_flags": red_flags[:6],
+            "components": components,
+        }
+
+    data = _cached(f"fund_score:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+# Bulk variant — accepts ?tickers=TCS,RELIANCE,INFY and returns scores keyed by ticker
+@bp.route("/api/fundamentals/score-bulk", methods=["GET"])
+def fundamentals_score_bulk():
+    raw = (request.args.get("tickers") or "").strip()
+    if not raw:
+        return jsonify({"success": True, "data": {}})
+    tickers = [t.strip().upper() for t in raw.split(",") if t.strip()][:25]
+    out: Dict[str, Dict] = {}
+    for tk in tickers:
+        try:
+            resp = fundamentals_score(tk)
+            payload = resp.get_json() if hasattr(resp, "get_json") else None
+            if payload and payload.get("data"):
+                out[tk] = payload["data"]
+        except Exception as e:
+            logger.debug("bulk score failed for %s: %s", tk, e)
+    return jsonify({"success": True, "data": out})
+
+
 @bp.route("/api/stock/<ticker>/shareholding", methods=["GET"])
 def stock_shareholding(ticker: str):
     """Shareholding pattern — major holders, institutional list, mutual fund holders."""
@@ -1321,6 +1801,7 @@ def stock_corp_actions(ticker: str):
 
 
 @bp.route("/api/stock/<ticker>/news", methods=["GET"])
+@ttl_cache(seconds=180)
 def stock_news(ticker: str):
     """Recent news headlines from yfinance, plus this app's own events for the ticker.
 
@@ -1393,6 +1874,600 @@ def stock_news(ticker: str):
         pass
 
     return jsonify({"success": True, "data": out})
+
+
+# ============ STOCK INTELLIGENCE & SUMMARIZATION ============
+# Builds Pros/Cons/Drivers from the data we already collect. No new
+# computation — only aggregation of: signals, events, forensic flags,
+# bulk deals, F&O unusual flow, premover scores.
+#
+# News summaries use Groq (when GROQ_API_KEY is set) with an extractive
+# fallback (first sentence + key facts) when budget is exhausted or the
+# LLM is unavailable.
+
+
+def _classify_pros_cons(signals_rows, events_rows, manipulation_rows,
+                         bulk_rows, fo_rows, ticker):
+    """Walk the raw rows once and emit balanced pros/cons buckets.
+
+    Each bullet is grounded in a specific data point so the panel never
+    shows hand-waving — every claim points at a real signal/event/flag.
+    """
+    pros, cons = [], []
+
+    # 1) Active signals — bullish ones become drivers, bearish become risks
+    for s in signals_rows:
+        alpha = float(s.get("alpha_score") or 0)
+        sent = (s.get("sentiment") or "").lower()
+        et = (s.get("event_type") or "news").replace("_", " ")
+        head = (s.get("headline") or "").strip()
+        gist = head[:140] + ("…" if len(head) > 140 else "")
+        weight = "strong" if alpha >= 75 else "moderate" if alpha >= 60 else "weak"
+        item = {
+            "label": gist or f"{et} signal · α {alpha:.0f}",
+            "weight": weight,
+            "alpha": round(alpha, 1),
+            "kind": s.get("event_type"),
+            "source": s.get("source") or "Tickwave",
+            "ts": str(s.get("created_at") or ""),
+            "link": s.get("link") or "",
+        }
+        if sent == "bullish":
+            pros.append(item)
+        elif sent == "bearish":
+            cons.append(item)
+
+    # 2) Forensic flags — always cons (manipulation scores)
+    for m in manipulation_rows:
+        band = (m.get("band") or "").lower()
+        score = m.get("score")
+        if band and band != "clean":
+            cons.append({
+                "label": f"Forensic flag: {band.replace('_', ' ')}",
+                "weight": "strong",
+                "alpha": None,
+                "kind": "forensic",
+                "source": "Manipulation scoring",
+                "ts": str(m.get("as_of") or ""),
+                "detail": (
+                    f"Score {float(score):.1f}/100" if score is not None else None
+                ),
+            })
+
+    # 3) Bulk deals — buy = pro, sell = con (only block-size-relevant)
+    for b in bulk_rows:
+        try:
+            value_cr = float(b.get("deal_value_cr") or 0)
+        except (TypeError, ValueError):
+            value_cr = 0
+        if value_cr < 5:
+            continue
+        party = (b.get("buyer_seller") or "").strip()
+        is_buy = "buy" in party.lower()
+        bucket = pros if is_buy else cons
+        weight = "strong" if value_cr >= 50 else "moderate" if value_cr >= 15 else "weak"
+        bucket.append({
+            "label": f"{'BUY' if is_buy else 'SELL'} bulk deal · ₹{value_cr:.1f} Cr",
+            "weight": weight,
+            "alpha": None,
+            "kind": "bulk_deal",
+            "source": b.get("exchange") or "NSE/BSE",
+            "ts": str(b.get("deal_date") or ""),
+            "detail": party,
+        })
+
+    # 4) F&O unusual flow — direction-coded if available
+    for f in fo_rows:
+        sig = (f.get("signal_type") or "unusual_flow").replace("_", " ")
+        detail = f.get("detail") or ""
+        # Heuristic: tag as risk by default unless detail says "call buying"
+        is_bullish = "call" in detail.lower() and "buy" in detail.lower()
+        bucket = pros if is_bullish else cons
+        bucket.append({
+            "label": f"F&O unusual: {sig}",
+            "weight": "moderate",
+            "alpha": None,
+            "kind": "fo_unusual",
+            "source": "F&O monitor",
+            "ts": str(f.get("created_at") or ""),
+            "detail": detail,
+        })
+
+    # Sort each bucket by weight then alpha desc; cap at 6 bullets each
+    weight_order = {"strong": 0, "moderate": 1, "weak": 2}
+    def _key(it):
+        return (weight_order.get(it.get("weight"), 9), -(it.get("alpha") or 0))
+    pros.sort(key=_key)
+    cons.sort(key=_key)
+    return pros[:6], cons[:6]
+
+
+def _what_to_watch(events_rows, ticker):
+    """Surface upcoming/recent catalysts. Pulls from the events table for
+    earnings/policy/order_win/merger/dividend that are within 14 days."""
+    out = []
+    seen_kinds = set()
+    for e in events_rows:
+        et = (e.get("event_type") or "").lower()
+        if et in seen_kinds:
+            continue
+        if et in ("earnings", "policy", "merger", "order_win", "dividend", "ipo"):
+            seen_kinds.add(et)
+            out.append({
+                "label": (e.get("title") or "").strip()[:140],
+                "kind": et,
+                "ts": str(e.get("published_at") or e.get("created_at") or ""),
+                "link": e.get("link") or "",
+            })
+        if len(out) >= 4:
+            break
+    return out
+
+
+def _stance_from_buckets(pros, cons):
+    """Net thesis score 0..100 from bucket weights + alphas.
+    Positive bias if pros heavily outweigh cons, negative if reverse."""
+    def _bucket_score(items):
+        total = 0.0
+        for it in items:
+            w = {"strong": 30, "moderate": 18, "weak": 8}.get(it.get("weight"), 8)
+            a = it.get("alpha")
+            total += w + (max(0, (a or 0) - 50) * 0.4)
+        return total
+    p = _bucket_score(pros)
+    c = _bucket_score(cons)
+    if p == 0 and c == 0:
+        return 50, "neutral"
+    raw = (p - c) / max(p + c, 1)  # -1..+1
+    score = round(50 + raw * 50)
+    score = max(0, min(100, score))
+    if score >= 65:
+        stance = "bullish"
+    elif score <= 35:
+        stance = "bearish"
+    else:
+        stance = "neutral"
+    return score, stance
+
+
+@bp.route("/api/stock/<ticker>/intelligence", methods=["GET"])
+@ttl_cache(seconds=120)
+def stock_intelligence(ticker: str):
+    """Auto-generated Pros / Cons / What-to-watch for a stock.
+
+    All bullets are grounded in real rows — signals, events, forensic
+    flags, bulk deals, F&O unusual flow. No invented metrics. Returns:
+        {ticker, thesis_score, stance, pros[], cons[], what_to_watch[],
+         narrative, generated_at, signals_seen}
+    """
+    ticker = (ticker or "").upper().strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "ticker required"}), 400
+
+    db = _get_db()
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+
+    days = max(1, min(180, int(request.args.get("days", 30))))
+
+    signals_rows: List[Dict] = []
+    events_rows: List[Dict] = []
+    manip_rows: List[Dict] = []
+    bulk_rows: List[Dict] = []
+    fo_rows: List[Dict] = []
+
+    try:
+        cur = db.conn.cursor()
+        # Signals
+        try:
+            cur.execute(
+                """SELECT event_id, ticker, alpha_score, confidence, sentiment,
+                          event_type, headline, source, link, created_at
+                   FROM signals
+                   WHERE ticker = ?
+                     AND created_at >= datetime('now', ?)
+                   ORDER BY alpha_score DESC, created_at DESC LIMIT 12""",
+                (ticker, f"-{days} days"),
+            )
+            signals_rows = [dict(r) for r in cur.fetchall()]
+        except Exception as e:
+            logger.debug(f"intel signals: {e}")
+
+        # Events for ticker (for what-to-watch)
+        try:
+            cur.execute(
+                """SELECT event_id, title, summary, event_type, sentiment,
+                          source, link, published_at, created_at
+                   FROM events
+                   WHERE companies LIKE ?
+                     AND created_at >= datetime('now', ?)
+                   ORDER BY created_at DESC LIMIT 30""",
+                (f"%{ticker}%", f"-{days} days"),
+            )
+            events_rows = [dict(r) for r in cur.fetchall()]
+        except Exception as e:
+            logger.debug(f"intel events: {e}")
+
+        # Forensic flags
+        try:
+            cur.execute(
+                """SELECT ticker, band, score, as_of
+                   FROM manipulation_scores
+                   WHERE ticker = ?
+                     AND as_of >= datetime('now', ?)
+                   ORDER BY as_of DESC LIMIT 5""",
+                (ticker, f"-{days} days"),
+            )
+            manip_rows = [dict(r) for r in cur.fetchall()]
+        except Exception as e:
+            logger.debug(f"intel manipulation: {e}")
+
+        # Bulk deals
+        try:
+            cur.execute(
+                """SELECT deal_date, ticker, deal_value_cr, deal_price,
+                          buyer_seller, exchange
+                   FROM bulk_deals
+                   WHERE ticker = ?
+                     AND deal_date >= datetime('now', ?)
+                   ORDER BY deal_date DESC LIMIT 10""",
+                (ticker, f"-{days} days"),
+            )
+            bulk_rows = [dict(r) for r in cur.fetchall()]
+        except Exception as e:
+            logger.debug(f"intel bulk: {e}")
+
+        # F&O unusual
+        try:
+            cur.execute(
+                """SELECT ticker, signal_type, magnitude, detail, created_at
+                   FROM fo_unusual
+                   WHERE ticker = ?
+                     AND created_at >= datetime('now', ?)
+                   ORDER BY created_at DESC LIMIT 5""",
+                (ticker, f"-{days} days"),
+            )
+            fo_rows = [dict(r) for r in cur.fetchall()]
+        except Exception as e:
+            logger.debug(f"intel fo: {e}")
+    except Exception as e:
+        logger.warning(f"stock_intelligence: db sweep failed: {e}")
+
+    pros, cons = _classify_pros_cons(signals_rows, events_rows, manip_rows,
+                                      bulk_rows, fo_rows, ticker)
+    watch = _what_to_watch(events_rows, ticker)
+    score, stance = _stance_from_buckets(pros, cons)
+
+    # Narrative — short, factual, pulls strongest pro + strongest con
+    narrative_parts = []
+    if pros:
+        narrative_parts.append(f"Bull case: {pros[0]['label']}")
+    if cons:
+        narrative_parts.append(f"Bear case: {cons[0]['label']}")
+    if not narrative_parts:
+        narrative_parts.append("No active signals on this ticker in the lookback window.")
+    narrative = " · ".join(narrative_parts)
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "ticker": ticker,
+            "thesis_score": score,
+            "stance": stance,
+            "pros": pros,
+            "cons": cons,
+            "what_to_watch": watch,
+            "narrative": narrative,
+            "signals_seen": len(signals_rows),
+            "events_seen": len(events_rows),
+            "lookback_days": days,
+            "generated_at": datetime.utcnow().isoformat() + "Z",
+        },
+    })
+
+
+# ---- News summarization (Groq → extractive fallback) -----------------------
+
+def _extractive_summary(title: str, body: str, max_chars: int = 220) -> str:
+    """Cheap extractive summary — first sentence(s) up to max_chars.
+    No magic; just a clean cut so the UI never gets a wall of text."""
+    text = (body or "").strip()
+    if not text:
+        return (title or "").strip()
+    # First sentence-ish boundary
+    cut_points = [text.find(". "), text.find("? "), text.find("! ")]
+    cuts = [c for c in cut_points if 30 <= c <= max_chars]
+    if cuts:
+        end = min(cuts) + 1
+        return text[:end].strip()
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 1].rstrip() + "…"
+
+
+def _groq_summarize(title: str, body: str) -> Optional[str]:
+    """Try Groq for a 1-sentence TL;DR. Returns None on any failure
+    (no key, governor refused, network, JSON parse). The caller falls back
+    to extractive when this returns None."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        logger.info("groq summarize skipped: GROQ_API_KEY not set")
+        return None
+    # Soft budget check via the existing governor — we share the JARGON budget
+    # since summaries are short and that bucket is otherwise unused.
+    governor = None
+    try:
+        import sys as _sys
+        scraper_path = os.path.join(os.path.dirname(__file__), "..", "scraper")
+        if scraper_path not in _sys.path:
+            _sys.path.insert(0, scraper_path)
+        from groq_governor import governor as _gov  # type: ignore
+        governor = _gov
+        if not governor.can_spend("jargon", est_tokens=300):
+            logger.info("groq summarize skipped: governor refused (jargon budget exhausted or CB open)")
+            return None
+    except Exception as e:
+        logger.info(f"groq summarize: governor unavailable, proceeding without budget check ({e})")
+    prompt = (
+        "Summarize this Indian-markets news in ONE clear sentence "
+        "(max 35 words). Plain English. No hedging.\n\n"
+        f"Headline: {title}\n\nBody: {(body or '')[:1200]}"
+    )
+    try:
+        import urllib.request
+        import urllib.error
+        import json as _json
+        # 8B model is plenty for 1-sentence TL;DRs and has 14× higher daily
+        # request quota than the 70B (14,400 RPD vs 1,000) at a fraction of
+        # the tokens/output. Override via GROQ_TLDR_MODEL if you want 70B.
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=_json.dumps({
+                "model": os.getenv("GROQ_TLDR_MODEL", "llama-3.1-8b-instant"),
+                "messages": [
+                    {"role": "system", "content": "Tight TL;DRs for traders. One sentence."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.2,
+                "max_tokens": 80,
+            }).encode(),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            j = _json.loads(resp.read())
+        choice = (j.get("choices") or [{}])[0]
+        text = ((choice.get("message") or {}).get("content") or "").strip().strip('"')
+        try:
+            if governor:
+                usage = j.get("usage") or {}
+                governor.record_spend("jargon", int(usage.get("total_tokens") or 200))
+        except Exception:
+            pass
+        if not text:
+            logger.warning("groq summarize: empty completion text")
+            return None
+        return text
+    except urllib.error.HTTPError as e:
+        body_excerpt = ""
+        try:
+            body_excerpt = e.read().decode("utf-8", errors="ignore")[:300]
+        except Exception:
+            pass
+        logger.warning(f"groq summarize HTTPError {e.code}: {body_excerpt}")
+        try:
+            if governor:
+                governor.record_429("jargon")
+        except Exception:
+            pass
+        return None
+    except Exception as e:
+        logger.warning(f"groq summarize failed ({type(e).__name__}): {e}")
+        try:
+            if governor:
+                governor.record_429("jargon")
+        except Exception:
+            pass
+        return None
+
+
+_SUMMARY_CACHE: Dict[str, Dict] = {}
+_SUMMARY_TTL_SECS = 60 * 60 * 24  # 24h in-memory; disk cache below is permanent
+_SUMMARY_DISK_CACHE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "summary_cache.json"
+)
+_SUMMARY_DISK_DIRTY = False
+_SUMMARY_DISK: Dict[str, Dict] = {}
+
+
+def _disk_cache_load():
+    """Load the on-disk summary cache once on first use. Article TL;DRs never
+    change so we keep them forever — survives restarts, cuts Groq spend by
+    not re-summarizing the same article tomorrow."""
+    global _SUMMARY_DISK
+    if _SUMMARY_DISK:
+        return
+    try:
+        with open(_SUMMARY_DISK_CACHE_PATH, "r", encoding="utf-8") as f:
+            _SUMMARY_DISK = json.load(f)
+    except FileNotFoundError:
+        _SUMMARY_DISK = {}
+    except Exception as e:
+        logger.warning(f"summary disk cache load failed: {e}")
+        _SUMMARY_DISK = {}
+
+
+def _disk_cache_save():
+    """Best-effort persist (called after each new summary). Atomic write so a
+    crash mid-write doesn't corrupt the file."""
+    try:
+        tmp = _SUMMARY_DISK_CACHE_PATH + ".tmp"
+        os.makedirs(os.path.dirname(_SUMMARY_DISK_CACHE_PATH), exist_ok=True)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_SUMMARY_DISK, f)
+        os.replace(tmp, _SUMMARY_DISK_CACHE_PATH)
+    except Exception as e:
+        logger.debug(f"summary disk cache save: {e}")
+
+
+@bp.route("/api/news/summarize", methods=["GET", "POST"])
+def news_summarize():
+    """Summarize a news article into one sentence.
+
+    GET  /api/news/summarize?event_id=<id>          → looks up events table
+    GET  /api/news/summarize?title=...&body=...      → ad-hoc
+    POST body {title, summary?, body?, event_id?}    → ad-hoc
+
+    Response: {"summary": "...", "source": "groq" | "extractive", "cached": bool}
+    """
+    payload = request.get_json(silent=True) or {}
+    args = request.args
+
+    event_id = (args.get("event_id") or payload.get("event_id") or "").strip()
+    title = (args.get("title") or payload.get("title") or "").strip()
+    body = (args.get("body") or payload.get("body")
+            or args.get("summary") or payload.get("summary") or "").strip()
+
+    # If the caller passed an event_id, look up canonical text from events table
+    if event_id and (not title or not body):
+        try:
+            db = _get_db()
+            cur = db.conn.cursor()
+            cur.execute(
+                "SELECT title, summary FROM events WHERE event_id = ? LIMIT 1",
+                (event_id,),
+            )
+            row = cur.fetchone()
+            if row:
+                title = title or (row["title"] or "")
+                body = body or (row["summary"] or "")
+        except Exception as e:
+            logger.debug(f"news_summarize lookup failed: {e}")
+
+    if not title and not body:
+        return jsonify({"success": False, "error": "title or body required"}), 400
+
+    cache_key = event_id or (title[:80] + "|" + body[:80])
+
+    # Check in-memory cache first (fastest)
+    cached = _SUMMARY_CACHE.get(cache_key)
+    if cached and (time.time() - cached["_ts"]) < _SUMMARY_TTL_SECS:
+        return jsonify({"success": True, "data": {**cached["payload"], "cached": True}})
+
+    # Then check on-disk cache — article TL;DRs never expire (the article
+    # content doesn't change). This is the BIG saving: same article summarized
+    # once across all restarts, all users, forever.
+    _disk_cache_load()
+    if cache_key in _SUMMARY_DISK:
+        payload = _SUMMARY_DISK[cache_key]
+        _SUMMARY_CACHE[cache_key] = {"_ts": time.time(), "payload": payload}
+        return jsonify({"success": True, "data": {**payload, "cached": True, "from": "disk"}})
+
+    summary = _groq_summarize(title, body)
+    if summary:
+        out = {"summary": summary, "source": "groq", "cached": False}
+    else:
+        out = {"summary": _extractive_summary(title, body), "source": "extractive", "cached": False}
+
+    _SUMMARY_CACHE[cache_key] = {"_ts": time.time(), "payload": out}
+    # Persist Groq results forever; skip extractive (cheap to recompute)
+    if out.get("source") == "groq":
+        _SUMMARY_DISK[cache_key] = out
+        _disk_cache_save()
+    return jsonify({"success": True, "data": out})
+
+
+# ============ STOCK DOCUMENTS — exchange filings, concalls, ratings ========
+_CONCALL_HINTS = ("concall", "earnings call", "investor call", "transcript",
+                   "investor meet", "analyst meet")
+_RATING_HINTS = ("rating", "crisil", "icra", "care ", "moody", "fitch",
+                  "s&p global", "india ratings", "brickwork")
+_REPORT_HINTS = ("annual report", "annual general meeting", "agm",
+                  "shareholders' meeting", "investor presentation")
+
+
+def _bucket_doc(title: str, source: str) -> str:
+    blob = ((title or "") + " " + (source or "")).lower()
+    if any(k in blob for k in _CONCALL_HINTS):
+        return "concall"
+    if any(k in blob for k in _RATING_HINTS):
+        return "rating"
+    if any(k in blob for k in _REPORT_HINTS):
+        return "annual_report"
+    return "announcement"
+
+
+@bp.route("/api/stock/<ticker>/documents", methods=["GET"])
+@ttl_cache(seconds=300)
+def stock_documents(ticker: str):
+    """Return all corporate documents for a ticker, bucketed by type.
+    Pulls from the events table (filings ingested from BSE/NSE/SEBI) and
+    augments with yfinance SEC filings when available."""
+    ticker = (ticker or "").upper().strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "ticker required"}), 400
+    db = _get_db()
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    try:
+        days = max(7, min(1095, int(request.args.get("days", 365))))
+    except ValueError:
+        days = 365
+
+    buckets = {"announcements": [], "concalls": [], "ratings": [], "annual_reports": []}
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT event_id, title, summary, source, link, event_type,
+                      published_at, created_at
+               FROM events WHERE companies LIKE ?
+                 AND created_at >= datetime('now', ?)
+               ORDER BY created_at DESC LIMIT 200""",
+            (f"%{ticker}%", f"-{days} days"),
+        )
+        for r in cur.fetchall():
+            row = dict(r)
+            kind = _bucket_doc(row.get("title") or "", row.get("source") or "")
+            key = {"announcement": "announcements", "concall": "concalls",
+                   "rating": "ratings", "annual_report": "annual_reports"}.get(kind, "announcements")
+            buckets[key].append({
+                "date": str(row.get("published_at") or row.get("created_at") or ""),
+                "title": row.get("title") or "",
+                "summary": (row.get("summary") or "")[:300],
+                "source": row.get("source") or "",
+                "link": row.get("link") or "",
+                "event_id": row.get("event_id"),
+            })
+    except Exception as e:
+        logger.warning(f"stock_documents events query failed: {e}")
+
+    try:
+        t = _yf_ticker(ticker)
+        sec = getattr(t, "sec_filings", None) or []
+        for f in list(sec or [])[:10]:
+            if not isinstance(f, dict):
+                continue
+            buckets["annual_reports"].append({
+                "date": str(f.get("date") or ""),
+                "title": f.get("title") or f.get("type") or "Filing",
+                "summary": "",
+                "source": "SEC / Yahoo",
+                "link": f.get("edgarUrl") or f.get("url") or "",
+                "event_id": None,
+            })
+    except Exception as e:
+        logger.debug(f"stock_documents yfinance filings: {e}")
+
+    counts = {}
+    for k, v in buckets.items():
+        v.sort(key=lambda it: str(it.get("date") or ""), reverse=True)
+        buckets[k] = v[:20]
+        counts[k] = len(buckets[k])
+    return jsonify({"success": True, "data": {
+        "ticker": ticker, "lookback_days": days, "counts": counts, **buckets,
+    }})
 
 
 @bp.route("/api/stock/<ticker>/peers-detail", methods=["GET"])
@@ -1744,6 +2819,7 @@ def _policy_where_clause(table_alias: str = "s") -> str:
 
 
 @bp.route("/api/policy/fast", methods=["GET"])
+@ttl_cache(seconds=60)
 def policy_fast():
     """Recent policy events.  Free tier: 24h window.  Pro tier: 30d window.
     Returns ordered by created_at DESC with alpha + sentiment for ranking."""
@@ -2042,10 +3118,13 @@ def premover_endpoint():
     if horizon not in ("1D", "5D", "20D"):
         horizon = "5D"
     limit = max(1, min(int(request.args.get("limit", "30")), 100))
+    # Default kept low so the page never goes empty when only the news-catalyst
+    # factor is populated (e.g. before bulk-deal / F&O / promoter feeds catch
+    # up). Operators can still tighten via ?min_score=...
     try:
-        min_score = float(request.args.get("min_score", "30"))
+        min_score = float(request.args.get("min_score", "8"))
     except Exception:
-        min_score = 30.0
+        min_score = 8.0
 
     metric_inc("tickwave_premover_calls_total", {"horizon": horizon, "tier": tier})
 
@@ -2100,6 +3179,906 @@ def premover_endpoint():
         "count":        len(result.get("data") or []),
     })
     return jsonify(result)
+
+
+# ============ GEO INTELLIGENCE MAP ===========================================
+
+# Cached at module load — these are config files, not hot data
+_GEO_EVERGREEN: Optional[List[Dict]] = None
+_TRANSMISSION_RULES: Optional[Dict] = None
+
+# Country → (display_name, lat, lng). Display name is preserved on output.
+# Aliases are matched as whole words (regex \b...\b), so short forms like "US"
+# only match when standalone, not inside words like "must" or "guess".
+_COUNTRIES = [
+    # (display, lat, lng, [aliases])
+    ("United States",   38.8951,  -77.0369, [r"united states", r"\bUSA?\b", r"\bWashington\b", r"\bWall Street\b"]),
+    ("China",           35.8617,  104.1954, [r"\bChina\b", r"Beijing", r"Shanghai", r"Shenzhen", r"\bPBoC\b"]),
+    ("Japan",           35.6762,  139.6503, [r"\bJapan\b", r"\bTokyo\b", r"\bBoJ\b", r"\bNikkei\b"]),
+    ("Russia",          55.7558,  37.6173,  [r"\bRussia\b", r"\bMoscow\b", r"\bKremlin\b", r"\bPutin\b"]),
+    ("Ukraine",         50.4501,  30.5234,  [r"\bUkraine\b", r"\bKyiv\b"]),
+    ("Saudi Arabia",    24.7136,  46.6753,  [r"Saudi Arabia", r"\bRiyadh\b", r"\bAramco\b"]),
+    ("Iran",            35.6892,  51.3890,  [r"\bIran\b", r"\bTehran\b"]),
+    ("Iraq",            33.3152,  44.3661,  [r"\bIraq\b"]),
+    ("Israel",          32.0853,  34.7818,  [r"\bIsrael\b", r"\bGaza\b", r"\bTel Aviv\b"]),
+    ("UAE",             25.2048,  55.2708,  [r"\bUAE\b", r"\bDubai\b", r"\bAbu Dhabi\b"]),
+    ("Qatar",           25.2854,  51.5310,  [r"\bQatar\b", r"\bDoha\b"]),
+    ("Germany",         52.5200,  13.4050,  [r"\bGermany\b", r"\bBerlin\b", r"\bFrankfurt\b"]),
+    ("France",          48.8566,  2.3522,   [r"\bFrance\b", r"\bParis\b"]),
+    ("United Kingdom",  51.5074,  -0.1278,  [r"United Kingdom", r"\bUK\b", r"\bLondon\b", r"\bBritain\b", r"\bBank of England\b"]),
+    ("Italy",           41.9028,  12.4964,  [r"\bItaly\b", r"\bRome\b", r"\bMilan\b"]),
+    ("Netherlands",     52.3676,  4.9041,   [r"\bNetherlands\b", r"\bAmsterdam\b", r"\bASML\b"]),
+    ("Switzerland",     47.5596,  7.5886,   [r"\bSwitzerland\b", r"\bGeneva\b", r"\bZurich\b"]),
+    ("Australia",      -25.2744,  133.7751, [r"\bAustralia\b", r"\bSydney\b", r"\bCanberra\b", r"\bPilbara\b"]),
+    ("Indonesia",       -2.5489,  118.0149, [r"\bIndonesia\b", r"\bJakarta\b"]),
+    ("Singapore",       1.3521,   103.8198, [r"\bSingapore\b"]),
+    ("South Korea",     37.5665,  126.9780, [r"South Korea", r"\bSeoul\b", r"\bSamsung\b"]),
+    ("Taiwan",          25.0330,  121.5654, [r"\bTaiwan\b", r"\bTaipei\b", r"\bTSMC\b"]),
+    ("Vietnam",         14.0583,  108.2772, [r"\bVietnam\b", r"\bHanoi\b"]),
+    ("Philippines",     12.8797,  121.7740, [r"\bPhilippines\b", r"\bManila\b"]),
+    ("Brazil",         -14.2350, -51.9253,  [r"\bBrazil\b", r"\bSao Paulo\b", r"\bBrasilia\b"]),
+    ("Argentina",      -38.4161, -63.6167,  [r"\bArgentina\b", r"\bBuenos Aires\b"]),
+    ("Mexico",          23.6345, -102.5528, [r"\bMexico\b"]),
+    ("Canada",          56.1304, -106.3468, [r"\bCanada\b", r"\bOttawa\b", r"\bToronto\b"]),
+    ("South Africa",   -30.5595,  22.9375,  [r"South Africa", r"\bJohannesburg\b"]),
+    ("Nigeria",         9.0820,   8.6753,   [r"\bNigeria\b", r"\bLagos\b"]),
+    ("Egypt",           26.8206,  30.8025,  [r"\bEgypt\b", r"\bCairo\b", r"Suez Canal"]),
+    ("Turkey",          38.9637,  35.2433,  [r"\bTurkey\b", r"\bAnkara\b", r"\bIstanbul\b"]),
+    ("Venezuela",       6.4238,  -66.5897,  [r"\bVenezuela\b"]),
+    ("Chile",          -35.6751, -71.5430,  [r"\bChile\b", r"\bSantiago\b"]),
+    ("Pakistan",        30.3753,  69.3451,  [r"\bPakistan\b", r"\bIslamabad\b", r"\bKarachi\b"]),
+    ("Bangladesh",      23.6850,  90.3563,  [r"\bBangladesh\b", r"\bDhaka\b"]),
+    ("Sri Lanka",       7.8731,   80.7718,  [r"Sri Lanka", r"\bColombo\b"]),
+    ("Thailand",        15.8700,  100.9925, [r"\bThailand\b", r"\bBangkok\b"]),
+    ("Malaysia",        4.2105,   101.9758, [r"\bMalaysia\b", r"Kuala Lumpur"]),
+    # India is special-cased — we want events that are *about India*, not US news
+    # mentioning Indian companies. So treat India as last-resort + require strong signals.
+    ("India",           20.5937,  78.9629,  [r"\bRBI\b", r"\bSEBI\b", r"\bMumbai\b", r"\bNew Delhi\b", r"\bDalal Street\b", r"\bNifty\b"]),
+]
+
+# Indian states for the India-zoomed map
+_INDIA_STATES = {
+    "maharashtra":      (19.7515, 75.7139),
+    "mumbai":           (19.0760, 72.8777),
+    "delhi":            (28.7041, 77.1025),
+    "karnataka":        (15.3173, 75.7139),
+    "bengaluru":        (12.9716, 77.5946),
+    "bangalore":        (12.9716, 77.5946),
+    "tamil nadu":       (11.1271, 78.6569),
+    "chennai":          (13.0827, 80.2707),
+    "telangana":        (18.1124, 79.0193),
+    "hyderabad":        (17.3850, 78.4867),
+    "andhra pradesh":   (15.9129, 79.7400),
+    "kerala":           (10.8505, 76.2711),
+    "gujarat":          (22.2587, 71.1924),
+    "ahmedabad":        (23.0225, 72.5714),
+    "rajasthan":        (27.0238, 74.2179),
+    "jaipur":           (26.9124, 75.7873),
+    "punjab":           (31.1471, 75.3412),
+    "haryana":          (29.0588, 76.0856),
+    "gurugram":         (28.4595, 77.0266),
+    "uttar pradesh":    (26.8467, 80.9462),
+    "lucknow":          (26.8467, 80.9462),
+    "noida":            (28.5355, 77.3910),
+    "madhya pradesh":   (22.9734, 78.6569),
+    "bhopal":           (23.2599, 77.4126),
+    "west bengal":      (22.9868, 87.8550),
+    "kolkata":          (22.5726, 88.3639),
+    "bihar":            (25.0961, 85.3131),
+    "patna":            (25.5941, 85.1376),
+    "odisha":           (20.9517, 85.0985),
+    "bhubaneswar":      (20.2961, 85.8245),
+    "assam":            (26.2006, 92.9376),
+    "guwahati":         (26.1445, 91.7362),
+    "jharkhand":        (23.6102, 85.2799),
+    "chhattisgarh":     (21.2787, 81.8661),
+    "uttarakhand":      (30.0668, 79.0193),
+    "himachal pradesh": (31.1048, 77.1734),
+    "goa":              (15.2993, 74.1240),
+    "jammu and kashmir":(33.7782, 76.5762),
+    "kashmir":          (33.7782, 76.5762),
+    "ladakh":           (34.1526, 77.5770),
+    "manipur":          (24.6637, 93.9063),
+    "tripura":          (23.9408, 91.9882),
+    "meghalaya":        (25.4670, 91.3662),
+    "nagaland":         (26.1584, 94.5624),
+    "mizoram":          (23.1645, 92.9376),
+    "arunachal pradesh":(28.2180, 94.7278),
+    "sikkim":           (27.5330, 88.5122),
+}
+
+
+def _load_geo_configs():
+    """Load JSON config files once (module-cached)."""
+    global _GEO_EVERGREEN, _TRANSMISSION_RULES
+    if _GEO_EVERGREEN is None:
+        try:
+            scraper_dir = os.path.join(os.path.dirname(__file__), "..", "scraper")
+            with open(os.path.join(scraper_dir, "geo_evergreen.json"), "r", encoding="utf-8") as f:
+                _GEO_EVERGREEN = json.load(f)
+        except Exception as e:
+            logger.warning(f"geo_evergreen.json load failed: {e}")
+            _GEO_EVERGREEN = []
+    if _TRANSMISSION_RULES is None:
+        try:
+            scraper_dir = os.path.join(os.path.dirname(__file__), "..", "scraper")
+            with open(os.path.join(scraper_dir, "transmission_rules.json"), "r", encoding="utf-8") as f:
+                _TRANSMISSION_RULES = json.load(f)
+        except Exception as e:
+            logger.warning(f"transmission_rules.json load failed: {e}")
+            _TRANSMISSION_RULES = {"lenses": {}}
+    return _GEO_EVERGREEN, _TRANSMISSION_RULES
+
+
+import re
+
+# Compile country alias regexes once (case-insensitive, word-boundary aware)
+_COUNTRY_PATTERNS = [
+    (display, lat, lng, [re.compile(a, re.IGNORECASE) for a in aliases])
+    for display, lat, lng, aliases in _COUNTRIES
+]
+
+
+def _classify_lens(text: str, rules: Dict) -> Optional[str]:
+    """Match an event against keyword lists with whole-word matching.
+    Each lens needs at least 1 hit and beats the previous best by hit count.
+    Short keywords (<4 chars) are required to be standalone words."""
+    if not text:
+        return None
+    t = text.lower()
+    best_lens = None
+    best_hits = 0
+    for lens_id, lens_cfg in (rules.get("lenses") or {}).items():
+        hits = 0
+        for kw in lens_cfg.get("keywords", []):
+            if not kw:
+                continue
+            kw_low = kw.lower()
+            # Word-boundary match for short tokens; substring OK for multi-word phrases
+            if len(kw_low.split()) > 1:
+                if kw_low in t:
+                    hits += 1
+            else:
+                # \b...\b on lowercase text
+                if re.search(r"\b" + re.escape(kw_low) + r"\b", t):
+                    hits += 1
+        if hits > best_hits:
+            best_hits = hits
+            best_lens = lens_id
+    return best_lens
+
+
+def _geocode_country(text: str) -> Optional[tuple]:
+    """Find first matching country (by aliases, word-boundary). Preserves
+    original display casing. Returns (display_name, lat, lng) or None."""
+    if not text:
+        return None
+    for display, lat, lng, patterns in _COUNTRY_PATTERNS:
+        for p in patterns:
+            if p.search(text):
+                return (display, lat, lng)
+    return None
+
+
+def _geocode_india_state(text: str) -> Optional[tuple]:
+    """Find first matching Indian state/city, return (state, lat, lng)."""
+    if not text:
+        return None
+    t = text.lower()
+    # Sort longer keys first to prefer "uttar pradesh" over "pradesh"
+    for key in sorted(_INDIA_STATES.keys(), key=len, reverse=True):
+        if re.search(r"\b" + re.escape(key) + r"\b", t):
+            lat, lng = _INDIA_STATES[key]
+            return (key.title(), lat, lng)
+    return None
+
+
+@bp.route("/api/geo/events", methods=["GET"])
+def geo_events():
+    """Merged geo events: curated evergreen pins + live DB events tagged with country.
+
+    Query params:
+    - lens: filter to a single lens (energy/metals/agri/geopolitics/central_banks/trade/tech)
+    - hours: lookback for live events (default 72)
+    """
+    evergreen, rules = _load_geo_configs()
+    db = _get_db()
+    lens_filter = request.args.get("lens")
+    hours = min(int(request.args.get("hours", 168)), 720)
+
+    out = []
+
+    # 1) Live geo-tagged events from DB
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT event_id, title, summary, source, link, sentiment, magnitude, impact_score, event_type, companies, published_at, created_at
+               FROM events
+               WHERE created_at >= datetime('now', ?)
+               ORDER BY created_at DESC LIMIT 400""",
+            (f"-{hours} hours",))
+        rows = [dict(r) for r in cur.fetchall()]
+    except Exception as e:
+        logger.warning(f"geo_events DB read failed: {e}")
+        rows = []
+
+    for r in rows:
+        text = ((r.get("title") or "") + " " + (r.get("summary") or ""))
+        geo = _geocode_country(text)
+        if not geo:
+            continue
+        country, lat, lng = geo
+        lens = _classify_lens(text, rules) or "geopolitics"
+        if lens_filter and lens != lens_filter:
+            continue
+
+        # Severity: prefer impact_score (0-100), fallback to magnitude (0-10)
+        severity = float(r.get("impact_score") or 0)
+        if severity == 0 and r.get("magnitude"):
+            severity = float(r["magnitude"]) * 10
+        severity = max(1, min(10, round(severity / 10)))
+
+        # Compute age
+        created = r.get("created_at") or r.get("published_at")
+        age_h = None
+        try:
+            from datetime import datetime as _dt
+            if isinstance(created, str):
+                # SQLite returns "YYYY-MM-DD HH:MM:SS"
+                ct = _dt.strptime(created[:19], "%Y-%m-%d %H:%M:%S")
+                age_h = (_dt.utcnow() - ct).total_seconds() / 3600.0
+        except Exception:
+            age_h = None
+
+        out.append({
+            "event_id":   r["event_id"],
+            "kind":       "live",
+            "country":    country,
+            "lat": lat, "lng": lng,
+            "lens":       lens,
+            "severity":   severity,
+            "title":      (r.get("title") or "")[:200],
+            "summary":    (r.get("summary") or "")[:400],
+            "source":     r.get("source"),
+            "link":       r.get("link"),
+            "sentiment":  r.get("sentiment"),
+            "companies":  r.get("companies"),
+            "age_hours":  round(age_h, 2) if age_h is not None else None,
+            "is_new":     bool(age_h is not None and age_h < 2),
+            "as_of":      str(created) if created else None,
+        })
+
+    # 2) Evergreen curated pins (always shown unless lens-filtered)
+    for ev in (evergreen or []):
+        if lens_filter and ev.get("lens") != lens_filter:
+            continue
+        out.append({
+            "event_id":   ev["id"],
+            "kind":       "evergreen",
+            "country":    ev.get("country"),
+            "lat":        ev.get("lat"),
+            "lng":        ev.get("lng"),
+            "lens":       ev.get("lens"),
+            "severity":   ev.get("severity", 7),
+            "title":      ev.get("title"),
+            "summary":    ev.get("summary"),
+            "source":     "Tickwave Evergreen",
+            "link":       None,
+            "is_new":     False,
+            "age_hours":  None,
+        })
+
+    # Sort: new live first (by age asc), then by severity desc
+    def _sort_key(e):
+        age = e.get("age_hours")
+        is_new = 0 if e.get("is_new") else 1
+        return (is_new, age if age is not None else 99999, -float(e.get("severity") or 0))
+    out.sort(key=_sort_key)
+
+    # Lens metadata for the frontend (colors, labels, monograms)
+    lens_meta = {
+        lid: {"label": l.get("label"), "color": l.get("color"), "monogram": l.get("monogram")}
+        for lid, l in (rules.get("lenses") or {}).items()
+    }
+
+    return jsonify({
+        "success": True,
+        "data": out,
+        "count": len(out),
+        "lenses": lens_meta,
+    })
+
+
+@bp.route("/api/geo/transmission/<event_id>", methods=["GET"])
+def geo_transmission(event_id: str):
+    """Given an event_id (live or evergreen), return the transmission chain:
+    affected Indian tickers ranked by historical impact, with the latest
+    signal data (alpha, sentiment, last entry price) where available."""
+    evergreen, rules = _load_geo_configs()
+    db = _get_db()
+    cur = db.conn.cursor()
+
+    # Resolve the event: evergreen pins start with "evg-"; live events live in DB
+    event_obj = None
+    if event_id.startswith("evg-"):
+        for ev in (evergreen or []):
+            if ev.get("id") == event_id:
+                event_obj = dict(ev)
+                event_obj["kind"] = "evergreen"
+                break
+    else:
+        try:
+            cur.execute(
+                """SELECT event_id, title, summary, source, link, sentiment, magnitude, impact_score, companies, created_at
+                   FROM events WHERE event_id = ? LIMIT 1""", (event_id,))
+            r = cur.fetchone()
+            if r:
+                event_obj = dict(r)
+                event_obj["kind"] = "live"
+        except Exception as e:
+            logger.warning(f"transmission DB read: {e}")
+
+    if not event_obj:
+        return jsonify({"success": False, "error": "event not found", "data": []}), 404
+
+    # Determine lens
+    text = (event_obj.get("title") or "") + " " + (event_obj.get("summary") or "")
+    lens = event_obj.get("lens") or _classify_lens(text, rules) or "geopolitics"
+    lens_cfg = (rules.get("lenses") or {}).get(lens) or {}
+
+    # Build affected ticker list with live signal data
+    tickers_cfg = lens_cfg.get("tickers", [])
+    affected = []
+    for tcfg in tickers_cfg:
+        tk = tcfg["ticker"]
+        signal = None
+        try:
+            cur.execute(
+                """SELECT ticker, company, alpha_score, confidence, entry_price, sentiment, magnitude, impact_score, headline, created_at
+                   FROM signals WHERE ticker = ? ORDER BY created_at DESC LIMIT 1""", (tk,))
+            srow = cur.fetchone()
+            if srow:
+                signal = dict(srow)
+        except Exception:
+            signal = None
+
+        affected.append({
+            "ticker":      tk,
+            "company":     (signal or {}).get("company"),
+            "rank":        tcfg.get("rank"),
+            "reason":      tcfg.get("reason"),
+            "beta":        tcfg.get("beta"),
+            "alpha_score": (signal or {}).get("alpha_score"),
+            "confidence":  (signal or {}).get("confidence"),
+            "last_price":  (signal or {}).get("entry_price"),
+            "sentiment":   (signal or {}).get("sentiment"),
+            "signal_age":  (signal or {}).get("created_at"),
+            "headline":    (signal or {}).get("headline"),
+        })
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "event": {
+                "event_id":  event_obj.get("event_id") or event_obj.get("id"),
+                "title":     event_obj.get("title"),
+                "summary":   event_obj.get("summary"),
+                "source":    event_obj.get("source"),
+                "link":      event_obj.get("link"),
+                "country":   event_obj.get("country"),
+                "lens":      lens,
+                "lens_label": lens_cfg.get("label"),
+                "lens_color": lens_cfg.get("color"),
+                "kind":      event_obj.get("kind"),
+                "as_of":     str(event_obj.get("created_at") or ""),
+            },
+            "affected": affected,
+            "count":    len(affected),
+        },
+    })
+
+
+# ============ REACTION STATUS ===============================================
+# "Has this ticker already moved on today's news, or is there room left?"
+# Pulls live %change from yfinance (90s cache), classifies vs event sentiment.
+
+_REACTION_CACHE: Dict[str, tuple] = {}   # ticker -> (last, prev_close, fetched_at)
+_REACTION_TTL_S = 90
+
+
+def _fetch_today_change(tickers: List[str]) -> Dict[str, Dict]:
+    """Batch-fetch last + prev close from yfinance, computing today's %change.
+    In-memory cached for 90s per ticker so back-to-back calls don't hammer yf.
+    """
+    if not tickers:
+        return {}
+    now = time.time()
+    out: Dict[str, Dict] = {}
+    needs_fetch: List[str] = []
+    for t in tickers:
+        cached = _REACTION_CACHE.get(t)
+        if cached and (now - cached[2]) < _REACTION_TTL_S:
+            last, prev, _ = cached
+            out[t] = {"last": last, "prev_close": prev}
+        else:
+            needs_fetch.append(t)
+
+    if needs_fetch:
+        try:
+            import yfinance as yf
+            yf_syms = [f"{tk}.NS" for tk in needs_fetch]
+            data = yf.download(yf_syms, period="2d", interval="1d",
+                               group_by="ticker", progress=False, threads=True,
+                               auto_adjust=False)
+            for tk in needs_fetch:
+                yf_sym = f"{tk}.NS"
+                try:
+                    if len(yf_syms) == 1:
+                        closes = data["Close"].dropna()
+                    else:
+                        closes = data[yf_sym]["Close"].dropna()
+                    if len(closes) < 1:
+                        out[tk] = {"last": None, "prev_close": None}
+                        continue
+                    last = float(closes.iloc[-1])
+                    prev = float(closes.iloc[-2]) if len(closes) >= 2 else last
+                    _REACTION_CACHE[tk] = (last, prev, now)
+                    out[tk] = {"last": last, "prev_close": prev}
+                except Exception:
+                    out[tk] = {"last": None, "prev_close": None}
+        except Exception as e:
+            logger.warning(f"reactions yf fetch: {e}")
+            for tk in needs_fetch:
+                out.setdefault(tk, {"last": None, "prev_close": None})
+    return out
+
+
+def _classify_reaction(chg_pct: Optional[float], sentiment: Optional[str], magnitude: float) -> Dict:
+    """Map (today_change, expected_sentiment, event_severity) → status badge."""
+    if chg_pct is None:
+        return {"status": "no_data", "label": "—", "color": "#5a6373",
+                "tooltip": "Live price unavailable.", "direction_match": None,
+                "headroom_pct": None}
+
+    # Magnitude is 0-10; scale thresholds. Default mid (5) → 1.0x.
+    mag = max(1.0, min(10.0, float(magnitude or 5)))
+    scale = max(0.6, mag / 5.0)
+    T_PRICED  = 2.0 * scale
+    T_PARTIAL = 0.5 * scale
+    T_FLAT    = 0.3
+
+    sent = (sentiment or "").lower()
+    expected_sign = +1 if sent == "bullish" else -1 if sent == "bearish" else 0
+
+    # Neutral / unknown sentiment — only flag big abs moves
+    if expected_sign == 0:
+        if abs(chg_pct) >= T_PRICED:
+            return {"status": "volatile", "label": f"Volatile {chg_pct:+.1f}%",
+                    "color": "#a78bfa", "direction_match": None,
+                    "headroom_pct": None,
+                    "tooltip": f"Stock moved {chg_pct:+.2f}% on a neutral-sentiment event."}
+        return {"status": "neutral", "label": f"{chg_pct:+.1f}%", "color": "#8a94a8",
+                "direction_match": None, "headroom_pct": None,
+                "tooltip": f"Today {chg_pct:+.2f}%, neutral sentiment."}
+
+    # Did the stock move in the expected direction?
+    aligned_pct = chg_pct * expected_sign      # positive if matching expectation
+    direction_match = aligned_pct > 0
+
+    if aligned_pct >= T_PRICED:
+        return {"status": "priced_in", "label": "Priced in",
+                "color": "#8a94a8", "direction_match": True,
+                "headroom_pct": 0.0,
+                "tooltip": f"Already {chg_pct:+.2f}% today — expected {sent} move largely captured."}
+    if aligned_pct >= T_PARTIAL:
+        headroom = max(0.0, T_PRICED - aligned_pct)
+        return {"status": "partial", "label": "Partial move",
+                "color": "#e6b84a", "direction_match": True,
+                "headroom_pct": round(headroom, 2),
+                "tooltip": f"Moved {chg_pct:+.2f}% so far; ~{headroom:.1f}% headroom left in expected direction."}
+    if aligned_pct >= -T_FLAT:
+        return {"status": "open", "label": "Room to spike",
+                "color": "#2dd4aa", "direction_match": True,
+                "headroom_pct": round(T_PRICED, 2),
+                "tooltip": f"Barely moved ({chg_pct:+.2f}%) — alpha potential intact."}
+    return {"status": "counter", "label": "Diverging",
+            "color": "#f29090", "direction_match": False,
+            "headroom_pct": None,
+            "tooltip": f"Stock moved {chg_pct:+.2f}% — opposite to expected {sent} direction."}
+
+
+@bp.route("/api/reactions", methods=["GET"])
+def reactions():
+    """Per-ticker reaction status. Tells you whether the stock has already
+    spiked on today's event or if there's still room to run.
+
+    Query params:
+    - tickers: comma-separated (max 25)
+    - sentiment: bullish | bearish | neutral (used to set expected direction)
+    - magnitude: 0-10 (severity; scales the move-size thresholds)
+    """
+    raw = (request.args.get("tickers") or "").strip()
+    if not raw:
+        return jsonify({"success": False, "error": "tickers required", "data": {}}), 400
+    tickers = [t.strip().upper() for t in raw.split(",") if t.strip()][:25]
+    sentiment = request.args.get("sentiment")
+    try:
+        magnitude = float(request.args.get("magnitude") or 5)
+    except Exception:
+        magnitude = 5.0
+
+    quotes = _fetch_today_change(tickers)
+    out: Dict[str, Dict] = {}
+    for tk in tickers:
+        q = quotes.get(tk) or {}
+        last, prev = q.get("last"), q.get("prev_close")
+        chg_pct = ((last - prev) / prev * 100.0) if (last and prev) else None
+        cls = _classify_reaction(chg_pct, sentiment, magnitude)
+        out[tk] = {
+            "ticker":     tk,
+            "last":       last,
+            "prev_close": prev,
+            "change_pct": round(chg_pct, 2) if chg_pct is not None else None,
+            **cls,
+        }
+    return jsonify({"success": True, "data": out, "count": len(out)})
+
+
+# ============ DAILY PICKS (Groq-reasoned) ===================================
+# Top alpha signals for "today" — diverse by sector, cached per UTC day so the
+# picks are stable through the trading session. Each pick gets a 1-line Groq
+# reasoning (cached too) explaining WHY it made the cut.
+
+_PICKS_CACHE: Dict[str, Dict] = {}   # day -> {data, generated_at}
+_REASONING_CACHE: Dict[str, str] = {}  # day:ticker -> reasoning text
+
+
+def _groq_pick_reason(pick: Dict) -> Optional[str]:
+    """Generate a 1-sentence reason this stock made today's picks. Returns
+    None if Groq unavailable / governor refuses; caller falls back."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+    try:
+        import sys as _sys
+        scraper_path = os.path.join(os.path.dirname(__file__), "..", "scraper")
+        if scraper_path not in _sys.path:
+            _sys.path.insert(0, scraper_path)
+        from groq_governor import governor as _gov  # type: ignore
+        if not _gov.can_spend("reasoning", est_tokens=200):
+            return None
+    except Exception:
+        pass
+    prompt = (
+        f"Stock: {pick.get('ticker')} ({pick.get('company','')})\n"
+        f"Event: {pick.get('event_type','news')} · sentiment {pick.get('sentiment','neutral')}\n"
+        f"Headline: {(pick.get('headline') or '')[:200]}\n"
+        f"Alpha score: {pick.get('alpha_score',0):.0f}/100\n\n"
+        "In ONE sentence (max 25 words), explain WHY this stock is on today's "
+        "high-conviction list. Be concrete, cite the catalyst, no hedging."
+    )
+    try:
+        import urllib.request
+        import json as _json
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=_json.dumps({
+                "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+                "messages": [
+                    {"role": "system", "content": "You write tight, concrete trade reasoning for Indian equities. One sentence."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.3, "max_tokens": 60,
+            }).encode(),
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = _json.loads(resp.read())
+        msg = ((data.get("choices") or [{}])[0].get("message") or {}).get("content", "")
+        if msg:
+            try:
+                tk = (data.get("usage") or {}).get("total_tokens", 0)
+                _gov.record_spend("reasoning", actual_tokens=int(tk))
+            except Exception:
+                pass
+            return msg.strip().strip('"')
+    except Exception as e:
+        logger.info(f"groq pick reason failed: {e}")
+    return None
+
+
+def _fallback_pick_reason(pick: Dict) -> str:
+    """Hand-crafted reason when Groq is unavailable."""
+    et = (pick.get("event_type") or "news").replace("_", " ")
+    sent = pick.get("sentiment") or "neutral"
+    alpha = pick.get("alpha_score") or 0
+    sent_word = {"bullish": "tailwind", "bearish": "headwind", "neutral": "watch"}.get(sent, "watch")
+    return f"Alpha {alpha:.0f}/100 · {et} {sent_word} surfaced today — confirm before position sizing."
+
+
+# ── Subject-match helper for daily picks ─────────────────────────────────────
+# Drops "article says X, suggest Y" false positives — same logic as the
+# client-side CuratedSignals.headlineMatchesTicker check.
+_PICKS_SHORT_NAMES = {
+    "TCS":        ["TCS", "Tata Consultancy"],
+    "RELIANCE":   ["RIL", "Reliance Industries", "Reliance Ind"],
+    "INFY":       ["INFY", "Infosys"],
+    "HDFCBANK":   ["HDFC Bank"],
+    "ICICIBANK":  ["ICICI Bank", "ICICI"],
+    "HINDUNILVR": ["HUL", "Hindustan Unilever", "Hind Unilever"],
+    "SBIN":       ["SBI", "State Bank of India"],
+    "BHARTIARTL": ["Bharti Airtel", "Airtel"],
+    "KOTAKBANK":  ["Kotak Mahindra", "Kotak Bank"],
+    "LT":         ["Larsen", "L&T", "L&amp;T"],
+    "ITC":        ["ITC Ltd", "ITC "],
+    "AXISBANK":   ["Axis Bank"],
+    "BAJFINANCE": ["Bajaj Finance"],
+    "BAJAJ-AUTO": ["Bajaj Auto"],
+    "BAJAJFINSV": ["Bajaj Finserv"],
+    "MARUTI":     ["Maruti Suzuki", "Maruti"],
+    "NESTLEIND":  ["Nestle India", "Nestle"],
+    "ASIANPAINT": ["Asian Paints"],
+    "WIPRO":      ["Wipro"],
+    "TECHM":      ["Tech Mahindra", "TechM"],
+    "HCLTECH":    ["HCL Technologies", "HCL Tech"],
+    "SUNPHARMA":  ["Sun Pharma"],
+    "TATACONSUM": ["Tata Consumer"],
+    "TATASTEEL":  ["Tata Steel"],
+    "TATAMOTORS": ["Tata Motors"],
+    "COALINDIA":  ["Coal India"],
+    "POWERGRID":  ["Power Grid"],
+    "ADANIENT":   ["Adani Enterprises", "Adani Ent"],
+    "ADANIPORTS": ["Adani Ports"],
+    "TITAN":      ["Titan Company", "Titan "],
+    "HEROMOTOCO": ["Hero MotoCorp", "Hero Moto"],
+    "DRREDDY":    ["Dr Reddy", "Dr. Reddy"],
+    "TATAPOWER":  ["Tata Power"],
+    "EICHERMOT":  ["Eicher Motors"],
+    "M&M":        ["Mahindra & Mahindra", "M&M", "Mahindra "],
+    "ULTRACEMCO": ["UltraTech Cement", "UltraTech"],
+    "JSWSTEEL":   ["JSW Steel"],
+    "HINDALCO":   ["Hindalco"],
+    "BSE":        ["BSE Ltd", "BSE Limited", "Bombay Stock Exchange", "BSE shares", "BSE stock"],
+    "CLEAN":      ["Clean Science", "Clean Sci"],
+}
+
+def _picks_headline_matches(headline: str, ticker: str, summary: str = "") -> bool:
+    """Check whether the article's headline OR summary names the ticker."""
+    if not ticker:
+        return False
+    import re as _re
+    tk = ticker.upper().strip()
+    text = ((headline or "") + " " + (summary or "")).lower()
+    if not text.strip():
+        return False
+    names = list(_PICKS_SHORT_NAMES.get(tk, [])) + [tk]
+    for n in names:
+        if _re.search(r"\b" + _re.escape(n.lower()) + r"\b", text):
+            return True
+    return False
+
+# Broker / research-firm tickers — when the article uses them in analyst
+# posture, it's commentary on OTHER stocks, not news about the broker.
+_BROKER_TICKERS = {
+    'NUVAMA', 'MOTILALOFS', 'ANGELONE', 'IIFL', 'ANANDRATHI', 'ICICIPRULI',
+    'BSE', 'CDSL', 'CAMS', 'MCX',
+}
+_ANALYST_VERBS = (
+    r"\s+(?:warns?|says?|sees?|rates?|recommends?|advises?|targets?|cuts?|"
+    r"raises?|maintains?|initiates?|forecasts?|projects?|expects?|prefers?|"
+    r"picks?|pick|view|outlook|note|on|upgrades?|downgrades?|reiterates?)\b"
+)
+
+def _picks_is_broker_commentary(headline: str, ticker: str, summary: str = "") -> bool:
+    if not ticker:
+        return False
+    import re as _re
+    tk = ticker.upper().strip()
+    if tk not in _BROKER_TICKERS:
+        return False
+    text = ((headline or "") + " " + (summary or "")).lower()
+    if not text.strip():
+        return False
+    names = [n.lower() for n in _PICKS_SHORT_NAMES.get(tk, [tk])]
+    if not names:
+        names = [tk.lower()]
+    for n in names:
+        ne = _re.escape(n)
+        if _re.search(r"\b" + ne + r"\s*:", text):                 return True
+        if _re.search(r"\b" + ne + _ANALYST_VERBS,  text):         return True
+        if _re.search(r"\b" + ne + r"'s", text):                   return True
+        if _re.search(r"\b" + ne + r"\s+(?:report|note|research|analyst|brokerage)\b", text):
+            return True
+    return False
+
+
+@bp.route("/api/picks/daily", methods=["GET"])
+def daily_picks():
+    """5-7 high-conviction picks for today's session, with 1-line reasoning each.
+    Stable per UTC day (cached); reasoning is Groq-generated when budget allows.
+    """
+    db = _get_db()
+    cur = db.conn.cursor()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Day-cached picks: regenerate if cache stale or empty
+    cached = _PICKS_CACHE.get(today)
+    if cached and (time.time() - cached.get("generated_at", 0)) < 3600:  # 1h soft TTL
+        return jsonify({"success": True, **cached, "as_of": today})
+
+    # Pull top alpha signals from last 24h, dedupe by ticker.
+    # Signal event_id has shape "TICKER_TYPE_HASH"; events.event_id is just
+    # "HASH". Substring-match on the trailing hash so the JOIN actually hits.
+    try:
+        cur.execute("""
+            SELECT s.ticker, s.company, s.alpha_score, s.sentiment, s.event_type,
+                   s.headline, s.entry_price, s.confidence, s.created_at,
+                   e.summary AS article_summary
+            FROM signals s
+            LEFT JOIN manipulation_scores ms ON ms.event_id = s.event_id
+            LEFT JOIN events e
+              ON e.event_id = substr(s.event_id, length(s.event_id) - 15)
+            WHERE s.ticker IS NOT NULL AND s.ticker != ''
+              AND s.alpha_score >= 50
+              AND s.created_at >= datetime('now', '-24 hours')
+              AND s.status = 'active'
+              AND COALESCE(ms.score, 0) < 7
+            ORDER BY s.alpha_score DESC LIMIT 60
+        """)
+        rows = [dict(r) for r in cur.fetchall()]
+    except Exception as e:
+        logger.warning(f"daily_picks query: {e}")
+        rows = []
+
+    # Subject-match filter: the headline OR summary must actually name this
+    # ticker. Drops misattribution false-positives.
+    seen_tickers = set()
+    picks = []
+    for r in rows:
+        if r["ticker"] in seen_tickers:
+            continue
+        summary = r.get("article_summary") or ""
+        if not _picks_headline_matches(r.get("headline") or "", r["ticker"], summary):
+            continue
+        if _picks_is_broker_commentary(r.get("headline") or "", r["ticker"], summary):
+            continue   # Nuvama writing about midcaps ≠ alpha for Nuvama
+        seen_tickers.add(r["ticker"])
+        picks.append(r)
+        if len(picks) >= 6:
+            break
+
+    # Attach Groq-generated reasoning (cached per day:ticker so we only spend
+    # tokens once per pick per day)
+    for p in picks:
+        cache_key = f"{today}:{p['ticker']}"
+        reason = _REASONING_CACHE.get(cache_key)
+        if not reason:
+            reason = _groq_pick_reason(p) or _fallback_pick_reason(p)
+            _REASONING_CACHE[cache_key] = reason
+        p["reasoning"] = reason
+        # Drop heavy fields the frontend doesn't need
+        p.pop("entry_price", None)
+        p.pop("confidence", None)
+
+    payload = {"data": picks, "count": len(picks), "generated_at": time.time()}
+    _PICKS_CACHE[today] = payload
+    return jsonify({"success": True, **payload, "as_of": today})
+
+
+# ============ GROQ USAGE STATUS =============================================
+
+@bp.route("/api/groq/status", methods=["GET"])
+def groq_status():
+    """Live Groq token-budget status for the dashboard chip."""
+    try:
+        import sys as _sys
+        scraper_path = os.path.join(os.path.dirname(__file__), "..", "scraper")
+        if scraper_path not in _sys.path:
+            _sys.path.insert(0, scraper_path)
+        from groq_governor import governor as _gov  # type: ignore
+        snap = _gov.snapshot() if hasattr(_gov, "snapshot") else None
+        if snap is None:
+            # Fallback: pull state file directly
+            state_path = os.path.join(os.path.dirname(__file__), "..", "data", "groq_state.json")
+            with open(state_path, "r") as f:
+                snap = json.load(f)
+        spent = sum((snap.get("spent") or {}).values())
+        tpd = int(os.getenv("GROQ_TPD", "100000"))
+        return jsonify({
+            "success":     True,
+            "tpd":         tpd,
+            "spent_today": spent,
+            "remaining":   max(0, tpd - spent),
+            "pct_used":    round(spent / tpd * 100, 1) if tpd else 0,
+            "by_bucket":   snap.get("spent") or {},
+            "cb_open":     bool(snap.get("cb_until", 0) > time.time()),
+            "day":         snap.get("day"),
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+# ============ IPOs / CORPORATE ACTIONS ======================================
+
+@bp.route("/api/ipos", methods=["GET"])
+def get_ipos():
+    """Fetch upcoming IPO listings."""
+    db = _get_db()
+    limit = min(int(request.args.get("limit", 6)), 50)
+
+    try:
+        cur = db.conn.cursor()
+        query = """
+            SELECT id, title, companies, summary, impact_score, published_at
+            FROM events
+            WHERE event_type = 'ipo'
+            ORDER BY published_at DESC
+            LIMIT ?
+        """
+        cur.execute(query, [limit])
+        rows = cur.fetchall()
+
+        ipos = []
+        for r in rows:
+            ipos.append({
+                "id": r[0],
+                "company": r[1] or r[2],  # Use title or companies field
+                "sector": "Finance",  # Default sector, could be extracted from summary
+                "listing_date": str(r[5]) if r[5] else None,
+                "price_band_low": None,  # Would need to parse from summary if available
+                "price_band_high": None,
+                "issue_size": "TBD",
+                "impact_score": float(r[4]) if r[4] else 50
+            })
+
+        return jsonify({
+            "success": True,
+            "data": ipos,
+            "count": len(ipos)
+        })
+    except Exception as e:
+        logger.warning(f"IPOs fetch error: {e}")
+        return jsonify({"success": False, "error": str(e), "data": []}), 500
+
+
+@bp.route("/api/corporate-actions", methods=["GET"])
+def get_corporate_actions():
+    """Fetch corporate actions (buybacks, dividends, splits, etc.)."""
+    db = _get_db()
+    limit = min(int(request.args.get("limit", 10)), 50)
+
+    try:
+        cur = db.conn.cursor()
+        query = """
+            SELECT id, title, companies, event_type, summary, impact_score, published_at
+            FROM events
+            WHERE event_type IN ('buyback', 'dividend', 'split', 'bonus', 'rights')
+            ORDER BY published_at DESC
+            LIMIT ?
+        """
+        cur.execute(query, [limit])
+        rows = cur.fetchall()
+
+        actions = []
+        for r in rows:
+            actions.append({
+                "id": r[0],
+                "title": r[1],
+                "companies": r[2],
+                "event_type": r[3],
+                "summary": r[4],
+                "impact_score": float(r[5]) if r[5] else 50,
+                "published_at": str(r[6]) if r[6] else None
+            })
+
+        return jsonify({
+            "success": True,
+            "data": actions,
+            "count": len(actions)
+        })
+    except Exception as e:
+        logger.warning(f"Corporate actions fetch error: {e}")
+        return jsonify({"success": False, "error": str(e), "data": []}), 500
 
 
 # ============ REGISTRATION ==================================================

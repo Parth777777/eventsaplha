@@ -1,0 +1,563 @@
+/* premium.css — final polish layer atop macos.css.
+ *
+ * What this adds vs. macos.css:
+ *   1. Refined "graphite" palette (warmer than blue-grey, like Apple's pro apps)
+ *   2. 5-tier elevation system with proper layered shadows
+ *   3. Hairline top-edge highlight on every elevated card (catches imaginary light)
+ *   4. Subtle gradient overlays on glass surfaces (like Big Sur's tinted glass)
+ *   5. Premium accent gradients on Picks-of-the-Day, Hero, key CTAs
+ *   6. Spring-physics hover (1px lift + scale + glow)
+ *   7. Generous spacing — breathing room is a design choice
+ *   8. Refined typography: bigger headlines, tighter tracking, fluid scaling
+ */
+
+:root {
+    /* ── Premium graphite palette — warmer dark, less blue ─────────── */
+    --pr-bg-0:        #07090d;        /* deepest body */
+    --pr-bg-1:        #0c0f15;        /* primary surface */
+    --pr-bg-2:        #11151c;        /* card surface */
+    --pr-bg-3:        #161b24;        /* elevated card */
+    --pr-bg-4:        #1d2330;        /* hover/active */
+    --pr-glass-1:     rgba(15, 18, 24, 0.65);
+    --pr-glass-2:     rgba(20, 24, 32, 0.78);
+
+    /* ── Hairline highlights & strokes ─────────────────────────────── */
+    --pr-edge-top:    rgba(255, 255, 255, 0.07);    /* light from above */
+    --pr-stroke-1:    rgba(255, 255, 255, 0.06);
+    --pr-stroke-2:    rgba(255, 255, 255, 0.10);
+    --pr-stroke-3:    rgba(255, 255, 255, 0.14);
+
+    /* ── 5-tier elevation (Apple-style stacked shadows) ────────────── */
+    --pr-elev-1:
+        inset 0 1px 0 var(--pr-edge-top),
+        0 1px 2px rgba(0,0,0,0.35),
+        0 4px 8px rgba(0,0,0,0.25);
+    --pr-elev-2:
+        inset 0 1px 0 var(--pr-edge-top),
+        0 2px 4px rgba(0,0,0,0.4),
+        0 8px 20px rgba(0,0,0,0.35);
+    --pr-elev-3:
+        inset 0 1px 0 var(--pr-edge-top),
+        0 3px 6px rgba(0,0,0,0.45),
+        0 12px 32px rgba(0,0,0,0.45),
+        0 1px 2px rgba(0,0,0,0.6);
+    --pr-elev-4:
+        inset 0 1px 0 var(--pr-edge-top),
+        0 4px 10px rgba(0,0,0,0.5),
+        0 18px 48px rgba(0,0,0,0.55),
+        0 2px 4px rgba(0,0,0,0.65);
+    --pr-elev-modal:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 8px 16px rgba(0,0,0,0.4),
+        0 32px 80px rgba(0,0,0,0.7),
+        0 4px 12px rgba(0,0,0,0.5);
+
+    /* ── Premium accents (used sparingly) ──────────────────────────── */
+    --pr-accent-blue:    #8eb4e0;
+    --pr-accent-violet:  #a78bfa;
+    --pr-accent-mint:    #2dd4aa;
+    --pr-accent-rose:    #f29090;
+    --pr-grad-hero:      radial-gradient(110% 80% at 18% 0%,
+                            rgba(141,180,224,0.18) 0%,
+                            rgba(167,139,250,0.10) 35%,
+                            transparent 70%);
+    --pr-grad-pick-card: linear-gradient(165deg,
+                            rgba(141,180,224,0.06) 0%,
+                            rgba(167,139,250,0.04) 50%,
+                            transparent 100%);
+    --pr-grad-stroke:    linear-gradient(180deg,
+                            rgba(255,255,255,0.14) 0%,
+                            rgba(255,255,255,0.04) 50%,
+                            rgba(255,255,255,0.02) 100%);
+
+    /* ── Motion ────────────────────────────────────────────────────── */
+    --pr-spring-soft:  cubic-bezier(0.34, 1.56, 0.64, 1);    /* tiny overshoot */
+    --pr-spring-firm:  cubic-bezier(0.32, 0.72, 0, 1);       /* docked */
+}
+
+/* ── Body: warmer graphite background ──────────────────────────────── */
+body, html {
+    background: var(--pr-bg-0) !important;
+    color: #e2e6ee;
+}
+
+/* ── Global elevation: cards now have proper depth ─────────────────── */
+.bg-surface-container-low,
+.bg-surface-container,
+.bg-surface-container-high {
+    background: var(--pr-bg-2) !important;
+    box-shadow: var(--pr-elev-1) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    border-radius: 14px !important;
+    position: relative;
+}
+.bg-surface-container-highest,
+.bg-surface-bright {
+    background: var(--pr-bg-3) !important;
+    box-shadow: var(--pr-elev-2) !important;
+    border: 1px solid var(--pr-stroke-2) !important;
+    border-radius: 14px !important;
+}
+
+/* Top-edge "lit" highlight — gives every elevated surface a 1px catch of
+   imaginary light from above, the single most "premium" detail. */
+.bg-surface-container-low::before,
+.bg-surface-container::before,
+.bg-surface-container-high::before,
+.bg-surface-container-highest::before,
+.rf-kpi::before,
+.sp-modal::before,
+.screener-card::before,
+.ec-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 12px; right: 12px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+    pointer-events: none;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+/* ── Spring-physics hover lift (subtle but felt) ───────────────────── */
+[class*="bg-surface-container"][class*="hover:"]:hover,
+.rf-kpi:hover,
+.screener-card:hover,
+.ec-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--pr-elev-3) !important;
+    border-color: var(--pr-stroke-3) !important;
+    transition: transform 280ms var(--pr-spring-soft),
+                box-shadow 220ms var(--pr-spring-firm),
+                border-color 200ms var(--pr-spring-firm) !important;
+}
+
+/* ── HERO — subtle aurora gradient, premium feel without neon ──────── */
+.rf-hero {
+    background: var(--pr-glass-1) !important;
+    backdrop-filter: saturate(170%) blur(28px);
+    -webkit-backdrop-filter: saturate(170%) blur(28px);
+    position: relative;
+    overflow: hidden;
+}
+.rf-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--pr-grad-hero);
+    pointer-events: none;
+    opacity: 0.85;
+}
+.rf-hero-eyebrow {
+    color: var(--pr-accent-blue);
+    font-weight: 700;
+    letter-spacing: 0.18em !important;
+    text-transform: uppercase;
+    font-size: 10px !important;
+}
+.rf-hero-title {
+    font-size: clamp(36px, 5vw, 56px) !important;
+    line-height: 1.04 !important;
+    letter-spacing: -0.04em !important;
+    font-weight: 800 !important;
+}
+.rf-grad-text {
+    background: linear-gradient(135deg, #e8edf6 0%, #b8c5dc 60%, #8eb4e0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+.rf-hero-sub {
+    font-size: 15px !important;
+    color: rgba(186, 196, 215, 0.85) !important;
+    line-height: 1.55 !important;
+    max-width: 720px;
+}
+
+/* ── PICKS OF THE DAY cards — make them feel like the headline act ── */
+#picksGrid > div {
+    background: var(--pr-bg-2) !important;
+    background-image: var(--pr-grad-pick-card) !important;
+    box-shadow: var(--pr-elev-2) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    border-radius: 16px !important;
+    padding: 18px !important;
+    position: relative;
+    overflow: hidden;
+    transition: transform 320ms var(--pr-spring-soft),
+                box-shadow 240ms var(--pr-spring-firm),
+                border-color 200ms var(--pr-spring-firm) !important;
+}
+#picksGrid > div::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--pr-grad-stroke);
+    pointer-events: none;
+}
+#picksGrid > div:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--pr-elev-4) !important;
+    border-color: rgba(167,139,250,0.30) !important;
+}
+
+/* ── Sidebar — refined glass with subtle gradient ──────────────────── */
+aside.sidebar {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 30%),
+        var(--pr-glass-2) !important;
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+    border-right: 1px solid var(--pr-stroke-1) !important;
+    box-shadow: 1px 0 0 rgba(255,255,255,0.025);
+}
+.sidebar-header { padding-bottom: 22px !important; }
+.sidebar-brand {
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+    font-size: 19px !important;
+    background: linear-gradient(135deg, #f0f4fb, #aab8d2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.sidebar-link {
+    margin: 1px 10px !important;
+    padding: 8px 13px !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 180ms var(--pr-spring-firm) !important;
+    border-left: none !important;          /* override macos.css active border */
+}
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.06) !important;
+    color: #f0f4fb !important;
+}
+.sidebar-link.active {
+    background: linear-gradient(135deg,
+        rgba(141,180,224,0.18),
+        rgba(141,180,224,0.08)) !important;
+    color: #e8edf6 !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 1px 2px rgba(0,0,0,0.2);
+    border-left: none !important;
+}
+
+/* ── Headers (sticky page headers) ──────────────────────────────────── */
+header.sticky,
+.main-content > header {
+    background: var(--pr-glass-1) !important;
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+    border-bottom: 1px solid var(--pr-stroke-1) !important;
+}
+
+/* ── Buttons — premium pill style ──────────────────────────────────── */
+button.rf-btn,
+.rf-btn {
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0.02)) !important;
+    border: 1px solid var(--pr-stroke-2) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        0 1px 2px rgba(0,0,0,0.4) !important;
+    border-radius: 999px !important;
+    padding: 7px 14px !important;
+    transition: all 200ms var(--pr-spring-firm) !important;
+}
+button.rf-btn:hover, .rf-btn:hover {
+    border-color: var(--pr-stroke-3) !important;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.04)) !important;
+    transform: translateY(-1px);
+}
+button.rf-btn:active, .rf-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* ── Lens chips, pills — premium feel ──────────────────────────────── */
+.lens-chip,
+.preset-btn,
+.tw-pill,
+.cal-tab,
+.ec-chip,
+.ev-filter {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    transition: all 180ms var(--pr-spring-firm) !important;
+}
+.lens-chip:hover,
+.preset-btn:hover,
+.tw-pill:hover,
+.cal-tab:hover,
+.ec-chip:hover {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: var(--pr-stroke-2) !important;
+}
+.lens-chip.active,
+.preset-btn.active,
+.tw-pill.active,
+.cal-tab.bg-primary,
+.ec-chip.active {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        0 2px 8px rgba(141,180,224,0.18) !important;
+}
+
+/* ── KPIs (Bento on home) ──────────────────────────────────────────── */
+.rf-kpi {
+    background: var(--pr-bg-2) !important;
+    background-image: linear-gradient(180deg,
+        rgba(255,255,255,0.025),
+        transparent 60%) !important;
+    box-shadow: var(--pr-elev-2) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    border-radius: 16px !important;
+    padding: 18px !important;
+    position: relative;
+}
+.rf-kpi-value {
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+    line-height: 1.1 !important;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+.rf-kpi-label {
+    color: rgba(186, 196, 215, 0.55) !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase;
+}
+
+/* ── Modal (stock-popup) — Spotlight-grade glass ───────────────────── */
+.sp-modal {
+    background: var(--pr-glass-2) !important;
+    backdrop-filter: saturate(190%) blur(36px);
+    -webkit-backdrop-filter: saturate(190%) blur(36px);
+    border: 1px solid var(--pr-stroke-2) !important;
+    box-shadow: var(--pr-elev-modal) !important;
+    border-radius: 16px !important;
+    position: relative;
+    overflow: hidden;
+}
+.sp-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.04),
+        transparent);
+    pointer-events: none;
+}
+.sp-overlay {
+    background: rgba(7,9,13,0.62) !important;
+    backdrop-filter: saturate(140%) blur(8px) !important;
+    -webkit-backdrop-filter: saturate(140%) blur(8px) !important;
+}
+.sp-stat-row {
+    background: rgba(0,0,0,0.32) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    border-radius: 11px !important;
+}
+.sp-stat {
+    background: transparent !important;
+    border-right: 1px solid var(--pr-stroke-1);
+}
+.sp-stat:last-child { border-right: none; }
+.sp-stat .val {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.015em !important;
+}
+
+/* ── Headlines & display type ──────────────────────────────────────── */
+h1, .text-4xl {
+    font-size: clamp(28px, 3.4vw, 40px) !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.034em !important;
+    font-weight: 800 !important;
+}
+h2, .text-3xl, .text-2xl {
+    letter-spacing: -0.026em !important;
+    font-weight: 700 !important;
+}
+h3, .text-xl, .text-lg {
+    letter-spacing: -0.018em !important;
+    font-weight: 700 !important;
+}
+.font-headline {
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+}
+
+/* ── Mono font: Geist Mono (Vercel) — replaces JetBrains Mono everywhere.
+ * Geist has more refined letterforms (cleaner "I", circular "O", subtle
+ * stroke contrast) and a softer baseline weight, making tickers and prices
+ * feel premium rather than developer-tool. */
+.font-mono, code, kbd, samp, pre,
+.rf-kpi-value, .rf-mono,
+[class*="font-mono"] {
+    font-family: 'Geist Mono', 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace !important;
+    font-feature-settings: 'tnum' 1, 'zero' 1, 'cv02' 1, 'cv11' 1;
+    font-variant-numeric: tabular-nums slashed-zero;
+    letter-spacing: -0.005em;
+}
+
+/* ── Ticker labels — the most-seen mono text. Refined weight + tracking. */
+[data-ticker],
+.ticker-row .tk,
+.ec-ticker,
+.sp-modal .tk,                 /* popup header ticker */
+.ticker-chip,
+.tk-mono,
+span.font-mono.font-black,
+span.font-mono.font-bold,
+.font-mono.text-lg,
+.font-mono.text-xl,
+.font-mono.text-2xl,
+.font-mono.text-3xl {
+    font-family: 'Geist Mono', 'IBM Plex Mono', 'SF Mono', Menlo, monospace !important;
+    font-weight: 600 !important;            /* down from 800-900 — more refined */
+    letter-spacing: -0.01em !important;     /* tightens the all-caps ticker */
+    font-feature-settings: 'tnum' 1, 'zero' 1, 'cv02' 1;
+}
+
+/* The big alpha numbers, KPI values, prices — slightly lighter, tighter */
+.rf-kpi-value,
+.font-black.font-mono,
+.font-mono.font-black {
+    font-weight: 700 !important;
+    letter-spacing: -0.022em !important;
+}
+
+/* The popup header ticker — bigger but still premium-weight */
+.sp-modal .sp-head .tk {
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    font-size: 24px !important;
+}
+
+/* Tabular alignment everywhere — column-grade prices */
+.macro-cell .px,
+.macro-cell .chg,
+.ticker-row .px,
+.ticker-row .alpha,
+.ticker-row .beta,
+.sp-stat .val {
+    font-family: 'Geist Mono', 'IBM Plex Mono', monospace !important;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+    letter-spacing: -0.012em !important;
+}
+
+/* ── Subtler hairlines on Tailwind utility classes ─────────────────── */
+.divide-outline-variant\/15 > * + *,
+.divide-outline-variant\/10 > * + *,
+.divide-outline-variant\/20 > * + * {
+    border-color: var(--pr-stroke-1) !important;
+}
+
+/* ── Section spacing: more breathing room ──────────────────────────── */
+.mb-8 { margin-bottom: 2.5rem !important; }
+.mb-12 { margin-bottom: 3.5rem !important; }
+.gap-8 { gap: 2.25rem !important; }
+
+/* ── Scrollbar — nearly invisible until hover ──────────────────────── */
+::-webkit-scrollbar {
+    width: 6px; height: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.04) !important;
+    border-radius: 999px;
+    transition: background 200ms var(--pr-spring-firm);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.20) !important;
+}
+*:hover::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.10);
+}
+
+/* ── Selection — subtle Apple blue ─────────────────────────────────── */
+::selection {
+    background: rgba(141,180,224,0.32);
+    color: #ffffff;
+    text-shadow: none;
+}
+
+/* ── Skeleton — slower, pearlier shimmer ───────────────────────────── */
+.skeleton, .rf-skel, .sp-skel {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.025),
+        rgba(255,255,255,0.10),
+        rgba(255,255,255,0.025)) !important;
+    background-size: 220% 100% !important;
+    animation: pr-shimmer 2.6s linear infinite !important;
+    border-radius: 8px !important;
+}
+@keyframes pr-shimmer {
+    0%   { background-position: 220% 0; }
+    100% { background-position: -220% 0; }
+}
+
+/* ── Map-specific premium ─────────────────────────────────────────── */
+.geo-pin {
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.20),
+        0 0 0 1.5px rgba(255,255,255,0.10),
+        0 4px 14px rgba(0,0,0,0.55) !important;
+}
+.geo-pin:hover {
+    transform: scale(1.18) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.25),
+        0 0 0 2px rgba(255,255,255,0.20),
+        0 8px 24px rgba(0,0,0,0.65) !important;
+}
+
+/* ── Loading state cleanup — softer "loading…" labels ─────────────── */
+.loading, [data-loading], .ec-loading {
+    color: rgba(186, 196, 215, 0.4) !important;
+    font-weight: 500;
+}
+
+/* ── Aurora bg — ultra-subtle, like Big Sur idle wallpaper ────────── */
+.rf-aurora-bg {
+    opacity: 0.4 !important;
+    filter: saturate(0.7) blur(80px) !important;
+}
+.rf-dot-grid {
+    opacity: 0.18 !important;
+}
+
+/* ── Picks badge: AI-reasoned chip — premium gradient ─────────────── */
+#picksBadge {
+    background: linear-gradient(135deg,
+        rgba(167,139,250,0.18),
+        rgba(141,180,224,0.18)) !important;
+    border: 1px solid rgba(167,139,250,0.30) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        0 1px 4px rgba(167,139,250,0.15);
+}
+
+/* ── Macro-ribbon (top of map) — elevated strip ───────────────────── */
+.macro-ribbon {
+    background: linear-gradient(180deg, var(--pr-bg-3), var(--pr-bg-2)) !important;
+    border: 1px solid var(--pr-stroke-1) !important;
+    box-shadow: var(--pr-elev-1) !important;
+    border-radius: 12px !important;
+}
+.macro-cell { border-color: rgba(255,255,255,0.05) !important; }
+.macro-cell .px {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.018em !important;
+}

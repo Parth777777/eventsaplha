@@ -678,10 +678,14 @@ class VolumeAnalyzer:
     as a multiplier (no standalone signals — only reweights existing ones).
     """
 
-    SURGE_THRESHOLD = 2.5        # vol_today / avg_20d
-    UNEXPLAINED_LOOKBACK_DAYS = 3  # days back to look for news before flagging "unexplained"
-    OBV_SLOPE_WINDOW = 20
+    SURGE_THRESHOLD = 1.6        # 60% above 20d avg counts as a surge (was 2.5×)
+    STRONG_SURGE_THRESHOLD = 2.5 # 2.5× is now "strong" surge tier
+    UNEXPLAINED_LOOKBACK_DAYS = 3
+    OBV_SLOPE_WINDOW = 10        # halved so we can score 11d of history (was 20)
     OBV_HISTORY = 60
+    # Slope ratio (OBV slope normalised by price slope) thresholds for divergence.
+    # Smaller gap -> more sensitive flagging.
+    DIVERGENCE_RATIO_THRESHOLD = 0.35  # if obv_slope is < 35% of expected sign, call it divergence
 
     @staticmethod
     def compute_obv(closes: List[float], volumes: List[float]) -> List[float]:
@@ -722,25 +726,60 @@ class VolumeAnalyzer:
             delivery_pcts: optional NSE delivery % (aligned)
             had_news_last_3d: whether any news event was recorded for this ticker recently
         """
-        if len(closes) < cls.OBV_SLOPE_WINDOW + 1 or len(closes) != len(volumes):
+        # Even very short histories can drive *some* analysis — graceful degrade
+        # rather than returning has_data=False (was the main reason enrichment fired
+        # almost never in prod). Need a minimum of 5 bars to compute anything.
+        if len(closes) < 5 or len(closes) != len(volumes):
             return {"ticker": ticker, "has_data": False}
 
+        # Use whichever window we actually have data for (cap at OBV_SLOPE_WINDOW).
+        win = min(cls.OBV_SLOPE_WINDOW, max(5, len(closes) - 1))
+
         obv = cls.compute_obv(closes, volumes)
-        obv_slope = cls._linear_slope(obv[-cls.OBV_SLOPE_WINDOW:])
+        obv_slope = cls._linear_slope(obv[-win:])
 
-        # Divergence: compare price trend vs OBV trend on same window
-        price_slope = cls._linear_slope(closes[-cls.OBV_SLOPE_WINDOW:])
+        # Divergence: compare price vs OBV using % change over window endpoints
+        # instead of raw slopes (raw slopes are in non-comparable units).
+        price_slope = cls._linear_slope(closes[-win:])
         divergence = None
-        if price_slope > 0 and obv_slope <= 0:
-            divergence = "bearish"   # price up, OBV flat/down — distribution
-        elif price_slope < 0 and obv_slope >= 0:
-            divergence = "bullish"   # price down, OBV flat/up — accumulation
+        divergence_strength = "none"
+        try:
+            price_start = closes[-win] or 1e-9
+            price_pct = (closes[-1] - price_start) / abs(price_start)
+            obv_window = obv[-win:]
+            obv_start = obv_window[0]
+            obv_end = obv_window[-1]
+            # Normalise OBV change by typical daily volume so the % is comparable
+            ref_obv = (sum(abs(v) for v in volumes[-win:]) / win) or 1.0
+            obv_change_norm = (obv_end - obv_start) / (ref_obv * win)
+        except Exception:
+            price_pct = 0.0
+            obv_change_norm = 0.0
 
-        # Volume surge
+        # Strong divergence: signs disagree.
+        # Weak divergence: same sign but OBV magnitude < 30% of price magnitude
+        # (price rallying on tepid accumulation, or sliding on tepid distribution).
+        if price_pct > 0.005:        # at least +0.5% over window
+            if obv_change_norm < 0:
+                divergence = "bearish"
+                divergence_strength = "strong"
+            elif obv_change_norm < price_pct * 0.3:
+                divergence = "bearish"
+                divergence_strength = "weak"
+        elif price_pct < -0.005:     # at least -0.5% over window
+            if obv_change_norm > 0:
+                divergence = "bullish"
+                divergence_strength = "strong"
+            elif obv_change_norm > price_pct * 0.3:
+                divergence = "bullish"
+                divergence_strength = "weak"
+
+        # Volume surge — now tiered: surge >= 1.6×, strong_surge >= 2.5×
         vol_today = volumes[-1]
         avg_20 = sum(volumes[-21:-1]) / 20.0 if len(volumes) > 21 else sum(volumes[:-1]) / max(len(volumes) - 1, 1)
         surge_ratio = vol_today / avg_20 if avg_20 > 0 else 0.0
         surge = surge_ratio >= cls.SURGE_THRESHOLD
+        strong_surge = surge_ratio >= cls.STRONG_SURGE_THRESHOLD
         unexplained = surge and not had_news_last_3d
 
         # OBV z-score on 20-day OBV deltas
@@ -773,10 +812,13 @@ class VolumeAnalyzer:
             "obv_slope": round(obv_slope, 2),
             "obv_z_20d": round(obv_z, 2),
             "obv_divergence_flag": divergence,
+            "obv_divergence_strength": divergence_strength,
             "price_slope_20d": round(price_slope, 4),
             "vol_surge_ratio": round(surge_ratio, 2),
             "volume_surge": surge,
+            "strong_volume_surge": strong_surge,
             "unexplained_volume": unexplained,
+            "window_used": win,
             "delivery": delivery_analysis,
         }
 
@@ -784,25 +826,38 @@ class VolumeAnalyzer:
     def volume_confirmation_multiplier(analysis: Dict, sentiment: str) -> float:
         """Map volume analysis + signal sentiment to a scoring multiplier.
 
-        1.15×  — OBV + (delivery) confirm direction
-        0.85×  — OBV diverges from direction
-        1.00×  — neutral / no data
+        Aggressive tiers:
+          1.35× — strong volume surge + OBV slope confirms direction
+          1.20× — surge + OBV slope confirms direction
+          1.10× — OBV slope alone confirms direction (no surge)
+          0.75× — strong divergence against direction
+          0.85× — weak divergence against direction
+          1.00× — neutral / no data
         """
         if not analysis or not analysis.get("has_data"):
             return 1.0
         div = analysis.get("obv_divergence_flag")
+        strength = analysis.get("obv_divergence_strength", "none")
         sent = (sentiment or "").lower()
         # Explicit divergence against the direction → penalty
         if sent == "bullish" and div == "bearish":
-            return 0.85
+            return 0.75 if strength == "strong" else 0.85
         if sent == "bearish" and div == "bullish":
-            return 0.85
-        # OBV slope confirms direction + volume surge → boost
-        if analysis.get("volume_surge"):
-            if sent == "bullish" and analysis.get("obv_slope", 0) > 0:
-                return 1.15
-            if sent == "bearish" and analysis.get("obv_slope", 0) < 0:
-                return 1.15
+            return 0.75 if strength == "strong" else 0.85
+        obv_slope = analysis.get("obv_slope", 0)
+        surge = analysis.get("volume_surge", False)
+        strong = analysis.get("strong_volume_surge", False)
+        # Confirmation tiers
+        slope_confirms = (
+            (sent == "bullish" and obv_slope > 0)
+            or (sent == "bearish" and obv_slope < 0)
+        )
+        if slope_confirms:
+            if strong:
+                return 1.35
+            if surge:
+                return 1.20
+            return 1.10
         return 1.0
 
     @staticmethod

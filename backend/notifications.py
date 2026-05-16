@@ -219,9 +219,14 @@ def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = '
 
         ticker = signal.get('ticker', '')
 
-        # Discord
+        # Discord — try first attempt, on failure enqueue for backoff retry
         if discord_url and check_cooldown(db, ticker, 'discord', cooldown):
-            success = send_discord_alert(discord_url, signal)
+            try:
+                from notification_retry import try_send as _retry_try_send
+                success, _err = _retry_try_send('discord', discord_url, signal)
+            except Exception:
+                # Fallback path if retry queue is unavailable for any reason.
+                success = send_discord_alert(discord_url, signal)
             db.log_notification(
                 signal_event_id=signal.get('event_id', ''),
                 channel='discord',
@@ -233,9 +238,15 @@ def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = '
             if success:
                 sent_count += 1
 
-        # Telegram
+        # Telegram — try-then-retry-queue, same as Discord above
         if tg_token and tg_chat and check_cooldown(db, ticker, 'telegram', cooldown):
-            success = send_telegram_alert(tg_token, tg_chat, signal, app_url)
+            try:
+                from notification_retry import try_send as _retry_try_send
+                # Telegram recipient is "bot_token::chat_id"
+                recipient = f"{tg_token}::{tg_chat}"
+                success, _err = _retry_try_send('telegram', recipient, signal)
+            except Exception:
+                success = send_telegram_alert(tg_token, tg_chat, signal, app_url)
             db.log_notification(
                 signal_event_id=signal.get('event_id', ''),
                 channel='telegram',

@@ -1,48 +1,61 @@
 """Normalize the <nav class="sidebar-nav"> block on every app/*.html page.
 
-Every page must list the same canonical 18 sidebar links so the side menu is
-identical site-wide. The "active" class is applied only to the link matching
-the page itself. bootstrap.js then groups the links under section headers.
+Every page lists the same canonical sidebar so the side menu is identical
+site-wide. Links are grouped under collapsible section headers ("MARKETS",
+"NEWS", "TOOLS", "INSIGHTS") to keep the nav scannable instead of a flat
+20-item wall. The "active" class is applied only to the link matching the
+current page.
 """
 import os
 import re
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "app")
 
-# Canonical link table: (href slug, icon, label). Order is irrelevant — bootstrap.js
-# physically reorders by section, but we keep section order here for readability.
-LINKS = [
-    # Markets
-    ("index",       "home",                    "Home"),
-    ("explore",     "explore",                 "Explore"),
-    ("sectors",     "grid_view",               "Sectors"),
-    ("map",         "map",                     "Map"),
-    ("global",      "public",                  "Global Markets"),
-    ("commodities", "inventory_2",             "Commodities"),
-    # Research
-    ("compare",     "compare_arrows",          "Compare"),
-    ("screeners",   "filter_alt",              "Screeners"),
-    ("earnings",    "event_note",              "Earnings"),
-    ("events",      "event",                   "Events"),
-    # Activity
-    ("watchlist",   "star",                    "Watchlist"),
-    ("alerts",      "notifications_active",    "Alerts"),
-    ("portfolio",   "account_balance_wallet",  "Portfolio"),
-    ("paper",       "credit_score",            "Paper Trading"),
-    ("simulator",   "calculate",               "Simulator"),
-    # Insights
-    ("analytics",   "insights",                "Analytics"),
-    ("social",      "forum",                   "Social"),
-    ("trust",       "verified",                "Trust"),
+# Sidebar structure:
+#   - Home is pinned at the top with no header.
+#   - Each subsequent group has a heading rendered as <div class="sidebar-section">.
+#   - Quant Portfolio was removed — too jargon-heavy for the simplified FTUE.
+SECTIONS = [
+    (None, [
+        ("index", "home", "Home"),
+    ]),
+    ("Markets", [
+        ("explore",     "explore",     "Explore"),
+        ("sectors",     "grid_view",   "Sectors"),
+        ("map",         "map",         "Heatmap"),
+        ("global",      "public",      "Global"),
+        ("commodities", "inventory_2", "Commodities"),
+    ]),
+    ("News", [
+        ("events",   "newspaper",         "Newsroom"),
+        ("earnings", "event_note",        "Earnings"),
+        ("ipo",      "rocket_launch",     "IPOs"),
+        ("fo",       "candlestick_chart", "F&O"),
+        ("ma",       "handshake",         "M&A"),
+    ]),
+    ("Tools", [
+        ("screeners", "filter_alt",           "Screeners"),
+        ("compare",   "compare_arrows",       "Compare"),
+        ("watchlist", "star",                 "Watchlist"),
+        ("alerts",    "notifications_active", "Alerts"),
+    ]),
+    ("Insights", [
+        ("analytics", "insights",  "Analytics"),
+        ("forensics", "policy",    "Forensics"),
+        ("trust",     "verified",  "Trust"),
+    ]),
 ]
 
 # Pages that have a sidebar (login/signup/onboarding don't).
 PAGES = [
     "alerts.html", "analytics.html", "commodities.html", "compare.html",
-    "earnings.html", "events.html", "explore.html", "global.html",
-    "index.html", "map.html", "paper.html", "portfolio.html",
+    "earnings.html", "events.html", "explore.html", "fo.html",
+    "forensics.html",
+    "global.html", "index.html", "ipo.html", "ma.html", "map.html",
+    "paper.html", "policy.html",
+    "premover.html", "pricing.html", "privacy.html",
     "screeners.html", "sectors.html", "simulator.html", "social.html",
-    "stock.html", "trust.html", "watchlist.html",
+    "stock.html", "terms.html", "trust.html", "watchlist.html",
 ]
 
 NAV_RE = re.compile(r'(<nav class="sidebar-nav">)([\s\S]*?)(</nav>)', re.MULTILINE)
@@ -50,20 +63,25 @@ NAV_RE = re.compile(r'(<nav class="sidebar-nav">)([\s\S]*?)(</nav>)', re.MULTILI
 
 def build_nav(active_slug: str, indent: str = "  ") -> str:
     lines = []
-    for slug, icon, label in LINKS:
-        cls = "sidebar-link active" if slug == active_slug else "sidebar-link"
-        lines.append(
-            f'{indent}<a class="{cls}" href="{slug}.html">'
-            f'<span class="material-symbols-outlined sidebar-icon">{icon}</span>'
-            f'{label}</a>'
-        )
+    for section, links in SECTIONS:
+        if section is not None:
+            lines.append(f'{indent}<div class="sidebar-section">{section}</div>')
+        for slug, icon, label in links:
+            cls = "sidebar-link active" if slug == active_slug else "sidebar-link"
+            lines.append(
+                f'{indent}<a class="{cls}" href="{slug}.html">'
+                f'<span class="material-symbols-outlined sidebar-icon">{icon}</span>'
+                f'{label}</a>'
+            )
     return "\n" + "\n".join(lines) + "\n"
 
 
 def page_active_slug(filename: str) -> str:
     slug = filename.replace(".html", "")
-    # stock.html is a deep page with no matching sidebar link — leave nothing active.
-    return slug if slug != "stock" else ""
+    # stock.html and a few deep pages have no matching sidebar link — leave nothing active.
+    return slug if slug not in ("stock", "paper", "policy", "premover",
+                                 "pricing", "privacy", "simulator", "social",
+                                 "terms", "portfolio") else ""
 
 
 def sync(path: str) -> bool:

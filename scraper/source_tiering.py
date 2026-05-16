@@ -44,6 +44,13 @@ _TIER_RULES: List[Tuple[str, int, str]] = [
     ("rbi.org", 1, "RBI"),
     ("mca.gov", 1, "MCA"),
     ("dipp.gov", 1, "DIPP"),
+    ("pib.gov", 1, "PIB"),
+    ("pib_releases", 1, "PIB"),
+    ("pib_features", 1, "PIB"),
+    ("finmin.nic", 1, "MoF"),
+    ("mof_press", 1, "MoF"),
+    ("pmo_press", 1, "PMO"),
+    ("pmo.gov", 1, "PMO"),
 
     # Tier 2 - major financial press
     ("reuters", 2, "Reuters"),

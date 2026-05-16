@@ -1,0 +1,231 @@
+/* macos.css — site-wide design upgrade.
+ *
+ * Goal: Apple-style minimalism. Frosted-glass surfaces, layered depth,
+ *       hairline dividers, tight tracking, spring easing.
+ *       Imported by style.css — every page picks it up automatically.
+ *
+ * Design tokens (overlaid on existing palette so we don't rebuild colors):
+ *   --apple-blur            blur amount on glass surfaces
+ *   --apple-spring          easing curve (Apple's docked spring)
+ *   --apple-shadow-1/2      layered shadows for depth
+ *   --apple-stroke          hairline border (8% white)
+ *   --apple-stroke-strong   slightly stronger stroke for emphasis
+ */
+
+:root {
+    --apple-blur:           20px;
+    --apple-spring:         cubic-bezier(0.32, 0.72, 0, 1);
+    --apple-shadow-1:       0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 16px rgba(0,0,0,0.4);
+    --apple-shadow-2:       0 1px 0 rgba(255,255,255,0.05) inset, 0 12px 36px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.35);
+    --apple-shadow-hover:   0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 48px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4);
+    --apple-stroke:         rgba(255,255,255,0.06);
+    --apple-stroke-strong:  rgba(255,255,255,0.10);
+    --apple-glass-tint:     rgba(13,17,24,0.72);
+    --apple-glass-tint-deep: rgba(8,12,18,0.82);
+}
+
+/* ── Smooth motion globally ─────────────────────────────────────────── */
+*, *::before, *::after {
+    transition-timing-function: var(--apple-spring) !important;
+}
+
+/* ── Frosted-glass: sticky headers and the sidebar ─────────────────── */
+header.sticky,
+header[class*="sticky"],
+.main-content > header,
+.rf-hero {
+    background: var(--apple-glass-tint) !important;
+    backdrop-filter: saturate(180%) blur(var(--apple-blur));
+    -webkit-backdrop-filter: saturate(180%) blur(var(--apple-blur));
+    border-bottom: 1px solid var(--apple-stroke) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02);
+}
+
+aside.sidebar {
+    background: var(--apple-glass-tint-deep) !important;
+    backdrop-filter: saturate(180%) blur(var(--apple-blur));
+    -webkit-backdrop-filter: saturate(180%) blur(var(--apple-blur));
+    border-right: 1px solid var(--apple-stroke) !important;
+}
+
+/* ── Hairline dividers everywhere ──────────────────────────────────── */
+.border-outline-variant\/15,
+.border-outline-variant\/10,
+.border-outline-variant\/20,
+.border-outline-variant\/25,
+.border-outline-variant\/30 {
+    border-color: var(--apple-stroke) !important;
+}
+.border-outline-variant\/40,
+.border-outline-variant\/50 {
+    border-color: var(--apple-stroke-strong) !important;
+}
+
+/* ── Cards and surfaces — soft shadows + larger radii ─────────────── */
+.bg-surface-container-low,
+.bg-surface-container,
+.bg-surface-container-high,
+.bg-surface-container-highest {
+    box-shadow: var(--apple-shadow-1);
+    border-radius: 14px !important;
+}
+
+/* Subtle hover lift on cards that already have hover affordance */
+[class*="bg-surface-container"][class*="hover:"]:hover,
+.rf-kpi:hover,
+.screener-card:hover,
+.event-card:hover,
+.ec-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--apple-shadow-hover);
+    border-color: var(--apple-stroke-strong) !important;
+    transition: all 200ms var(--apple-spring);
+}
+
+/* ── Buttons — refined, pill-shaped ─────────────────────────────────── */
+button.rf-btn,
+.cal-tab,
+.lens-chip,
+.preset-btn,
+.tw-pill,
+.mode-btn,
+.ec-chip,
+.ev-filter,
+.ev-chip {
+    border-radius: 999px !important;
+    transition: all 180ms var(--apple-spring) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+button:active,
+.lens-chip:active,
+.preset-btn:active,
+.cal-tab:active {
+    transform: scale(0.97);
+}
+
+/* ── Headlines — tighten kerning ────────────────────────────────────── */
+.font-headline,
+h1, h2, h3 {
+    letter-spacing: -0.022em;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+}
+.text-4xl, .text-3xl, h1.rf-hero-title {
+    letter-spacing: -0.034em;
+    font-weight: 800 !important;
+}
+.text-2xl { letter-spacing: -0.024em; }
+
+/* ── Sidebar links — softer hover ───────────────────────────────────── */
+.sidebar-link {
+    transition: color 160ms var(--apple-spring), background 160ms var(--apple-spring) !important;
+    border-radius: 8px;
+    margin: 1px 8px;
+    padding-left: 12px !important;
+}
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.05) !important;
+}
+.sidebar-link.active {
+    background: rgba(141,180,224,0.12) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ── Inputs and selects — refined ───────────────────────────────────── */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea,
+.rf-select,
+.rf-input {
+    border-radius: 8px !important;
+    border: 1px solid var(--apple-stroke) !important;
+    background: rgba(13,17,24,0.6) !important;
+    transition: border-color 160ms var(--apple-spring), box-shadow 160ms var(--apple-spring) !important;
+}
+input:focus,
+select:focus,
+textarea:focus,
+.rf-select:focus,
+.rf-input:focus {
+    border-color: rgba(141,180,224,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(141,180,224,0.12) !important;
+    outline: none !important;
+}
+
+/* ── Modal overlays (used by stock-popup) ──────────────────────────── */
+.sp-overlay { backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%); }
+.sp-modal,
+.leaflet-popup-content-wrapper {
+    box-shadow: var(--apple-shadow-2) !important;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    background: var(--apple-glass-tint) !important;
+    border: 1px solid var(--apple-stroke-strong) !important;
+}
+
+/* ── Pills and chips — slightly larger, softer ─────────────────────── */
+.news-time-pill,
+.reaction-pill,
+.lens-chip,
+.ev-chip,
+.ec-chip,
+.ec-badge {
+    border-radius: 999px !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Scrollbars — thinner, subtler ─────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.07);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.14);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}
+
+/* ── Selection — Apple blue ────────────────────────────────────────── */
+::selection {
+    background: rgba(141,180,224,0.35);
+    color: #ffffff;
+}
+
+/* ── Skeleton shimmer — slower, more elegant ───────────────────────── */
+.skeleton, .rf-skel, .sp-skel {
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 0%,
+        rgba(255,255,255,0.10) 50%,
+        rgba(255,255,255,0.04) 100%) !important;
+    background-size: 200% 100% !important;
+    animation: macos-shimmer 2.2s linear infinite !important;
+    border-radius: 6px !important;
+}
+@keyframes macos-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Tooltips ───────────────────────────────────────────────────────── */
+[title] { position: relative; }
+
+/* ── Density: bump card padding 20% for breathing room ─────────────── */
+.bg-surface-container-low.rounded-xl,
+.bg-surface-container.rounded-xl {
+    /* keep existing p-* but visually airier via shadow */
+}
+
+/* Subtle aurora tweak: pull saturation down so it feels more macOS Big Sur */
+.rf-aurora-bg {
+    opacity: 0.55;
+    filter: saturate(0.85);
+}

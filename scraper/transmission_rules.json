@@ -1,0 +1,106 @@
+{
+  "lenses": {
+    "energy": {
+      "label": "Energy",
+      "color": "#f29090",
+      "monogram": "EN",
+      "keywords": ["oil", "crude", "opec", "brent", "wti", "gas", "petroleum", "refining", "saudi", "iran", "hormuz", "russia", "pipeline", "lng", "fuel", "diesel"],
+      "tickers": [
+        {"ticker": "BPCL",      "rank": 1, "reason": "Refining margin", "beta": -0.42},
+        {"ticker": "HINDPETRO", "rank": 2, "reason": "Refining margin", "beta": -0.40},
+        {"ticker": "IOC",       "rank": 3, "reason": "Refining margin", "beta": -0.38},
+        {"ticker": "ONGC",      "rank": 4, "reason": "Upstream benefit on $ spike", "beta": 0.35},
+        {"ticker": "RELIANCE",  "rank": 5, "reason": "Petrochem inputs", "beta": -0.18},
+        {"ticker": "GAIL",      "rank": 6, "reason": "Gas pricing", "beta": 0.20},
+        {"ticker": "PETRONET",  "rank": 7, "reason": "LNG re-gasification spread", "beta": 0.15}
+      ]
+    },
+    "metals": {
+      "label": "Metals & Mining",
+      "color": "#e6b84a",
+      "monogram": "MT",
+      "keywords": ["iron ore", "copper", "steel", "aluminium", "aluminum", "lithium", "zinc", "mining", "smelter", "metals"],
+      "tickers": [
+        {"ticker": "TATASTEEL", "rank": 1, "reason": "Iron ore exposure", "beta": 0.38},
+        {"ticker": "JSWSTEEL",  "rank": 2, "reason": "Iron ore exposure", "beta": 0.36},
+        {"ticker": "HINDALCO",  "rank": 3, "reason": "Aluminium pricing", "beta": 0.32},
+        {"ticker": "VEDL",      "rank": 4, "reason": "Diversified metals", "beta": 0.30},
+        {"ticker": "NALCO",     "rank": 5, "reason": "Aluminium", "beta": 0.28},
+        {"ticker": "HINDZINC",  "rank": 6, "reason": "Zinc/lead", "beta": 0.26},
+        {"ticker": "SAIL",      "rank": 7, "reason": "PSU steel", "beta": 0.24}
+      ]
+    },
+    "agri": {
+      "label": "Agri & Weather",
+      "color": "#2dd4aa",
+      "monogram": "AG",
+      "keywords": ["monsoon", "wheat", "rice", "palm", "soy", "soybean", "fertilizer", "agri", "el nino", "la nina", "hurricane", "flood", "drought", "weather", "food", "kharif", "rabi", "imd", "rainfall"],
+      "tickers": [
+        {"ticker": "UPL",         "rank": 1, "reason": "Agro-chemical demand", "beta": 0.30},
+        {"ticker": "COROMANDEL",  "rank": 2, "reason": "Fertilizer demand", "beta": 0.28},
+        {"ticker": "CHAMBLFERT",  "rank": 3, "reason": "Fertilizer demand", "beta": 0.26},
+        {"ticker": "TATACONSUM",  "rank": 4, "reason": "Tea / commodity costs", "beta": -0.18},
+        {"ticker": "MARICO",      "rank": 5, "reason": "Edible oil costs", "beta": -0.22},
+        {"ticker": "HINDUNILVR",  "rank": 6, "reason": "Rural FMCG demand", "beta": 0.15},
+        {"ticker": "DABUR",       "rank": 7, "reason": "Rural FMCG demand", "beta": 0.14}
+      ]
+    },
+    "geopolitics": {
+      "label": "Geopolitics",
+      "color": "#ff6b6b",
+      "monogram": "GP",
+      "keywords": ["war", "conflict", "military", "sanction", "attack", "missile", "ukraine", "gaza", "israel", "strait", "blockade", "shipping risk", "red sea", "houthi"],
+      "tickers": [
+        {"ticker": "BEL",         "rank": 1, "reason": "Defense electronics", "beta": 0.35},
+        {"ticker": "HAL",         "rank": 2, "reason": "Aerospace defense", "beta": 0.32},
+        {"ticker": "BHARATFORG",  "rank": 3, "reason": "Defense forging", "beta": 0.20},
+        {"ticker": "SOLARINDS",   "rank": 4, "reason": "Defense explosives", "beta": 0.25},
+        {"ticker": "INDHOTEL",    "rank": 5, "reason": "Travel sentiment", "beta": -0.18},
+        {"ticker": "INDIGO",      "rank": 6, "reason": "Fuel cost / travel demand", "beta": -0.22}
+      ]
+    },
+    "central_banks": {
+      "label": "Central Banks",
+      "color": "#8eb4e0",
+      "monogram": "CB",
+      "keywords": ["fed", "rbi", "ecb", "boj", "pboc", "rate", "monetary", "fomc", "mpc", "interest", "yield", "repo", "cpi", "inflation", "powell", "lagarde"],
+      "tickers": [
+        {"ticker": "HDFCBANK",   "rank": 1, "reason": "Rate-sensitive BFSI", "beta": -0.30},
+        {"ticker": "ICICIBANK",  "rank": 2, "reason": "Rate-sensitive BFSI", "beta": -0.28},
+        {"ticker": "SBIN",       "rank": 3, "reason": "PSU bank NIM", "beta": -0.25},
+        {"ticker": "BAJFINANCE", "rank": 4, "reason": "NBFC borrowing cost", "beta": -0.32},
+        {"ticker": "INFY",       "rank": 5, "reason": "USD/INR move", "beta": 0.22},
+        {"ticker": "TCS",        "rank": 6, "reason": "USD/INR move", "beta": 0.20},
+        {"ticker": "WIPRO",      "rank": 7, "reason": "USD/INR move", "beta": 0.18}
+      ]
+    },
+    "trade": {
+      "label": "Trade & Tariffs",
+      "color": "#a78bfa",
+      "monogram": "TR",
+      "keywords": ["tariff", "trade", "export", "import", "fta", "cepa", "wto", "customs", "tax", "tradeagreement"],
+      "tickers": [
+        {"ticker": "TCS",        "rank": 1, "reason": "IT export visa policy", "beta": 0.18},
+        {"ticker": "INFY",       "rank": 2, "reason": "IT export visa policy", "beta": 0.18},
+        {"ticker": "HCLTECH",    "rank": 3, "reason": "IT export", "beta": 0.16},
+        {"ticker": "WIPRO",      "rank": 4, "reason": "IT export", "beta": 0.16},
+        {"ticker": "SUNPHARMA",  "rank": 5, "reason": "Pharma export", "beta": 0.14},
+        {"ticker": "DRREDDY",    "rank": 6, "reason": "US generics", "beta": 0.14},
+        {"ticker": "TITAN",      "rank": 7, "reason": "Gold/jewelry trade", "beta": 0.10}
+      ]
+    },
+    "tech": {
+      "label": "Tech & Chips",
+      "color": "#22d3ee",
+      "monogram": "TC",
+      "keywords": ["semicond", "chip", "silicon", "ai", "taiwan", "tsmc", "asml", "fab", "foundry", "nvidia", "samsung memory"],
+      "tickers": [
+        {"ticker": "DIXON",     "rank": 1, "reason": "EMS / electronics", "beta": 0.32},
+        {"ticker": "KAYNES",    "rank": 2, "reason": "EMS / semis assembly", "beta": 0.30},
+        {"ticker": "AMBER",     "rank": 3, "reason": "EMS / consumer dur", "beta": 0.24},
+        {"ticker": "TATAELXSI", "rank": 4, "reason": "Chip design services", "beta": 0.22},
+        {"ticker": "BHEL",      "rank": 5, "reason": "Capex equipment", "beta": 0.10}
+      ]
+    }
+  }
+}

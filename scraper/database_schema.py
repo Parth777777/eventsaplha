@@ -227,6 +227,51 @@ CREATE TABLE IF NOT EXISTS geo_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_geo_country ON geo_events(country);
+
+CREATE TABLE IF NOT EXISTS ipos (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(50) UNIQUE NOT NULL,
+    ticker VARCHAR(20),
+    company_name VARCHAR(200) NOT NULL,
+    isin VARCHAR(20),
+    sector VARCHAR(100),
+    exchange VARCHAR(10) DEFAULT 'NSE',
+    issue_price_low FLOAT,
+    issue_price_high FLOAT,
+    lot_size INTEGER,
+    issue_size_cr FLOAT,
+    open_date DATE,
+    close_date DATE,
+    allotment_date DATE,
+    listing_date DATE,
+    status VARCHAR(20) DEFAULT 'upcoming',
+    sub_total FLOAT DEFAULT 0,
+    sub_qib FLOAT DEFAULT 0,
+    sub_hni FLOAT DEFAULT 0,
+    sub_retail FLOAT DEFAULT 0,
+    gmp_pct FLOAT DEFAULT 0,
+    news_count INTEGER DEFAULT 0,
+    buzz_score FLOAT DEFAULT 0,
+    revenue_cr FLOAT,
+    pat_cr FLOAT,
+    revenue_growth_pct FLOAT,
+    listing_price FLOAT,
+    listing_gain_pct FLOAT,
+    ipo_alpha_score FLOAT DEFAULT 0,
+    ipo_confidence FLOAT DEFAULT 0,
+    ipo_factors_json TEXT,
+    registrar VARCHAR(200),
+    lead_managers TEXT,
+    promoted_to_signal BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ipos_status ON ipos(status);
+CREATE INDEX IF NOT EXISTS idx_ipos_listing_date ON ipos(listing_date);
+CREATE INDEX IF NOT EXISTS idx_ipos_alpha ON ipos(ipo_alpha_score);
+CREATE INDEX IF NOT EXISTS idx_ipos_ticker ON ipos(ticker);
+CREATE INDEX IF NOT EXISTS idx_ipos_sector ON ipos(sector);
 """
 
 # ============ SQLITE SCHEMA ============
@@ -447,6 +492,51 @@ CREATE TABLE IF NOT EXISTS geo_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_geo_country ON geo_events(country);
+
+CREATE TABLE IF NOT EXISTS ipos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    symbol TEXT UNIQUE NOT NULL,
+    ticker TEXT,
+    company_name TEXT NOT NULL,
+    isin TEXT,
+    sector TEXT,
+    exchange TEXT DEFAULT 'NSE',
+    issue_price_low REAL,
+    issue_price_high REAL,
+    lot_size INTEGER,
+    issue_size_cr REAL,
+    open_date DATE,
+    close_date DATE,
+    allotment_date DATE,
+    listing_date DATE,
+    status TEXT DEFAULT 'upcoming',
+    sub_total REAL DEFAULT 0,
+    sub_qib REAL DEFAULT 0,
+    sub_hni REAL DEFAULT 0,
+    sub_retail REAL DEFAULT 0,
+    gmp_pct REAL DEFAULT 0,
+    news_count INTEGER DEFAULT 0,
+    buzz_score REAL DEFAULT 0,
+    revenue_cr REAL,
+    pat_cr REAL,
+    revenue_growth_pct REAL,
+    listing_price REAL,
+    listing_gain_pct REAL,
+    ipo_alpha_score REAL DEFAULT 0,
+    ipo_confidence REAL DEFAULT 0,
+    ipo_factors_json TEXT,
+    registrar TEXT,
+    lead_managers TEXT,
+    promoted_to_signal INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ipos_status ON ipos(status);
+CREATE INDEX IF NOT EXISTS idx_ipos_listing_date ON ipos(listing_date);
+CREATE INDEX IF NOT EXISTS idx_ipos_alpha ON ipos(ipo_alpha_score);
+CREATE INDEX IF NOT EXISTS idx_ipos_ticker ON ipos(ticker);
+CREATE INDEX IF NOT EXISTS idx_ipos_sector ON ipos(sector);
 """
 
 
@@ -1335,6 +1425,149 @@ class TickwaveDB:
         except Exception as e:
             logger.error(f"Failed to get scraper status: {e}")
             return {'error': str(e)}
+
+    # ---- IPO Operations ----
+
+    IPO_COLUMNS = (
+        'symbol', 'ticker', 'company_name', 'isin', 'sector', 'exchange',
+        'issue_price_low', 'issue_price_high', 'lot_size', 'issue_size_cr',
+        'open_date', 'close_date', 'allotment_date', 'listing_date', 'status',
+        'sub_total', 'sub_qib', 'sub_hni', 'sub_retail',
+        'gmp_pct', 'news_count', 'buzz_score',
+        'revenue_cr', 'pat_cr', 'revenue_growth_pct',
+        'listing_price', 'listing_gain_pct',
+        'ipo_alpha_score', 'ipo_confidence', 'ipo_factors_json',
+        'registrar', 'lead_managers',
+    )
+
+    def upsert_ipo(self, ipo):
+        """Insert or update an IPO record. `ipo` is a dict; `symbol` is required."""
+        if not ipo or not ipo.get('symbol'):
+            return False
+        self._ensure_connected()
+        cols = [c for c in self.IPO_COLUMNS if c in ipo]
+        vals = [ipo[c] for c in cols]
+        try:
+            placeholder = '%s' if self.is_postgres else '?'
+            ph_list = ', '.join([placeholder] * len(cols))
+            col_list = ', '.join(cols)
+            if self.is_postgres:
+                update_clause = ', '.join(
+                    f"{c} = EXCLUDED.{c}" for c in cols if c != 'symbol'
+                )
+                sql = (
+                    f"INSERT INTO ipos ({col_list}, updated_at) "
+                    f"VALUES ({ph_list}, CURRENT_TIMESTAMP) "
+                    f"ON CONFLICT (symbol) DO UPDATE SET "
+                    f"{update_clause}, updated_at = CURRENT_TIMESTAMP"
+                )
+                self.conn.cursor().execute(sql, vals)
+            else:
+                # SQLite UPSERT via ON CONFLICT
+                update_clause = ', '.join(
+                    f"{c} = excluded.{c}" for c in cols if c != 'symbol'
+                )
+                sql = (
+                    f"INSERT INTO ipos ({col_list}, updated_at) "
+                    f"VALUES ({ph_list}, CURRENT_TIMESTAMP) "
+                    f"ON CONFLICT(symbol) DO UPDATE SET "
+                    f"{update_clause}, updated_at = CURRENT_TIMESTAMP"
+                )
+                self.conn.execute(sql, vals)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to upsert IPO {ipo.get('symbol')}: {e}")
+            self.conn.rollback()
+            return False
+
+    def get_ipos(self, status=None, sector=None, limit=100):
+        """Fetch IPO records optionally filtered by status/sector, ordered by alpha + recency."""
+        self._ensure_connected()
+        placeholder = '%s' if self.is_postgres else '?'
+        where = []
+        args = []
+        if status and status != 'all':
+            where.append(f"status = {placeholder}")
+            args.append(status)
+        if sector and sector != 'all':
+            where.append(f"sector = {placeholder}")
+            args.append(sector)
+        where_clause = ('WHERE ' + ' AND '.join(where)) if where else ''
+        args.append(limit)
+        return _execute_query(
+            self.conn,
+            f"SELECT * FROM ipos {where_clause} "
+            f"ORDER BY ipo_alpha_score DESC, COALESCE(open_date, listing_date) DESC "
+            f"LIMIT {placeholder}",
+            tuple(args),
+            fetch=True,
+        )
+
+    def get_ipo_by_symbol(self, symbol):
+        """Fetch single IPO by symbol."""
+        self._ensure_connected()
+        placeholder = '%s' if self.is_postgres else '?'
+        rows = _execute_query(
+            self.conn,
+            f"SELECT * FROM ipos WHERE symbol = {placeholder}",
+            (symbol,),
+            fetch=True,
+        )
+        return rows[0] if rows else None
+
+    def get_ipo_stats(self):
+        """Aggregate IPO counts and average alpha for the dashboard pill."""
+        self._ensure_connected()
+        try:
+            stats = {'open': 0, 'upcoming': 0, 'listed': 0, 'avg_alpha': 0}
+            rows = _execute_query(
+                self.conn,
+                "SELECT status, COUNT(*) AS cnt FROM ipos GROUP BY status",
+                fetch=True,
+            )
+            for r in rows or []:
+                stats[r['status']] = r['cnt']
+            rows = _execute_query(
+                self.conn,
+                "SELECT AVG(ipo_alpha_score) AS a FROM ipos WHERE status IN ('open','upcoming')",
+                fetch=True,
+            )
+            stats['avg_alpha'] = round(float(rows[0]['a'] or 0), 1) if rows else 0
+            return stats
+        except Exception as e:
+            logger.warning(f"get_ipo_stats failed: {e}")
+            return {'open': 0, 'upcoming': 0, 'listed': 0, 'avg_alpha': 0}
+
+    def get_unpromoted_listed_ipos(self):
+        """IPOs that have listed but haven't yet been promoted to a signal."""
+        self._ensure_connected()
+        false_val = 'FALSE' if self.is_postgres else '0'
+        return _execute_query(
+            self.conn,
+            f"SELECT * FROM ipos "
+            f"WHERE status = 'listed' AND ticker IS NOT NULL "
+            f"AND listing_price IS NOT NULL AND promoted_to_signal = {false_val}",
+            fetch=True,
+        )
+
+    def mark_ipo_promoted(self, symbol):
+        """Flip the promoted_to_signal flag once a signal record exists."""
+        self._ensure_connected()
+        try:
+            placeholder = '%s' if self.is_postgres else '?'
+            true_val = 'TRUE' if self.is_postgres else '1'
+            self.conn.cursor().execute(
+                f"UPDATE ipos SET promoted_to_signal = {true_val} "
+                f"WHERE symbol = {placeholder}",
+                (symbol,),
+            )
+            self.conn.commit()
+            return True
+        except Exception as e:
+            logger.warning(f"mark_ipo_promoted failed for {symbol}: {e}")
+            self.conn.rollback()
+            return False
 
     def close(self):
         """Close database connection"""

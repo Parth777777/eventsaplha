@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tickwave — Real-time alpha signals for Indian markets</title>
+<meta name="description" content="India's AI-native alpha intelligence platform. Every NSE/BSE event scored through a 9-regime quant engine. Real-time. Forensics-graded. Built for the post-news trader.">
+<meta name="theme-color" content="#07090d">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tickwave — Real-time alpha signals for Indian markets">
+<meta property="og:description" content="The 11-factor alpha engine for NSE / BSE. Scored. Streamed. Sub-3-minute fresh.">
+<meta property="og:image" content="/shared/img/screens/home-desktop.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/jpeg" href="/shared/img/logo.jpeg">
+<link rel="canonical" href="/">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Tickwave",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "description": "India's AI-native alpha intelligence platform. Real-time signal scoring across 500+ NSE/BSE stocks.",
+  "offers": { "@type": "Offer", "price": "499", "priceCurrency": "INR" },
+  "creator": { "@type": "Person", "name": "Parth Doshi" }
+}
+</script>
+
+<!-- ===== Premium typography: Fraunces (display serif) + Inter (UI) + Geist Mono (sparingly) ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,30..100,0..1;1,9..144,300..900,30..100,0..1&family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link rel="preload" as="image" href="/shared/img/screens/home-mobile.png">
+<link rel="preload" as="image" href="/shared/img/screens/explore-desktop.png">
+
+<link rel="stylesheet" href="/shared/css/landing.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined">
+
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script type="module" defer src="/shared/js/landing/main.js"></script>
+</head>
+
+<body class="lp">
+
+<!-- =================== NAV =================== -->
+<nav class="lp-nav" id="lp-nav">
+  <a class="lp-brand" href="#hero">
+    <img src="/shared/img/logo.jpeg" alt="Tickwave" class="lp-brand-logo">
+    <span class="lp-brand-name">Tickwave</span>
+    <span class="lp-brand-pill">beta</span>
+  </a>
+  <div class="lp-nav-links">
+    <a href="#live">Live</a>
+    <a href="#features">Product</a>
+    <a href="#engine">Engine</a>
+    <a href="#forensics">Forensics</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="#waitlist" class="lp-cta lp-cta-pill" data-magnet>
+    Join waitlist
+    <span class="material-symbols-outlined">arrow_forward</span>
+  </a>
+</nav>
+
+<!-- =================== HERO =================== -->
+<header class="lp-hero" id="hero">
+  <div class="lp-hero-fog" aria-hidden="true"></div>
+
+  <div class="lp-hero-inner">
+    <div class="lp-hero-copy">
+      <span class="lp-eyebrow">
+        <span class="lp-dot"></span>
+        Live · NSE &amp; BSE · v11.4 engine online
+      </span>
+      <h1 class="lp-h1">
+        <span class="lp-h1-line">India's market,</span>
+        <span class="lp-h1-line lp-h1-italic">decoded</span>
+        <span class="lp-h1-line">in real time.</span>
+      </h1>
+      <p class="lp-sub">
+        Real-time alpha intelligence for NSE &amp; BSE. Every event — earnings, F&amp;O builds,
+        RBI moves, promoter activity, pump-dump patterns — graded by a 9-regime quant engine
+        the same desks rent for ₹25L/yr.
+      </p>
+      <div class="lp-cta-row">
+        <a href="#waitlist" class="lp-cta lp-cta-primary" data-magnet>
+          Join the waitlist
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+        <a href="#live" class="lp-cta lp-cta-ghost">
+          <span class="material-symbols-outlined">play_circle</span>
+          See live signals
+        </a>
+      </div>
+      <div class="lp-trust">
+        <span>🇮🇳 SEBI-compliant data</span>
+        <span class="lp-sep">·</span>
+        <span>No card required</span>
+        <span class="lp-sep">·</span>
+        <span><strong id="lp-trust-count">—</strong> already in line</span>
+      </div>
+    </div>
+
+    <!-- Composition: phone + floating browser card -->
+    <div class="lp-hero-mock" aria-hidden="true">
+      <div class="lp-mock-glow"></div>
+
+      <!-- Floating browser card behind the phone, showing the Signal Scanner -->
+      <figure class="lp-hero-card">
+        <div class="lp-hero-card-bar">
+          <span class="lp-dot-x r"></span>
+          <span class="lp-dot-x y"></span>
+          <span class="lp-dot-x g"></span>
+        </div>
+        <img src="/shared/img/screens/explore-desktop.png"
+             alt="Tickwave Signal Scanner — live alpha movers"
+             loading="eager" decoding="async">
+      </figure>
+
+      <!-- Phone foreground with the live Home dashboard -->
+      <div class="lp-phone">
+        <div class="lp-phone-notch"></div>
+        <img class="lp-phone-screen-img"
+             src="/shared/img/screens/home-mobile.png"
+             alt="Tickwave home — live market sentiment, regime, and signal book"
+             loading="eager" decoding="async">
+      </div>
+
+      <!-- Two live floating chips -->
+      <div class="lp-orbit lp-orbit-1" id="lp-orbit-1">
+        <span class="lp-orbit-lbl">Alpha</span>
+        <span class="lp-orbit-val">—</span>
+        <span class="lp-orbit-tk">…</span>
+      </div>
+      <div class="lp-orbit lp-orbit-2" id="lp-orbit-2">
+        <span class="lp-orbit-lbl">Event</span>
+        <span class="lp-orbit-val">…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lp-hero-foot">
+    <div class="lp-hero-foot-stat"><strong>500+</strong><span>NSE/BSE stocks scored every cycle</span></div>
+    <div class="lp-hero-foot-stat"><strong>&lt; 3 min</strong><span>source-to-screen freshness</span></div>
+    <div class="lp-hero-foot-stat"><strong>11×9</strong><span>factor × regime engine</span></div>
+    <div class="lp-hero-foot-stat"><strong>20+</strong><span>distinct intelligence surfaces</span></div>
+  </div>
+</header>
+
+<!-- =================== DATA SOURCES =================== -->
+<section class="lp-proof" aria-label="Data sources">
+  <div class="lp-proof-inner">
+    <span class="lp-proof-label">Live feeds</span>
+    <div class="lp-proof-marquee">
+      <span>NSE</span><span>BSE</span><span>RBI</span><span>SEBI</span><span>NSDL</span>
+      <span>MoneyControl</span><span>Mint</span><span>ET Markets</span>
+      <span>LiveMint</span><span>Bloomberg Quint</span><span>Reuters India</span>
+      <span>NSE</span><span>BSE</span><span>RBI</span><span>SEBI</span><span>NSDL</span>
+      <span>MoneyControl</span><span>Mint</span><span>ET Markets</span>
+      <span>LiveMint</span><span>Bloomberg Quint</span><span>Reuters India</span>
+    </div>
+  </div>
+</section>
+
+<!-- =================== LIVE MARQUEE =================== -->
+<section class="lp-live" id="live">
+  <div class="lp-section-head">
+    <span class="lp-eyebrow"><span class="lp-dot"></span> Live now</span>
+    <h2 class="lp-h2">Real signals. <em>Streaming.</em> Right now.</h2>
+    <p class="lp-sub">Every card is a live signal from the engine. Click — opens the actual product.</p>
+  </div>
+  <div class="lp-marquee-wrap">
+    <div class="lp-marquee" id="lp-marquee">
+      <div class="lp-marquee-loading">Fetching live signals…</div>
+    </div>
+  </div>
+</section>
+
+<!-- (Feature reel section removed — content moved to the illustrative
+     feature cards below to keep the page light on raw screenshots.) -->
+
+<!-- =================== ENGINE (simulator only, no formula) =================== -->
+<section class="lp-engine" id="engine">
+  <div class="lp-section-head">
+    <span class="lp-eyebrow">The engine</span>
+    <h2 class="lp-h2">Eleven factors. Nine regimes. <em>One score.</em></h2>
+    <p class="lp-sub">Drag the inputs. Watch the engine recompute live — the same math that scores every article hitting the scraper.</p>
+  </div>
+
+  <div class="lp-engine-card">
+    <div class="lp-gauge">
+      <svg viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+        <defs>
+          <linearGradient id="gauge-grad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#8a94a8"/>
+            <stop offset="50%" stop-color="#e6b84a"/>
+            <stop offset="100%" stop-color="#2dd4aa"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(141,148,168,0.12)" stroke-width="14"/>
+        <circle id="lp-gauge-ring" cx="100" cy="100" r="84" fill="none"
+          stroke="url(#gauge-grad)" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="528" stroke-dashoffset="528"
+          transform="rotate(-90 100 100)"/>
+        <text id="lp-gauge-score" x="100" y="106" text-anchor="middle"
+          font-family="'Geist Mono', monospace" font-size="40" font-weight="700"
+          fill="#f4f6fb">0</text>
+        <text x="100" y="132" text-anchor="middle"
+          font-family="Inter, sans-serif" font-size="10" font-weight="600"
+          fill="#8a94a8" letter-spacing="2">ALPHA</text>
+      </svg>
+      <div class="lp-gauge-band" id="lp-gauge-band">—</div>
+    </div>
+
+    <div class="lp-sliders">
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Magnitude</span>
+        <input type="range" min="1" max="10" step="0.5" value="7" data-sim="magnitude">
+        <output data-sim-out="magnitude">7</output>
+      </label>
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Confidence</span>
+        <input type="range" min="0" max="1" step="0.05" value="0.75" data-sim="confidence">
+        <output data-sim-out="confidence">0.75</output>
+      </label>
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Sentiment</span>
+        <select data-sim="sentiment">
+          <option value="bullish">Bullish</option>
+          <option value="neutral">Neutral</option>
+          <option value="bearish">Bearish</option>
+        </select>
+      </label>
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Days old</span>
+        <input type="range" min="0" max="7" step="1" value="0" data-sim="days">
+        <output data-sim-out="days">0</output>
+      </label>
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Event type</span>
+        <select data-sim="event">
+          <option value="earnings">Earnings</option>
+          <option value="merger">Merger</option>
+          <option value="policy">Policy</option>
+          <option value="order_win">Order win</option>
+          <option value="supply">Supply chain</option>
+          <option value="insider">Insider</option>
+        </select>
+      </label>
+      <label class="lp-slider">
+        <span class="lp-slider-lbl">Regime</span>
+        <select data-sim="regime">
+          <option value="bull_strong">Bull strong</option>
+          <option value="bull_weak">Bull weak</option>
+          <option value="bear_strong">Bear strong</option>
+          <option value="bear_weak">Bear weak</option>
+          <option value="sideways_calm">Sideways calm</option>
+          <option value="sideways_choppy">Sideways choppy</option>
+          <option value="spike_up">Spike up</option>
+          <option value="spike_down">Spike down</option>
+          <option value="crisis">Crisis</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- =================== FEATURES (illustrative, no full screenshots) =================== -->
+<section class="lp-features" id="features">
+  <div class="lp-section-head">
+    <span class="lp-eyebrow">The product</span>
+    <h2 class="lp-h2">One desk. <em>Twenty surfaces.</em> Zero noise.</h2>
+    <p class="lp-sub">Each tool answers a single question. Hover to see how — tap any tile for the live view.</p>
+  </div>
+
+  <div class="lp-features-grid">
+    <!-- 1. NEWSROOM — animated stream lines -->
+    <a href="/events.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-stream" aria-hidden="true">
+        <svg viewBox="0 0 240 120" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lp-fade-1" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stop-color="transparent"/>
+              <stop offset="50%" stop-color="rgba(141,180,224,0.6)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </linearGradient>
+          </defs>
+          <g fill="none" stroke="rgba(141,148,168,0.18)" stroke-width="1">
+            <line x1="0" y1="22" x2="240" y2="22"/>
+            <line x1="0" y1="44" x2="240" y2="44"/>
+            <line x1="0" y1="66" x2="240" y2="66"/>
+            <line x1="0" y1="88" x2="240" y2="88"/>
+          </g>
+          <rect x="-30" y="20" width="60" height="4" fill="url(#lp-fade-1)">
+            <animate attributeName="x" from="-60" to="240" dur="3.6s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="-30" y="64" width="60" height="4" fill="url(#lp-fade-1)">
+            <animate attributeName="x" from="-60" to="240" dur="4.4s" begin="0.6s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="40" cy="22" r="2.5" fill="#2dd4aa"/>
+          <circle cx="160" cy="44" r="2.5" fill="#e6b84a"/>
+          <circle cx="90" cy="66" r="2.5" fill="#8eb4e0"/>
+          <circle cx="200" cy="88" r="2.5" fill="#a78bfa"/>
+        </svg>
+        <div class="lp-feat-pill"><strong>30+</strong> live feeds</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Newsroom</span>
+        <h4>Live event stream</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>Every news article, filing, and disclosure — NLP-parsed and alpha-scored within 3 minutes of publication. Filter by event ring, sentiment, source tier.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">3min</strong> freshness</span>
+          <span><strong class="lp-num">7</strong> event rings</span>
+        </div>
+        <span class="lp-cta-mini">Open Newsroom <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 2. SIGNAL SCANNER — universe-by-sector ring -->
+    <a href="/explore.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-ring" aria-hidden="true">
+        <svg viewBox="0 0 200 120">
+          <circle cx="100" cy="62" r="44" fill="none" stroke="rgba(141,148,168,0.12)" stroke-width="10"/>
+          <circle cx="100" cy="62" r="44" fill="none" stroke="#2dd4aa" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="80 276" transform="rotate(-90 100 62)"/>
+          <circle cx="100" cy="62" r="44" fill="none" stroke="#8eb4e0" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="60 276" stroke-dashoffset="-90" transform="rotate(-90 100 62)"/>
+          <circle cx="100" cy="62" r="44" fill="none" stroke="#a78bfa" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="34 276" stroke-dashoffset="-160" transform="rotate(-90 100 62)"/>
+          <text x="100" y="58" text-anchor="middle" font-family="Fraunces, serif" font-size="22" font-weight="500" fill="#f4f6fb">2,341</text>
+          <text x="100" y="74" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" font-weight="600" fill="#8a94a8" letter-spacing="2">UNIVERSE</text>
+        </svg>
+        <div class="lp-feat-pill"><strong>Top α 87</strong> · live</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Explore</span>
+        <h4>Signal Scanner</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>The alpha leaderboard across the entire Indian universe. Universe-by-sector ring, top-6 live movers with sparklines, critical-alpha cards (α &gt; 85).</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">2,341</strong> stocks</span>
+          <span><strong class="lp-num">34</strong> sectors</span>
+        </div>
+        <span class="lp-cta-mini">Open Scanner <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 3. SECTOR HEATMAP — grid of cells -->
+    <a href="/sectors.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-heat" aria-hidden="true">
+        <div class="lp-heat-grid">
+          <span style="background:#2dd4aa"></span><span style="background:#2dd4aa88"></span><span style="background:#2dd4aa55"></span><span style="background:#e6b84a44"></span>
+          <span style="background:#2dd4aa66"></span><span style="background:#2dd4aaaa"></span><span style="background:#e6b84a66"></span><span style="background:#f26b6b55"></span>
+          <span style="background:#2dd4aa44"></span><span style="background:#e6b84a55"></span><span style="background:#f26b6b66"></span><span style="background:#f26b6b88"></span>
+        </div>
+        <div class="lp-feat-pill"><strong>MINING +55.6%</strong> 24h</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Sectors</span>
+        <h4>Rotation heatmap</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>33 sectors ranked by signal flow and sentiment. See capital rotating between BFSI, IT, Mining, Power before it hits your P&amp;L.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">33</strong> sectors</span>
+          <span><strong class="lp-num">2,883</strong> signals</span>
+        </div>
+        <span class="lp-cta-mini">Open Heatmap <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 4. F&O INTELLIGENCE — option chain bars -->
+    <a href="/fo.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-fo" aria-hidden="true">
+        <svg viewBox="0 0 240 120">
+          <g>
+            <rect x="14"  y="60" width="10" height="20" fill="#2dd4aa" opacity="0.45"/>
+            <rect x="30"  y="50" width="10" height="30" fill="#2dd4aa" opacity="0.6"/>
+            <rect x="46"  y="38" width="10" height="42" fill="#2dd4aa" opacity="0.75"/>
+            <rect x="62"  y="22" width="10" height="58" fill="#2dd4aa" opacity="0.95"/>
+            <rect x="78"  y="36" width="10" height="44" fill="#2dd4aa" opacity="0.7"/>
+            <rect x="94"  y="48" width="10" height="32" fill="#2dd4aa" opacity="0.5"/>
+          </g>
+          <line x1="120" y1="10" x2="120" y2="110" stroke="#e6b84a" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <g transform="translate(120,0)">
+            <rect x="14"  y="48" width="10" height="32" fill="#f26b6b" opacity="0.5"/>
+            <rect x="30"  y="36" width="10" height="44" fill="#f26b6b" opacity="0.7"/>
+            <rect x="46"  y="22" width="10" height="58" fill="#f26b6b" opacity="0.95"/>
+            <rect x="62"  y="38" width="10" height="42" fill="#f26b6b" opacity="0.75"/>
+            <rect x="78"  y="50" width="10" height="30" fill="#f26b6b" opacity="0.6"/>
+            <rect x="94"  y="60" width="10" height="20" fill="#f26b6b" opacity="0.45"/>
+          </g>
+        </svg>
+        <div class="lp-feat-pill"><strong>Max pain</strong> 23,400</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">F&amp;O</span>
+        <h4>Option-chain intel</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>NIFTY / BANKNIFTY chains, OI shifts, IV rank, max-pain — refreshed every 3 minutes during market hours.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-mono">OI Δ</strong> live</span>
+          <span><strong class="lp-mono">IV rank</strong></span>
+        </div>
+        <span class="lp-cta-mini">Open F&amp;O <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 5. PRE-MOVERS — volume sigma sparkline -->
+    <a href="/premover.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-spark" aria-hidden="true">
+        <svg viewBox="0 0 240 120">
+          <defs>
+            <linearGradient id="lp-spk" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(141,180,224,0.4)"/>
+              <stop offset="100%" stop-color="rgba(141,180,224,0)"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,80 L20,76 L40,78 L60,72 L80,74 L100,68 L120,60 L140,40 L160,18 L180,30 L200,46 L220,52 L240,50"
+                fill="none" stroke="#8eb4e0" stroke-width="2"/>
+          <path d="M0,80 L20,76 L40,78 L60,72 L80,74 L100,68 L120,60 L140,40 L160,18 L180,30 L200,46 L220,52 L240,50 L240,120 L0,120 Z"
+                fill="url(#lp-spk)"/>
+          <circle cx="160" cy="18" r="4" fill="#e6b84a"/>
+          <line x1="0" y1="100" x2="240" y2="100" stroke="rgba(141,148,168,0.15)" stroke-dasharray="2 4"/>
+          <line x1="0" y1="60"  x2="240" y2="60"  stroke="rgba(141,148,168,0.15)" stroke-dasharray="2 4"/>
+        </svg>
+        <div class="lp-feat-pill"><strong>+4.8σ</strong> vol surge</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Pre-movers</span>
+        <h4>Volume σ-bands</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>Unexplained volume spikes 4–48 h before headlines hit the wire. Catches the accumulation, not just the breakout.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">σ-band</strong> filter</span>
+          <span><strong class="lp-num">48h</strong> lookback</span>
+        </div>
+        <span class="lp-cta-mini">Open Pre-movers <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 6. FORENSICS — circular risk gauge -->
+    <a href="/forensics.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-forensics" aria-hidden="true">
+        <svg viewBox="0 0 160 120">
+          <circle cx="80" cy="62" r="40" fill="none" stroke="rgba(141,148,168,0.18)" stroke-width="9"/>
+          <circle cx="80" cy="62" r="40" fill="none" stroke="#f26b6b" stroke-width="9"
+            stroke-linecap="round" stroke-dasharray="196 251" stroke-dashoffset="-30"
+            transform="rotate(-90 80 62)"/>
+          <text x="80" y="68" text-anchor="middle" font-family="Fraunces, serif" font-size="28" font-weight="500" fill="#f26b6b">78</text>
+        </svg>
+        <div class="lp-feat-pill lp-feat-pill-red"><strong>Likely pump</strong></div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag red">Forensics</span>
+        <h4>Pump-dump filter</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>Manipulation flags, auditor red flags, SEBI ban list, coordinated-campaign fingerprinting. The cleanroom your broker won't run.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">4</strong> manipulation classes</span>
+          <span><strong class="lp-num">SEBI</strong> tape</span>
+        </div>
+        <span class="lp-cta-mini">Open Forensics <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 7. POLICY — stacked source badges -->
+    <a href="/policy.html" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-policy" aria-hidden="true">
+        <div class="lp-policy-stack">
+          <span class="lp-policy-badge">RBI</span>
+          <span class="lp-policy-badge">SEBI</span>
+          <span class="lp-policy-badge">GST</span>
+          <span class="lp-policy-badge">CBDT</span>
+          <span class="lp-policy-badge">MoF</span>
+        </div>
+        <div class="lp-feat-pill"><strong>2h</strong> circular freshness</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Policy</span>
+        <h4>RBI · SEBI · GST tracker</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>Every regulatory press release, parsed and mapped to sector impact within 2 hours of publication. Never miss the rate cut.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">5</strong> regulators</span>
+          <span><strong class="lp-num">2h</strong> cooldown</span>
+        </div>
+        <span class="lp-cta-mini">Open Policy <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+
+    <!-- 8. STOCK DOSSIER — mini event timeline -->
+    <a href="/stock.html?ticker=TCS" class="lp-feat">
+      <div class="lp-feat-art lp-feat-art-timeline" aria-hidden="true">
+        <svg viewBox="0 0 240 120">
+          <line x1="14" y1="60" x2="226" y2="60" stroke="rgba(141,148,168,0.25)" stroke-width="1"/>
+          <g>
+            <circle cx="30"  cy="60" r="5" fill="#2dd4aa"/>
+            <text x="30"  y="48" font-family="Geist Mono, monospace" font-size="9" fill="#8a94a8" text-anchor="middle">Q1</text>
+            <text x="30"  y="80" font-family="Inter, sans-serif" font-size="9" fill="#dde3ef" text-anchor="middle" font-weight="600">+3.2%</text>
+          </g>
+          <g>
+            <circle cx="80"  cy="60" r="5" fill="#e6b84a"/>
+            <text x="80"  y="48" font-family="Geist Mono, monospace" font-size="9" fill="#8a94a8" text-anchor="middle">Q2</text>
+            <text x="80"  y="80" font-family="Inter, sans-serif" font-size="9" fill="#dde3ef" text-anchor="middle" font-weight="600">+1.4%</text>
+          </g>
+          <g>
+            <circle cx="130" cy="60" r="5" fill="#f26b6b"/>
+            <text x="130" y="48" font-family="Geist Mono, monospace" font-size="9" fill="#8a94a8" text-anchor="middle">Order</text>
+            <text x="130" y="80" font-family="Inter, sans-serif" font-size="9" fill="#dde3ef" text-anchor="middle" font-weight="600">−0.8%</text>
+          </g>
+          <g>
+            <circle cx="180" cy="60" r="5" fill="#2dd4aa"/>
+            <text x="180" y="48" font-family="Geist Mono, monospace" font-size="9" fill="#8a94a8" text-anchor="middle">Earn</text>
+            <text x="180" y="80" font-family="Inter, sans-serif" font-size="9" fill="#dde3ef" text-anchor="middle" font-weight="600">+5.1%</text>
+          </g>
+          <circle cx="216" cy="60" r="6" fill="#2dd4aa">
+            <animate attributeName="r" values="6;9;6" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        <div class="lp-feat-pill"><strong>Hit-rate</strong> per horizon</div>
+      </div>
+      <div class="lp-feat-meta">
+        <span class="lp-tile-tag">Ticker</span>
+        <h4>Per-stock dossier</h4>
+      </div>
+      <div class="lp-feat-over">
+        <p>Event track record per ticker. 1D / 3D / 20D predictions versus actuals, hit-rate, intelligence brief, peers, financials.</p>
+        <div class="lp-feat-chips">
+          <span><strong class="lp-num">1D · 3D · 20D</strong></span>
+          <span><strong class="lp-num">hit-rate</strong> tracked</span>
+        </div>
+        <span class="lp-cta-mini">Open Stock <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- =================== FORENSICS DEEP =================== -->
+<section class="lp-forensics" id="forensics">
+  <div class="lp-forensics-inner">
+    <div class="lp-forensics-copy">
+      <span class="lp-eyebrow">Forensics-graded</span>
+      <h2 class="lp-h2">What your broker's PDF research will <em>never</em> show.</h2>
+      <p class="lp-sub">
+        Every signal runs through a manipulation filter: cross-source agreement, first-seen
+        latency, liquidity-adjusted score, coordinated-campaign fingerprinting. If the news
+        looks orchestrated, you see the risk grade before you see the headline.
+      </p>
+      <ul class="lp-forensics-list">
+        <li><span class="lp-check">✓</span> Pump-dump score on every small/mid cap signal</li>
+        <li><span class="lp-check">✓</span> Promoter pledge / share trends with red-flag alerts</li>
+        <li><span class="lp-check">✓</span> SEBI disclosure tape for every ticker, in one place</li>
+        <li><span class="lp-check">✓</span> Liquidity gates auto-throttle low-volume signals</li>
+      </ul>
+    </div>
+    <!-- Single-metric forensics card: pump-dump score with evidence trail -->
+    <div class="lp-fg-card" data-tilt aria-hidden="true">
+      <div class="lp-fg-head">
+        <span class="lp-tile-tag red">STOCK-X · forensics</span>
+        <span class="lp-fg-band">LIKELY PUMP</span>
+      </div>
+      <div class="lp-fg-gauge-wrap">
+        <svg class="lp-fg-gauge" viewBox="0 0 220 220" width="220" height="220">
+          <defs>
+            <linearGradient id="lp-fg-grad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%"  stop-color="#2dd4aa"/>
+              <stop offset="50%" stop-color="#e6b84a"/>
+              <stop offset="100%" stop-color="#f26b6b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="110" cy="110" r="92" fill="none"
+            stroke="rgba(141,148,168,0.12)" stroke-width="16"/>
+          <circle id="lp-fg-ring" cx="110" cy="110" r="92" fill="none"
+            stroke="url(#lp-fg-grad)" stroke-width="16" stroke-linecap="round"
+            stroke-dasharray="578" stroke-dashoffset="127"
+            transform="rotate(-90 110 110)"/>
+          <text x="110" y="116" text-anchor="middle"
+            font-family="Fraunces, serif" font-size="64" font-weight="500"
+            fill="#f26b6b">78</text>
+          <text x="110" y="142" text-anchor="middle"
+            font-family="Inter, sans-serif" font-size="10" font-weight="600"
+            fill="#8a94a8" letter-spacing="3">PUMP-DUMP RISK</text>
+        </svg>
+      </div>
+      <div class="lp-fg-evidence">
+        <div class="lp-fg-row">
+          <span class="lp-fg-pts">+24</span>
+          <span class="lp-fg-detail">Coordinated-campaign fingerprint</span>
+        </div>
+        <div class="lp-fg-row">
+          <span class="lp-fg-pts">+22</span>
+          <span class="lp-fg-detail">First-seen on Telegram, not press</span>
+        </div>
+        <div class="lp-fg-row">
+          <span class="lp-fg-pts">+18</span>
+          <span class="lp-fg-detail">Cross-source disagreement &gt; 0.6</span>
+        </div>
+        <div class="lp-fg-row">
+          <span class="lp-fg-pts">+14</span>
+          <span class="lp-fg-detail">Vol surge 4.8× pre-news</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== STATS =================== -->
+<section class="lp-stats">
+  <div class="lp-stats-grid">
+    <div class="lp-stat">
+      <div class="lp-stat-val" data-counter="180" data-suffix="s">0</div>
+      <div class="lp-stat-lbl">Signal freshness, source to your screen</div>
+    </div>
+    <div class="lp-stat">
+      <div class="lp-stat-val" data-counter="500" data-suffix="+">0</div>
+      <div class="lp-stat-lbl">NSE / BSE stocks scored every cycle</div>
+    </div>
+    <div class="lp-stat">
+      <div class="lp-stat-val" data-counter="63">0</div>
+      <div class="lp-stat-lbl">Regime × event combinations the engine reasons over</div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== PRICING =================== -->
+<section class="lp-pricing" id="pricing">
+  <div class="lp-pricing-card">
+    <span class="lp-eyebrow lp-eyebrow-gold">Founder pricing</span>
+    <div class="lp-price">
+      <span class="lp-price-amt">₹499</span>
+      <span class="lp-price-per">/mo</span>
+    </div>
+    <p class="lp-price-tag">Locked for life. First <strong>500 waitlist</strong> members only.</p>
+    <div class="lp-price-bar" aria-label="Founder slots claimed">
+      <div class="lp-price-bar-fill" id="lp-founder-bar"></div>
+    </div>
+    <div class="lp-price-counter">
+      <strong id="lp-founder-claimed">—</strong> / 500 claimed
+    </div>
+    <a href="#waitlist" class="lp-cta lp-cta-primary lp-cta-big" data-magnet>
+      Reserve my spot
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+    <ul class="lp-price-perks">
+      <li>✓ Full access to every signal stream the day we launch</li>
+      <li>✓ Founder Discord — direct line to the build</li>
+      <li>✓ Locked at ₹499 forever — every future price hike skips you</li>
+      <li>✓ Monthly research note (not "newsletter slop")</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =================== WAITLIST =================== -->
+<section class="lp-waitlist" id="waitlist">
+  <div class="lp-waitlist-bg" aria-hidden="true"></div>
+  <div class="lp-waitlist-inner">
+    <span class="lp-eyebrow"><span class="lp-dot"></span> Waitlist</span>
+    <h2 class="lp-h2">Be early. <em>Trade earlier.</em></h2>
+    <p class="lp-sub">Drop your email. We'll send the magic link the second the doors open.</p>
+
+    <form class="lp-form" id="lp-waitlist-form" novalidate>
+      <div class="lp-form-row">
+        <input type="email" name="email" placeholder="you@gmail.com" required
+               autocomplete="email" class="lp-input" id="lp-email">
+        <button type="submit" class="lp-cta lp-cta-primary lp-cta-big" data-magnet>
+          Get my spot
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+      <div class="lp-form-msg" id="lp-form-msg" role="status"></div>
+    </form>
+
+    <div class="lp-waitlist-success" id="lp-waitlist-success" hidden>
+      <div class="lp-success-card">
+        <div class="lp-success-emoji">🎉</div>
+        <div class="lp-success-pos">
+          You're <strong>#<span id="lp-success-num">—</span></strong>
+        </div>
+        <div class="lp-success-msg" id="lp-success-msg">Founder pricing locked.</div>
+        <div class="lp-success-share">
+          <span>Share your link · jump 10 spots per signup</span>
+          <div class="lp-share-row">
+            <input type="text" readonly class="lp-input lp-share-input" id="lp-share-input">
+            <button class="lp-cta lp-cta-ghost" id="lp-share-copy">
+              <span class="material-symbols-outlined">content_copy</span> Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="lp-waitlist-perks">
+      <li><span class="material-symbols-outlined">bolt</span> Early access on launch day</li>
+      <li><span class="material-symbols-outlined">lock</span> Founder pricing locked for life</li>
+      <li><span class="material-symbols-outlined">forum</span> Private founder Discord</li>
+      <li><span class="material-symbols-outlined">description</span> Monthly research note</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =================== FAQ =================== -->
+<section class="lp-faq" id="faq">
+  <div class="lp-section-head">
+    <span class="lp-eyebrow">Questions</span>
+    <h2 class="lp-h2">The honest <em>FAQ.</em></h2>
+  </div>
+  <div class="lp-faq-grid">
+    <details>
+      <summary>Is Tickwave a SEBI-registered investment advisor?</summary>
+      <p>No. Tickwave publishes statistical research signals from public Indian market data
+      (NSE/BSE filings, SEBI disclosures, RBI press, financial press). It is research tooling,
+      not advice. Past performance ≠ future results. Always do your own due diligence.</p>
+    </details>
+    <details>
+      <summary>Where does the data come from?</summary>
+      <p>NSE/BSE corporate filings, SEBI/RBI press releases, 30+ financial news feeds (ET, Mint,
+      MoneyControl, Bloomberg, Reuters, LiveMint), and curated F&amp;O / volume data via official APIs.</p>
+    </details>
+    <details>
+      <summary>How fresh are the signals?</summary>
+      <p>Under 3 minutes from source publication to your screen on average. Policy events have a
+      separate 2-hour cooldown so RBI/SEBI multi-circulars don't drown the feed.</p>
+    </details>
+    <details>
+      <summary>What's the alpha score actually measuring?</summary>
+      <p>An 11-factor regime-aware score from 0 to 100. It combines magnitude, confidence,
+      event-type-by-regime weighting, sentiment, time decay, market-cap quality, sector momentum,
+      relative strength, divergence bonus, narrative density, surprise, and flow.</p>
+    </details>
+    <details>
+      <summary>Will my data be sold?</summary>
+      <p>Never. Email is used for product comms only. No third-party data brokers. No ad networks.</p>
+    </details>
+    <details>
+      <summary>When does this launch?</summary>
+      <p>The core engine is already live and scoring signals 24×7. The product wrapper for retail
+      is in private beta — first 500 waitlist members get keys the day the doors open.</p>
+    </details>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer class="lp-footer">
+  <div class="lp-footer-inner">
+    <div class="lp-footer-col">
+      <a class="lp-brand" href="#hero">
+        <img src="/shared/img/logo.jpeg" alt="Tickwave" class="lp-brand-logo">
+        <span class="lp-brand-name">Tickwave</span>
+      </a>
+      <p class="lp-footer-tag">India's AI-native alpha intelligence layer.</p>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Product</h4>
+      <a href="#engine">Engine</a>
+      <a href="#features">Surfaces</a>
+      <a href="#forensics">Forensics</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Legal</h4>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/policy.html">Compliance</a>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Built by</h4>
+      <span>Parth Doshi</span>
+      <span class="lp-footer-meta">© 2026 · Made in India</span>
+    </div>
+  </div>
+  <div class="lp-footer-legal">
+    <strong>Not investment advice.</strong> Tickwave publishes statistical research signals from
+    public Indian market data. It is research tooling, not a SEBI-registered investment advisor.
+    Past performance ≠ future results. Always do your own due diligence.
+  </div>
+</footer>
+
+<!-- Mobile sticky CTA -->
+<div class="lp-mobile-cta" aria-hidden="false">
+  <a href="#waitlist" class="lp-cta lp-cta-primary lp-cta-big">
+    Join the waitlist
+    <span class="material-symbols-outlined">arrow_forward</span>
+  </a>
+</div>
+
+</body>
+</html>

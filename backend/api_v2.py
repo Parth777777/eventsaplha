@@ -14,6 +14,8 @@ from typing import Callable, Dict, List, Optional
 
 from flask import Blueprint, Response, g, jsonify, request
 
+from cache_util import ttl_cache  # response caching for hot endpoints
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("api_v2", __name__)
@@ -136,6 +138,7 @@ def api_status():
 # ---- /api/news/fast ---------------------------------------------------------
 
 @bp.route("/api/news/fast", methods=["GET"])
+@ttl_cache(seconds=30)
 def news_fast():
     """Fastest path to user: combines streaming buffer + DB recent events,
     sorted by freshness, with forensic band + source tier surfaced.
@@ -181,7 +184,10 @@ def news_fast():
     if db:
         try:
             cur = db.conn.cursor()
-            window = "-24 hours" if (exclude_social or kinds_set) else "-2 hours"
+            # Window is generous so the feed never goes empty during low-volume
+            # periods or when the scraper is paused — the UI sorts by recency,
+            # so older items naturally fall to the bottom.
+            window = "-14 days" if (exclude_social or kinds_set) else "-7 days"
             # NOTE: Order by `created_at` (always SQLite-native ISO) rather than
             # `published_at`, which is sometimes RFC822 ("Wed, 02 Jul GMT") for
             # Google News events. SQLite's datetime() returns NULL on RFC822,
@@ -321,6 +327,489 @@ def news_fast():
 
     return jsonify({
         "success": True,
+        "count": len(items[:limit]),
+        "data": items[:limit],
+        "served_at": datetime.utcnow().isoformat() + "Z",
+    })
+
+
+# ---- /api/feed — UNIFIED NEWSROOM FEED -------------------------------------
+# Single canonical entry-point for all timely items across the app: events,
+# signals, social, geo, IPO milestones, bulk deals, F&O unusual flow, and
+# forensic flags. Every page (Newsroom, global, policy, social, earnings,
+# stock detail, index) reads from here so news lives in exactly one place.
+#
+# Shape per item:
+#   {id, category, title, summary, source, source_tier, alpha_score,
+#    sentiment, magnitude, impact_score, companies, ticker, link,
+#    published_at, age_hours, freshness, forensic_band, event_type}
+#
+# Categories (derived from event_type + table-of-origin):
+#   corporate, earnings, policy, ipo, geopolitical, social,
+#   commodity, forensic, bulk_deal, fo
+#
+# A category-bucketed feed avoids the legacy fragmentation where each page
+# called its own endpoint with its own filter logic and rendered with its
+# own card markup.
+
+# event_type -> category mapping for the events table
+_EVENT_TYPE_CATEGORY = {
+    "earnings": "earnings",
+    "policy": "policy",
+    "merger": "corporate",
+    "buyback": "corporate",
+    "dividend": "corporate",
+    "split": "corporate",
+    "bonus": "corporate",
+    "rights": "corporate",
+    "order_win": "corporate",
+    "supply": "corporate",
+    "insider": "corporate",
+    "ipo": "ipo",
+    "social": "social",
+    "social_buzz": "social",
+    "geo": "geopolitical",
+    "geopolitical": "geopolitical",
+    "macro": "geopolitical",
+    "commodity": "commodity",
+}
+
+# Reverse map: category -> set of event_types to query against the events table
+_CATEGORY_EVENT_TYPES = {
+    "corporate": ("merger", "buyback", "dividend", "split", "bonus", "rights",
+                  "order_win", "supply", "insider"),
+    "earnings": ("earnings",),
+    "policy": ("policy",),
+    "ipo": ("ipo",),
+    "geopolitical": ("geo", "geopolitical", "macro"),
+    "social": ("social", "social_buzz"),
+    "commodity": ("commodity",),
+}
+
+# Heuristic: keywords that flag a non-typed event as geopolitical so the
+# geopolitical category isn't empty when the scraper hasn't tagged event_type.
+_GEOPOLITICAL_KEYWORDS = (
+    "fed ", "ecb", "boj", "bank of japan", "treasury yield", "nasdaq", "s&p",
+    "shanghai", "evergrande", "opec", "geopolit", "tariff", "sanction",
+    "russia", "ukraine", "china", "us-china", "trade war",
+)
+_COMMODITY_KEYWORDS = (
+    "crude", "brent", "wti", "gold", "silver", "copper", "natural gas",
+    "lng", "wheat", "corn", "sugar", "cotton", "palm oil", "coffee",
+    "aluminium", "aluminum",
+)
+
+
+def _classify_category(event_type: str, title: str = "", source: str = "") -> str:
+    """Derive a feed category for an event.
+    Falls back to keyword sniffing for events without a strong event_type tag."""
+    et = (event_type or "").lower()
+    if et in _EVENT_TYPE_CATEGORY:
+        return _EVENT_TYPE_CATEGORY[et]
+    blob = (title + " " + source).lower()
+    if any(k in blob for k in _GEOPOLITICAL_KEYWORDS):
+        return "geopolitical"
+    if any(k in blob for k in _COMMODITY_KEYWORDS):
+        return "commodity"
+    src = (source or "").lower()
+    if src.startswith("reddit") or src.startswith("telegram") or "/r/" in src:
+        return "social"
+    return "corporate"  # safe default — most untyped news is corporate-action chatter
+
+
+def _normalize_companies(raw):
+    if isinstance(raw, list):
+        return [str(c).strip() for c in raw if str(c).strip()]
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return [str(c).strip() for c in parsed if str(c).strip()]
+        except Exception:
+            pass
+        return [c.strip() for c in raw.split(",") if c.strip()]
+    return []
+
+
+def _annotate_tier_freshness(items: List[Dict]) -> None:
+    """In-place: attach source_tier + freshness + age_hours to every item."""
+    try:
+        from source_tiering import classify_source, freshness_label, _parse_age_hours
+        for it in items:
+            feed = it.get("source") or it.get("feed") or it.get("source_name")
+            link = it.get("link") or ""
+            try:
+                meta = classify_source(str(feed or ""), link)
+                it["source_tier"] = meta.tier
+            except Exception:
+                it["source_tier"] = it.get("source_tier") or 4
+            published = it.get("published_at") or it.get("created_at")
+            try:
+                it["freshness"] = freshness_label(published)
+                it["age_hours"] = round(_parse_age_hours(published), 2)
+            except Exception:
+                it["freshness"] = it.get("freshness") or ""
+                it["age_hours"] = it.get("age_hours")
+    except Exception:
+        # Tiering optional — UI tolerates missing fields
+        pass
+
+
+def _attach_alpha(db, items: List[Dict]) -> None:
+    """Join the signals table to attach alpha_score + forensic_band per event."""
+    if not db or not items:
+        return
+    event_ids = [it["event_id"] for it in items if it.get("event_id")]
+    if not event_ids:
+        return
+    try:
+        cur = db.conn.cursor()
+        placeholders = ",".join(["?"] * len(event_ids))
+        cur.execute(
+            f"""SELECT s.event_id, MAX(s.alpha_score) AS alpha_score,
+                       COALESCE(MAX(ms.band), 'clean') AS forensic_band
+                FROM signals s
+                LEFT JOIN manipulation_scores ms ON ms.event_id = s.event_id
+                WHERE s.event_id IN ({placeholders})
+                GROUP BY s.event_id""",
+            event_ids,
+        )
+        meta_map = {row["event_id"]: dict(row) for row in cur.fetchall()}
+        for it in items:
+            m = meta_map.get(it.get("event_id"))
+            if m:
+                it["alpha_score"] = m.get("alpha_score")
+                it["forensic_band"] = m.get("forensic_band")
+    except Exception as e:
+        logger.debug(f"feed alpha-join failed: {e}")
+
+
+def _read_events(db, hours: int, ticker: Optional[str], categories: Optional[set],
+                 limit: int) -> List[Dict]:
+    """Read from the canonical `events` table and project into the unified shape."""
+    if not db:
+        return []
+    rows: List[Dict] = []
+    try:
+        cur = db.conn.cursor()
+        # Build the SQL filter for the requested category. For
+        # keyword-classified categories (commodity, geopolitical) the SQL
+        # type-filter alone returns nothing — almost no events carry the
+        # literal event_type='commodity'. So we union the literal type with
+        # LIKE clauses over title for any keyword the classifier checks.
+        type_filter = ""
+        params: List = []
+        if categories and len(categories) == 1:
+            cat = next(iter(categories))
+            types = _CATEGORY_EVENT_TYPES.get(cat)
+            keyword_bag = (
+                _COMMODITY_KEYWORDS if cat == "commodity" else
+                _GEOPOLITICAL_KEYWORDS if cat == "geopolitical" else
+                ()
+            )
+            type_clauses: List[str] = []
+            if types:
+                placeholders = ",".join(["?"] * len(types))
+                type_clauses.append(f"event_type IN ({placeholders})")
+                params.extend(types)
+            if keyword_bag:
+                like_parts = [f"LOWER(title) LIKE ?" for _ in keyword_bag]
+                type_clauses.append("(" + " OR ".join(like_parts) + ")")
+                params.extend(f"%{kw.lower()}%" for kw in keyword_bag)
+            if type_clauses:
+                type_filter = " AND (" + " OR ".join(type_clauses) + ")"
+        sql = (
+            "SELECT event_id, title, summary, source, link, event_type, sentiment, "
+            "       sentiment_confidence, magnitude, impact_score, companies, "
+            "       published_at, created_at "
+            "FROM events "
+            f"WHERE created_at >= datetime('now', '-{int(hours)} hours')"
+            f"{type_filter} "
+            "ORDER BY created_at DESC LIMIT ?"
+        )
+        params.append(int(limit) * 4)
+        cur.execute(sql, tuple(params))
+        for r in cur.fetchall():
+            companies = _normalize_companies(r["companies"])
+            if ticker and ticker not in companies:
+                continue
+            cat = _classify_category(r["event_type"], r["title"] or "", r["source"] or "")
+            # Final Python-side filter: even if the keyword-LIKE matched, only
+            # keep rows whose final classification agrees with the request.
+            if categories and cat not in categories:
+                continue
+            rows.append({
+                "id": r["event_id"],
+                "event_id": r["event_id"],
+                "category": cat,
+                "title": r["title"],
+                "summary": r["summary"],
+                "source": r["source"],
+                "link": r["link"],
+                "event_type": r["event_type"],
+                "sentiment": r["sentiment"],
+                "sentiment_confidence": r["sentiment_confidence"],
+                "magnitude": r["magnitude"],
+                "impact_score": r["impact_score"],
+                "companies": companies,
+                "published_at": r["published_at"],
+                "created_at": r["created_at"],
+                "origin": "events",
+            })
+    except Exception as e:
+        logger.warning(f"feed events read: {e}")
+    return rows
+
+
+def _read_bulk_deals(db, hours: int, ticker: Optional[str], limit: int) -> List[Dict]:
+    """Project bulk_deals rows into the unified shape so they appear in the
+    bulk_deal category alongside news."""
+    if not db:
+        return []
+    out: List[Dict] = []
+    try:
+        cur = db.conn.cursor()
+        sql = ("SELECT deal_date, ticker, deal_value_cr, deal_price, "
+               "       buyer_seller, exchange "
+               "FROM bulk_deals "
+               f"WHERE deal_date >= datetime('now', '-{int(hours)} hours')")
+        params: List = []
+        if ticker:
+            sql += " AND ticker = ?"
+            params.append(ticker)
+        sql += " ORDER BY deal_date DESC LIMIT ?"
+        params.append(int(limit))
+        cur.execute(sql, tuple(params))
+        for r in cur.fetchall():
+            row = dict(r) if hasattr(r, "keys") else {}
+            tk = row.get("ticker") or ""
+            party = row.get("buyer_seller") or ""
+            value = row.get("deal_value_cr") or 0
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                value = 0
+            title = f"{tk}: ₹{value:.1f}Cr block deal" if value else f"{tk}: bulk deal"
+            summary = f"{party} on {row.get('exchange') or 'NSE/BSE'}"
+            out.append({
+                "id": f"bd:{tk}:{row.get('deal_date')}",
+                "event_id": None,
+                "category": "bulk_deal",
+                "title": title,
+                "summary": summary,
+                "source": row.get("exchange") or "NSE",
+                "link": "",
+                "event_type": "bulk_deal",
+                "sentiment": "bullish" if "buy" in party.lower() else
+                             ("bearish" if "sell" in party.lower() else "neutral"),
+                "magnitude": min(10, value / 5) if value else 5,
+                "impact_score": min(100, value * 2) if value else 40,
+                "companies": [tk] if tk else [],
+                "published_at": str(row.get("deal_date")),
+                "created_at": str(row.get("deal_date")),
+                "origin": "bulk_deals",
+            })
+    except Exception as e:
+        logger.debug(f"feed bulk_deals read: {e}")
+    return out
+
+
+def _read_fo_unusual(db, hours: int, ticker: Optional[str], limit: int) -> List[Dict]:
+    """Project fo_unusual rows (option-chain anomalies) into unified shape."""
+    if not db:
+        return []
+    out: List[Dict] = []
+    try:
+        cur = db.conn.cursor()
+        sql = ("SELECT ticker, signal_type, magnitude, detail, created_at "
+               "FROM fo_unusual "
+               f"WHERE created_at >= datetime('now', '-{int(hours)} hours')")
+        params: List = []
+        if ticker:
+            sql += " AND ticker = ?"
+            params.append(ticker)
+        sql += " ORDER BY created_at DESC LIMIT ?"
+        params.append(int(limit))
+        cur.execute(sql, tuple(params))
+        for r in cur.fetchall():
+            row = dict(r) if hasattr(r, "keys") else {}
+            tk = row.get("ticker") or ""
+            sig = row.get("signal_type") or "unusual_flow"
+            mag = row.get("magnitude") or 5
+            try:
+                mag = float(mag)
+            except (TypeError, ValueError):
+                mag = 5
+            out.append({
+                "id": f"fo:{tk}:{row.get('created_at')}",
+                "event_id": None,
+                "category": "fo",
+                "title": f"{tk}: unusual {sig.replace('_', ' ')}",
+                "summary": row.get("detail") or "Option-chain anomaly detected",
+                "source": "F&O monitor",
+                "link": "",
+                "event_type": "fo_unusual",
+                "sentiment": "neutral",
+                "magnitude": mag,
+                "impact_score": min(100, mag * 10),
+                "companies": [tk] if tk else [],
+                "published_at": str(row.get("created_at")),
+                "created_at": str(row.get("created_at")),
+                "origin": "fo_unusual",
+            })
+    except Exception as e:
+        logger.debug(f"feed fo_unusual read: {e}")
+    return out
+
+
+def _read_ipo_events(db, limit: int) -> List[Dict]:
+    """Use the existing IPO event computation so listed/closing/opened/milestone
+    states flow into the unified feed. We dispatch directly to the helper used
+    by /api/ipos/events to avoid duplicating the state-machine logic."""
+    if not db:
+        return []
+    try:
+        # api_ipos_events reads request args; call it via the underlying logic.
+        # Cheap path: just call the route function in a synthetic request context.
+        from flask import current_app
+        with current_app.test_request_context(f"/api/ipos/events?limit={int(limit)}"):
+            resp = api_ipos_events()
+        if hasattr(resp, "get_json"):
+            payload = resp.get_json() or {}
+        else:
+            return []
+        events = payload.get("data") or []
+    except Exception as e:
+        logger.debug(f"feed ipo passthrough failed: {e}")
+        return []
+
+    out: List[Dict] = []
+    for ev in events:
+        out.append({
+            "id": f"ipo:{ev.get('symbol')}:{ev.get('kind')}:{ev.get('ts')}",
+            "event_id": None,
+            "category": "ipo",
+            "title": ev.get("title") or "",
+            "summary": ev.get("detail") or "",
+            "source": "IPO pipeline",
+            "link": "",
+            "event_type": "ipo",
+            "sentiment": ("bullish" if ev.get("tag") == "pop" else
+                          "bearish" if ev.get("tag") == "flop" else "neutral"),
+            "magnitude": 7 if ev.get("tag") in ("pop", "milestone") else 5,
+            "impact_score": int(float(ev.get("alpha") or 0)),
+            "alpha_score": float(ev.get("alpha") or 0) or None,
+            "companies": [ev.get("ticker") or ev.get("symbol")] if (ev.get("ticker") or ev.get("symbol")) else [],
+            "published_at": ev.get("ts"),
+            "created_at": ev.get("ts"),
+            "origin": "ipos",
+            "ipo_tag": ev.get("tag"),
+        })
+    return out
+
+
+@bp.route("/api/feed", methods=["GET"])
+@ttl_cache(seconds=30)
+def feed():
+    """Unified news / alerts / events feed — the canonical read path.
+
+    Query params:
+        category:      corporate|earnings|policy|ipo|geopolitical|social|
+                       commodity|forensic|bulk_deal|fo  (omit for "all")
+        ticker:        filter by ticker (uppercase)
+        hours:         lookback window 1-720 (default 24)
+        min_alpha:     minimum alpha_score (after signals join)
+        source_tier:   minimum tier — 1 (T1 verified) is strictest
+        exclude_social: 1 = drop social posts
+        limit:         1-500 (default 100)
+
+    Every page that shows a feed of timely items should call this. Specialized
+    pages just pin the category param.
+    """
+    try:
+        limit = max(1, min(500, int(request.args.get("limit", "100"))))
+    except ValueError:
+        limit = 100
+    try:
+        hours = max(1, min(720, int(request.args.get("hours", "24"))))
+    except ValueError:
+        hours = 24
+    ticker = (request.args.get("ticker") or "").upper().strip() or None
+    category = (request.args.get("category") or "").lower().strip() or None
+    exclude_social = (request.args.get("exclude_social") or "").lower() in ("1", "true", "yes")
+    min_alpha_raw = request.args.get("min_alpha")
+    try:
+        min_alpha = float(min_alpha_raw) if min_alpha_raw not in (None, "") else None
+    except ValueError:
+        min_alpha = None
+    try:
+        max_tier = int(request.args.get("source_tier")) if request.args.get("source_tier") else None
+    except ValueError:
+        max_tier = None
+
+    db = _get_db() if _get_db else None
+    items: List[Dict] = []
+
+    # Specialized-table categories pull from their own tables; everything else
+    # falls back to the canonical events table with a category-derived filter.
+    if category == "bulk_deal":
+        items = _read_bulk_deals(db, hours, ticker, limit * 2)
+    elif category == "fo":
+        items = _read_fo_unusual(db, hours, ticker, limit * 2)
+    elif category == "ipo":
+        # Mix IPO state events with any 'ipo' rows in the events table
+        items = _read_ipo_events(db, limit) + _read_events(db, hours, ticker, {"ipo"}, limit)
+    else:
+        cats = {category} if category else None
+        items = _read_events(db, hours, ticker, cats, limit * 3)
+
+    _annotate_tier_freshness(items)
+    _attach_alpha(db, items)
+
+    # Forensic category: keep only items whose forensic_band is non-clean
+    if category == "forensic":
+        items = [it for it in items if (it.get("forensic_band") or "clean") != "clean"]
+
+    # Filters
+    if exclude_social:
+        items = [it for it in items if it.get("category") != "social"]
+    if min_alpha is not None:
+        items = [it for it in items if (it.get("alpha_score") or 0) >= min_alpha]
+    if max_tier is not None:
+        items = [it for it in items if (it.get("source_tier") or 99) <= max_tier]
+
+    # Dedupe by event_id, then content hash
+    try:
+        from source_tiering import content_hash
+        seen_eid: set = set()
+        seen_hash: set = set()
+        deduped: List[Dict] = []
+        for it in items:
+            eid = it.get("event_id") or it.get("id")
+            if eid and eid in seen_eid:
+                continue
+            ch = content_hash(it.get("title") or "", it.get("summary") or "")
+            if ch in seen_hash:
+                continue
+            if eid:
+                seen_eid.add(eid)
+            seen_hash.add(ch)
+            deduped.append(it)
+        items = deduped
+    except Exception:
+        pass
+
+    # Sort: tier-weighted recency (same scheme as /api/news/fast)
+    def _key(x):
+        age = x.get("age_hours") or 999.0
+        tier = x.get("source_tier") or 4
+        penalty = {1: 1.0, 2: 1.4, 3: 2.5, 4: 5.0}.get(tier, 5.0)
+        return age * penalty
+    items.sort(key=_key)
+
+    return jsonify({
+        "success": True,
+        "category": category or "all",
         "count": len(items[:limit]),
         "data": items[:limit],
         "served_at": datetime.utcnow().isoformat() + "Z",
@@ -566,6 +1055,7 @@ def smart_alerts_kinds():
 # ---- /api/global/markets and /api/commodities/prices fallback shims --------
 
 @bp.route("/api/global/markets", methods=["GET"])
+@ttl_cache(seconds=60)
 def global_markets():
     """Live world indices via yfinance. Falls back to last known DB row if
     network call fails. Always returns honest 'as_of' so the UI can flag stale.
@@ -656,7 +1146,211 @@ def global_markets():
     return jsonify({"success": True, "data": out})
 
 
+# Comprehensive commodity catalogue — keyword bag drives event matching.
+# Each row: id (matches frontend), display name, category, yfinance symbol,
+# unit, and search keywords used to count events / score alpha.
+_COMMODITY_CATALOG = [
+    # Energy
+    ("CRUDEOIL",    "Crude Oil (WTI)",     "Energy", "CL=F", "USD/bbl",
+     ("crude", "wti", "oil price", "barrel", "petroleum")),
+    ("BRENT",       "Brent Crude",         "Energy", "BZ=F", "USD/bbl",
+     ("brent", "north sea")),
+    ("NATURALGAS",  "Natural Gas",         "Energy", "NG=F", "USD/MMBtu",
+     ("natural gas", "henry hub", "lng")),
+    ("HEATINGOIL",  "Heating Oil",         "Energy", "HO=F", "USD/gal",
+     ("heating oil", "diesel")),
+    ("RBOB",        "RBOB Gasoline",       "Energy", "RB=F", "USD/gal",
+     ("gasoline", "rbob", "petrol")),
+    # Precious metals
+    ("GOLD",        "Gold",                "Metals", "GC=F", "USD/oz",
+     ("gold price", "gold rallies", "comex gold", "bullion")),
+    ("SILVER",      "Silver",              "Metals", "SI=F", "USD/oz",
+     ("silver price", "comex silver")),
+    ("PLATINUM",    "Platinum",            "Metals", "PL=F", "USD/oz",
+     ("platinum",)),
+    ("PALLADIUM",   "Palladium",           "Metals", "PA=F", "USD/oz",
+     ("palladium",)),
+    # Base / industrial metals
+    ("COPPER",      "Copper",              "Metals", "HG=F", "USD/lb",
+     ("copper", "lme copper")),
+    ("ALUMINIUM",   "Aluminium",           "Metals", "ALI=F", "USD/lb",
+     ("aluminium", "aluminum", "lme alumin")),
+    # Agri — grains
+    ("WHEAT",       "Wheat",               "Agri", "ZW=F", "USD/bu",
+     ("wheat",)),
+    ("CORN",        "Corn",                "Agri", "ZC=F", "USD/bu",
+     ("corn", "maize")),
+    ("SOYBEAN",     "Soybean",             "Agri", "ZS=F", "USD/bu",
+     ("soybean", "soya")),
+    ("RICE",        "Rough Rice",          "Agri", "ZR=F", "USD/cwt",
+     ("rice",)),
+    ("OATS",        "Oats",                "Agri", "ZO=F", "USD/bu",
+     ("oats",)),
+    # Agri — softs
+    ("COTTON",      "Cotton",              "Softs", "CT=F", "USD/lb",
+     ("cotton",)),
+    ("SUGAR",       "Sugar",               "Softs", "SB=F", "USD/lb",
+     ("sugar",)),
+    ("COFFEE",      "Coffee",              "Softs", "KC=F", "USD/lb",
+     ("coffee",)),
+    ("COCOA",       "Cocoa",               "Softs", "CC=F", "USD/MT",
+     ("cocoa",)),
+    ("OJ",          "Orange Juice",        "Softs", "OJ=F", "USD/lb",
+     ("orange juice",)),
+    ("LUMBER",      "Lumber",              "Softs", "LBR=F", "USD/1000bf",
+     ("lumber", "timber")),
+    # Livestock
+    ("CATTLE",      "Live Cattle",         "Livestock", "LE=F", "USD/lb",
+     ("cattle",)),
+    ("HOGS",        "Lean Hogs",           "Livestock", "HE=F", "USD/lb",
+     ("lean hogs", "pork")),
+    # Asia-specific
+    ("PALMOIL",     "Palm Oil",            "Agri", "FCPO=F", "MYR/MT",
+     ("palm oil",)),
+]
+
+
+def _commodity_alpha(db, keywords, hours: int = 168):
+    """Aggregate event-derived signals into a commodity alpha score.
+    Looks at events whose title mentions any keyword in the last `hours`
+    window, then scores: count weighted by impact_score, with sentiment
+    penalty for bearish skew.
+    """
+    if not db:
+        return {"alpha": None, "events": 0, "bull": 0, "bear": 0}
+    bull = bear = total = 0
+    impact_sum = 0.0
+    try:
+        cur = db.conn.cursor()
+        # Cheap LIKE OR over keywords; cap LIMIT so a noisy keyword doesn't
+        # tank query time.
+        like_clauses = " OR ".join(["LOWER(title) LIKE ?"] * len(keywords))
+        params = [f"%{k.lower()}%" for k in keywords]
+        cur.execute(
+            f"""SELECT title, sentiment, magnitude, impact_score
+                FROM events
+                WHERE created_at >= datetime('now', ?)
+                  AND ({like_clauses})
+                ORDER BY created_at DESC LIMIT 80""",
+            (f"-{int(hours)} hours", *params),
+        )
+        for r in cur.fetchall():
+            row = dict(r)
+            sent = (row.get("sentiment") or "").lower()
+            if sent == "bullish":
+                bull += 1
+            elif sent == "bearish":
+                bear += 1
+            try:
+                impact_sum += float(row.get("impact_score") or 0)
+            except (TypeError, ValueError):
+                pass
+            total += 1
+    except Exception as e:
+        logger.debug(f"_commodity_alpha failed: {e}")
+        return {"alpha": None, "events": 0, "bull": 0, "bear": 0}
+
+    if total == 0:
+        return {"alpha": None, "events": 0, "bull": 0, "bear": 0}
+    avg_impact = impact_sum / total                         # 0..100 baseline
+    # Sentiment skew: +1 fully bullish, -1 fully bearish
+    skew = (bull - bear) / max(total, 1)
+    # Volume confirmation — more events = more confidence, capped at +20
+    vol_bonus = min(20, total * 1.5)
+    alpha = max(0, min(100, round(avg_impact + skew * 12 + vol_bonus, 1)))
+    return {"alpha": alpha, "events": total, "bull": bull, "bear": bear}
+
+
+@bp.route("/api/commodities/all", methods=["GET"])
+@ttl_cache(seconds=120)
+def commodities_all():
+    """Comprehensive commodities feed: live yfinance prices + alpha score
+    derived from event mentions in the events table. Replaces both the
+    hardcoded MOCK_COMMODITY_PRICES catalogue and the per-commodity event
+    arrays previously baked into commodities.html.
+
+    Query params:
+        category: filter to Energy / Metals / Agri / Softs / Livestock
+        hours:    event lookback window for alpha (default 168 = 7d)
+    """
+    try:
+        hours = max(24, min(720, int(request.args.get("hours", "168"))))
+    except (TypeError, ValueError):
+        hours = 168
+    cat_filter = (request.args.get("category") or "").lower().strip() or None
+
+    items = list(_COMMODITY_CATALOG)
+    if cat_filter:
+        items = [c for c in items if c[2].lower() == cat_filter]
+
+    # Bulk-fetch yfinance prices for everything in one shot.
+    syms = [c[3] for c in items]
+    price_map: Dict[str, Dict] = {}
+    try:
+        import yfinance as yf
+        data = yf.download(syms, period="3d", interval="1d",
+                           group_by="ticker", progress=False, threads=True)
+        for sym in syms:
+            try:
+                closes = data[sym]["Close"].dropna() if len(syms) > 1 else data["Close"].dropna()
+                if len(closes) < 1:
+                    continue
+                last = float(closes.iloc[-1])
+                prev = float(closes.iloc[-2]) if len(closes) >= 2 else last
+                price_map[sym] = {
+                    "price": round(last, 2),
+                    "change": round(last - prev, 4),
+                    "change_pct": round((last - prev) / prev * 100, 2) if prev else 0.0,
+                }
+            except Exception:
+                continue
+    except Exception as e:
+        logger.warning(f"commodities_all yfinance failed: {e}")
+
+    # Pull alpha + event counts per commodity from the events table.
+    db = _get_db() if _get_db else None
+    rows = []
+    for cid, name, category, sym, unit, keywords in items:
+        price = price_map.get(sym, {})
+        alpha = _commodity_alpha(db, keywords, hours=hours)
+        net = alpha["bull"] - alpha["bear"]
+        sentiment = ("bullish" if net > 0 and alpha["bull"] >= 2 else
+                     "bearish" if net < 0 and alpha["bear"] >= 2 else
+                     "neutral")
+        rows.append({
+            "id": cid,
+            "name": name,
+            "category": category,
+            "symbol": sym,
+            "unit": unit,
+            "price": price.get("price"),
+            "change_pct": price.get("change_pct"),
+            "change": price.get("change"),
+            "alpha_score": alpha["alpha"],
+            "events_in_window": alpha["events"],
+            "bull_count": alpha["bull"],
+            "bear_count": alpha["bear"],
+            "sentiment": sentiment,
+            "keywords": list(keywords),
+        })
+
+    # Sort: alpha desc (None last), then by absolute price-change
+    rows.sort(key=lambda r: (
+        -(r.get("alpha_score") or -1),
+        -abs(r.get("change_pct") or 0),
+    ))
+
+    return jsonify({
+        "success": True,
+        "data": rows,
+        "count": len(rows),
+        "lookback_hours": hours,
+        "as_of": datetime.utcnow().isoformat() + "Z",
+    })
+
+
 @bp.route("/api/commodities/prices", methods=["GET"])
+@ttl_cache(seconds=60)
 def commodities_prices():
     """Live commodity prices keyed by the IDs that commodities.html expects.
 
@@ -720,6 +1414,157 @@ def commodities_prices():
 
 _HISTORY_CACHE: Dict[str, Dict] = {}
 _HISTORY_TTL_SECS = 600  # 10 min — yfinance is slow and the data is daily
+
+
+@bp.route("/api/global/correlations", methods=["GET"])
+@ttl_cache(seconds=600)
+def global_correlations():
+    """Pearson correlations + linear-regression beta of each global index
+    versus Nifty 50 daily returns. Computed from a yfinance pull —
+    no hardcoded values.
+
+    Query params:
+        days: 20..180 trading-day window (default 60)
+    Response: {data: [{id, label, symbol, corr, beta, sample_n}, ...]}
+    """
+    try:
+        days = max(20, min(180, int(request.args.get("days", 60))))
+    except (TypeError, ValueError):
+        days = 60
+
+    indices = [
+        ("^IXIC", "nasdaq", "NASDAQ"),
+        ("^GSPC", "sp500", "S&P 500"),
+        ("^DJI", "dow", "Dow Jones"),
+        ("^GDAXI", "dax", "DAX"),
+        ("^FTSE", "ftse", "FTSE 100"),
+        ("^N225", "nikkei", "Nikkei 225"),
+        ("^HSI", "hangseng", "Hang Seng"),
+        ("000001.SS", "shanghai", "Shanghai"),
+        ("^NSEI", "nifty", "Nifty 50"),
+    ]
+    out = []
+    try:
+        import yfinance as yf
+        period_days = int(days * 1.6) + 10
+        syms = [s for s, _, _ in indices]
+        data = yf.download(syms, period=f"{period_days}d", interval="1d",
+                           group_by="ticker", progress=False, threads=True)
+
+        returns = {}
+        for sym, key, _label in indices:
+            try:
+                closes = data[sym]["Close"].dropna() if len(syms) > 1 else data["Close"].dropna()
+                tail = closes.tail(days + 1)
+                if len(tail) < 8:
+                    continue
+                rets = tail.pct_change().dropna().tolist()
+                returns[key] = rets
+            except Exception:
+                continue
+
+        nifty_rets = returns.get("nifty")
+        if not nifty_rets:
+            return jsonify({"success": False, "error": "Nifty returns unavailable"}), 503
+
+        for sym, key, label in indices:
+            if key == "nifty":
+                continue
+            rets = returns.get(key)
+            if not rets:
+                continue
+            n = min(len(rets), len(nifty_rets))
+            x = rets[-n:]
+            y = nifty_rets[-n:]
+            if n < 8:
+                continue
+            mean_x = sum(x) / n
+            mean_y = sum(y) / n
+            cov = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n)) / n
+            var_x = sum((v - mean_x) ** 2 for v in x) / n
+            var_y = sum((v - mean_y) ** 2 for v in y) / n
+            denom = (var_x * var_y) ** 0.5
+            corr = (cov / denom) if denom > 0 else 0.0
+            beta = (cov / var_x) if var_x > 0 else 0.0
+            out.append({
+                "id": key, "label": label, "symbol": sym,
+                "corr": round(corr, 3),
+                "beta": round(beta, 3),
+                "sample_n": n,
+            })
+        out.sort(key=lambda r: abs(r["corr"]), reverse=True)
+    except Exception as exc:
+        logger.warning(f"global_correlations failed: {exc}")
+        return jsonify({"success": False, "error": str(exc), "data": []}), 503
+
+    return jsonify({"success": True, "data": out, "days": days,
+                    "as_of": datetime.utcnow().isoformat() + "Z"})
+
+
+@bp.route("/api/global/calendar", methods=["GET"])
+@ttl_cache(seconds=300)
+def global_calendar():
+    """Upcoming policy + earnings + IPO + M&A catalysts.
+    Replaces the hardcoded WEEK_EVENTS array on global.html.
+    """
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+
+    try:
+        days = max(1, min(14, int(request.args.get("days", 7))))
+    except (TypeError, ValueError):
+        days = 7
+
+    out = []
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            """SELECT title, summary, event_type, source, link,
+                      published_at, created_at, magnitude
+               FROM events
+               WHERE event_type IN ('policy','earnings','ipo','merger')
+                 AND created_at >= datetime('now', '-3 days')
+               ORDER BY created_at DESC LIMIT 60""",
+        )
+        from datetime import datetime as _dt
+        seen_titles = set()
+        for r in cur.fetchall():
+            row = dict(r)
+            ttl = (row.get("title") or "").strip()
+            if not ttl or ttl in seen_titles:
+                continue
+            seen_titles.add(ttl)
+            ts = row.get("published_at") or row.get("created_at")
+            try:
+                t = _dt.fromisoformat(str(ts).replace("Z", "").replace(" ", "T")[:19])
+                day_lbl = t.strftime("%a")
+            except Exception:
+                day_lbl = ""
+            mag = float(row.get("magnitude") or 0)
+            impact = "high" if mag >= 7 else ("med" if mag >= 4 else "low")
+            blob = (ttl + " " + (row.get("source") or "")).lower()
+            region = ("US" if any(k in blob for k in ("fed", "us ", "wall street", "fomc")) else
+                      "EU" if any(k in blob for k in ("ecb", "european", "bank of england", "lagarde")) else
+                      "CN" if any(k in blob for k in ("china", "pboc", "shanghai")) else
+                      "JP" if any(k in blob for k in ("japan", "boj", "tokyo")) else
+                      "IN")
+            out.append({
+                "day": day_lbl,
+                "label": ttl[:120],
+                "event_type": row.get("event_type"),
+                "region": region,
+                "impact": impact,
+                "ts": str(ts),
+                "link": row.get("link"),
+            })
+            if len(out) >= 12:
+                break
+    except Exception as e:
+        logger.warning(f"global_calendar query failed: {e}")
+
+    return jsonify({"success": True, "data": out, "days": days,
+                    "as_of": datetime.utcnow().isoformat() + "Z"})
 
 
 @bp.route("/api/global/history", methods=["GET"])
@@ -1122,6 +1967,451 @@ def movers_spike():
     filtered = [m for m in out if abs(m.get("pct_change", 0)) >= min_pct]
     return jsonify({"success": True, "data": filtered[:limit], "cached": False,
                     "scanned": len(out), "as_of": datetime.utcnow().isoformat() + "Z"})
+
+
+# ---- IPO endpoints ----------------------------------------------------------
+
+@bp.route("/api/ipos", methods=["GET"])
+@ttl_cache(seconds=120)
+def api_ipos_list():
+    """List IPOs filtered by status/sector. Returns alpha-ranked rows.
+
+    Query params:
+        status: upcoming | open | allotment | listed | all  (default: all)
+        sector: sector name or 'all'  (default: all)
+        limit:  max rows (default 100)
+    """
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    status = (request.args.get("status") or "all").strip().lower()
+    sector = (request.args.get("sector") or "all").strip()
+    try:
+        limit = max(1, min(500, int(request.args.get("limit", "100"))))
+    except ValueError:
+        limit = 100
+    try:
+        rows = db.get_ipos(status=status, sector=sector, limit=limit) or []
+        # Parse factors_json for clients that want the breakdown
+        for r in rows:
+            blob = r.get("ipo_factors_json")
+            if blob:
+                try:
+                    r["factors"] = json.loads(blob)
+                except Exception:
+                    r["factors"] = None
+            # ISO-format dates so JSON is stable
+            for k in ("open_date", "close_date", "allotment_date", "listing_date",
+                     "created_at", "updated_at"):
+                v = r.get(k)
+                if v and not isinstance(v, str):
+                    r[k] = str(v)
+        return jsonify({"success": True, "data": rows, "count": len(rows)})
+    except Exception as e:
+        logger.exception("api_ipos_list failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ipos/<symbol>", methods=["GET"])
+def api_ipo_detail(symbol):
+    """Detailed view of a single IPO including its factor breakdown."""
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    try:
+        row = db.get_ipo_by_symbol(symbol.upper().strip())
+        if not row:
+            return jsonify({"success": False, "error": "IPO not found"}), 404
+        blob = row.get("ipo_factors_json")
+        if blob:
+            try:
+                row["factors"] = json.loads(blob)
+            except Exception:
+                row["factors"] = None
+        for k in ("open_date", "close_date", "allotment_date", "listing_date",
+                 "created_at", "updated_at"):
+            v = row.get(k)
+            if v and not isinstance(v, str):
+                row[k] = str(v)
+        return jsonify({"success": True, "data": row})
+    except Exception as e:
+        logger.exception("api_ipo_detail failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ipos/stats", methods=["GET"])
+def api_ipos_stats():
+    """Summary stats for the IPO dashboard pill."""
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    try:
+        return jsonify({"success": True, "data": db.get_ipo_stats()})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ipos/events", methods=["GET"])
+@ttl_cache(seconds=120)
+def api_ipos_events():
+    """Derive event-style entries from IPO state for an activity feed.
+
+    Events emitted (chronologically, newest first):
+      - listed:           IPO listed in the past N days (with gain/loss)
+      - subscription_close: IPO close_date is today/yesterday
+      - subscription_open: IPO opened in last 2 days
+      - milestone:        Sub > 10x or QIB > 30x
+      - filing:           IPO created in DB recently (upcoming, no other tag)
+
+    Events are computed live from the ipos table — no separate event log
+    needed. This avoids stale state and keeps the API stateless.
+    """
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    try:
+        limit = max(1, min(100, int(request.args.get("limit", "30"))))
+    except ValueError:
+        limit = 30
+
+    today = datetime.utcnow().date()
+    events = []
+
+    try:
+        rows = db.get_ipos(limit=400) or []
+        for r in rows:
+            symbol = r.get("symbol")
+            name = r.get("company_name") or symbol
+            sector = r.get("sector")
+            alpha = float(r.get("ipo_alpha_score") or 0)
+            sub_total = float(r.get("sub_total") or 0)
+            sub_qib = float(r.get("sub_qib") or 0)
+            status = r.get("status")
+            sub_hni = float(r.get("sub_hni") or 0)
+            issue_low = r.get("issue_price_low")
+            issue_high = r.get("issue_price_high")
+
+            # Helper to format dates
+            def parse_date(s):
+                if not s:
+                    return None
+                if isinstance(s, str):
+                    try:
+                        return datetime.fromisoformat(s.split('T')[0]).date()
+                    except (ValueError, AttributeError):
+                        return None
+                try:
+                    return s.date()
+                except AttributeError:
+                    return s
+
+            # Build event(s) per IPO based on its state
+            listing_date = parse_date(r.get("listing_date"))
+            close_date = parse_date(r.get("close_date"))
+            open_date = parse_date(r.get("open_date"))
+            updated_at = parse_date(r.get("updated_at"))
+
+            # 1. Listed event (most recent state)
+            if status == "listed" and listing_date:
+                days_since = (today - listing_date).days
+                if 0 <= days_since <= 21:
+                    gain = r.get("listing_gain_pct")
+                    listing_price = r.get("listing_price")
+                    is_pop = gain is not None and gain >= 5
+                    is_flop = gain is not None and gain <= -5
+                    tag = "pop" if is_pop else ("flop" if is_flop else "listed")
+                    detail = (
+                        f"Listed at ₹{listing_price:,.2f}" if listing_price else "Listed"
+                    )
+                    if gain is not None:
+                        detail += f" · {gain:+.1f}% vs issue"
+                    events.append({
+                        "kind": "listed",
+                        "tag": tag,
+                        "tag_label": "Listed " + ("Pop" if is_pop else ("Flop" if is_flop else "")),
+                        "ts": listing_date.isoformat(),
+                        "ts_display": _ago_display(listing_date, today),
+                        "title": f"<strong>{name}</strong> listed",
+                        "detail": detail,
+                        "symbol": symbol,
+                        "ticker": r.get("ticker"),
+                        "sector": sector,
+                        "alpha": alpha,
+                        "auto_added": bool(r.get("promoted_to_signal")),
+                    })
+                    continue  # don't emit other events for listed IPOs
+
+            # 2. Subscription closing today/yesterday
+            if status == "open" and close_date:
+                days_to_close = (close_date - today).days
+                if -1 <= days_to_close <= 1:
+                    sub_evidence = []
+                    if sub_qib > 0: sub_evidence.append(f"QIB {sub_qib:.1f}x")
+                    if sub_hni > 0: sub_evidence.append(f"HNI {sub_hni:.1f}x")
+                    if sub_total > 0: sub_evidence.append(f"Total {sub_total:.1f}x")
+                    when = "today" if days_to_close == 0 else ("tomorrow" if days_to_close == 1 else "yesterday")
+                    events.append({
+                        "kind": "closing",
+                        "tag": "close",
+                        "tag_label": "Closing " + when.capitalize(),
+                        "ts": close_date.isoformat(),
+                        "ts_display": _ago_display(close_date, today),
+                        "title": f"<strong>{name}</strong> subscription closes {when}",
+                        "detail": " · ".join(sub_evidence) if sub_evidence else "Final day to apply",
+                        "symbol": symbol,
+                        "sector": sector,
+                        "alpha": alpha,
+                        "issue_band": _format_band(issue_low, issue_high),
+                    })
+                    continue
+
+            # 3. Just opened
+            if status == "open" and open_date:
+                days_since_open = (today - open_date).days
+                if 0 <= days_since_open <= 3:
+                    detail_parts = []
+                    if sub_total > 0:
+                        detail_parts.append(f"{sub_total:.1f}x already booked")
+                    if sub_qib >= 5:
+                        detail_parts.append(f"QIB at {sub_qib:.1f}x")
+                    band = _format_band(issue_low, issue_high)
+                    if band:
+                        detail_parts.append(f"Band {band}")
+                    events.append({
+                        "kind": "opened",
+                        "tag": "open",
+                        "tag_label": "Open Now",
+                        "ts": open_date.isoformat(),
+                        "ts_display": _ago_display(open_date, today),
+                        "title": f"<strong>{name}</strong> opened for subscription",
+                        "detail": " · ".join(detail_parts) if detail_parts else "Subscription window open",
+                        "symbol": symbol,
+                        "sector": sector,
+                        "alpha": alpha,
+                    })
+                    continue
+
+            # 4. Subscription milestone (oversubscription)
+            if status in ("open", "allotment") and (sub_total >= 10 or sub_qib >= 30):
+                ts = updated_at or open_date or today
+                events.append({
+                    "kind": "milestone",
+                    "tag": "milestone",
+                    "tag_label": "Heavy Demand",
+                    "ts": ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
+                    "ts_display": _ago_display(ts, today) if hasattr(ts, "isoformat") else "recent",
+                    "title": f"<strong>{name}</strong> oversubscribed",
+                    "detail": f"QIB {sub_qib:.1f}x · HNI {sub_hni:.1f}x · Total {sub_total:.1f}x",
+                    "symbol": symbol,
+                    "sector": sector,
+                    "alpha": alpha,
+                })
+                continue
+
+            # 5. Upcoming / filing event for newly-tracked IPOs
+            if status == "upcoming" and open_date:
+                days_to_open = (open_date - today).days
+                if 0 <= days_to_open <= 14:
+                    detail_parts = []
+                    band = _format_band(issue_low, issue_high)
+                    if band:
+                        detail_parts.append(f"Band {band}")
+                    if r.get("issue_size_cr"):
+                        detail_parts.append(f"Issue size ₹{float(r['issue_size_cr']):.0f}Cr")
+                    when = (
+                        "today" if days_to_open == 0
+                        else "tomorrow" if days_to_open == 1
+                        else f"in {days_to_open}d"
+                    )
+                    events.append({
+                        "kind": "upcoming",
+                        "tag": "filing",
+                        "tag_label": "Upcoming",
+                        "ts": open_date.isoformat(),
+                        "ts_display": when,
+                        "title": f"<strong>{name}</strong> opens {when}",
+                        "detail": " · ".join(detail_parts) if detail_parts else "Awaiting subscription",
+                        "symbol": symbol,
+                        "sector": sector,
+                        "alpha": alpha,
+                    })
+                    continue
+
+        # Sort newest first by ts (descending)
+        events.sort(key=lambda e: e["ts"], reverse=True)
+        events = events[:limit]
+        return jsonify({"success": True, "data": events, "count": len(events)})
+    except Exception as e:
+        logger.exception("api_ipos_events failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+def _ago_display(d, today):
+    """Format a date relative to today: 'today', 'yesterday', '3d ago', etc."""
+    if not d:
+        return ""
+    try:
+        if hasattr(d, "date"):
+            d = d.date()
+    except Exception:
+        return str(d)
+    delta = (today - d).days
+    if delta == 0:    return "today"
+    if delta == 1:    return "yesterday"
+    if delta == -1:   return "tomorrow"
+    if delta < 0:     return f"in {abs(delta)}d"
+    if delta <= 7:    return f"{delta}d ago"
+    if delta <= 30:   return f"{delta // 7}w ago"
+    return d.strftime("%b %d")
+
+
+def _format_band(low, high):
+    if not low and not high:
+        return ""
+    if low and high and low != high:
+        return f"₹{float(low):.0f}–₹{float(high):.0f}"
+    v = low or high
+    return f"₹{float(v):.0f}" if v else ""
+
+
+@bp.route("/api/ipos/refresh", methods=["POST"])
+def api_ipos_refresh():
+    """Trigger an IPO data refresh. Guarded by ADMIN_TOKEN to avoid abuse.
+
+    Pass X-Admin-Token header to authorize. Skips news lookups when ?fast=1.
+    """
+    expected = os.getenv("ADMIN_TOKEN") or os.getenv("ADMIN_SECRET")
+    given = request.headers.get("X-Admin-Token") or request.headers.get("X-Admin-Secret")
+    if not expected or expected in ("changeme", "admin", ""):
+        return jsonify({"success": False, "error": "admin token not configured"}), 403
+    if not given or given != expected:
+        return jsonify({"success": False, "error": "unauthorized"}), 401
+
+    db = _get_db() if _get_db else None
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+    fast = request.args.get("fast", "0") == "1"
+    try:
+        # Lazy import so api_v2 doesn't break if scraper deps are missing
+        from ipo_scraper import refresh_ipos
+        result = refresh_ipos(db, fetch_news=not fast)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.exception("api_ipos_refresh failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ---- M&A (mergers & acquisitions) -------------------------------------------
+
+@bp.route("/api/ma", methods=["GET"])
+@ttl_cache(120)
+def api_ma_list():
+    """Paginated list of M&A deals. Filters: status, sector, min_value_cr, days, limit."""
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": False, "error": "db not ready"}), 503
+    try:
+        from ma_scraper import list_deals
+        status = request.args.get("status") or None
+        if status == "all":
+            status = None
+        sector = request.args.get("sector") or None
+        try:
+            min_value = float(request.args.get("min_value_cr") or 0) or None
+        except ValueError:
+            min_value = None
+        days = max(1, min(int(request.args.get("days", "365")), 1825))
+        limit = max(1, min(int(request.args.get("limit", "100")), 500))
+        rows = list_deals(db, status=status, sector=sector, min_value_cr=min_value,
+                          days=days, limit=limit)
+        return jsonify({"success": True, "data": rows, "count": len(rows)})
+    except Exception as e:
+        logger.exception("api_ma_list failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ma/stats", methods=["GET"])
+@ttl_cache(300)
+def api_ma_stats():
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": False, "error": "db not ready"}), 503
+    try:
+        from ma_scraper import ma_stats
+        days = max(1, min(int(request.args.get("days", "90")), 1825))
+        return jsonify({"success": True, "data": ma_stats(db, days=days)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ma/deal/<deal_id>", methods=["GET"])
+@ttl_cache(120)
+def api_ma_deal(deal_id: str):
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": False, "error": "db not ready"}), 503
+    try:
+        from ma_scraper import deal_by_id
+        deal = deal_by_id(db, deal_id)
+        if not deal:
+            return jsonify({"success": False, "error": "deal not found"}), 404
+        return jsonify({"success": True, "data": deal})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ma/ticker/<symbol>", methods=["GET"])
+@ttl_cache(120)
+def api_ma_ticker(symbol: str):
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": False, "error": "db not ready"}), 503
+    try:
+        from ma_scraper import deals_by_ticker
+        return jsonify({"success": True, "data": deals_by_ticker(db, symbol)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/ma/refresh", methods=["POST"])
+def api_ma_refresh():
+    """Manual M&A scrape trigger. Body optional: {"days": 7}."""
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": False, "error": "db not ready"}), 503
+    try:
+        from ma_scraper import refresh_ma_deals
+        body = request.get_json(silent=True) or {}
+        days = max(1, min(int(body.get("days") or 7), 30))
+        result = refresh_ma_deals(db, days=days)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.exception("api_ma_refresh failed")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ---- company logos ---------------------------------------------------------
+
+@bp.route("/api/logo/<ticker>", methods=["GET"])
+def api_logo(ticker: str):
+    """Serve a company logo by ticker. Tries cache → parqet (NS/BO) → SVG initials.
+
+    Long browser cache (30d) since logos rarely change; bytes are also cached
+    on disk so repeat misses don't re-hit external sources.
+    """
+    try:
+        from logo_service import get_logo
+        body, mime, real = get_logo(ticker)
+        from flask import Response
+        resp = Response(body, mimetype=mime)
+        # 30d browser cache for real logos, 1h for SVG fallbacks (in case a real
+        # logo becomes available later).
+        max_age = 2592000 if real else 3600
+        resp.headers["Cache-Control"] = f"public, max-age={max_age}"
+        return resp
+    except Exception as e:
+        logger.exception(f"api_logo {ticker}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # ---- registration -----------------------------------------------------------

@@ -1,4 +1,4 @@
-/* realtime.js — SSE client + freshness UI helpers + status banner.
+﻿/* realtime.js — SSE client + freshness UI helpers + status banner.
  *
  * Loaded on every page. Exposes window.Realtime with:
  *   subscribe({channels, ticker, min_alpha, forensic_band, replay, onEvent}) -> {close}
@@ -181,7 +181,7 @@
     const subs = (st.stream && st.stream.subscribers) || 0;
     const events1h = (st.db && st.db.events_1h) || 0;
     el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;font-size:10px;font-family:'JetBrains Mono',monospace;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:10px;font-family:'Geist Mono',monospace;">
         <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color};"></span>
         <span style="color:${color};font-weight:700;">${txt}</span>
         <span style="color:#5a5d6a;">·</span>

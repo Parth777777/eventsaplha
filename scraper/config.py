@@ -49,8 +49,18 @@ RSS_SOURCES = {
     'moneycontrol_business': 'https://www.moneycontrol.com/rss/business.xml',
     'bs_markets': 'https://www.business-standard.com/rss/markets-106.rss',
     'bs_companies': 'https://www.business-standard.com/rss/companies-101.rss',
-    # --- Regulatory ---
+    # --- Regulatory / Government ---
     'rbi_press': 'https://www.rbi.org.in/en/web/rss',
+    # PIB (Press Information Bureau) — official source for cabinet
+    # decisions, PM speeches, ministry announcements. The .xml endpoint
+    # is a public RSS proxy maintained by PIB.
+    'pib_releases': 'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3',
+    'pib_features': 'https://pib.gov.in/RssMain.aspx?ModId=7&Lang=1&Regid=3',
+    # Finance Ministry via Google News (no native RSS) — captured as a
+    # Google News query channel; declared here so policy classification
+    # in news_type / source_tiering treats it as official tier.
+    'mof_press': 'https://news.google.com/rss/search?q=%22ministry+of+finance%22+india&hl=en-IN&gl=IN&ceid=IN:en',
+    'pmo_press': 'https://news.google.com/rss/search?q=%22pmo+india%22+OR+%22prime+minister%22+india+market&hl=en-IN&gl=IN&ceid=IN:en',
     # --- Additional breaking feeds ---
     'financialexp_markets': 'https://www.financialexpress.com/market/feed/',
     'bloombergquint': 'https://www.bqprime.com/stories.rss',
@@ -78,6 +88,20 @@ GOOGLE_NEWS_QUERIES = [
     'RBI SEBI policy India',
     'India merger acquisition deal',
     'India IPO listing',
+    # National / government pulse — every cycle, not rotation. A PM speech
+    # or finance-ministry move can crater the index in minutes; if we only
+    # see these on a sector-rotation week we miss the catalyst entirely.
+    'PM Modi speech market reaction',
+    'Prime Minister India policy announcement',
+    'Finance Minister Nirmala Sitharaman statement',
+    'Union Budget India market impact',
+    'RBI MPC repo rate decision',
+    'India cabinet decision today',
+    'Parliament India bill passed market',
+    'GST council meeting decision',
+    'India government policy stocks',
+    'India market crash today reason',
+    'Nifty Sensex fall today',
     # Small/mid cap focused — catches names that mainstream broad queries miss
     'BSE smallcap rally',
     'Nifty smallcap 250 stocks',
@@ -285,7 +309,20 @@ EVENT_KEYWORDS = {
                'takeover', 'buyout', 'demerger', 'amalgamation'],
     'policy': ['rbi', 'sebi', 'regulatory', 'policy', 'amendment', 'circular',
                'notification', 'repo rate', 'monetary policy', 'fiscal policy',
-               'government', 'budget', 'tax reform'],
+               'government', 'budget', 'tax reform',
+               # PM / Cabinet / Parliament — these move the whole tape but
+               # the previous keyword set missed them entirely (a PM speech
+               # crashing the market would be filed as "news" instead of
+               # "policy"). Adding them ensures the macro filter catches them.
+               'pm modi', 'prime minister', 'modi speech', 'pmo', 'parliament',
+               'lok sabha', 'rajya sabha', 'cabinet decision', 'cabinet approval',
+               'finance minister', 'sitharaman', 'nirmala sitharaman', 'fm speech',
+               'union budget', 'interim budget', 'gst council', 'niti aayog',
+               'mpc decision', 'mpc meeting', 'address to nation', 'pib',
+               'press information bureau', 'ministry of finance', 'mof india',
+               'ministry of commerce', 'pli scheme', 'gazette notification',
+               'ordinance', 'bill passed', 'bill cleared', 'supreme court ruling',
+               'cci approval', 'tariff', 'duty hike', 'duty cut', 'subsidy'],
     'order_win': ['order', 'contract', 'bid', 'awarded', 'secured', 'won',
                   'order book', 'order inflow', 'mandate'],
     'dividend': ['dividend', 'bonus', 'stock split', 'interim dividend',

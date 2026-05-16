@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tickwave · Data freshness</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/jpeg" href="/shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0:#07090d; --bg-1:#0a0e14; --bg-2:#10141a;
+    --line:rgba(141,148,168,0.14);
+    --t-0:#f4f6fb; --t-1:#dde3ef; --t-2:#8a94a8; --t-3:#5a6373;
+    --bull:#2dd4aa; --bear:#f26b6b; --warn:#e6b84a; --info:#8eb4e0;
+    --font-ui:'Inter',system-ui,sans-serif;
+    --font-mono:'Geist Mono','JetBrains Mono',monospace;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:32px 28px;
+    background:var(--bg-1); color:var(--t-1);
+    font-family:var(--font-ui); font-size:14px; line-height:1.55;
+  }
+  h1 { font-size:28px; font-weight:700; margin:0 0 6px; color:var(--t-0); letter-spacing:-0.02em; }
+  .sub { color:var(--t-2); margin:0 0 28px; font-size:14px; }
+  .grid { display:grid; gap:14px; max-width:1080px;
+          grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+  .card {
+    background:var(--bg-2); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; display:flex; flex-direction:column; gap:8px;
+  }
+  .card-head { display:flex; justify-content:space-between; align-items:center; }
+  .name {
+    font-family:var(--font-mono); font-size:12px; font-weight:700;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--t-2);
+  }
+  .pill {
+    font-family:var(--font-mono); font-size:10px; font-weight:700;
+    letter-spacing:0.16em; text-transform:uppercase;
+    padding:3px 10px; border-radius:999px;
+  }
+  .pill.ok    { color:var(--bull); background:rgba(45,212,170,0.14); border:1px solid rgba(45,212,170,0.3); }
+  .pill.warn  { color:var(--warn); background:rgba(230,184,74,0.14); border:1px solid rgba(230,184,74,0.3); }
+  .pill.stale { color:var(--bear); background:rgba(242,107,107,0.14); border:1px solid rgba(242,107,107,0.3); }
+  .pill.error,.pill.unknown,.pill.empty { color:var(--t-2); background:rgba(141,148,168,0.15); border:1px solid var(--line); }
+  .age { font-family:var(--font-mono); font-weight:700; font-size:24px; color:var(--t-0); }
+  .age .unit { font-size:13px; color:var(--t-3); font-weight:500; margin-left:4px; }
+  .meta { font-family:var(--font-mono); font-size:11px; color:var(--t-3); }
+  .meta b { color:var(--t-1); font-weight:600; }
+  .overall {
+    display:inline-flex; gap:10px; align-items:center;
+    background:var(--bg-2); border:1px solid var(--line); border-radius:10px;
+    padding:8px 14px; margin:-12px 0 28px;
+  }
+  .overall .dot { width:8px; height:8px; border-radius:50%; }
+  .overall .dot.ok    { background:var(--bull); box-shadow:0 0 10px var(--bull); }
+  .overall .dot.warn  { background:var(--warn); box-shadow:0 0 10px var(--warn); }
+  .overall .dot.stale { background:var(--bear); box-shadow:0 0 10px var(--bear); }
+  .refreshing { font-size:11px; color:var(--t-3); margin-left:auto; }
+  .footer { margin-top:32px; color:var(--t-3); font-size:11px; font-family:var(--font-mono); }
+  a { color:var(--info); }
+</style>
+</head>
+<body>
+  <h1>Data freshness</h1>
+  <p class="sub">Live probe of every data source the trader depends on. Auto-refreshes every 30 s.</p>
+  <div class="overall" id="overall"><span class="dot"></span><span id="overallTxt">—</span><span class="refreshing" id="lastUpdated">—</span></div>
+  <div class="grid" id="grid">
+    <div class="card"><div class="meta">Loading probes…</div></div>
+  </div>
+  <div class="footer">
+    Endpoint: <a href="/api/admin/data-status" target="_blank">/api/admin/data-status</a>
+    · <a href="/api/admin/notifications/queue" target="_blank">/api/admin/notifications/queue</a>
+    · <a href="/api/market/clock" target="_blank">/api/market/clock</a>
+  </div>
+
+<script>
+function fmtAge(min) {
+  if (min == null) return '—';
+  if (min < 1)   return Math.round(min*60) + '<span class="unit">s</span>';
+  if (min < 60)  return Math.round(min)     + '<span class="unit">m</span>';
+  if (min < 1440) return (min/60).toFixed(1) + '<span class="unit">h</span>';
+  return (min/1440).toFixed(1) + '<span class="unit">d</span>';
+}
+function fmtTs(ts) {
+  if (!ts) return '—';
+  try { return new Date(ts).toLocaleString('en-IN', { hour12:false }); } catch (_) { return ts; }
+}
+
+async function load() {
+  try {
+    const r = await fetch('/api/admin/data-status');
+    const j = await r.json();
+    const overall = j.overall || 'unknown';
+    const overallEl = document.getElementById('overall');
+    overallEl.querySelector('.dot').className = 'dot ' + overall;
+    document.getElementById('overallTxt').textContent =
+      ({ok:'All systems healthy', warn:'Some sources warming', stale:'Stale data detected', unknown:'Unknown'})[overall] || overall;
+    document.getElementById('lastUpdated').textContent = 'updated ' + new Date().toLocaleTimeString('en-IN', { hour12:false });
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = (j.data || []).map(p => `
+      <div class="card">
+        <div class="card-head">
+          <span class="name">${p.name}</span>
+          <span class="pill ${p.status}">${p.status}</span>
+        </div>
+        <div class="age">${fmtAge(p.age_min)} <span class="unit">since last row</span></div>
+        <div class="meta">last row: <b>${fmtTs(p.last_row_at)}</b></div>
+        ${p.ok_threshold_min ? `<div class="meta">thresholds: ok ≤ ${p.ok_threshold_min}m · warn ≤ ${p.warn_threshold_min}m</div>` : ''}
+        ${p.error ? `<div class="meta" style="color:var(--bear);">⚠ ${p.error}</div>` : ''}
+        ${p.n != null ? `<div class="meta">rows: <b>${p.n}</b></div>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('overallTxt').textContent = 'Offline — backend unreachable';
+    document.getElementById('overall').querySelector('.dot').className = 'dot stale';
+  }
+}
+load();
+setInterval(load, 30_000);
+</script>
+</body>
+</html>

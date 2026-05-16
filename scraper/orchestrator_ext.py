@@ -355,7 +355,7 @@ def enrich_signal_volume(db, signal: Dict) -> Dict:
     try:
         symbol = f"{ticker}.NS" if "." not in ticker else ticker
         hist = yf.Ticker(symbol).history(period="90d", interval="1d")
-        if hist is None or len(hist) < 25:
+        if hist is None or len(hist) < 5:
             return signal
         closes = list(hist["Close"].astype(float))
         volumes = list(hist["Volume"].astype(float))
@@ -364,8 +364,12 @@ def enrich_signal_volume(db, signal: Dict) -> Dict:
         if not analysis.get("has_data"):
             return signal
         signal["obv_divergence_flag"] = analysis.get("obv_divergence_flag")
+        signal["obv_divergence_strength"] = analysis.get("obv_divergence_strength", "none")
         signal["volume_surge"] = analysis.get("volume_surge", False)
+        signal["strong_volume_surge"] = analysis.get("strong_volume_surge", False)
         signal["unexplained_volume"] = analysis.get("unexplained_volume", False)
+        signal["vol_surge_ratio"] = analysis.get("vol_surge_ratio", 0.0)
+        signal["obv_z_20d"] = analysis.get("obv_z_20d", 0.0)
         mul = VolumeAnalyzer.volume_confirmation_multiplier(analysis, signal.get("sentiment", ""))
         signal["volume_multiplier"] = mul
         signal["volume_confirmation"] = mul > 1.0

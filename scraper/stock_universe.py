@@ -638,6 +638,21 @@ AMBIGUOUS_FIRST_WORDS = {
     'advance', 'advanced', 'innovative', 'creative', 'dynamic',
     'speciality', 'maximum', 'minimum', 'quality', 'value', 'smart',
     'rapid', 'safe', 'secure', 'trusted', 'authentic', 'genuine',
+    # Common English / sector words that happen to be valid ticker symbols.
+    # Listing them here forces case-sensitive matching ("RETAIL" only, not
+    # "retail" / "Retail") so an article saying "retail demand" or "oil prices"
+    # doesn't get falsely tagged with the tiny RETAIL / OIL tickers as the
+    # subject. Same logic suppresses lowercase first-word matches in
+    # UNIVERSE_SHORT_NAMES (the loop above filters by AMBIGUOUS_FIRST_WORDS).
+    'retail', 'oil', 'metal', 'metals', 'media', 'energy', 'health',
+    'bank', 'steel', 'shipping', 'coffee', 'coal', 'solar', 'pharma',
+    'textile', 'hospital', 'realty', 'auto', 'trade', 'finance', 'infra',
+    'mining', 'motor', 'motors', 'gas', 'port', 'ports', 'hotel',
+    'hotels', 'paper', 'print', 'food', 'sugar', 'cement', 'tea',
+    'tyre', 'tyres', 'glass',
+    # Market jargon — "in focus", "sigma squared", "gateway to growth" etc.
+    # appear in countless headlines but each is a real (small-cap) ticker.
+    'focus', 'sigma', 'gateway',
 }
 
 # Tickers that are too generic on their own — must be matched case-sensitively

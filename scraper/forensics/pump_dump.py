@@ -67,14 +67,15 @@ def insider_sell_streak(db, ticker: str, days: int = 30) -> Dict:
                    WHERE ticker = {p} AND transaction_type = 'sell'
                      AND transaction_date >= date('now', '-{days} days')"""
     n = _count_where(db, sql, (ticker.upper(),))
+    # More aggressive insider-sell scoring — even a single recent sell flags
     score = 0
     if n >= 3:
-        score = 25
+        score = 30
     elif n >= 2:
-        score = 15
+        score = 22
     elif n >= 1:
-        score = 7
-    return {"count": n, "score": score, "weight": 25}
+        score = 14
+    return {"count": n, "score": score, "weight": 30}
 
 
 def promoter_pledge_jump(db, ticker: str) -> Dict:
@@ -119,14 +120,15 @@ def coordinated_articles(db, ticker: str, window_hours: int = 2,
         sql = f"""SELECT COUNT(DISTINCT source) FROM events
                    WHERE companies LIKE {p} AND created_at >= {p}"""
     n = _count_where(db, sql, (f"%{ticker.upper()}%", since.isoformat() if not db.is_postgres else since))
+    # Coordinated-article scoring — fire at 2 outlets too (was 4)
     score = 0
     if n >= min_outlets + 2:
-        score = 20
+        score = 25
     elif n >= min_outlets:
-        score = 12
+        score = 18
     elif n >= 2:
-        score = 4
-    return {"outlet_count": n, "window_hours": window_hours, "score": score, "weight": 20}
+        score = 9
+    return {"outlet_count": n, "window_hours": window_hours, "score": score, "weight": 25}
 
 
 def social_amplification(db, ticker: str, baseline_days: int = 7) -> Dict:
@@ -159,19 +161,22 @@ def social_amplification(db, ticker: str, baseline_days: int = 7) -> Dict:
 
     baseline_daily = baseline_count / max(baseline_days - 1, 1)
     ratio = recent / max(baseline_daily, 0.5)
+    # Aggressive social-amplification thresholds — 2× is already noteworthy
     score = 0
     if ratio >= 5:
-        score = 15
+        score = 20
     elif ratio >= 3:
-        score = 10
+        score = 14
     elif ratio >= 2:
+        score = 8
+    elif ratio >= 1.5:
         score = 4
     return {
         "recent_24h": recent,
         "baseline_daily_avg": round(baseline_daily, 2),
         "ratio": round(ratio, 2),
         "score": score,
-        "weight": 15,
+        "weight": 20,
     }
 
 
@@ -196,8 +201,9 @@ def pre_news_volume(db, ticker: str) -> Dict:
     except Exception as exc:
         logger.debug("pre-news volume query failed: %s", exc)
         n = 0
-    score = min(20, n * 10)
-    return {"flagged_signals_3d": n, "score": score, "weight": 20}
+    # Pre-news volume = textbook leak tell. Single occurrence already noteworthy.
+    score = min(25, n * 13)
+    return {"flagged_signals_3d": n, "score": score, "weight": 25}
 
 
 def liquidity_multiplier(ticker: str) -> float:
@@ -221,9 +227,10 @@ def compute(db, ticker: str) -> Dict:
     mult = liquidity_multiplier(ticker)
     score = min(100, int(round(raw * mult)))
 
-    if score >= 60:
+    # Lowered pump-dump bands consistent with the rest of the forensics stack
+    if score >= 50:
         band = "likely_pump"
-    elif score >= 30:
+    elif score >= 22:
         band = "suspicious"
     else:
         band = "clean"
