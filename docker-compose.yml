@@ -1,35 +1,104 @@
 version: "3.9"
 
+# AlphaEvent / Tickwave — production compose for Oracle Cloud Always Free.
+#
+# Topology:
+#   caddy  (80/443) — auto-HTTPS reverse proxy + static file server for /app/*
+#   web    (5000)   — gunicorn Flask API, RUN_SCHEDULER=false
+#   worker          — runs APScheduler + queue drainer (RUN_SCHEDULER=true)
+#   redis  (6379)   — cache + rate-limit store, 512MB LRU cap
+#
+# Why split web/worker:
+#   The legacy single-container setup runs `python api.py`, which starts
+#   APScheduler inside the Flask process. Under gunicorn with N workers
+#   that would fire each job N times. The split also lets the web container
+#   restart on code deploys without interrupting in-flight scrape jobs.
+
 services:
-  api:
-    build: .
-    image: eventalpha:latest
-    container_name: eventalpha
+  caddy:
+    image: caddy:2-alpine
+    container_name: ae_caddy
+    restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./app:/srv/app:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+  web:
+    build: .
+    image: alphaevent:latest
+    container_name: ae_web
+    restart: unless-stopped
+    command: >
+      gunicorn backend.api:app
+      --bind 0.0.0.0:5000
+      --workers 3 --threads 2
+      --timeout 120
+      --access-logfile - --error-logfile -
+    env_file:
+      - .env.production
     environment:
-      # Auth: use local SQLite (set SUPABASE_URL + SUPABASE_JWT_SECRET to swap to Supabase)
-      SECRET_KEY: ${SECRET_KEY:-change-me-please-in-prod}
-      # Optional integrations — leave blank to disable
-      GROQ_API_KEY: ${GROQ_API_KEY:-}
-      NEWSAPI_KEY: ${NEWSAPI_KEY:-}
-      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
-      # Scheduler cadence
-      SCRAPER_INTERVAL: ${SCRAPER_INTERVAL:-3}
-      SIGNAL_COOLDOWN_HOURS: ${SIGNAL_COOLDOWN_HOURS:-24}
-      SIGNAL_EXPIRY_DAYS: ${SIGNAL_EXPIRY_DAYS:-7}
-      APP_VERSION: ${APP_VERSION:-1.0}
+      RUN_SCHEDULER: "false"          # critical — web container must not run scheduler
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_PATH: /data/eventalpha.db
+      LOG_DIR: /data/logs
+      PORT: "5000"
     volumes:
       - eventalpha-data:/data
-    restart: unless-stopped
+    depends_on:
+      - redis
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost:5000/api/health", "||", "exit", "1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:5000/api/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 45s
+
+  worker:
+    build: .
+    image: alphaevent:latest
+    container_name: ae_worker
+    restart: unless-stopped
+    command: ["python", "-m", "backend.scrape_runner", "--daemon"]
+    env_file:
+      - .env.production
+    environment:
+      RUN_SCHEDULER: "true"
+      WORKER_ROLE: "scheduler+summarizer"
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_PATH: /data/eventalpha.db
+      LOG_DIR: /data/logs
+    volumes:
+      - eventalpha-data:/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: ae_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+    volumes:
+      - redis-data:/data
 
 volumes:
   eventalpha-data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  redis-data:
     driver: local

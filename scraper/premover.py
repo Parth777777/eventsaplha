@@ -258,7 +258,9 @@ def _catalyst_factor(db, ticker_to_sector: Dict[str, str]) -> Dict[str, Tuple[fl
         if not t or t in out:
             continue
         a = float(r.get("alpha_score") or 0)
-        score = min(1.0, a / 80.0)
+        # Saturate at α=60 (was 80) — a 60-alpha policy hit IS already a
+        # full-strength catalyst. Anything beyond is gravy.
+        score = min(1.0, a / 60.0)
         src = (r.get("source") or "").split(":")[0][:20]
         out[t] = (
             score,
@@ -313,8 +315,11 @@ def _news_catalyst_factor(db) -> Dict[str, Tuple[float, str]]:
         avg = float(r.get("avg_alpha") or 0)
         # Score blends signal density (count) with quality (alpha):
         #   1 signal @ α60  → 0.45;  3 signals @ avg α55 → 0.71; 5+ @ α70 → ~1.0
-        density = min(1.0, math.log1p(n) / math.log1p(6.0))
-        quality = min(1.0, avg / 75.0)
+        # Saturate density at 4 (was 6) and quality at α=60 (was 75) — the
+        # old thresholds made it impossible for a single high-conviction
+        # signal to reach a full news-catalyst sub-score.
+        density = min(1.0, math.log1p(n) / math.log1p(4.0))
+        quality = min(1.0, avg / 60.0)
         score = round(0.55 * quality + 0.45 * density, 3)
         if score <= 0:
             continue
@@ -585,13 +590,29 @@ def compute_premover_scores(db,
     for t in candidate_set:
         factors_out: Dict[str, Dict] = {}
         score = 0.0
+        firing = 0          # how many substantive factors fired meaningfully
+        strong_firing = 0   # how many fired at >= 0.7 (high conviction)
         for k, w in weights.items():
             sub_score, evidence = factor_maps.get(k, {}).get(t, (0.0, ""))
             factors_out[k] = {"score": round(sub_score, 3),
                               "weight": w,
                               "evidence": evidence}
             score += sub_score * w
+            if k in SUBSTANTIVE and sub_score >= 0.35: firing += 1
+            if k in SUBSTANTIVE and sub_score >= 0.70: strong_firing += 1
         score *= 100.0
+
+        # Conviction bonus — when multiple independent factors agree the
+        # stock is meaningfully more interesting than a single-factor hit.
+        # This is what unlocks 60-90 scores; before the cap was ~50.
+        #   2 firing:  +12%   3 firing:  +25%   4+ firing:  +40%
+        #   plus +8% per strong-firing factor (sub_score >= 0.70)
+        if firing >= 4:   score *= 1.40
+        elif firing >= 3: score *= 1.25
+        elif firing >= 2: score *= 1.12
+        score *= (1.0 + 0.08 * strong_firing)
+        score = min(100.0, score)
+
         if score < min_score:
             excl["below_min_score"] += 1
             continue
@@ -602,6 +623,7 @@ def compute_premover_scores(db,
             "score":   round(score, 1),
             "horizon": horizon,
             "factors": factors_out,
+            "conviction": {"firing": firing, "strong_firing": strong_firing},
             "top_drivers": _top_drivers(factors_out),
         })
 

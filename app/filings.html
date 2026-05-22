@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TickerWave | Filings Archive</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: { colors: {
+    "primary": "#8eb4e0", "secondary": "#2dd4aa", "background": "#080c12",
+    "surface": "#0d1118", "surface-container": "#111720",
+    "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+    "outline-variant": "#253040",
+  }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
+};
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<link rel="stylesheet" href="./shared/css/redesign.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<style>
+.fil-row { display: grid; grid-template-columns: 88px 1fr 80px 110px 22px; gap: 14px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; cursor: pointer; }
+.fil-row:hover { background: rgba(255,255,255,0.025); }
+.fil-tk { font: 700 12px 'Geist Mono', monospace; color: #6ddec0; background: rgba(45,212,170,0.08); padding: 3px 8px; border-radius: 4px; text-align: center; }
+.fil-title { font: 500 13.5px 'DM Sans', sans-serif; color: #e6ecf5; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fil-type { font: 600 10px 'Inter', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #8eb4e0; padding: 3px 8px; border-radius: 4px; background: rgba(142,180,224,0.08); text-align: center; }
+.fil-date { font: 500 11px 'Geist Mono', monospace; color: #a4afc2; text-align: right; }
+.fil-arrow { color: #6a7484; }
+.fil-row:hover .fil-arrow { color: #2dd4aa; }
+.search-input { background: rgba(13,17,24,0.6); border: 1px solid rgba(141,148,168,0.2); color: #dde3ef; padding: 9px 14px; border-radius: 8px; font: 500 13px 'DM Sans', sans-serif; outline: none; }
+.search-input:focus { border-color: rgba(45,212,170,0.5); }
+.chip-filter { font: 600 11px 'Inter', sans-serif; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.03); color: #8a94a8; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
+.chip-filter.on { background: rgba(45,212,170,0.10); color: #2dd4aa; border-color: rgba(45,212,170,0.35); }
+.chip-filter:hover { color: #dde3ef; }
+.empty-state { padding: 60px 20px; text-align: center; color: #6a7484; font-size: 13px; }
+.mode-tab { font: 700 11px 'Inter',sans-serif; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 14px; border-radius: 6px; background: rgba(255,255,255,0.03); color: #8a94a8; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
+.mode-tab.on { background: rgba(45,212,170,0.10); color: #2dd4aa; border-color: rgba(45,212,170,0.40); }
+.mode-tab:hover { color: #dde3ef; }
+.txn-row { display: grid; grid-template-columns: 88px 1fr 110px; gap: 14px; padding: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: start; cursor: pointer; }
+.txn-row:hover { background: rgba(255,255,255,0.025); }
+.txn-snippet { font: 400 13px/1.55 'DM Sans',sans-serif; color: #c5cee0; }
+.txn-snippet mark { background: rgba(45,212,170,0.22); color: #6ddec0; padding: 0 2px; border-radius: 2px; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+<div class="rf-aurora-bg"></div>
+
+<aside class="sidebar hidden md:flex">
+  <div class="sidebar-header">
+    <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
+    <p class="sidebar-brand-sub">Alpha Terminal</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+    <div class="sidebar-section">Markets</div>
+    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+    <div class="sidebar-section">Data</div>
+    <a class="sidebar-link active" href="filings.html"><span class="material-symbols-outlined sidebar-icon">description</span>Filings archive</a>
+    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+    <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+    <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+    <div class="sidebar-section">Tools</div>
+    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+    <div class="sidebar-section">Developers</div>
+    <a class="sidebar-link" href="api-docs.html"><span class="material-symbols-outlined sidebar-icon">code</span>API · v1</a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <header style="position:sticky;top:0;z-index:30;background:var(--bg);padding:24px 0 18px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:18px;">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+      <h1 style="font:800 26px 'Plus Jakarta Sans',sans-serif;letter-spacing:-0.015em;margin:0;">Filings Archive</h1>
+      <span style="font:600 10px 'Geist Mono',monospace;color:#2dd4aa;letter-spacing:0.12em;text-transform:uppercase;padding:3px 8px;background:rgba(45,212,170,0.08);border:1px solid rgba(45,212,170,0.25);border-radius:4px;">DATA · v1</span>
+      <span id="filCount" style="margin-left:auto;font:600 11px 'Geist Mono',monospace;color:#8a94a8;"></span>
+    </div>
+    <p id="filSubtitle" style="margin:0 0 16px 0;color:#a4afc2;font-size:13.5px;line-height:1.5;max-width:720px;">
+      Every BSE/NSE filing we've indexed — searchable by ticker, type, keyword, and date. Click a row to open the full PDF + extracted numbers.
+      <span data-lineage-source="bse_filings" data-lineage-as-of="" data-lineage-note="Source: BSE filings + NSE corporate announcements. Updated continuously."></span>
+    </p>
+    <div style="display:flex;gap:6px;margin-bottom:12px;">
+      <button class="mode-tab on" data-mode="filings">Filings</button>
+      <button class="mode-tab" data-mode="transcripts">Concall transcripts</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;">
+      <input id="filSearch" type="search" class="search-input" placeholder="Search filings… ticker, keyword, or company"
+             style="flex:1;min-width:260px;">
+      <input id="filTicker" type="text" class="search-input" placeholder="Ticker (e.g. RELIANCE)" style="width:170px;text-transform:uppercase;">
+      <input id="filSince" type="date" class="search-input" style="width:160px;">
+      <input id="filUntil" type="date" class="search-input" style="width:160px;">
+    </div>
+    <div id="filChips" style="display:flex;flex-wrap:wrap;gap:6px;">
+      <button class="chip-filter on" data-type="">All types</button>
+      <button class="chip-filter" data-type="quarterly_result">Quarterly results</button>
+      <button class="chip-filter" data-type="order_intimation">Order intimations</button>
+      <button class="chip-filter" data-type="agm">AGM</button>
+      <button class="chip-filter" data-type="other">Other</button>
+    </div>
+  </header>
+
+  <div id="filList"></div>
+
+  <div id="filMoreWrap" style="display:none;text-align:center;padding:16px 0 40px;">
+    <button id="filMore" style="font:600 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;padding:8px 18px;background:rgba(142,180,224,0.10);color:#8eb4e0;border:1px solid rgba(142,180,224,0.30);border-radius:6px;cursor:pointer;">
+      Load 50 more
+    </button>
+  </div>
+</main>
+
+<!-- Detail modal -->
+<div id="filModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;">
+  <div style="background:var(--surface,#0d1118);border:1px solid rgba(255,255,255,0.10);border-radius:14px;max-width:760px;width:100%;padding:24px;">
+    <div style="display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+      <div style="flex:1;min-width:0;">
+        <div id="filModalTk" style="font:700 11px 'Geist Mono',monospace;color:#6ddec0;background:rgba(45,212,170,0.10);display:inline-block;padding:3px 8px;border-radius:4px;margin-bottom:8px;"></div>
+        <h2 id="filModalTitle" style="font:700 18px 'Plus Jakarta Sans',sans-serif;color:#e6ecf5;line-height:1.35;margin:0;"></h2>
+        <div id="filModalMeta" style="margin-top:8px;font:500 12px 'Geist Mono',monospace;color:#8a94a8;"></div>
+      </div>
+      <button id="filModalClose" style="background:none;border:none;color:#8a94a8;font-size:22px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="filModalBody"></div>
+  </div>
+</div>
+
+<script src="./shared/js/lineage-chip.js"></script>
+<script>
+(function(){
+  let state = { mode: 'filings', ticker: '', type: '', q: '', since: '', until: '', limit: 50, offset: 0, more: true };
+
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso.slice(0, 10);
+    return d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+  }
+  function typeLabel(t) {
+    return ({
+      quarterly_result: 'Q-Result',
+      order_intimation: 'Order',
+      agm: 'AGM',
+      other: 'Other',
+    })[t] || (t || 'Filing');
+  }
+
+  function highlight(text, q) {
+    if (!text || !q) return esc(text || '');
+    const safe = esc(text);
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+    return safe.replace(re, '<mark>$1</mark>');
+  }
+
+  async function loadTranscripts(append = false) {
+    const list = document.getElementById('filList');
+    if (!state.q || state.q.length < 3) {
+      list.innerHTML = '<div class="empty-state">Type at least 3 characters — e.g. <strong>guidance</strong>, <strong>capex</strong>, <strong>order book</strong>, <strong>margin</strong>.</div>';
+      document.getElementById('filMoreWrap').style.display = 'none';
+      const count = document.getElementById('filCount');
+      if (count) count.textContent = '';
+      return;
+    }
+    if (!append) list.innerHTML = '<div class="empty-state">Searching transcripts…</div>';
+    const params = new URLSearchParams();
+    params.set('q', state.q);
+    if (state.ticker) params.set('ticker', state.ticker);
+    if (state.since) params.set('since', state.since);
+    params.set('limit', '50');
+    let body = null;
+    try {
+      const r = await fetch('/api/v1/concalls/search?' + params.toString());
+      body = await r.json();
+    } catch (e) {
+      list.innerHTML = '<div class="empty-state" style="color:#ff9a9a;">Couldn\'t search transcripts — ' + esc(e.message) + '</div>';
+      return;
+    }
+    const rows = (body && body.data) || [];
+    const count = document.getElementById('filCount');
+    if (count) count.textContent = rows.length + ' paragraph' + (rows.length === 1 ? '' : 's');
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty-state">No transcript paragraphs match <strong>' + esc(state.q) + '</strong>' + (state.ticker ? ' for ' + esc(state.ticker) : '') + '.</div>';
+      document.getElementById('filMoreWrap').style.display = 'none';
+      return;
+    }
+    list.innerHTML = rows.map(r => `
+      <div class="txn-row" data-filing-id="${r.filing_id}">
+        <span class="fil-tk">${esc(r.ticker || '—')}</span>
+        <span class="txn-snippet">${highlight(r.snippet || '', state.q)}</span>
+        <span class="fil-date">${fmtDate(r.filed_at)}</span>
+      </div>`).join('');
+    document.getElementById('filMoreWrap').style.display = 'none';
+  }
+
+  async function load(append = false) {
+    if (state.mode === 'transcripts') return loadTranscripts(append);
+    const list = document.getElementById('filList');
+    if (!append) {
+      list.innerHTML = '<div class="empty-state">Loading filings…</div>';
+      state.offset = 0;
+    }
+    const params = new URLSearchParams();
+    if (state.ticker) params.set('ticker', state.ticker);
+    if (state.type) params.set('type', state.type);
+    if (state.q) params.set('q', state.q);
+    if (state.since) params.set('since', state.since);
+    if (state.until) params.set('until', state.until);
+    params.set('limit', state.limit);
+    params.set('offset', state.offset);
+
+    let body = null;
+    try {
+      const r = await fetch('/api/v1/filings?' + params.toString());
+      body = await r.json();
+    } catch (e) {
+      list.innerHTML = '<div class="empty-state" style="color:#ff9a9a;">Couldn\'t load filings — ' + esc(e.message) + '</div>';
+      return;
+    }
+    const rows = (body && body.data) || [];
+    const count = document.getElementById('filCount');
+    if (count) count.textContent = (append ? (parseInt(count.dataset.count||'0',10) + rows.length) : rows.length) + ' filing' + (rows.length === 1 ? '' : 's');
+    if (count) count.dataset.count = String(parseInt(count.dataset.count||'0',10) + rows.length);
+    if (!rows.length && !append) {
+      list.innerHTML = '<div class="empty-state">No filings match these filters. Widen the date range or clear the search.</div>';
+      document.getElementById('filMoreWrap').style.display = 'none';
+      return;
+    }
+    const rowsHtml = rows.map(r => `
+      <a class="fil-row" data-id="${r.id}" data-pdf="${esc(r.pdf_url||'')}" href="#${r.id}">
+        <span class="fil-tk">${esc(r.ticker || '—')}</span>
+        <span class="fil-title">${esc(r.title || 'Untitled filing')}</span>
+        <span class="fil-type">${esc(typeLabel(r.filing_type))}</span>
+        <span class="fil-date">${fmtDate(r.filed_at)}</span>
+        <span class="fil-arrow material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+      </a>`).join('');
+    if (append) {
+      list.insertAdjacentHTML('beforeend', rowsHtml);
+    } else {
+      list.innerHTML = rowsHtml;
+    }
+    state.offset += rows.length;
+    state.more = rows.length >= state.limit;
+    document.getElementById('filMoreWrap').style.display = state.more ? 'block' : 'none';
+  }
+
+  // Detail modal
+  const modal = document.getElementById('filModal');
+  const modalClose = document.getElementById('filModalClose');
+  modalClose.addEventListener('click', () => modal.style.display = 'none');
+  modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.style.display = 'none'; });
+
+  async function openDetail(id) {
+    document.getElementById('filModalTitle').textContent = 'Loading…';
+    document.getElementById('filModalTk').textContent = '';
+    document.getElementById('filModalMeta').textContent = '';
+    document.getElementById('filModalBody').innerHTML = '';
+    modal.style.display = 'flex';
+    try {
+      const r = await fetch('/api/v1/filings/' + id);
+      const body = await r.json();
+      const d = body.data || {};
+      document.getElementById('filModalTk').textContent = d.ticker || '—';
+      document.getElementById('filModalTitle').textContent = d.title || 'Untitled';
+      document.getElementById('filModalMeta').textContent =
+        [typeLabel(d.filing_type), fmtDate(d.filed_at), d.source].filter(Boolean).join(' · ');
+      const nums = (d.numbers || []).map(n =>
+        `<div style="display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font:500 12.5px 'DM Sans',sans-serif;color:#c5cee0;">${esc(n.metric)}</span>
+          <span style="font:700 12.5px 'Geist Mono',monospace;color:#dde3ef;">${esc(n.value)}</span>
+          <span style="font:500 11px 'Geist Mono',monospace;color:#6a7484;">${esc(n.unit||'')}</span>
+        </div>`).join('');
+      const excerpt = d.raw_text_excerpt
+        ? `<div style="margin-top:16px;padding:14px;background:rgba(13,17,24,0.6);border:1px solid rgba(255,255,255,0.05);border-radius:8px;font:400 12.5px/1.55 'DM Sans',sans-serif;color:#b0bccf;white-space:pre-wrap;max-height:320px;overflow-y:auto;">${esc(d.raw_text_excerpt)}</div>`
+        : '';
+      const pdfBtn = d.pdf_url
+        ? `<a href="${esc(d.pdf_url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;margin-top:12px;background:rgba(45,212,170,0.10);border:1px solid rgba(45,212,170,0.35);color:#2dd4aa;border-radius:6px;font:700 11px 'Inter',sans-serif;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span> Open source PDF
+          </a>` : '';
+      document.getElementById('filModalBody').innerHTML = `
+        ${nums ? `<div style="margin-top:8px;"><div style="font:700 10px 'Inter',sans-serif;letter-spacing:0.12em;text-transform:uppercase;color:#8a94a8;margin-bottom:6px;">Extracted numbers</div>${nums}</div>` : ''}
+        ${excerpt}
+        ${pdfBtn}
+      `;
+    } catch (e) {
+      document.getElementById('filModalBody').innerHTML = `<div style="color:#ff9a9a;padding:16px;">Couldn't load detail — ${esc(e.message)}</div>`;
+    }
+  }
+
+  document.getElementById('filList').addEventListener('click', e => {
+    const txnRow = e.target.closest('.txn-row');
+    if (txnRow) {
+      e.preventDefault();
+      const id = txnRow.dataset.filingId;
+      if (id) openDetail(id);
+      return;
+    }
+    const row = e.target.closest('.fil-row');
+    if (!row) return;
+    e.preventDefault();
+    openDetail(row.dataset.id);
+  });
+
+  // Mode toggle
+  document.querySelectorAll('.mode-tab').forEach(b => {
+    b.addEventListener('click', () => {
+      const m = b.dataset.mode;
+      if (m === state.mode) return;
+      state.mode = m;
+      document.querySelectorAll('.mode-tab').forEach(x => x.classList.toggle('on', x === b));
+      const transcripts = m === 'transcripts';
+      sIn.placeholder = transcripts
+        ? 'Search inside concall transcripts… e.g. "guidance", "capex", "order book"'
+        : 'Search filings… ticker, keyword, or company';
+      document.getElementById('filChips').style.display = transcripts ? 'none' : '';
+      uIn.style.display = transcripts ? 'none' : '';
+      document.getElementById('filSubtitle').innerHTML = transcripts
+        ? 'Full-text search across <strong>indexed concall transcripts</strong> — every paragraph from earnings calls, investor presentations, and analyst meets. <span data-lineage-source="bse_filings" data-lineage-as-of=""></span>'
+        : 'Every BSE/NSE filing we\'ve indexed — searchable by ticker, type, keyword, and date. Click a row to open the full PDF + extracted numbers. <span data-lineage-source="bse_filings" data-lineage-as-of=""></span>';
+      state.offset = 0;
+      load(false);
+    });
+  });
+
+  // Filter wiring
+  const sIn = document.getElementById('filSearch');
+  const tIn = document.getElementById('filTicker');
+  const aIn = document.getElementById('filSince');
+  const uIn = document.getElementById('filUntil');
+  let debounce = 0;
+  function reload() {
+    state.q = sIn.value.trim();
+    state.ticker = tIn.value.trim().toUpperCase();
+    state.since = aIn.value;
+    state.until = uIn.value;
+    state.offset = 0;
+    load(false);
+  }
+  function deb() { clearTimeout(debounce); debounce = setTimeout(reload, 220); }
+  sIn.addEventListener('input', deb);
+  tIn.addEventListener('input', deb);
+  aIn.addEventListener('change', reload);
+  uIn.addEventListener('change', reload);
+
+  document.getElementById('filChips').addEventListener('click', e => {
+    const b = e.target.closest('.chip-filter');
+    if (!b) return;
+    document.querySelectorAll('#filChips .chip-filter').forEach(x => x.classList.toggle('on', x === b));
+    state.type = b.dataset.type || '';
+    state.offset = 0;
+    load(false);
+  });
+
+  document.getElementById('filMore').addEventListener('click', () => load(true));
+
+  // Honor #transcripts hash from sidebar deeplink
+  if ((location.hash || '').toLowerCase() === '#transcripts') {
+    const tab = document.querySelector('.mode-tab[data-mode="transcripts"]');
+    if (tab) tab.click();
+    setTimeout(() => sIn.focus(), 50);
+  } else {
+    load(false);
+  }
+})();
+</script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

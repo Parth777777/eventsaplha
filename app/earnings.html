@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,23 +28,78 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .earnings-card { transition: all 0.2s; }
         .earnings-card:hover { transform: translateY(-1px); }
-        @keyframes pulse-ring {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.6); opacity: 0; }
-        }
         .live-ring::after {
             content: ''; position: absolute; inset: 0; border-radius: 50%;
             border: 2px solid #ffb4ab;
-            animation: pulse-ring 1.4s ease-out infinite;
         }
         .countdown-digit { font-variant-numeric: tabular-nums; }
+
+        /* Forecast section (merged from forecast.html, 2026-05-19) */
+        .fc-hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+        .fc-hero-card { background: linear-gradient(180deg, rgba(13,17,24,0.85), rgba(13,17,24,0.55)); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 18px; }
+        .fc-hero-label { font: 700 10px 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #8a94a8; margin-bottom: 8px; }
+        .fc-hero-value { font: 800 28px 'Plus Jakarta Sans', sans-serif; color: #e6ecf5; line-height: 1; letter-spacing: -0.01em; }
+        .fc-hero-sub { font: 500 11.5px 'Geist Mono', monospace; color: #6ddec0; margin-top: 6px; }
+        .fc-hero-sub.muted { color: #6a7484; }
+
+        .fc-filterbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
+        .fc-chip { font: 600 11px 'Plus Jakarta Sans', sans-serif; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.03); color: #8a94a8; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all .12s; }
+        .fc-chip.on { background: rgba(45,212,170,0.10); color: #2dd4aa; border-color: rgba(45,212,170,0.35); }
+        .fc-chip:hover { color: #dde3ef; }
+        .fc-sort-select { background: rgba(13,17,24,0.6); border: 1px solid rgba(141,148,168,0.2); color: #dde3ef; padding: 6px 12px; border-radius: 8px; font: 600 11px 'Plus Jakarta Sans', sans-serif; outline: none; }
+
+        .fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .fc-card { background: rgba(13,17,24,0.65); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px; transition: transform .12s, border-color .12s; cursor: pointer; }
+        .fc-card:hover { transform: translateY(-1px); border-color: rgba(45,212,170,0.35); }
+        .fc-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .fc-tk { font: 800 16px 'Plus Jakarta Sans', sans-serif; color: #e6ecf5; letter-spacing: -0.01em; }
+        .fc-tk-sub { font: 500 11px 'Geist Mono', monospace; color: #8a94a8; margin-top: 2px; }
+        .fc-pill-beat { background: rgba(45,212,170,0.12); color: #6ddec0; border: 1px solid rgba(45,212,170,0.30); }
+        .fc-pill-meet { background: rgba(142,180,224,0.10); color: #b0c8e8; border: 1px solid rgba(142,180,224,0.25); }
+        .fc-pill-miss { background: rgba(229,92,92,0.10); color: #f0a3a3; border: 1px solid rgba(229,92,92,0.25); }
+        .fc-pill { font: 700 11px 'Plus Jakarta Sans', sans-serif; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+        .fc-conf { margin: 14px 0; }
+        .fc-conf-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .fc-conf-label { font: 700 10px 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: #8a94a8; }
+        .fc-conf-pct { font: 800 18px 'Geist Mono', monospace; color: #e6ecf5; }
+        .fc-conf-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden; }
+        .fc-conf-fill { height: 100%; background: linear-gradient(90deg, #2dd4aa, #6ddec0); border-radius: 999px; transition: width .3s; }
+        .fc-conf-fill.miss { background: linear-gradient(90deg, #e55c5c, #f0a3a3); }
+        .fc-conf-fill.meet { background: linear-gradient(90deg, #8eb4e0, #b0c8e8); }
+
+        .fc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+        .fc-stat { background: rgba(8,12,18,0.6); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); }
+        .fc-stat-label { font: 700 9.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.10em; text-transform: uppercase; color: #6a7484; margin-bottom: 3px; }
+        .fc-stat-value { font: 700 14px 'Geist Mono', monospace; color: #dde3ef; }
+        .fc-stat-value.pos { color: #6ddec0; }
+        .fc-stat-value.neg { color: #f0a3a3; }
+
+        .fc-entry { margin-top: 12px; padding: 12px 14px; background: rgba(45,212,170,0.05); border: 1px solid rgba(45,212,170,0.15); border-radius: 10px; }
+        .fc-entry.skip { background: rgba(229,92,92,0.05); border-color: rgba(229,92,92,0.20); }
+        .fc-entry.wait { background: rgba(255,200,90,0.05); border-color: rgba(255,200,90,0.20); }
+        .fc-entry-action { font: 800 12px 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6ddec0; margin-bottom: 4px; }
+        .fc-entry.skip .fc-entry-action { color: #f0a3a3; }
+        .fc-entry.wait .fc-entry-action { color: #ffc85a; }
+        .fc-entry-detail { font: 500 12px 'DM Sans', sans-serif; color: #a4afc2; line-height: 1.4; }
+
+        .fc-drivers { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.04); }
+        .fc-drivers-label { font: 700 9.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.10em; text-transform: uppercase; color: #6a7484; margin-bottom: 8px; }
+        .fc-driver { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 4px 0; font: 500 11.5px 'DM Sans', sans-serif; color: #b0bccf; }
+        .fc-driver-contrib { font: 600 11px 'Geist Mono', monospace; color: #6ddec0; }
+        .fc-driver-contrib.neg { color: #f0a3a3; }
+
+        @media (max-width: 900px) { .fc-hero { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body class="bg-background text-on-surface font-body rf-page">
@@ -89,7 +144,7 @@
         <div class="flex items-start justify-between">
             <div>
                 <h1 class="text-4xl font-black font-headline text-on-surface mb-1">EARNINGS CALENDAR</h1>
-                <p class="text-on-surface-variant text-sm">Pre-earnings alpha signals for upcoming results. Strike before the announcement. <a href="events.html?category=earnings" class="underline decoration-dotted underline-offset-2 hover:text-on-surface">View all in Newsroom →</a></p>
+                <p class="text-on-surface-variant text-sm">Forward-looking forecasts for upcoming Indian-listed earnings — beat / meet / miss probability, revenue and EPS estimates, expected day-1 reaction, and a post-event entry-window recommendation. <a href="events.html?category=earnings" class="underline decoration-dotted underline-offset-2 hover:text-on-surface">View all in Newsroom &rarr;</a></p>
             </div>
             <!-- Live update badge -->
             <div class="flex items-center gap-2 mt-1">
@@ -107,96 +162,64 @@
             <button onclick="setFilter('hot')" id="filter-hot" class="filter-btn px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all" style="background:transparent;color:#8c909f;border:1px solid #42475422;">High Alpha Only</button>
         </div>
     </header>
-    <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'earnings'}); });</script>
-
-    <!-- ============ EARNINGS INSIGHT STUDIO (page-unique) ============ -->
-    <section class="mb-6 mx-2" id="earningsStudio">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr;gap:14px;">
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">This week</div>
-              <div class="widget__meta">Earnings reporting</div>
-            </div>
-          </div>
-          <div id="earWeekStat"></div>
+    <!-- ============ FORECAST HERO (4 stat cards) ============ -->
+    <section class="mx-2 mb-2">
+      <div class="fc-hero">
+        <div class="fc-hero-card">
+          <div class="fc-hero-label">Forecasts Live</div>
+          <div class="fc-hero-value" id="heroCount">&mdash;</div>
+          <div class="fc-hero-sub muted" id="heroCountSub">in next 120 days</div>
         </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">High-α plays</div>
-              <div class="widget__meta">α ≥ 65 + earnings ≤ 5d</div>
-            </div>
-          </div>
-          <div id="earHotStat"></div>
+        <div class="fc-hero-card">
+          <div class="fc-hero-label">High-Conviction Beats</div>
+          <div class="fc-hero-value" id="heroBeats" style="color:#6ddec0;">&mdash;</div>
+          <div class="fc-hero-sub">beat probability &ge; 65%</div>
         </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">Days to earnings</div>
-              <div class="widget__meta">Distribution across calendar</div>
-            </div>
-          </div>
-          <div id="earMoveHist" style="margin-top:10px;flex:1;"></div>
+        <div class="fc-hero-card">
+          <div class="fc-hero-label">Top Pick</div>
+          <div class="fc-hero-value" id="heroTopTicker" style="font-family:'Geist Mono',monospace;font-size:24px;">&mdash;</div>
+          <div class="fc-hero-sub" id="heroTopConf">&mdash;</div>
         </div>
-        <div class="widget" style="min-height:200px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">Sectors reporting</div>
-              <div class="widget__meta">Top concentration</div>
-            </div>
-          </div>
-          <div id="earSectorRings" style="flex:1;"></div>
+        <div class="fc-hero-card">
+          <div class="fc-hero-label">Cool-Off Recommended</div>
+          <div class="fc-hero-value" id="heroWait" style="color:#ffc85a;">&mdash;</div>
+          <div class="fc-hero-sub muted">tickers where waiting beats chasing</div>
         </div>
       </div>
     </section>
-    <script>
-    (async function(){
-      try {
-        const res = await Widgets.fetchJSON('/earnings');
-        const list = (res && res.data) || [];
-        const now = Date.now();
-        const dayMs = 86400000;
-        const dateOf = e => new Date(e.earnings_date || e.next_earnings || e.date || 0);
-        const week = list.filter(e => {
-          const d = dateOf(e); return !isNaN(d) && (d - now) <= 7*dayMs && (d - now) >= -dayMs;
-        }).length;
-        const hot = list.filter(e => {
-          const d = dateOf(e); return !isNaN(d) && (d - now) <= 5*dayMs && (d - now) >= 0;
-        }).length;
 
-        Widgets.statCard(document.getElementById('earWeekStat'),
-          {label: 'Reporting', value: week, sublabel: 'within 7 days', color: '#5b6cff', icon: 'event'});
-        Widgets.statCard(document.getElementById('earHotStat'),
-          {label: 'Within 5 days', value: hot, sublabel: 'pre-earnings setups', color: '#ffc266', icon: 'local_fire_department'});
+    <!-- ============ FORECAST FILTER BAR ============ -->
+    <section class="mx-2">
+      <div class="fc-filterbar">
+        <button class="fc-chip on" data-hit="">All</button>
+        <button class="fc-chip" data-hit="beat">Predicted Beats</button>
+        <button class="fc-chip" data-hit="meet">In-Line</button>
+        <button class="fc-chip" data-hit="miss">Miss</button>
+        <span style="margin-left:8px;font:600 10px 'Plus Jakarta Sans',sans-serif;color:#6a7484;letter-spacing:0.08em;text-transform:uppercase;">Min Conf</span>
+        <button class="fc-chip on" data-minconf="0">Any</button>
+        <button class="fc-chip" data-minconf="0.5">50%+</button>
+        <button class="fc-chip" data-minconf="0.65">65%+</button>
+        <select id="fcSort" class="fc-sort-select" style="margin-left:auto;">
+          <option value="confidence">Sort: Confidence</option>
+          <option value="date">Sort: Earnings Date</option>
+          <option value="expected_return">Sort: Expected Return</option>
+        </select>
+      </div>
+    </section>
 
-        // Days-to-earnings distribution (since /earnings doesn't expose expected_move)
-        const days = list.map(e => Math.round((dateOf(e) - now) / dayMs)).filter(d => !isNaN(d));
-        const buckets = [
-          {label: 'Today', value: days.filter(d => d === 0).length,       color: '#ff7a8a'},
-          {label: '1-3d',  value: days.filter(d => d >= 1 && d <= 3).length, color: '#ff9466'},
-          {label: '4-7d',  value: days.filter(d => d >= 4 && d <= 7).length, color: '#ffc266'},
-          {label: '8-14d', value: days.filter(d => d >= 8 && d <= 14).length, color: '#5b6cff'},
-          {label: '15d+',  value: days.filter(d => d > 14).length,           color: '#4ee6b8'},
-        ];
-        Widgets.histogram(document.getElementById('earMoveHist'), buckets, {height: 90});
+    <!-- ============ FORECAST CARD GRID ============ -->
+    <section class="mx-2">
+      <div id="fcGrid" class="fc-grid">
+        <div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:#6a7484;font-size:13px;">Loading forecasts&hellip;</div>
+      </div>
+    </section>
 
-        // Sector rings
-        const sb = {};
-        for (const e of list) {
-          const s = (e.sector || 'OTHER').replace(/_/g, ' ');
-          sb[s] = (sb[s] || 0) + 1;
-        }
-        const top = Object.entries(sb).sort((a,b) => b[1]-a[1]).slice(0, 4);
-        Widgets.rings(document.getElementById('earSectorRings'),
-          top.map(([s, n]) => ({label: s, value: n})));
-      } catch(e) { console.warn('earnings studio:', e); }
-    })();
-    </script>
-    <!-- ============ END EARNINGS INSIGHT STUDIO ============ -->
-
-    <!-- Signal summary strip (top 3 pre-earnings plays) -->
-    <div id="topPlays" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 px-2"></div>
+    <!-- ============ DIVIDER + CALENDAR LIST ============ -->
+    <div class="mx-2 mb-3" style="display:flex;align-items:center;gap:14px;">
+      <div style="height:1px;flex:1;background:rgba(255,255,255,0.06);"></div>
+      <span style="font:700 11px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.12em;text-transform:uppercase;color:#8a94a8;">Earnings Calendar</span>
+      <div style="height:1px;flex:1;background:rgba(255,255,255,0.06);"></div>
+    </div>
 
     <!-- Main earnings list -->
     <div id="earningsGrid" class="space-y-3 mb-8 px-2">
@@ -209,7 +232,7 @@
         <div class="text-xs text-on-surface-variant leading-relaxed">
             Earnings are the single biggest event-driven catalyst for Indian stocks.
             A beat can move 5-15% in a day. The <span style="color:#adc6ff;">Expected Move</span> shown is the
-            implied ±% range based on historical volatility and event type weight.
+            implied &plusmn;% range based on historical volatility and event type weight.
             Signals with <span style="color:#4edea3;">alpha &gt; 65</span> and earnings within 5 days are prime event-driven setups.
             Click any ticker to drill into its current signal and price chart.
         </div>
@@ -223,7 +246,8 @@
 <script>
 // ---- STATE ----
 let allEarningsData = [];
-let signalCache = {};   // ticker → signal data
+let signalCache = {};   // ticker -> signal data
+let forecastCache = {}; // ticker -> earnings forecast (from /api/v1/earnings/forecast)
 let activeFilter = 'all';
 
 // ---- FILTER ----
@@ -299,7 +323,7 @@ function renderTopPlays(upcoming) {
     }
 
     container.innerHTML = scored.map((e, idx) => {
-        const medals = ['🥇', '🥈', '🥉'];
+        const medals = ['??', '??', '??'];
         const sent = e.sig?.signal?.sentiment || 'neutral';
         const sentColor = sent === 'bullish' ? '#4edea3' : sent === 'bearish' ? '#ffb4ab' : '#adc6ff';
         const alpha = e.alpha;
@@ -335,7 +359,7 @@ function renderTopPlays(upcoming) {
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div style="background:#0a0e14;border-radius:8px;padding:6px 4px;">
                     <div class="text-[9px] text-on-surface-variant/50">Exp Move</div>
-                    <div class="font-mono font-bold text-xs text-primary">±${em}%</div>
+                    <div class="font-mono font-bold text-xs text-primary">&plusmn;${em}%</div>
                 </div>
                 <div style="background:#0a0e14;border-radius:8px;padding:6px 4px;">
                     <div class="text-[9px] text-on-surface-variant/50">3D Pred</div>
@@ -382,9 +406,16 @@ function renderEarningsRow(e, isPast) {
     // Urgency left border color
     const borderColor = diffDays <= 1 ? '#ffb4ab' : diffDays <= 3 ? '#f9d423' : '#42475415';
 
+    // Forecast badge — clicking jumps to the matching card above (modal opens via hash deeplink)
+    const fc = forecastCache[e.ticker?.toUpperCase()];
+    const showForecastBadge = !isPast && fc && fc.predicted_hit;
+    const hitColor = fc?.predicted_hit === 'beat' ? '#2dd4aa'
+                    : fc?.predicted_hit === 'miss' ? '#f0a3a3'
+                    : '#8eb4e0';
+
     return `
     <div class="earnings-card flex items-center gap-4 p-4 rounded-xl${isPast ? ' opacity-40' : ''}"
-         style="background:#181c22;border:1px solid ${borderColor};border-left-width:3px;">
+         style="background:#181c22;border:1px solid ${borderColor};border-left-width:3px;flex-wrap:wrap;">
         <!-- Date box -->
         <div class="w-12 h-14 rounded-lg flex flex-col items-center justify-center flex-shrink-0"
              style="background:${isPast ? '#8c909f11' : '#adc6ff0d'};border:1px solid ${isPast ? '#8c909f22' : '#adc6ff1a'};">
@@ -395,7 +426,7 @@ function renderEarningsRow(e, isPast) {
         </div>
 
         <!-- Company info -->
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0" style="min-width:200px;">
             <div class="flex items-center gap-2 flex-wrap">
                 <span data-ticker="${e.ticker}" class="font-mono font-black text-sm text-primary cursor-pointer hover:underline">${e.ticker}</span>
                 <span class="text-xs text-on-surface-variant truncate">${e.company}</span>
@@ -408,6 +439,14 @@ function renderEarningsRow(e, isPast) {
             </div>
         </div>
 
+        ${showForecastBadge ? `
+        <a class="forecast-jump flex-shrink-0" href="#${e.ticker}" data-fc-jump="${e.ticker}" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${hitColor}10;border:1px solid ${hitColor}33;border-radius:8px;text-decoration:none;">
+            <span style="font:700 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:${hitColor};">${fc.predicted_hit}</span>
+            <span style="font:800 12px 'Geist Mono',monospace;color:${hitColor};">${((fc.hit_confidence||0)*100).toFixed(0)}%</span>
+            <span style="font:500 9px 'Plus Jakarta Sans',sans-serif;color:#8a94a8;letter-spacing:0.05em;text-transform:uppercase;">View forecast</span>
+        </a>
+        ` : ''}
+
         <!-- Alpha + countdown -->
         <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
             ${hasSignal ? `
@@ -415,7 +454,7 @@ function renderEarningsRow(e, isPast) {
                 <div class="w-20 h-1 rounded-full overflow-hidden" style="background:#0a0e14;">
                     <div style="width:${alpha}%;height:100%;background:${UIHelper.alphaColor(alpha)};"></div>
                 </div>
-                <span class="font-mono font-black text-sm" style="color:${UIHelper.alphaColor(alpha)};">α ${alpha.toFixed(0)}</span>
+                <span class="font-mono font-black text-sm" style="color:${UIHelper.alphaColor(alpha)};">a ${alpha.toFixed(0)}</span>
             </div>` : '<span class="text-[9px] text-on-surface-variant/30">No signal</span>'}
 
             ${pred3d != null ? `<span class="text-[9px] font-mono font-bold" style="color:${pred3d >= 0 ? '#4edea388' : '#ffb4ab88'};">${pred3d >= 0 ? '+' : ''}${pred3d.toFixed(1)}% 3D</span>` : ''}
@@ -471,6 +510,20 @@ function startCountdowns() {
     }, 30000);
 }
 
+// ---- FORECAST CACHE ----
+async function fetchForecasts() {
+    try {
+        const r = await fetch('/api/v1/earnings/forecast?days_ahead=120&limit=200');
+        const body = await r.json();
+        (body?.data || []).forEach(f => {
+            if (f.ticker) forecastCache[f.ticker.toUpperCase()] = f;
+        });
+    } catch (e) {
+        // Forecast layer is additive — failure is silent
+        console.warn('forecast cache fetch failed:', e.message);
+    }
+}
+
 // ---- MAIN LOAD ----
 async function loadEarnings() {
     const grid = document.getElementById('earningsGrid');
@@ -482,9 +535,9 @@ async function loadEarnings() {
         return;
     }
 
-    // Batch-fetch signals for all tickers in parallel
+    // Batch-fetch signals + forecasts for all tickers in parallel
     const tickers = [...new Set(allEarningsData.map(e => e.ticker))];
-    await fetchSignalsBatch(tickers);
+    await Promise.all([fetchSignalsBatch(tickers), fetchForecasts()]);
 
     // Render top plays strip
     const today = new Date().toISOString().slice(0, 10);
@@ -493,15 +546,332 @@ async function loadEarnings() {
 
     // Render main list
     renderEarningsList();
+
+    // Render the new forecast section (cards + hero)
+    renderForecastSection();
+}
+
+// ============================================================
+// FORECAST SECTION — hero stats, filter chips, card grid, detail modal
+// (Merged from former forecast.html, 2026-05-19)
+// ============================================================
+const FC = { activeHit: '', minConf: 0, activeSort: 'confidence' };
+
+function fcFmtPct(v, signed=false){
+    if (v === null || v === undefined) return '—';
+    const sign = signed && v > 0 ? '+' : '';
+    return `${sign}${v.toFixed(1)}%`;
+}
+function fcFmtFrac(v){
+    if (v === null || v === undefined) return '—';
+    return `${(v*100).toFixed(0)}%`;
+}
+function fcFmtMoney(v){
+    if (v === null || v === undefined) return '—';
+    return `&#8377;${v.toFixed(2)}`;
+}
+function fcFmtCr(v){
+    if (v == null) return '—';
+    if (Math.abs(v) >= 100000) return `&#8377;${(v/100000).toFixed(2)}L Cr`;
+    if (Math.abs(v) >= 1000) return `&#8377;${(v/1000).toFixed(1)}K Cr`;
+    return `&#8377;${v.toFixed(0)} Cr`;
+}
+function fcEsc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function fcRenderCard(r){
+    const hit = (r.predicted_hit || 'meet').toLowerCase();
+    const confPct = (r.hit_confidence || 0) * 100;
+    const action = r.recommended_action || 'wait';
+    const ret = r.expected_ret_1d_pct;
+    const drivers = (r.top_drivers || []).slice(0, 3);
+
+    let entryDetail = '';
+    if (action === 'enter_now') {
+        entryDetail = `Clean signal &middot; enter on the open &middot; fade probability ${fcFmtFrac(r.fade_probability)}`;
+    } else if (action === 'wait') {
+        entryDetail = `Wait ${r.wait_minutes_estimate || 30} min &middot; optimal ${r.optimal_entry_start_min || 30}&ndash;${r.optimal_entry_end_min || 150} min after open &middot; fade ${fcFmtFrac(r.fade_probability)}`;
+    } else if (action === 'skip') {
+        entryDetail = `Miss expected &middot; avoid the trade &middot; wait for stabilisation T+3 to T+5`;
+    } else {
+        entryDetail = 'Insufficient data';
+    }
+
+    const driverRows = drivers.length ? drivers.map(d => {
+        const c = d.contribution || 0;
+        const cls = c < 0 ? 'neg' : '';
+        const sign = c > 0 ? '+' : '';
+        return `<div class="fc-driver"><span>${fcEsc(d.summary || d.name)}</span><span class="fc-driver-contrib ${cls}">${sign}${c.toFixed(2)}</span></div>`;
+    }).join('') : '<div style="color:#6a7484;font-size:11px;">Low-signal features &mdash; confidence is moderate</div>';
+
+    const hitLabel = {beat: 'Beat probability', meet: 'In-line confidence', miss: 'Miss probability'}[hit] || 'Confidence';
+    const fillCls = hit === 'miss' ? 'miss' : (hit === 'meet' ? 'meet' : '');
+
+    return `
+      <div class="fc-card" data-ticker="${fcEsc(r.ticker)}">
+        <div class="fc-card-head">
+          <div>
+            <div class="fc-tk">${fcEsc(r.ticker)}</div>
+            <div class="fc-tk-sub">${fcEsc((r.target_earnings_date || '').slice(0,10))}</div>
+          </div>
+          <span class="fc-pill fc-pill-${hit}">${hit}</span>
+        </div>
+        <div class="fc-conf">
+          <div class="fc-conf-row">
+            <span class="fc-conf-label">${hitLabel}</span>
+            <span class="fc-conf-pct">${confPct.toFixed(0)}%</span>
+          </div>
+          <div class="fc-conf-bar"><div class="fc-conf-fill ${fillCls}" style="width:${confPct}%;"></div></div>
+        </div>
+        <div class="fc-stats">
+          <div class="fc-stat">
+            <div class="fc-stat-label">EPS Range</div>
+            <div class="fc-stat-value">${r.eps_estimate != null ? `${fcFmtMoney(r.eps_low || r.eps_estimate)}&ndash;${fcFmtMoney(r.eps_high || r.eps_estimate)}` : '&mdash;'}</div>
+          </div>
+          <div class="fc-stat">
+            <div class="fc-stat-label">Revenue</div>
+            <div class="fc-stat-value">${r.revenue_estimate != null ? fcFmtCr(r.revenue_estimate) : '&mdash;'}${r.revenue_growth_yoy_pct != null ? ` <span style="font-size:11px;color:${r.revenue_growth_yoy_pct >= 0 ? '#6ddec0' : '#f0a3a3'};">${r.revenue_growth_yoy_pct >= 0 ? '+' : ''}${r.revenue_growth_yoy_pct.toFixed(0)}% YoY</span>` : ''}</div>
+          </div>
+          <div class="fc-stat">
+            <div class="fc-stat-label">Net Profit</div>
+            <div class="fc-stat-value">${r.net_profit_estimate != null ? fcFmtCr(r.net_profit_estimate) : '&mdash;'}</div>
+          </div>
+          <div class="fc-stat">
+            <div class="fc-stat-label">EBITDA</div>
+            <div class="fc-stat-value">${r.ebitda_estimate != null ? fcFmtCr(r.ebitda_estimate) : '&mdash;'}</div>
+          </div>
+          <div class="fc-stat">
+            <div class="fc-stat-label">Operating Margin</div>
+            <div class="fc-stat-value">${r.operating_margin_pct != null ? `${r.operating_margin_pct.toFixed(1)}%` : '&mdash;'}</div>
+          </div>
+          <div class="fc-stat">
+            <div class="fc-stat-label">Expected D+1</div>
+            <div class="fc-stat-value ${ret > 0 ? 'pos' : (ret < 0 ? 'neg' : '')}">${fcFmtPct(ret, true)}</div>
+          </div>
+        </div>
+        <div class="fc-entry ${action}">
+          <div class="fc-entry-action">${action.replace('_', ' ')}</div>
+          <div class="fc-entry-detail">${entryDetail}</div>
+        </div>
+        <div class="fc-drivers">
+          <div class="fc-drivers-label">Top drivers</div>
+          ${driverRows}
+        </div>
+      </div>`;
+}
+
+function fcApplyFilters(){
+    let rows = Object.values(forecastCache);
+    if (FC.activeHit) rows = rows.filter(r => (r.predicted_hit || '').toLowerCase() === FC.activeHit);
+    if (FC.minConf > 0) rows = rows.filter(r => (r.hit_confidence || 0) >= FC.minConf);
+    rows.sort((a, b) => {
+        if (FC.activeSort === 'date') return (a.target_earnings_date || '').localeCompare(b.target_earnings_date || '');
+        if (FC.activeSort === 'expected_return') return (b.expected_ret_1d_pct || 0) - (a.expected_ret_1d_pct || 0);
+        return (b.hit_confidence || 0) - (a.hit_confidence || 0);
+    });
+    return rows;
+}
+
+function fcRenderGrid(){
+    const grid = document.getElementById('fcGrid');
+    if (!grid) return;
+    const rows = fcApplyFilters();
+    if (!rows.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:#6a7484;font-size:13px;">No forecasts match these filters. Loosen the filter or check back after the next batch run.</div>';
+        return;
+    }
+    grid.innerHTML = rows.map(fcRenderCard).join('');
+}
+
+function fcRenderHero(){
+    const rows = Object.values(forecastCache);
+    const beats = rows.filter(r => r.predicted_hit === 'beat' && r.hit_confidence >= 0.65);
+    const waits = rows.filter(r => r.recommended_action === 'wait');
+    const top = rows.slice().sort((a, b) => (b.hit_confidence || 0) - (a.hit_confidence || 0))[0];
+    const el = id => document.getElementById(id);
+    if (el('heroCount')) el('heroCount').textContent = rows.length;
+    if (el('heroBeats')) el('heroBeats').textContent = beats.length;
+    if (el('heroWait')) el('heroWait').textContent = waits.length;
+    if (top && el('heroTopTicker')) {
+        el('heroTopTicker').textContent = top.ticker || '—';
+        el('heroTopConf').textContent = `${(top.hit_confidence*100).toFixed(0)}% ${top.predicted_hit}`;
+    }
+}
+
+async function fcOpenDetail(ticker){
+    const modal = document.getElementById('fcModal');
+    if (!modal) return;
+    document.getElementById('fcModalTk').textContent = ticker;
+    document.getElementById('fcModalTarget').textContent = 'Loading…';
+    document.getElementById('fcModalBody').innerHTML = '';
+    modal.style.display = 'flex';
+    try {
+        const r = await fetch(`/api/v1/earnings/forecast/${ticker}`);
+        const body = await r.json();
+        const d = body.data || {};
+        document.getElementById('fcModalTarget').textContent =
+            `Next earnings ${(d.target_earnings_date || '').slice(0,10)} · model ${d.model_version || 'v0'}`;
+
+        const drivers = (d.top_drivers || []).map(dr => {
+            const c = dr.contribution || 0;
+            const cls = c < 0 ? 'neg' : '';
+            return `<div class="fc-driver"><span>${fcEsc(dr.summary || dr.name)}</span><span class="fc-driver-contrib ${cls}">${c > 0 ? '+' : ''}${c.toFixed(2)}</span></div>`;
+        }).join('') || '<div style="color:#6a7484;">No high-contribution drivers</div>';
+
+        const ew = d.entry_window || {};
+        const narrative = d.narrative_summary || '';
+
+        document.getElementById('fcModalBody').innerHTML = `
+          ${narrative ? `<div style="margin-bottom:18px;padding:14px;background:rgba(45,212,170,0.06);border-left:3px solid #2dd4aa;border-radius:6px;font:400 13.5px/1.5 'DM Sans',sans-serif;color:#dde3ef;">${fcEsc(narrative)}</div>` : ''}
+          <div class="fc-stats" style="grid-template-columns:repeat(4,1fr);">
+            <div class="fc-stat"><div class="fc-stat-label">Beat Prob</div><div class="fc-stat-value pos">${((d.p_beat||0)*100).toFixed(0)}%</div></div>
+            <div class="fc-stat"><div class="fc-stat-label">In-Line</div><div class="fc-stat-value">${((d.p_meet||0)*100).toFixed(0)}%</div></div>
+            <div class="fc-stat"><div class="fc-stat-label">Miss Prob</div><div class="fc-stat-value neg">${((d.p_miss||0)*100).toFixed(0)}%</div></div>
+            <div class="fc-stat"><div class="fc-stat-label">Confidence</div><div class="fc-stat-value">${((d.hit_confidence||0)*100).toFixed(0)}%</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+            <div>
+              <div style="font:700 10px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.10em;text-transform:uppercase;color:#8a94a8;margin-bottom:8px;">EPS Forecast</div>
+              <div style="font:800 22px 'Geist Mono',monospace;color:#e6ecf5;">${d.eps_estimate != null ? `${fcFmtMoney(d.eps_low)}&ndash;${fcFmtMoney(d.eps_high)}` : '&mdash;'}</div>
+              <div style="font:500 12px 'Geist Mono',monospace;color:#8a94a8;margin-top:4px;">Point ${fcFmtMoney(d.eps_estimate)} &middot; internal ${fcFmtMoney(d.eps_internal_estimate)}</div>
+            </div>
+            <div>
+              <div style="font:700 10px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.10em;text-transform:uppercase;color:#8a94a8;margin-bottom:8px;">Day-1 Reaction</div>
+              <div style="font:800 22px 'Geist Mono',monospace;color:#e6ecf5;">${fcFmtPct(d.expected_ret_1d_pct, true)}</div>
+              <div style="font:500 12px 'Geist Mono',monospace;color:#8a94a8;margin-top:4px;">80% CI ${fcFmtPct(d.ret_1d_ci_low, true)} to ${fcFmtPct(d.ret_1d_ci_high, true)}</div>
+            </div>
+          </div>
+          <div style="margin-top:18px;padding:14px;background:rgba(8,12,18,0.5);border:1px solid rgba(255,255,255,0.05);border-radius:10px;">
+            <div style="font:700 10px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.10em;text-transform:uppercase;color:#8a94a8;margin-bottom:10px;">Quarterly Financials Forecast</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">Revenue</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.revenue_estimate != null ? fcFmtCr(d.revenue_estimate) : '&mdash;'}</div>
+                <div style="font:500 10px 'Geist Mono',monospace;color:#8a94a8;margin-top:2px;">${d.revenue_estimate != null ? `${fcFmtCr(d.revenue_low)}&ndash;${fcFmtCr(d.revenue_high)}` : ''}</div>
+                ${d.revenue_growth_yoy_pct != null ? `<div style="font:600 10px 'Geist Mono',monospace;color:${d.revenue_growth_yoy_pct >= 0 ? '#6ddec0' : '#f0a3a3'};margin-top:3px;">${d.revenue_growth_yoy_pct >= 0 ? '+' : ''}${d.revenue_growth_yoy_pct.toFixed(1)}% YoY &middot; ${d.revenue_growth_qoq_pct >= 0 ? '+' : ''}${(d.revenue_growth_qoq_pct||0).toFixed(1)}% QoQ</div>` : ''}
+              </div>
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">Net Profit</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.net_profit_estimate != null ? fcFmtCr(d.net_profit_estimate) : '&mdash;'}</div>
+                <div style="font:500 10px 'Geist Mono',monospace;color:#8a94a8;margin-top:2px;">${d.net_profit_estimate != null ? `${fcFmtCr(d.net_profit_low)}&ndash;${fcFmtCr(d.net_profit_high)}` : ''}</div>
+              </div>
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">EBITDA</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.ebitda_estimate != null ? fcFmtCr(d.ebitda_estimate) : '&mdash;'}</div>
+                <div style="font:500 10px 'Geist Mono',monospace;color:#8a94a8;margin-top:2px;">${d.ebitda_estimate != null ? `${fcFmtCr(d.ebitda_low)}&ndash;${fcFmtCr(d.ebitda_high)}` : ''}</div>
+              </div>
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">Operating Margin</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.operating_margin_pct != null ? d.operating_margin_pct.toFixed(2)+'%' : '&mdash;'}</div>
+              </div>
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">EBITDA Margin</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.ebitda_margin_pct != null ? d.ebitda_margin_pct.toFixed(2)+'%' : '&mdash;'}</div>
+              </div>
+              <div>
+                <div style="font:600 9px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#6a7484;">Operating Income</div>
+                <div style="font:800 16px 'Geist Mono',monospace;color:#dde3ef;">${d.operating_income_estimate != null ? fcFmtCr(d.operating_income_estimate) : '&mdash;'}</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:18px;padding:16px;background:${ew.recommended_action==='skip' ? 'rgba(229,92,92,0.06)' : ew.recommended_action==='enter_now' ? 'rgba(45,212,170,0.06)' : 'rgba(255,200,90,0.06)'};border-radius:10px;border:1px solid ${ew.recommended_action==='skip' ? 'rgba(229,92,92,0.20)' : ew.recommended_action==='enter_now' ? 'rgba(45,212,170,0.20)' : 'rgba(255,200,90,0.20)'};">
+            <div style="font:700 10px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.10em;text-transform:uppercase;color:#8a94a8;margin-bottom:8px;">Post-Event Entry Window</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;">
+              <div><div style="font-size:10px;color:#6a7484;">Action</div><div style="font:800 14px 'Plus Jakarta Sans',sans-serif;color:#dde3ef;text-transform:uppercase;">${fcEsc((ew.recommended_action||'?').replace('_',' '))}</div></div>
+              <div><div style="font-size:10px;color:#6a7484;">Wait</div><div style="font:800 14px 'Geist Mono',monospace;color:#dde3ef;">${ew.wait_minutes_estimate||0} min</div></div>
+              <div><div style="font-size:10px;color:#6a7484;">Optimal Entry</div><div style="font:800 14px 'Geist Mono',monospace;color:#dde3ef;">${ew.optimal_entry_start_min||0}&ndash;${ew.optimal_entry_end_min||0} min</div></div>
+              <div><div style="font-size:10px;color:#6a7484;">Fade Risk</div><div style="font:800 14px 'Geist Mono',monospace;color:#dde3ef;">${((ew.fade_probability||0)*100).toFixed(0)}%</div></div>
+            </div>
+            <div style="font:500 12px/1.5 'DM Sans',sans-serif;color:#a4afc2;">
+              Expected gap: ${fcFmtPct(ew.expected_gap_pct, true)} &middot; 5-day max gain ${fcFmtPct(ew.expected_5d_max_gain_pct, true)} &middot; 5-day max drawdown ${fcFmtPct(ew.expected_5d_max_drawdown_pct, true)} &middot; ${ew.analogs_used||0} analog earnings${ew.fallback_to_sector ? ' (sector fallback)' : ''}
+            </div>
+          </div>
+          <div style="margin-top:18px;">
+            <div style="font:700 10px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.10em;text-transform:uppercase;color:#8a94a8;margin-bottom:8px;">Top Drivers</div>
+            ${drivers}
+          </div>
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);display:flex;gap:8px;">
+            <a href="stock.html?ticker=${fcEsc(ticker)}" style="font:700 11px 'Plus Jakarta Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;color:#2dd4aa;padding:8px 14px;background:rgba(45,212,170,0.08);border:1px solid rgba(45,212,170,0.30);border-radius:6px;text-decoration:none;">Open ${fcEsc(ticker)} &rarr;</a>
+            <span style="margin-left:auto;font:500 10px 'Geist Mono',monospace;color:#6a7484;align-self:center;">${d.llm_generated ? 'narrative &middot; llm' : 'narrative &middot; template'}</span>
+          </div>`;
+    } catch (e) {
+        document.getElementById('fcModalBody').innerHTML = `<div style="color:#f0a3a3;padding:14px;">Couldn&rsquo;t load detail &mdash; ${fcEsc(e.message)}</div>`;
+    }
+}
+
+function renderForecastSection(){
+    fcRenderHero();
+    fcRenderGrid();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     SoundFX.init();
     loadEarnings();
     Auth.updateAuthUI();
+
+    // Forecast filter chips
+    document.querySelectorAll('.fc-chip[data-hit]').forEach(b => {
+        b.addEventListener('click', () => {
+            document.querySelectorAll('.fc-chip[data-hit]').forEach(x => x.classList.toggle('on', x === b));
+            FC.activeHit = b.dataset.hit || '';
+            fcRenderGrid();
+        });
+    });
+    document.querySelectorAll('.fc-chip[data-minconf]').forEach(b => {
+        b.addEventListener('click', () => {
+            document.querySelectorAll('.fc-chip[data-minconf]').forEach(x => x.classList.toggle('on', x === b));
+            FC.minConf = parseFloat(b.dataset.minconf || '0');
+            fcRenderGrid();
+        });
+    });
+    const sortSel = document.getElementById('fcSort');
+    if (sortSel) sortSel.addEventListener('change', () => { FC.activeSort = sortSel.value; fcRenderGrid(); });
+
+    // Click forecast card → open modal
+    const grid = document.getElementById('fcGrid');
+    if (grid) grid.addEventListener('click', (e) => {
+        const card = e.target.closest('.fc-card');
+        if (card) fcOpenDetail(card.dataset.ticker);
+    });
+
+    // Modal close
+    const modal = document.getElementById('fcModal');
+    const modalClose = document.getElementById('fcModalClose');
+    if (modalClose) modalClose.addEventListener('click', () => modal.style.display = 'none');
+    if (modal) modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal) modal.style.display = 'none'; });
+
+    // #TICKER hash deeplink (replaces forecast.html#TICKER from before)
+    const hashTicker = (location.hash || '').replace('#', '').toUpperCase();
+    if (hashTicker && /^[A-Z0-9-]+$/.test(hashTicker)) {
+        setTimeout(() => fcOpenDetail(hashTicker), 600);
+    }
+
+    // Earnings calendar "View forecast" badge → open modal in place
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('[data-fc-jump]');
+        if (a) {
+            e.preventDefault();
+            fcOpenDetail(a.dataset.fcJump);
+        }
+    });
 });
 </script>
+
+<!-- Forecast detail modal -->
+<div id="fcModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.70);z-index:200;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;">
+  <div style="background:#0d1118;border:1px solid rgba(255,255,255,0.10);border-radius:14px;max-width:820px;width:100%;padding:24px;">
+    <div style="display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:16px;">
+      <div style="flex:1;min-width:0;">
+        <div id="fcModalTk" style="font:800 24px 'Plus Jakarta Sans',sans-serif;color:#e6ecf5;letter-spacing:-0.015em;"></div>
+        <div id="fcModalTarget" style="font:500 12px 'Geist Mono',monospace;color:#8a94a8;margin-top:4px;"></div>
+      </div>
+      <button id="fcModalClose" style="background:none;border:none;color:#8a94a8;font-size:24px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div id="fcModalBody"></div>
+  </div>
+</div>
 <script src="./shared/js/company-logo.js" defer></script>
 <script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

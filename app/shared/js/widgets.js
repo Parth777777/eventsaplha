@@ -592,14 +592,25 @@
       const up = (item.deltaPct || 0) >= 0;
       const color = up ? '#4ee6b8' : '#ff7a8a';
       const click = item.onClick ? `onclick="${item.onClick}"` : '';
+      // `unit` is a separate optional field rendered next to the value so the
+      // caller doesn't have to embed HTML in `value` (which gets escaped).
+      const unitHtml = item.unit
+        ? `<span style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--t3);margin-left:6px;letter-spacing:0.02em;">${escape(item.unit)}</span>`
+        : '';
+      const sub = item.sub
+        ? `<div style="font-size:9.5px;color:var(--t3);font-family:var(--font-ui);letter-spacing:0.04em;margin-top:1px;">${escape(item.sub)}</div>`
+        : '';
       return `
         <div class="widget" style="min-height:auto;padding:14px;${item.onClick ? 'cursor:pointer;' : ''}" ${click}>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--t1);">${escape(item.label)}</span>
-            <span class="spark-pct ${up ? 'up' : 'down'}" style="font-size:10px;padding:2px 7px;">${up ? '▲ +' : '▼ '}${Math.abs(item.deltaPct || 0).toFixed(2)}%</span>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;gap:8px;">
+            <span style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--t1);letter-spacing:-0.005em;">${escape(item.label)}</span>
+            <span class="spark-pct ${up ? 'up' : 'down'}" style="font-size:10px;padding:2px 7px;flex-shrink:0;">${up ? '▲ +' : '▼ '}${Math.abs(item.deltaPct || 0).toFixed(2)}%</span>
           </div>
-          <div style="font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--t1);letter-spacing:-0.02em;margin-bottom:4px;">${escape(item.value)}</div>
-          <div id="${id}" style="height:36px;"></div>
+          <div style="font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--t1);letter-spacing:-0.02em;margin-bottom:2px;display:flex;align-items:baseline;">
+            <span>${escape(item.value)}</span>${unitHtml}
+          </div>
+          ${sub}
+          <div id="${id}" style="height:36px;margin-top:6px;"></div>
         </div>`;
     }).join('');
     list.forEach((item, idx) => {
@@ -706,9 +717,11 @@
     el.style.padding = '8px 0';
     el.innerHTML = list.map(b => {
       const h = Math.max(2, ((b.value || 0) / max) * 100);
-      const c = b.color || '#5b6cff';
+      /* Default bar color reads the accent token so light + dark
+         both pick a calibrated brand color instead of a hardcoded indigo. */
+      const c = b.color || 'var(--accent)';
       return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default;" title="${escape(b.label)}: ${escape(b.value)}">
-        <div style="width:100%;background:linear-gradient(180deg, ${c}, ${c}88);height:${h}%;border-radius:4px 4px 0 0;transition:height 500ms ease;min-height:2px;"></div>
+        <div style="width:100%;background:${c};opacity:0.85;height:${h}%;border-radius:4px 4px 0 0;transition:height 500ms ease;min-height:2px;"></div>
         <span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">${escape(b.label).slice(0, 8)}</span>
       </div>`;
     }).join('');
@@ -722,7 +735,7 @@
     const list = segments || [];
     const total = list.reduce((s, x) => s + (x.value || 0), 0) || 1;
     el.innerHTML = `
-      <div style="display:flex;height:${opts.height || 16}px;border-radius:${opts.height ? Math.floor(opts.height/2) : 8}px;overflow:hidden;background:rgba(255,255,255,0.06);">
+      <div style="display:flex;height:${opts.height || 16}px;border-radius:${opts.height ? Math.floor(opts.height/2) : 8}px;overflow:hidden;background:var(--border-subtle);">
         ${list.map(s => `<div style="width:${(s.value/total*100).toFixed(2)}%;background:${s.color};transition:width 500ms ease;" title="${escape(s.label)}: ${(s.value/total*100).toFixed(1)}%"></div>`).join('')}
       </div>
       <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
@@ -934,15 +947,30 @@
       ];
     },
     commodities: async () => {
-      // commodities endpoint may not exist — show static labels then update if available
-      let list = [];
-      try { const d = await fetchJSON('/commodities'); list = (d && d.data) || []; } catch (_) {}
-      const up = list.filter(c => (c.change_pct||0) > 0).length;
+      // Endpoint was wrong (/commodities is 404 — actual route is
+      // /commodities/all). icons:null per UX ask to remove them on this page.
+      let list = []; let usdinr = null; let topMover = null;
+      try {
+        const d = await fetchJSON('/commodities/all');
+        list = (d && d.data) || [];
+        usdinr = (d && d.usdinr) || null;
+      } catch (_) {}
+      const tradable = list.filter(c => (c.category || '') !== 'FX');
+      const up = tradable.filter(c => (c.change_pct||0) > 0).length;
+      const down = tradable.filter(c => (c.change_pct||0) < 0).length;
+      const breadth = tradable.length ? Math.round(up / tradable.length * 100) : 0;
+      topMover = [...tradable].sort((a,b) => Math.abs(b.change_pct||0) - Math.abs(a.change_pct||0))[0];
+      const topSub = topMover
+        ? (topMover.name.replace(' (MCX)','').replace(' (NCDEX)','')
+           + ' ' + ((topMover.change_pct||0) >= 0 ? '+' : '')
+           + (topMover.change_pct||0).toFixed(2) + '%')
+        : '—';
       return [
-        {color:'mint',     icon:'inventory_2',   label:'Tracked',     value:list.length || '—', sub:'commodities'},
-        {color:'yellow',   icon:'arrow_upward',  label:'Rising today',value:up || '—',           sub:'in green'},
-        {color:'lavender', icon:'arrow_downward',label:'Falling',     value:(list.length-up)||'—', sub:'in red'},
-        {color:'dark',     icon:'show_chart',    label:'Breadth',     value:(list.length?Math.round(up/list.length*100):0)+'%', sub:'risk-on share', delta:'live'},
+        {color:'mint',     icon:null, label:'Tracked',      value: tradable.length || '—', sub:'MCX + NCDEX commodities'},
+        {color:'yellow',   icon:null, label:'Rising today', value: up || '—',              sub:'in green'},
+        {color:'lavender', icon:null, label:'Falling',      value: down || '—',            sub:'in red'},
+        {color:'dark',     icon:null, label:'Breadth',      value: breadth + '%',
+         sub: usdinr ? ('USDINR ₹' + usdinr.toFixed(2)) : 'risk-on share', delta: 'live'},
       ];
     },
     global: async () => {
@@ -987,13 +1015,19 @@
   function _renderPastelCards(rootEl, cards) {
     rootEl.innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
-        ${cards.map(c => `
+        ${cards.map(c => {
+          // c.icon === null  → render no icon (pages can opt out per the
+          //                     commodities variant).
+          // c.icon undefined → fall back to 'bolt' for backwards-compat.
+          const hasIcon = c.icon !== null;
+          const iconName = c.icon || 'bolt';
+          return `
           <div class="pastel-card pastel-card--${c.color}"${c.id ? ' id="'+c.id+'"' : ''}>
             <div class="pastel-card__head">
               <span class="pastel-card__chip"${c.color === 'dark' ? ' style="background:rgba(255,255,255,0.10);color:inherit;"' : ''}>
-                <span class="pastel-card__icon-bg"${c.color === 'dark' ? ' style="background:rgba(255,255,255,0.10);"' : ''}>
-                  <span class="material-symbols-outlined">${escape(c.icon || 'bolt')}</span>
-                </span>
+                ${hasIcon ? `<span class="pastel-card__icon-bg"${c.color === 'dark' ? ' style="background:rgba(255,255,255,0.10);"' : ''}>
+                  <span class="material-symbols-outlined">${escape(iconName)}</span>
+                </span>` : ''}
                 ${escape(c.label || '')}
               </span>
               ${c.delta ? `<span class="delta"${c.color === 'dark' ? ' style="background:rgba(200,245,98,0.20);color:var(--accent-lime);"' : ''}>${escape(c.delta)}</span>` : ''}
@@ -1001,7 +1035,7 @@
             <div class="pastel-card__value">${escape(c.value != null ? c.value : '—')}</div>
             <div class="pastel-card__sub"${c.color === 'dark' ? ' style="opacity:0.7;"' : ''}>${escape(c.sub || '')}</div>
           </div>
-        `).join('')}
+        `;}).join('')}
       </div>
     `;
   }

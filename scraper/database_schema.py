@@ -641,35 +641,130 @@ class TickwaveDB:
 
     def upsert_signal(self, event_id, event_type, ticker, alpha_score, confidence,
                       regime, entry_price, sentiment, company=None, regime_strength=0,
-                      magnitude=0, impact_score=0, source=None, headline=None, link=None):
-        """Insert or update a signal (deduplication by event_id)"""
+                      magnitude=0, impact_score=0, source=None, headline=None, link=None,
+                      news_type=None, subject_confidence=None, subject_evidence=None,
+                      cluster_hash=None, cluster_size=None, raw_alpha_score=None):
+        """Insert or update a signal (deduplication by event_id).
+
+        news_type / subject_confidence / subject_evidence come from
+        scraper/entity_linker.py and let the curated-signals feed filter out
+        mis-tagged headlines BEFORE they're persisted.
+
+        Addendum 2026-05-18: cluster_hash links this signal to its row in
+        event_clusters so /api/signals can JOIN and return sources + member
+        count. cluster_size + raw_alpha_score are denormalized snapshots —
+        cluster_size for cheap list-query reads, raw_alpha_score so we keep
+        the pre-multiplier value for transparency on the methodology page.
+
+        Older callers that don't pass them get NULL (acceptable).
+        """
         self._ensure_connected()
+        # Serialize evidence to JSON if a dict was passed
+        if subject_evidence is not None and not isinstance(subject_evidence, str):
+            try:
+                import json as _json
+                subject_evidence = _json.dumps(subject_evidence, default=str)[:1000]
+            except Exception:
+                subject_evidence = str(subject_evidence)[:1000]
+        # Apply cluster-size multiplier here so callers don't all need to
+        # know about it. Boost is capped at 1.45×. raw_alpha_score preserves
+        # the pre-boost value for the /methodology transparency page.
+        try:
+            from alpha_scoring_engine import cluster_size_multiplier as _csm
+        except Exception:
+            _csm = lambda n: 1.0  # noqa
+        try:
+            if raw_alpha_score is None:
+                raw_alpha_score = float(alpha_score or 0)
+            mult = _csm(int(cluster_size or 1))
+            alpha_score = max(0.0, min(100.0, raw_alpha_score * mult))
+        except Exception:
+            pass
         try:
             if self.is_postgres:
                 self.conn.cursor().execute("""
                     INSERT INTO signals (event_id, event_type, ticker, company, alpha_score,
                         confidence, regime, regime_strength, entry_price, sentiment,
-                        magnitude, impact_score, source, headline, link, status)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'active')
+                        magnitude, impact_score, source, headline, link, status,
+                        news_type, subject_confidence, subject_evidence,
+                        cluster_hash, cluster_size, raw_alpha_score)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'active',
+                            %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (event_id) DO UPDATE SET
                         alpha_score = EXCLUDED.alpha_score,
                         confidence = EXCLUDED.confidence,
                         regime = EXCLUDED.regime,
                         status = 'active',
+                        news_type = COALESCE(EXCLUDED.news_type, signals.news_type),
+                        subject_confidence = COALESCE(EXCLUDED.subject_confidence, signals.subject_confidence),
+                        subject_evidence = COALESCE(EXCLUDED.subject_evidence, signals.subject_evidence),
+                        cluster_hash = COALESCE(EXCLUDED.cluster_hash, signals.cluster_hash),
+                        cluster_size = GREATEST(COALESCE(EXCLUDED.cluster_size, 1), COALESCE(signals.cluster_size, 1)),
+                        raw_alpha_score = COALESCE(EXCLUDED.raw_alpha_score, signals.raw_alpha_score),
                         created_at = CURRENT_TIMESTAMP
                 """, (event_id, event_type, ticker, company, alpha_score, confidence,
                       regime, regime_strength, entry_price, sentiment, magnitude,
-                      impact_score, source, headline, link))
+                      impact_score, source, headline, link,
+                      news_type, subject_confidence, subject_evidence,
+                      cluster_hash, cluster_size, raw_alpha_score))
             else:
                 self.conn.execute("""
                     INSERT OR REPLACE INTO signals (event_id, event_type, ticker, company,
                         alpha_score, confidence, regime, regime_strength, entry_price,
-                        sentiment, magnitude, impact_score, source, headline, link, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+                        sentiment, magnitude, impact_score, source, headline, link, status,
+                        news_type, subject_confidence, subject_evidence,
+                        cluster_hash, cluster_size, raw_alpha_score)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active',
+                            ?, ?, ?, ?, ?, ?)
                 """, (event_id, event_type, ticker, company, alpha_score, confidence,
                       regime, regime_strength, entry_price, sentiment, magnitude,
-                      impact_score, source, headline, link))
+                      impact_score, source, headline, link,
+                      news_type, subject_confidence, subject_evidence,
+                      cluster_hash, cluster_size, raw_alpha_score))
             self.conn.commit()
+            # ---- News-quality enrichment of signal extensions ----
+            # Run the classifier on the headline and persist:
+            #   - reasoning: short market_implication (drives newsroom hover text)
+            #   - news_type:  promoted to 'noise' / 'high_impact' / 'critical' when
+            #                 the classifier has strong evidence — letting the
+            #                 reader API filter without a second classify call.
+            # Done after commit so a flaky classifier never blocks the signal write.
+            try:
+                from news_quality import classify as _classify_news
+                q = _classify_news(title=headline, source=source)
+                ext_fields = {}
+                if q.market_implication:
+                    ext_fields["reasoning"] = q.market_implication
+                if q.is_noise:
+                    ext_fields["news_type"] = "noise"
+                elif q.impact_tier in ("critical", "high"):
+                    # Only promote news_type when it's currently unset or a
+                    # generic news_article — never overwrite social_buzz etc.
+                    if not news_type or news_type in ("news_article", "news", "rss"):
+                        ext_fields["news_type"] = ("high_impact" if q.impact_tier == "high"
+                                                   else "critical_impact")
+                if ext_fields:
+                    try:
+                        self.update_signal_extensions(event_id, ext_fields)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            # Best-effort post-commit enqueues. Idempotent via unique
+            # (kind, payload) index on job_queue.
+            try:
+                from backend.scrape_runner import enqueue as _enqueue
+                # 1. AI explanation — runs once per signal, all tiers benefit
+                _enqueue(self, "explain_signal", {"event_id": event_id})
+                # 2. Priority mail for pro watchers when alpha is hot.
+                #    Handler skips if alpha < threshold, so this is cheap to fire.
+                try:
+                    if float(alpha_score or 0) >= 75:
+                        _enqueue(self, "priority_mail_signal", {"event_id": event_id})
+                except (TypeError, ValueError):
+                    pass
+            except Exception:
+                pass
             return True
         except Exception as e:
             logger.error(f"Failed to upsert signal {event_id}: {e}")
@@ -823,10 +918,42 @@ class TickwaveDB:
                      event_type=None, event_confidence=0, sentiment=None,
                      sentiment_confidence=0, magnitude=0, impact_score=0,
                      companies=None, published_at=None):
-        """Insert a scraped event"""
+        """Insert a scraped event.
+
+        Runs the news_quality classifier inline so impact_score reflects the
+        signal/noise tier and the summary carries a one-line market implication
+        when the upstream summary was empty. Callers don't need to opt-in —
+        every event flowing through here is classified.
+        """
         self._ensure_connected()
         try:
             companies_str = ','.join(companies) if isinstance(companies, list) else companies
+
+            # ---- Quality enrichment (best-effort; never blocks insert) ----
+            try:
+                from news_quality import classify as _classify_news
+                q = _classify_news(title=title, summary=summary, source=source)
+                # Noise: floor impact_score so it sorts to the bottom of every
+                # feed without dropping the row (some downstream pages still
+                # rely on raw mirroring of upstream events for diagnostics).
+                if q.is_noise:
+                    impact_score = min(float(impact_score or 0), 8.0)
+                else:
+                    # High-impact: lift impact_score toward the quality tier.
+                    # Use max() so an upstream-set score stays if it's already
+                    # higher; we never down-rank a kind-matched event.
+                    impact_score = max(float(impact_score or 0), float(q.quality_score))
+                # If the upstream event_type was a generic 'news' but we
+                # detected a structured kind (earnings/order_win/etc.), promote it.
+                if (not event_type or event_type in ("news", "general", "")) \
+                        and q.suggested_event_type:
+                    event_type = q.suggested_event_type
+                # Append market implication to summary when summary is empty.
+                if (not summary or not summary.strip()) and q.market_implication:
+                    summary = q.market_implication
+            except Exception as _qe:
+                # Never fail an insert on classifier issue
+                logger.debug(f"news_quality classify skipped: {_qe}")
             if self.is_postgres:
                 self.conn.cursor().execute("""
                     INSERT INTO events (event_id, title, summary, source, link, event_type,
@@ -847,6 +974,41 @@ class TickwaveDB:
                       event_confidence, sentiment, sentiment_confidence, magnitude,
                       impact_score, companies_str, published_at))
             self.conn.commit()
+            # Enqueue AI summarization for this event. Idempotent via the
+            # unique (kind, payload) index on job_queue. Skipped silently
+            # if scrape_runner isn't importable (e.g. during unit tests).
+            try:
+                from backend.scrape_runner import enqueue as _enqueue
+                _enqueue(self, "summarize", {"event_id": event_id})
+            except Exception:
+                pass
+            # SLA recorder: measure publish→classify latency. Populates
+            # /api/v1/sla so the data-platform's speed claim is real.
+            try:
+                from api_public import get_sla_recorder
+                if published_at:
+                    from datetime import datetime as _dt
+                    pub = None
+                    if isinstance(published_at, str):
+                        try:
+                            pub = _dt.fromisoformat(published_at.replace('Z','').split('.')[0])
+                        except ValueError:
+                            # RFC822 fallback for Google News dates
+                            try:
+                                from email.utils import parsedate_to_datetime as _p
+                                pub = _p(published_at).replace(tzinfo=None)
+                            except Exception:
+                                pub = None
+                    else:
+                        pub = published_at
+                    if pub:
+                        ms = max(0.0, (_dt.utcnow() - pub).total_seconds() * 1000.0)
+                        # Cap at 7 days — anything older is RSS backfill, not live
+                        if ms < 7 * 24 * 3600 * 1000:
+                            get_sla_recorder()('publish_to_classify',
+                                                companies_str or None, ms)
+            except Exception:
+                pass
             return True
         except Exception as e:
             logger.error(f"Failed to insert event: {e}")
@@ -1091,22 +1253,45 @@ class TickwaveDB:
     def get_active_signals(self, limit=50):
         """Get active signals ranked by recency-decayed alpha.
 
-        Each day-of-age subtracts ~5 effective alpha points so today's strong
-        signal beats a 3-day-old signal of the same alpha — otherwise the home
-        feed gets dominated by old high-alpha picks and looks stale to users.
+        DECAY tightened 2026-05-18 (user feedback: "alpha signals so old"):
+          - Each day-of-age subtracts 8 effective alpha points (was 5).
+            A 5-day-old signal at alpha 80 now scores 40 effective — easily
+            beaten by a 12h-old fresh signal at alpha 60.
+          - Hard cutoff at 7 days. Older signals get filtered out entirely
+            (status implicitly stale). The home feed only shows the past
+            week's worth so the page can't ever look like a museum.
+
+        STRICT social filter: drops any signal tagged social_buzz/social/
+        reddit/twitter/telegram OR any signal whose source URL/name smells
+        like one of those platforms.
         """
         self._ensure_connected()
         placeholder = '%s' if self.is_postgres else '?'
         if self.is_postgres:
-            order = ("(alpha_score - EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0 * 5) "
+            order = ("(alpha_score - EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400.0 * 8) "
                      "DESC, created_at DESC")
+            age_cutoff = "AND created_at >= NOW() - INTERVAL '7 days'"
         else:
-            order = ("(alpha_score - (julianday('now') - julianday(created_at)) * 5) "
+            order = ("(alpha_score - (julianday('now') - julianday(created_at)) * 8) "
                      "DESC, created_at DESC")
+            age_cutoff = "AND created_at >= datetime('now', '-7 days')"
         return _execute_query(self.conn, f"""
-            SELECT * FROM signals WHERE status = 'active'
-            ORDER BY {order}
-            LIMIT {placeholder}
+            SELECT * FROM signals
+             WHERE status = 'active'
+               {age_cutoff}
+               AND (news_type IS NULL OR LOWER(news_type) NOT IN
+                    ('social_buzz','social','reddit','twitter','telegram'))
+               AND (source IS NULL OR (
+                       LOWER(source) NOT LIKE '%reddit%'
+                   AND LOWER(source) NOT LIKE '%/r/%'
+                   AND LOWER(source) NOT LIKE '%twitter%'
+                   AND LOWER(source) NOT LIKE '%t.me/%'
+                   AND LOWER(source) NOT LIKE 'telegram%'
+                   AND LOWER(source) NOT LIKE 'nitter%'
+                   AND LOWER(source) NOT LIKE '%stocktwits%'
+               ))
+             ORDER BY {order}
+             LIMIT {placeholder}
         """, (limit,), fetch=True)
 
     def get_signal_by_id(self, event_id):

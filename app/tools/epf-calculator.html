@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPF Calculator — Employee Provident Fund Corpus | Tickwave</title>
+<meta name="description" content="EPF calculator with employer matching. Enter basic salary + annual hike + years of service → final corpus at retirement. Current EPF rate 8.25%.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/epf-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">EPF Calculator</div>
+<h1>Provident fund at <span class="accent">retirement</span></h1>
+<p class="lead">12% of your basic salary goes to EPF every month, and your employer matches it. With salary hikes compounding and 8.25% annual interest, this builds a serious corpus over a career.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="60" width="120" height="100" rx="10" fill="#161d28" stroke="#b794ff"/><text x="100" y="86" text-anchor="middle" font-family="Geist Mono" font-size="11" fill="#8a94a8" letter-spacing="2">EPF</text><rect x="60" y="100" width="32" height="40" rx="3" fill="#b794ff" opacity="0.4"/><rect x="108" y="100" width="32" height="40" rx="3" fill="#b794ff"/><text x="76" y="125" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">Employee</text><text x="124" y="125" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#b794ff">Employer</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your salary</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Basic salary (monthly) <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="bIn" value="30000" min="1000" step="500"></span></div><input type="range" id="b" class="tk-slider" min="1000" max="200000" step="500" value="30000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹2 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current age <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="aIn" value="28" min="18" max="58" step="1"><span class="suffix">yr</span></span></div><input type="range" id="a" class="tk-slider" min="18" max="58" step="1" value="28"><div class="tk-slider-bounds"><span>18</span><span>58</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual salary growth <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="gIn" value="8" min="0" max="20" step="1"><span class="suffix">%</span></span></div><input type="range" id="g" class="tk-slider" min="0" max="20" step="1" value="8"><div class="tk-slider-bounds"><span>0%</span><span>20%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">EPF interest rate <span class="hint">(current 8.25%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="8.25" min="6" max="10" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="6" max="10" step="0.05" value="8.25"><div class="tk-slider-bounds"><span>6%</span><span>10%</span></div></div>
+</div>
+<div class="tk-card"><h2>At retirement (age 58)</h2>
+<div class="tk-result-headline">EPF corpus</div>
+<div class="tk-result-value" id="corpus">—</div>
+<div class="tk-result-sub">Across <span id="subY">30</span> years of service</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Contributions<strong id="lgC">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total contributions</div><div class="val" id="contrib">—</div></div><div class="tk-stat"><div class="lbl">Interest earned</div><div class="val bull" id="interest">—</div></div></div>
+</div></section>
+
+<section class="tk-content">
+<section><h2>How EPF contributions work</h2>
+<ul>
+<li><strong>Employee:</strong> 12% of basic + DA goes to EPF</li>
+<li><strong>Employer:</strong> 12% of basic + DA matched — but split: 8.33% to EPS (Employee Pension Scheme, capped at ₹15k basic) + 3.67% to EPF</li>
+<li><strong>Effective to EPF account:</strong> 12% (you) + 3.67% (employer) = ~15.67% of basic — this calculator uses that</li>
+<li><strong>Tax status (FY25-26):</strong> Interest tax-free up to ₹2.5 lakh / year contribution. Above that, interest on excess is taxable</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Can I withdraw EPF before retirement?</summary><p>Partial withdrawal allowed for home purchase, medical, marriage, education. Full withdrawal on resignation after 2 months of unemployment (taxable if EPF < 5 yrs old).</p></details>
+<details><summary>Can I contribute more than 12%?</summary><p>Yes — Voluntary Provident Fund (VPF) lets you contribute up to 100% of basic. Same EPF rate applies. Tax-free until contribution + employer match crosses ₹2.5L/yr.</p></details>
+<details><summary>What happens to EPF when I switch jobs?</summary><p>Transfer the UAN to the new employer. Don't withdraw — keep compounding tax-free.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="nps-calculator.html">NPS Calculator<span class="sub">Voluntary retirement scheme</span></a>
+<a href="ppf-calculator.html">PPF Calculator<span class="sub">Tax-free outside job</span></a>
+<a href="gratuity-calculator.html">Gratuity<span class="sub">Other retirement benefit</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var basic=+document.getElementById('b').value, age=+document.getElementById('a').value, g=+document.getElementById('g').value/100, r=+document.getElementById('r').value/100;
+  var years=Math.max(0,58-age); document.getElementById('subY').textContent=years;
+  var balance=0, totalContrib=0;
+  for(var y=0;y<years;y++){
+    var monthlyContrib=basic*0.1567;  // 15.67%
+    for(var k=0;k<12;k++){ balance=balance*(1+r/12)+monthlyContrib; totalContrib+=monthlyContrib;}
+    basic=basic*(1+g);
+  }
+  var interest=balance-totalContrib;
+  T.animateNumber(document.getElementById('corpus'),balance);
+  T.animateNumber(document.getElementById('contrib'),totalContrib);
+  T.animateNumber(document.getElementById('interest'),interest);
+  document.getElementById('lgC').textContent=T.formatINRShort(totalContrib);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  T.drawDonut(document.getElementById('donut'),[{value:totalContrib,color:'#8eb4e0'},{value:interest,color:'#b794ff'}],{centerLabel:'Corpus',centerValue:T.formatINRShort(balance)});
+}
+T.bindSlider({slider:document.getElementById('b'),input:document.getElementById('bIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('g'),input:document.getElementById('gIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Can I withdraw EPF before retirement?',a:'Partial: home/medical/marriage/education. Full: after 2 months unemployment (taxable if EPF < 5 yrs).'},{q:'Contribute more than 12% to EPF?',a:'Yes via VPF — up to 100% of basic. Tax-free until total > Rs 2.5L/yr.'},{q:'What happens to EPF on job switch?',a:'Transfer UAN to new employer. Do not withdraw — keep compounding tax-free.'}]);
+T.mountSoftwareSchema({name:'EPF Calculator',description:'Employee Provident Fund retirement corpus with salary growth.'});
+})();
+</script>
+</body></html>

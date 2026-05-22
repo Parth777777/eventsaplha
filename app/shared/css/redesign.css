@@ -1,0 +1,964 @@
+/* ════════════════════════════════════════════════════════════════════════
+   ALPHAEVENT — PREMIUM REDESIGN LAYER (2026-05-17)
+   ────────────────────────────────────────────────────────────────────────
+   This stylesheet loads LAST so its declarations win at equal specificity.
+   It overrides the legacy dark-first chrome with a premium visual system
+   inspired by Linear, Stripe, Vercel — confident black, soft shadows, and
+   restrained whitespace in light mode; true-OLED depth in dark.
+
+   Philosophy:
+     - Light mode is the primary experience. It must look as polished as
+       Stripe Dashboard, not as an afterthought of the dark theme.
+     - Cards earn elevation through SHADOWS, not borders.
+     - Density reduced — generous padding + line-height = premium feel.
+     - One typography family (Inter). Tight letter-spacing for display.
+     - Restrained accent — black for primary actions, indigo for links.
+     - Bull/bear toned down from arcade neon to forest green / oxide red.
+   ════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── REFINED TOKENS — overrides tokens.css with calibrated values ────── */
+:root {
+  /* Motion (carry forward) */
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:  120ms;
+  --dur-base:  220ms;
+  --dur-slow:  420ms;
+
+  /* Brand display type — used for big headlines + numbers */
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — premium, restrained, confident
+   ════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'],
+:root:not([data-theme='dark']) {
+  /* Surfaces — warmer than pure white, kills hospital-grade sterility */
+  --bg:        #fafafa;
+  --surface-0: #fafafa;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #f4f5f9;
+  --s0: #ffffff;
+  --s1: #ffffff;
+  --s2: #ffffff;
+  --s3: #f4f5f9;
+  --s4: #eaecf4;
+
+  /* Text — confident near-black for primary, warm gray for secondary */
+  --text-primary:   #0d1020;
+  --text-secondary: #525866;
+  --text-tertiary:  #9ca3af;
+  --t1: #0d1020;
+  --t2: #525866;
+  --t3: #9ca3af;
+
+  /* Borders — nearly invisible hairlines, used sparingly */
+  --border-subtle: rgba(15, 18, 36, 0.06);
+  --border-strong: rgba(15, 18, 36, 0.10);
+  --b0: rgba(15, 18, 36, 0.04);
+  --b1: rgba(15, 18, 36, 0.06);
+  --b2: rgba(15, 18, 36, 0.10);
+  --b3: rgba(15, 18, 36, 0.16);
+
+  /* Accent — solid black for primary CTAs (premium banking feel),
+     indigo for links/active. Both pass WCAG AA on white. */
+  --accent:        #0d1020;        /* primary CTAs */
+  --accent-hover:  #1f2440;
+  --accent-dim:    rgba(13, 16, 32, 0.06);
+  --link:          #4f46e5;        /* indigo for links + active states */
+  --link-hover:    #6366f1;
+
+  /* Semantic — forest green + oxide red, calibrated for white bg */
+  --bull:        #0d9669;
+  --bull-dim:    rgba(13, 150, 105, 0.10);
+  --bull-border: rgba(13, 150, 105, 0.22);
+  --bear:        #dc2626;
+  --bear-dim:    rgba(220, 38, 38, 0.08);
+  --bear-border: rgba(220, 38, 38, 0.22);
+  --caution:        #d97706;
+  --caution-dim:    rgba(217, 119, 6, 0.08);
+  --caution-border: rgba(217, 119, 6, 0.22);
+  --info:        #4f46e5;
+  --info-dim:    rgba(79, 70, 229, 0.08);
+  --info-border: rgba(79, 70, 229, 0.22);
+
+  /* Shadows — Stripe-grade soft elevation. Replace borders on cards. */
+  --shadow-xs: 0 1px 2px rgba(15, 18, 36, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 18, 36, 0.05), 0 1px 2px rgba(15, 18, 36, 0.03);
+  --shadow-md: 0 4px 12px rgba(15, 18, 36, 0.06), 0 2px 4px rgba(15, 18, 36, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 18, 36, 0.08), 0 4px 12px rgba(15, 18, 36, 0.04);
+  --shadow-xl: 0 24px 64px rgba(15, 18, 36, 0.10), 0 8px 24px rgba(15, 18, 36, 0.06);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   DARK MODE — true OLED black, sharper accents
+   ════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='dark'] {
+  --bg:        #0a0a0a;
+  --surface-0: #0a0a0a;
+  --surface-1: #141414;
+  --surface-2: #1a1a1a;
+  --surface-3: #242424;
+  --s0: #141414;
+  --s1: #141414;
+  --s2: #1a1a1a;
+  --s3: #242424;
+  --s4: #2e2e2e;
+
+  --text-primary:   #f5f5f7;
+  --text-secondary: #a1a1aa;
+  --text-tertiary:  #6b7280;
+  --t1: #f5f5f7;
+  --t2: #a1a1aa;
+  --t3: #6b7280;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --b0: rgba(255, 255, 255, 0.04);
+  --b1: rgba(255, 255, 255, 0.06);
+  --b2: rgba(255, 255, 255, 0.12);
+  --b3: rgba(255, 255, 255, 0.20);
+
+  /* Accent — bright periwinkle/indigo for night focus */
+  --accent:        #f5f5f7;        /* white-ish primary CTAs in dark */
+  --accent-hover:  #ffffff;
+  --accent-dim:    rgba(245, 245, 247, 0.10);
+  --link:          #818cf8;
+  --link-hover:    #a5b4fc;
+
+  --bull:        #34d399;
+  --bull-dim:    rgba(52, 211, 153, 0.12);
+  --bull-border: rgba(52, 211, 153, 0.25);
+  --bear:        #f87171;
+  --bear-dim:    rgba(248, 113, 113, 0.12);
+  --bear-border: rgba(248, 113, 113, 0.25);
+  --caution:        #fbbf24;
+  --caution-dim:    rgba(251, 191, 36, 0.12);
+  --caution-border: rgba(251, 191, 36, 0.25);
+  --info:        #818cf8;
+  --info-dim:    rgba(129, 140, 248, 0.12);
+  --info-border: rgba(129, 140, 248, 0.25);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.65), 0 8px 24px rgba(0, 0, 0, 0.40);
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   GLOBAL — body, typography, scrollbars
+   ════════════════════════════════════════════════════════════════════════ */
+html, body {
+  background: var(--bg) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-display);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';  /* Inter — better numerals + tighter R */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+body { font-size: 14px; line-height: 1.6; }
+
+/* Kill any leftover dark gradient overlays on body in light mode */
+:root[data-theme='light'] body,
+:root:not([data-theme='dark']) body {
+  background-image: none !important;
+}
+
+/* Display headlines — tight tracking, premium */
+h1, h2, h3, .display { letter-spacing: -0.02em; font-weight: 700; color: var(--text-primary); }
+h1 { font-size: 32px; line-height: 1.15; }
+h2 { font-size: 22px; line-height: 1.25; }
+h3 { font-size: 17px; line-height: 1.3; font-weight: 600; }
+
+/* Scrollbars — slim, theme-aware */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   SIDEBAR — preserve original hover-expand architecture (52px → 220px).
+   We only override CHROME (background, border, shadow) — never width or
+   position. Forcing width breaks the carefully-tuned main-content offset
+   in style.css and ends up covering the page content.
+   ════════════════════════════════════════════════════════════════════════ */
+.sidebar {
+  background: var(--surface-1) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  box-shadow: none !important;
+  /* Width + position + padding inherit from style.css — do NOT override */
+}
+:root[data-theme='light'] .sidebar {
+  /* Override the lavender gradient from style.css:2324 */
+  background: var(--surface-1) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--border-subtle) !important;
+}
+/* When pinned-open via the toggle, the sidebar stays at expanded width
+   instead of auto-collapsing on mouse leave. */
+.sidebar.sidebar--pinned-open {
+  width: 240px !important;
+}
+.sidebar.sidebar--pinned-open:hover {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+}
+.sidebar-header {
+  padding: 0 20px 24px !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  margin-bottom: 12px !important;
+}
+.sidebar-brand-sub {
+  color: var(--text-tertiary) !important;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.sidebar-section {
+  padding: 16px 20px 6px !important;
+  font-size: 10px !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  color: var(--text-tertiary) !important;
+  font-weight: 600 !important;
+}
+.sidebar-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 9px 20px !important;
+  margin: 1px 8px !important;
+  border-radius: 8px !important;
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out) !important;
+}
+.sidebar-link:hover {
+  background: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+}
+.sidebar-link.active {
+  background: var(--accent) !important;
+  color: var(--surface-1) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+:root[data-theme='dark'] .sidebar-link.active {
+  background: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+}
+.sidebar-icon {
+  font-size: 17px !important;
+  font-variation-settings: 'FILL' 0, 'wght' 500 !important;
+  color: currentColor !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   CARDS — shadows replace borders in light, both in dark
+   ════════════════════════════════════════════════════════════════════════ */
+.widget,
+.pastel-card,
+.card,
+.curated-card {
+  background: var(--surface-1) !important;
+  border-radius: 14px !important;
+  transition: box-shadow var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out) !important;
+}
+:root[data-theme='light'] .widget,
+:root[data-theme='light'] .pastel-card,
+:root[data-theme='light'] .card,
+:root[data-theme='light'] .curated-card,
+:root:not([data-theme='dark']) .widget,
+:root:not([data-theme='dark']) .pastel-card,
+:root:not([data-theme='dark']) .card,
+:root:not([data-theme='dark']) .curated-card {
+  /* Pure white cards on warm off-white bg, lifted by shadow */
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 20px !important;
+}
+:root[data-theme='dark'] .widget,
+:root[data-theme='dark'] .pastel-card,
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] .curated-card {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.curated-card:hover,
+.widget:hover {
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-1px) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* Widget head — bigger title, refined meta */
+.widget__title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  letter-spacing: -0.005em !important;
+}
+.widget__meta {
+  font-size: 11px !important;
+  color: var(--text-tertiary) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   BUTTONS — black primary, ghost secondary, refined hover
+   ════════════════════════════════════════════════════════════════════════ */
+button, .btn, .range-period {
+  font-family: var(--font-display);
+  transition: background var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.btn-primary,
+button[data-variant="primary"] {
+  background: var(--accent) !important;
+  color: var(--surface-1) !important;
+  border: 0 !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover { background: var(--accent-hover) !important; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-ghost,
+button[data-variant="ghost"] {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  cursor: pointer;
+}
+.btn-ghost:hover { background: var(--surface-3) !important; }
+
+/* Range pickers / segmented controls — slim chip style */
+.range-period {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+.range-period:hover:not(.active) {
+  background: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+.range-period.active {
+  background: var(--accent) !important;
+  color: var(--surface-1) !important;
+  border-color: var(--accent) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   TAB BARS + SECTION PILLS — sleek, no borders, breathing space
+   ════════════════════════════════════════════════════════════════════════ */
+.tab-btn {
+  padding: 12px 18px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-tertiary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.tab-btn:hover { color: var(--text-primary) !important; }
+.tab-btn.active {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+.tab-btn .material-symbols-outlined { font-size: 16px !important; vertical-align: -3px; }
+
+.stock-section-btn {
+  padding: 8px 16px !important;
+  background: var(--surface-1) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+.stock-section-btn:hover {
+  background: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+}
+.stock-section-btn.active {
+  background: var(--accent) !important;
+  color: var(--surface-1) !important;
+  border-color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   HEADERS — sticky page header gets a soft blur in light
+   ════════════════════════════════════════════════════════════════════════ */
+header[style*="sticky"] {
+  background: var(--surface-1) !important;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   FOOTER — already token-driven via disclosures.css. Just tighten.
+   ════════════════════════════════════════════════════════════════════════ */
+.ea-footer {
+  margin: 64px 24px 32px !important;
+  padding: 24px !important;
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-xs);
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   SKELETON LOADERS — softer shimmer, less attention-grabbing
+   ════════════════════════════════════════════════════════════════════════ */
+.skel {
+  background: linear-gradient(90deg,
+              var(--surface-2) 0%,
+              var(--surface-3) 50%,
+              var(--surface-2) 100%) !important;
+  background-size: 200% 100% !important;
+  animation: skelShimmer 1.6s ease-in-out infinite !important;
+  border-radius: 8px !important;
+}
+@keyframes skelShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   INPUT FIELDS — clean, focus ring
+   ════════════════════════════════════════════════════════════════════════ */
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="number"],
+textarea {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--link);
+  box-shadow: 0 0 0 3px var(--info-dim);
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   ALPHA / SIGNAL PILLS — refined
+   ════════════════════════════════════════════════════════════════════════ */
+.alpha-pill, .src-pill, .ea-pill {
+  font-family: 'Geist Mono', monospace !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  border-radius: 6px !important;
+  padding: 3px 9px !important;
+  font-size: 11px !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   THEME TOGGLE SWITCH — refined slim
+   ════════════════════════════════════════════════════════════════════════ */
+.theme-switch {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   SIDEBAR — pin-open toggle (desktop) + mobile drawer behaviour
+   ════════════════════════════════════════════════════════════════════════ */
+/* Sidebar pin toggle — pins the hover-expand state so the user doesn't
+   have to keep mouse-over to read labels. Lives at the bottom of the
+   sidebar where it appears only when hovered (using the 220px width).
+   On the 52px collapsed default, the button stays icon-sized. */
+.sidebar-toggle {
+  margin: auto 8px 12px;     /* push to bottom of sidebar via auto top-margin */
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--dur-fast) var(--ease-out);
+  font-family: var(--font-display);
+  flex-shrink: 0;
+  align-self: center;        /* sits centered in the 52px slim rail */
+}
+.sidebar-toggle:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.sidebar-toggle .material-symbols-outlined {
+  font-size: 18px;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.sidebar--pinned-open .sidebar-toggle .material-symbols-outlined {
+  transform: rotate(180deg);
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   MOBILE — generous touch targets, simpler density
+   ════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+  .widget, .curated-card { padding: 16px !important; border-radius: 12px !important; }
+  h1 { font-size: 24px; }
+  h2 { font-size: 19px; }
+  /* Sidebar on mobile: hidden by default (Tailwind `hidden md:flex`).
+     When opened via toggle, it overlays as a drawer instead of taking
+     full document width. Do NOT force width:100% here — it'd break the
+     hide behaviour and feel like a stuck modal. */
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px !important;
+    z-index: 100;
+    box-shadow: var(--shadow-xl) !important;
+  }
+  /* Backdrop when sidebar is open on mobile — JS adds .sidebar--open to <body> */
+  body.sidebar--open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+    animation: premiumFadeUp 200ms var(--ease-out);
+  }
+  /* On mobile, the collapse toggle becomes a CLOSE button on the
+     top-right corner of the drawer */
+  .sidebar-toggle {
+    right: 12px;
+    top: 12px;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   PREMIUM LANDING HERO — minimal, confident, one CTA
+   ════════════════════════════════════════════════════════════════════════ */
+.premium-hero {
+  padding: 96px 24px 80px;
+  text-align: center;
+  background: var(--bg);
+}
+.premium-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-xs);
+}
+.premium-hero-title {
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: var(--text-primary);
+  margin-bottom: 22px;
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.premium-hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--link), var(--bull));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.premium-hero-sub {
+  font-size: 18px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 620px;
+  margin: 0 auto 36px;
+}
+.premium-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--accent);
+  color: var(--surface-1) !important;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.premium-hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.premium-hero-cta .material-symbols-outlined {
+  font-size: 18px;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.premium-hero-cta:hover .material-symbols-outlined { transform: translateX(4px); }
+.premium-hero-meta {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.premium-hero-meta a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; }
+
+
+/* Spotlight grid below hero — three premium cards */
+.premium-spotlight {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 880px) {
+  .premium-spotlight { grid-template-columns: 1fr; }
+}
+.premium-spot-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+.premium-spot-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.premium-spot-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.premium-spot-icon .material-symbols-outlined { font-size: 22px; }
+.premium-spot-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  letter-spacing: -0.005em;
+}
+.premium-spot-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   ANIMATION POLISH — gentle fade-in on first paint
+   ════════════════════════════════════════════════════════════════════════ */
+@keyframes premiumFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.premium-hero,
+.premium-spot-card {
+  animation: premiumFadeUp 600ms var(--ease-out) backwards;
+}
+.premium-spot-card:nth-child(1) { animation-delay: 100ms; }
+.premium-spot-card:nth-child(2) { animation-delay: 200ms; }
+.premium-spot-card:nth-child(3) { animation-delay: 300ms; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   LEGACY HERO + KPI BLOCKS — override hardcoded dark rgba inline styles
+   ════════════════════════════════════════════════════════════════════════ */
+.rf-hero {
+  background: transparent !important;
+  padding: 32px 0 24px !important;
+  margin-bottom: 32px;
+}
+.rf-hero-eyebrow {
+  display: inline-block;
+  padding: 5px 12px;
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 999px;
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-xs);
+}
+.rf-hero-title {
+  font-family: var(--font-display) !important;
+  letter-spacing: -0.025em !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.1 !important;
+}
+.rf-hero-sub {
+  color: var(--text-secondary) !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+  max-width: 640px;
+}
+
+/* KPI tiles — pure white in light, soft dark in dark */
+.rf-kpi-tile {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  padding: 16px 18px !important;
+  box-shadow: var(--shadow-xs) !important;
+  transition: box-shadow var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+.rf-kpi-tile:hover {
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transform: translateY(-1px);
+}
+.rf-kpi-lbl {
+  font-size: 10px !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  color: var(--text-tertiary) !important;
+  font-weight: 600 !important;
+}
+.rf-kpi-num {
+  font-family: 'Geist Mono', monospace !important;
+  font-variant-numeric: tabular-nums !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.1 !important;
+  margin-top: 4px;
+}
+.rf-kpi-sub {
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  margin-top: 2px;
+}
+.rf-btn {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.rf-btn:hover {
+  background: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+.rf-skel {
+  background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2)) !important;
+  background-size: 200% 100% !important;
+  animation: skelShimmer 1.6s ease-in-out infinite !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   GENERIC CURATED LIST / WIDGET CONTAINERS  — kill remaining dark bleeds
+   ════════════════════════════════════════════════════════════════════════ */
+/* These selectors target the worst-offender inline-style patterns left in
+   pages like index.html, curated-signals.js mini-chart wraps, etc. */
+.curated-mini-chart,
+[class*="mini-chart"] {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+.curated-change-strip,
+.curated-ohlcv,
+.curated-metrics {
+  background: var(--border-subtle) !important;  /* the grid gap shows through */
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+.curated-change,
+.curated-ohlcv-cell,
+.curated-metric {
+  background: var(--surface-1) !important;
+}
+.curated-sector-chip {
+  background: var(--surface-3) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+.curated-day-chg {
+  background: var(--surface-3) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+/* Multi-signal evidence chips — surface forensic / volume / regime signals
+   on each curated pick so the card shows WHY it's a good pick, not just the
+   alpha score. Colors are set inline by curated-signals.js based on the
+   per-signal threshold logic; this rule only handles base typography +
+   sizing so the chips render consistently next to the existing sector /
+   event-type / fundamentals chips. */
+.curated-evidence-chip {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; margin-left: 4px;
+  border-radius: 6px;
+  font: 700 9px 'Geist Mono', monospace;
+  letter-spacing: 0.04em;
+  border-style: solid; border-width: 1px;
+  white-space: nowrap;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   EMERGENCY KILLS — popups blocking the page (user feedback 2026-05-18)
+   ════════════════════════════════════════════════════════════════════════ */
+/* THE POPUP was actually market-clock.js mounting #tw-market-clock at
+   the top of <body>. Hidden + disabled at JS-load time too. */
+#tw-market-clock,
+#tw-mc-styles {
+  display: none !important;
+}
+/* <ae-toast> custom element — also kill defensively. */
+ae-toast,
+#ae-toast-container,
+.ae-toast-msg:empty {
+  display: none !important;
+}
+/* Breaking-alert top-strip toast — disabled via JS too, kept for safety */
+.tw-break-overlay,
+.tw-break-card {
+  display: none !important;
+}
+/* Onboarding nudge banner injected by bootstrap.js — was firing for
+   every fresh session despite the dedupe. Suppress unless explicitly
+   summoned via class .onboarding-banner--show. */
+div[style*="ea_skipped_onboarding"]:not(.onboarding-banner--show) {
+  display: none !important;
+}
+/* Hide any thin auto-mounted top strip whose only visible content is a
+   close button and an em-dash placeholder (defensive — catches future
+   variants of the same bug class). */
+[role="alert"]:empty,
+[role="alertdialog"]:empty {
+  display: none !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   PRINT-STYLE OVERRIDES for any deeply-inlined dark legacy
+   ════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] [style*="background:#0d1118"],
+:root[data-theme='light'] [style*="background: #0d1118"],
+:root[data-theme='light'] [style*="background:#111720"],
+:root[data-theme='light'] [style*="background: #111720"],
+:root[data-theme='light'] [style*="background:#161d28"],
+:root[data-theme='light'] [style*="background:#080c12"],
+:root[data-theme='light'] [style*="background:#0a0f17"] {
+  background: var(--surface-1) !important;
+}
+:root[data-theme='light'] [style*="color:#dde3ef"],
+:root[data-theme='light'] [style*="color: #dde3ef"],
+:root[data-theme='light'] [style*="color:#f4f6fb"] {
+  color: var(--text-primary) !important;
+}
+:root[data-theme='light'] [style*="color:#8a94a8"],
+:root[data-theme='light'] [style*="color:#9aa0c8"],
+:root[data-theme='light'] [style*="color:#8c909f"] {
+  color: var(--text-secondary) !important;
+}
+:root[data-theme='light'] [style*="color:#5a6373"],
+:root[data-theme='light'] [style*="color:#5a5d6a"],
+:root[data-theme='light'] [style*="color:#6a7388"] {
+  color: var(--text-tertiary) !important;
+}
+:root[data-theme='light'] [style*="border:1px solid #1f2336"],
+:root[data-theme='light'] [style*="border:1px solid #2a3142"] {
+  border-color: var(--border-subtle) !important;
+}

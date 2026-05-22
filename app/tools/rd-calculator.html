@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RD Calculator — Recurring Deposit Maturity | Tickwave</title>
+<meta name="description" content="Recurring deposit (RD) calculator with quarterly compounding. Enter monthly deposit, rate, tenure — get maturity and total interest. India-specific.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/rd-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">RD Calculator</div>
+<h1>Recurring deposit — <span class="accent">monthly savings habit</span></h1>
+<p class="lead">Deposit a fixed amount each month into your bank's RD. We compute the maturity using India's standard quarterly compounding on cumulative deposits.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g transform="translate(20 160)"><rect x="0" y="-20" width="22" height="20" fill="#b794ff" opacity="0.4" rx="2"/><rect x="30" y="-35" width="22" height="35" fill="#b794ff" opacity="0.55" rx="2"/><rect x="60" y="-55" width="22" height="55" fill="#b794ff" opacity="0.7" rx="2"/><rect x="90" y="-80" width="22" height="80" fill="#b794ff" opacity="0.85" rx="2"/><rect x="120" y="-110" width="22" height="110" fill="#b794ff" rx="2"/><rect x="150" y="-145" width="22" height="145" fill="#2dd4aa" rx="2"/></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your RD</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Monthly deposit <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="mIn" value="5000" min="100" step="100"></span></div><input type="range" id="m" class="tk-slider" min="100" max="100000" step="100" value="5000"><div class="tk-slider-bounds"><span>₹100</span><span>₹1 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate <span class="hint">(% p.a.)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="7" min="1" max="15" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="15" step="0.05" value="7"><div class="tk-slider-bounds"><span>1%</span><span>15%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="5" min="0.5" max="10" step="0.5"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.5" max="10" step="0.5" value="5"><div class="tk-slider-bounds"><span>6 mo</span><span>10 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Maturity</h2>
+<div class="tk-result-headline">Maturity amount</div>
+<div class="tk-result-value" id="mat">—</div>
+<div class="tk-result-sub">Total deposited: <span id="depSub">—</span></div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Deposited<strong id="lgD">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total deposited</div><div class="val" id="dep">—</div></div><div class="tk-stat"><div class="lbl">Interest earned</div><div class="val bull" id="i">—</div></div></div>
+</div></section>
+
+<section class="tk-content">
+<section><h2>How RD compounding works</h2>
+<p>Each monthly deposit earns interest from the date it's deposited until maturity. Banks compound quarterly. Computation: simulate month-by-month — each deposit gets compounded for its remaining months until tenure ends.</p>
+<div class="tk-formula">M = Σ deposit<sub>k</sub> × (1 + r/4)<sup>(quarters_remaining)</sup></div>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>RD vs SIP — which is better?</summary><p>RD gives guaranteed returns at lower rates (6-7%). SIP in equity is volatile but ~12% long-term. For long horizons (5+ yrs), SIP wins. For short conservative savings, RD.</p></details>
+<details><summary>Is RD interest taxable?</summary><p>Yes — fully taxable at slab. Banks deduct 10% TDS if interest exceeds ₹40k/yr.</p></details>
+<details><summary>What if I miss an RD instalment?</summary><p>Most banks charge a small penalty (~₹1-2 per ₹100 missed) and may close the account after 4-6 consecutive misses.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="fd-calculator.html">FD Calculator<span class="sub">Lumpsum deposit</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Monthly into mutual fund</span></a>
+<a href="ppf-calculator.html">PPF Calculator<span class="sub">Tax-free alternative</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var M=+document.getElementById('m').value, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  // Simulate: each monthly deposit compounds quarterly for remaining months
+  var months=Math.round(n*12), totalDep=0, maturity=0, qRate=r/4;
+  for(var k=1;k<=months;k++){
+    totalDep+=M;
+    var remMonths=months-k+1;
+    var quarters=remMonths/3;
+    maturity+=M*Math.pow(1+qRate,quarters);
+  }
+  var interest=maturity-totalDep;
+  T.animateNumber(document.getElementById('mat'),maturity);
+  document.getElementById('depSub').textContent=T.formatINRShort(totalDep);
+  T.animateNumber(document.getElementById('dep'),totalDep);
+  T.animateNumber(document.getElementById('i'),interest);
+  document.getElementById('lgD').textContent=T.formatINRShort(totalDep);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  T.drawDonut(document.getElementById('donut'),[{value:totalDep,color:'#8eb4e0'},{value:interest,color:'#b794ff'}],{centerLabel:'Maturity',centerValue:T.formatINRShort(maturity)});
+}
+T.bindSlider({slider:document.getElementById('m'),input:document.getElementById('mIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'RD vs SIP which is better?',a:'RD guaranteed ~7%. SIP equity volatile but ~12% long-term. Long horizons: SIP. Short conservative: RD.'},{q:'Is RD interest taxable?',a:'Fully taxable at slab. 10% TDS if interest > Rs 40k/yr.'},{q:'What if I miss an RD instalment?',a:'Small penalty (~Rs 1-2 per Rs 100). Account may close after 4-6 consecutive misses.'}]);
+T.mountSoftwareSchema({name:'RD Calculator',description:'Recurring deposit maturity with quarterly compounding.'});
+})();
+</script>
+</body></html>

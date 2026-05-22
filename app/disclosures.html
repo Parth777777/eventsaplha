@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disclosures · AlphaEvent / Tickwave</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg">
+<link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<style>
+  .disc-main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    font-family: var(--font-ui);
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+  .disc-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .disc-header .material-symbols-outlined {
+    color: var(--caution);
+    font-size: 28px;
+  }
+  .disc-title {
+    font-family: var(--font-head, var(--font-ui));
+    font-size: var(--fs-28);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  .disc-stamp {
+    font-size: var(--fs-11);
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .disc-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .disc-section:first-of-type { border-top: 0; padding-top: 0; }
+  .disc-section h2 {
+    font-size: var(--fs-18);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    letter-spacing: -0.005em;
+  }
+  .disc-section p, .disc-section li {
+    font-size: var(--fs-13);
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .disc-section ul, .disc-section ol {
+    padding-left: 22px;
+    margin-bottom: 10px;
+  }
+  .disc-section strong { color: var(--text-primary); font-weight: 600; }
+  .disc-section a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-dim);
+    text-underline-offset: 3px;
+  }
+  .disc-section a:hover { color: var(--accent-hover); text-decoration-color: var(--accent); }
+
+  .disc-callout {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: var(--caution-dim, rgba(230, 184, 74, 0.08));
+    border: 1px solid var(--caution-border, rgba(230, 184, 74, 0.22));
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: var(--fs-12);
+  }
+  .disc-callout strong { color: var(--caution); }
+
+  .disc-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    font-size: var(--fs-12);
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .disc-back:hover { color: var(--accent); }
+  .disc-back .material-symbols-outlined { font-size: 16px; }
+</style>
+</head>
+<body>
+<main class="disc-main">
+  <a href="index.html" class="disc-back">
+    <span class="material-symbols-outlined">arrow_back</span> Back to AlphaEvent
+  </a>
+
+  <div class="disc-header">
+    <span class="material-symbols-outlined">gavel</span>
+    <div class="disc-title">Disclosures &amp; SEBI Compliance</div>
+  </div>
+  <div class="disc-stamp">Version 1.0 · Effective 17 May 2026</div>
+
+  <!-- ─── 1. Who we are ──────────────────────────────── -->
+  <section class="disc-section">
+    <h2>1. Who we are</h2>
+    <p>
+      AlphaEvent (also referred to as <strong>Tickwave</strong>) is a quantitative
+      research and analytics platform for the Indian equity market. We aggregate,
+      classify, and surface public information from NSE and BSE corporate filings,
+      SEBI disclosures, RBI press releases, exchange announcements, and financial
+      news in real time.
+    </p>
+    <div class="disc-callout">
+      <strong>Important:</strong> AlphaEvent / Tickwave is <strong>NOT</strong> a
+      SEBI-registered Investment Adviser (IA) or Research Analyst (RA). We are
+      research tooling, not a personalised advisory service.
+    </div>
+  </section>
+
+  <!-- ─── 2. What we publish ─────────────────────────── -->
+  <section class="disc-section">
+    <h2>2. What we publish</h2>
+    <ul>
+      <li>Event signals derived from corporate filings, earnings, M&amp;A, policy, and insider activity.</li>
+      <li>Statistical scores (alpha score, hit rate, conviction tier) computed from historical event-outcome data.</li>
+      <li>Aggregated public information: shareholding patterns, bulk &amp; block deals, SEBI insider disclosures, credit-rating actions.</li>
+      <li>AI-generated factual summaries of long-form filings (concall transcripts, investor presentations) for navigation purposes.</li>
+    </ul>
+    <p>
+      Methodology: see our public <a href="methodology.html">/methodology</a>
+      page for live hit-rate breakdowns by source, conviction tier, and time horizon.
+    </p>
+  </section>
+
+  <!-- ─── 3. What this is NOT ────────────────────────── -->
+  <section class="disc-section">
+    <h2>3. What this is NOT</h2>
+    <ul>
+      <li><strong>Not investment advice.</strong> Nothing on AlphaEvent constitutes a recommendation, solicitation, or offer to buy or sell any security.</li>
+      <li><strong>Not personalised.</strong> We do not assess your financial situation, risk tolerance, investment objectives, or tax position.</li>
+      <li><strong>Not a guarantee.</strong> Past signal performance does not guarantee future results. Hit rates are historical statistics, not predictions.</li>
+      <li><strong>Not a substitute for due diligence.</strong> "Reference entry" and "indicative level" values are statistical artefacts, not analyst price targets.</li>
+      <li><strong>Quant Playground tools are educational.</strong> Black-Scholes, Greeks, Monte Carlo, Kelly, payoff diagrams, and backtests compute theoretical values using standard models. Real markets diverge from model assumptions (fat tails, jumps, vol regime shifts). Outputs are for understanding the math &mdash; not orders, not signals, not advice.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 4. Risk factors ───────────────────────────── -->
+  <section class="disc-section">
+    <h2>4. Risk factors</h2>
+    <p>Indian equities carry substantial risk. Specifically:</p>
+    <ul>
+      <li><strong>Volatility.</strong> Small- and mid-cap stocks can move 10–20% in a single session on news flow.</li>
+      <li><strong>Liquidity.</strong> Many BSE-only and SME scrips have limited daily volume; executing at reference levels is not guaranteed.</li>
+      <li><strong>Event signals can fail.</strong> Order wins, earnings beats, and rating upgrades do not always translate into price appreciation.</li>
+      <li><strong>Data lag &amp; error.</strong> Source feeds can be delayed or contain errors. We make best effort to flag discrepancies but cannot guarantee accuracy.</li>
+      <li><strong>Regulatory risk.</strong> SEBI / RBI policy changes can materially affect the value of holdings without notice.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 5. Use the right professionals ────────────── -->
+  <section class="disc-section">
+    <h2>5. Consult a registered professional</h2>
+    <p>
+      Before acting on any information presented on AlphaEvent, consult a
+      <strong>SEBI-registered Research Analyst</strong> or
+      <strong>Investment Adviser</strong>, and consider your own risk tolerance,
+      time horizon, and tax situation. The official SEBI registry of
+      intermediaries is available at
+      <a href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognised=yes" target="_blank" rel="noopener">sebi.gov.in/intermediaries</a>.
+    </p>
+  </section>
+
+  <!-- ─── 6. Complaints + escalation ────────────────── -->
+  <section class="disc-section">
+    <h2>6. Complaints &amp; escalation</h2>
+    <p>
+      If you have a grievance about content or conduct on AlphaEvent, contact
+      us first at <a href="mailto:aditya.j.thakker@gmail.com">aditya.j.thakker@gmail.com</a>.
+      If unresolved, you may escalate via SEBI's grievance redressal portal:
+    </p>
+    <ul>
+      <li><a href="https://scores.sebi.gov.in/" target="_blank" rel="noopener">SEBI SCORES (scores.sebi.gov.in)</a> — the official investor grievance platform.</li>
+      <li><a href="https://smartodr.in/" target="_blank" rel="noopener">SMART-ODR (smartodr.in)</a> — Online Dispute Resolution for capital markets.</li>
+    </ul>
+  </section>
+
+  <!-- ─── 7. Data sources ───────────────────────────── -->
+  <section class="disc-section">
+    <h2>7. Data sources &amp; attribution</h2>
+    <p>
+      We pull from: BSE Corporate Announcements API, NSE Corporate Announcements
+      API, SEBI insider trading &amp; SAST disclosures, RBI press releases,
+      published financial news (RSS), yfinance for OHLCV, CRISIL / ICRA / CARE
+      rating press releases, and company Investor Relations pages. We do not
+      proxy, mirror, or republish content from paywalled or subscription
+      services such as Bloomberg, Refinitiv, or research broker reports.
+    </p>
+  </section>
+
+  <!-- ─── 8. Changes to this page ──────────────────── -->
+  <section class="disc-section">
+    <h2>8. Changes to this page</h2>
+    <p>
+      When we materially change scope, methodology, or compliance posture, we
+      bump the version stamp at the top and re-prompt the in-app compliance
+      modal so you can re-acknowledge.
+    </p>
+  </section>
+</main>
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inflation Calculator — Future Cost of Today's ₹ | Tickwave</title>
+<meta name="description" content="Free inflation calculator for India. See what ₹X today will cost N years from now, and the eroded purchasing power of money at any inflation rate.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/inflation-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Inflation Calculator</div>
+<h1>What ₹1 lakh today will <span class="accent">buy in 20 years</span></h1>
+<p class="lead">Inflation is the silent thief. At 6% inflation, ₹1 lakh today has the buying power of ₹31,200 in 20 years. Use this to size retirement corpus, education goals, and emergency funds correctly.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g transform="translate(100 100)"><circle r="70" fill="#161d28" stroke="#e6b84a" stroke-width="2"/><circle r="60" fill="#1c2435"/><text text-anchor="middle" y="-20" font-family="Geist Mono" font-size="9" fill="#8a94a8" letter-spacing="2">TODAY</text><text text-anchor="middle" y="0" font-family="Plus Jakarta Sans" font-size="20" font-weight="700" fill="#dde3ef">₹1 L</text><text text-anchor="middle" y="20" font-family="Geist Mono" font-size="9" fill="#8a94a8" letter-spacing="2">→ 20Y</text><text text-anchor="middle" y="40" font-family="Plus Jakarta Sans" font-size="16" font-weight="700" fill="#e6b84a">₹31 K</text></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current amount <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="aIn" value="100000" min="1" step="1000"></span></div><input type="range" id="a" class="tk-slider" min="1000" max="100000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Inflation rate <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="6" min="0" max="20" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="0" max="20" step="0.25" value="6"><div class="tk-slider-bounds"><span>0%</span><span>20%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Years from now</label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="20" min="1" max="50" step="1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="1" max="50" step="1" value="20"><div class="tk-slider-bounds"><span>1 yr</span><span>50 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">Future equivalent cost</div>
+<div class="tk-result-value" id="fc">—</div>
+<div class="tk-result-sub">in <span id="subY">20</span> years at <span id="subR">6</span>% inflation</div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Future cost</div><div class="val bear" id="fcV">—</div></div>
+<div class="tk-stat"><div class="lbl">Buying power today</div><div class="val" id="bp">—</div></div>
+<div class="tk-stat"><div class="lbl">Lost to inflation</div><div class="val bear" id="lost">—</div></div>
+<div class="tk-stat"><div class="lbl">Real value retained</div><div class="val" id="retained">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Inflation formula</h2>
+<div class="tk-formula">Future cost = Today × (1 + inflation)<sup>years</sup></div>
+<p>Future buying power of today's amount = Today / (1 + inflation)<sup>years</sup>. This is the reason a ₹50,000/month lifestyle today will need ~₹1.6 lakh/month in 20 years just to maintain the same standard.</p>
+</section>
+<section><h2>India inflation context</h2>
+<p>India's CPI inflation has averaged 5-6% over the last decade, with food inflation often higher (7-8%) and education/healthcare even higher (8-10%). Use 7% for retirement / healthcare planning, 9% for education.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>What inflation rate should I use?</summary><p>General CPI 6-7%. Education 8-10%. Healthcare 8-9%. Real estate 5-6% in cities. Use the highest relevant rate for goal planning.</p></details>
+<details><summary>How do I beat inflation?</summary><p>Invest in assets that historically beat inflation: equity (10-12% long-run), real estate (8% + rental), gold (8%). Avoid keeping more than 6 months of expenses in cash/FD.</p></details>
+<details><summary>Why does this matter for goal planning?</summary><p>A ₹1 cr corpus today is worth ₹31 lakh in 20 years. Always inflate your goal before computing the required SIP — use the <a href="goal-sip-calculator.html">Goal SIP Calculator</a> with the inflated target.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="retirement-calculator.html">Retirement Calculator<span class="sub">Auto-inflates expenses</span></a>
+<a href="goal-sip-calculator.html">Goal SIP<span class="sub">Plan an inflated target</span></a>
+<a href="cagr-calculator.html">CAGR Calculator<span class="sub">Real vs nominal returns</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var A=+document.getElementById('a').value, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  var fc=A*Math.pow(1+r,n), bp=A/Math.pow(1+r,n), lost=A-bp, retained=(bp/A)*100;
+  T.animateNumber(document.getElementById('fc'),fc);
+  T.animateNumber(document.getElementById('fcV'),fc);
+  T.animateNumber(document.getElementById('bp'),bp);
+  T.animateNumber(document.getElementById('lost'),lost);
+  document.getElementById('retained').textContent=T.formatPct(retained,1);
+  document.getElementById('subY').textContent=n;
+  document.getElementById('subR').textContent=(r*100).toFixed(r*100%1===0?0:2);
+}
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'What inflation rate should I use for goal planning?',a:'General CPI 6-7%. Education 8-10%. Healthcare 8-9%. Use the highest relevant rate.'},{q:'How do I beat inflation?',a:'Invest in equity (10-12%), real estate, gold. Avoid keeping more than 6 months expenses in cash/FD.'},{q:'Why does this matter for goal planning?',a:'A 1 cr corpus today is worth 31 lakh in 20 years. Always inflate the goal before computing SIP.'}]);
+T.mountSoftwareSchema({name:'Inflation Calculator',description:'Future cost of today money + buying power erosion.'});
+})();
+</script>
+</body></html>

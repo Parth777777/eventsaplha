@@ -1,4 +1,4 @@
-﻿// Tickwave - Shared Router, API, LiveData & Utilities
+// Tickwave - Shared Router, API, LiveData & Utilities
 
 // ============ ROUTER ============
 class Router {
@@ -84,7 +84,7 @@ class Auth {
   }
 
   static async initSupabase(supabaseUrl, supabaseAnonKey) {
-    // For Supabase auth mode — load SDK dynamically if needed
+    // For Supabase auth mode � load SDK dynamically if needed
     if (!supabaseUrl) return;
     try {
       const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
@@ -534,28 +534,28 @@ class MockData {
 
   static getAlerts() { return []; }
   static getGeoEvents() {
-    // Fallback dataset — used when backend is offline
+    // Fallback dataset � used when backend is offline
     return [
-      { country:'India',          event_description:'RBI Monetary Policy — repo rate decision',               impact:'high',   latitude:28.6139,  longitude:77.2090,  event_type:'monetary' },
-      { country:'United States',  event_description:'Federal Reserve FOMC meeting — US rate path & dot plot', impact:'high',   latitude:38.8951,  longitude:-77.0369, event_type:'monetary' },
-      { country:'China',          event_description:'PBoC stimulus — rate cut & yuan depreciation',           impact:'high',   latitude:39.9042,  longitude:116.4074, event_type:'monetary' },
+      { country:'India',          event_description:'RBI Monetary Policy � repo rate decision',               impact:'high',   latitude:28.6139,  longitude:77.2090,  event_type:'monetary' },
+      { country:'United States',  event_description:'Federal Reserve FOMC meeting � US rate path & dot plot', impact:'high',   latitude:38.8951,  longitude:-77.0369, event_type:'monetary' },
+      { country:'China',          event_description:'PBoC stimulus � rate cut & yuan depreciation',           impact:'high',   latitude:39.9042,  longitude:116.4074, event_type:'monetary' },
       { country:'Saudi Arabia',   event_description:'OPEC+ extends voluntary 1 mb/d crude output cuts',       impact:'high',   latitude:24.7136,  longitude:46.6753,  event_type:'oil'      },
-      { country:'Russia',         event_description:'Russia–Ukraine war: fertilizer & wheat supply squeeze',  impact:'high',   latitude:55.7558,  longitude:37.6173,  event_type:'conflict' },
-      { country:'United States',  event_description:'US Big Tech Q2 earnings — AI capex cycle signal',        impact:'high',   latitude:37.7749,  longitude:-122.4194,event_type:'tech'     },
-      { country:'Iran',           event_description:'US–Iran sanctions tighten — Hormuz shipping risk',       impact:'high',   latitude:35.6892,  longitude:51.3890,  event_type:'conflict' },
-      { country:'Japan',          event_description:'Bank of Japan ends negative rate policy — yen surge',    impact:'medium', latitude:35.6762,  longitude:139.6503, event_type:'monetary' },
-      { country:'Germany',        event_description:'ECB rate cut cycle — euro weakness, FII capital flows',  impact:'medium', latitude:52.5200,  longitude:13.4050,  event_type:'monetary' },
-      { country:'UAE',            event_description:'India–UAE CEPA: $100B trade target — pharma & IT',       impact:'medium', latitude:25.2048,  longitude:55.2708,  event_type:'trade'    },
+      { country:'Russia',         event_description:'Russia�Ukraine war: fertilizer & wheat supply squeeze',  impact:'high',   latitude:55.7558,  longitude:37.6173,  event_type:'conflict' },
+      { country:'United States',  event_description:'US Big Tech Q2 earnings � AI capex cycle signal',        impact:'high',   latitude:37.7749,  longitude:-122.4194,event_type:'tech'     },
+      { country:'Iran',           event_description:'US�Iran sanctions tighten � Hormuz shipping risk',       impact:'high',   latitude:35.6892,  longitude:51.3890,  event_type:'conflict' },
+      { country:'Japan',          event_description:'Bank of Japan ends negative rate policy � yen surge',    impact:'medium', latitude:35.6762,  longitude:139.6503, event_type:'monetary' },
+      { country:'Germany',        event_description:'ECB rate cut cycle � euro weakness, FII capital flows',  impact:'medium', latitude:52.5200,  longitude:13.4050,  event_type:'monetary' },
+      { country:'UAE',            event_description:'India�UAE CEPA: $100B trade target � pharma & IT',       impact:'medium', latitude:25.2048,  longitude:55.2708,  event_type:'trade'    },
       { country:'Singapore',      event_description:'SGX Nifty futures: positive overnight global sentiment', impact:'medium', latitude:1.3521,   longitude:103.8198, event_type:'markets'  },
-      { country:'South Korea',    event_description:'Samsung DRAM price surge — semiconductor supply alert',  impact:'medium', latitude:37.5665,  longitude:126.9780, event_type:'tech'     },
+      { country:'South Korea',    event_description:'Samsung DRAM price surge � semiconductor supply alert',  impact:'medium', latitude:37.5665,  longitude:126.9780, event_type:'tech'     },
       { country:'Australia',      event_description:'Iron ore price surge on China stimulus data',            impact:'medium', latitude:-33.8688, longitude:151.2093, event_type:'commodity'},
       { country:'Netherlands',    event_description:'ASML export controls: EUV lithography ban to China',    impact:'medium', latitude:52.3676,  longitude:4.9041,   event_type:'tech'     },
-      { country:'United Kingdom', event_description:'Bank of England rate decision — sterling & UK outlook',  impact:'medium', latitude:51.5074,  longitude:-0.1278,  event_type:'monetary' },
-      { country:'Indonesia',      event_description:'Indonesia palm oil export policy — edible oil prices',   impact:'medium', latitude:-6.2088,  longitude:106.8456, event_type:'commodity'},
+      { country:'United Kingdom', event_description:'Bank of England rate decision � sterling & UK outlook',  impact:'medium', latitude:51.5074,  longitude:-0.1278,  event_type:'monetary' },
+      { country:'Indonesia',      event_description:'Indonesia palm oil export policy � edible oil prices',   impact:'medium', latitude:-6.2088,  longitude:106.8456, event_type:'commodity'},
       { country:'India',          event_description:'SEBI tightens F&O margin norms for retail traders',      impact:'medium', latitude:17.3850,  longitude:78.4867,  event_type:'policy'   },
-      { country:'India',          event_description:'India–EU Free Trade Agreement — IT & pharma exports',    impact:'low',    latitude:12.9716,  longitude:77.5946,  event_type:'trade'    },
-      { country:'Brazil',         event_description:'Record soybean harvest — agri commodity glut risk',      impact:'low',    latitude:-23.5505, longitude:-46.6333, event_type:'commodity'},
-      { country:'South Africa',   event_description:'SA gold mine strike — global gold output risk',          impact:'low',    latitude:-26.2041, longitude:28.0473,  event_type:'commodity'},
+      { country:'India',          event_description:'India�EU Free Trade Agreement � IT & pharma exports',    impact:'low',    latitude:12.9716,  longitude:77.5946,  event_type:'trade'    },
+      { country:'Brazil',         event_description:'Record soybean harvest � agri commodity glut risk',      impact:'low',    latitude:-23.5505, longitude:-46.6333, event_type:'commodity'},
+      { country:'South Africa',   event_description:'SA gold mine strike � global gold output risk',          impact:'low',    latitude:-26.2041, longitude:28.0473,  event_type:'commodity'},
     ];
   }
 
@@ -594,7 +594,7 @@ class UIHelper {
 
   static formatPrice(num) {
     if (num == null || isNaN(num) || num === 0) return '--';
-    return `₹${Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `?${Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   static formatTime(isoString) {
@@ -687,7 +687,7 @@ class _StockPopupLegacy {
     this._createModal();
     SoundFX.pop();
     const content = document.getElementById('stockPopupContent');
-    content.innerHTML = `<div style="padding:40px;text-align:center;color:#8c909f;font-size:13px;">Loading ${ticker}...</div>`;
+    content.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-secondary);font-size:13px;">Loading ${ticker}...</div>`;
     this._modal.style.display = 'flex';
     if (typeof AlphaFX !== 'undefined') AlphaFX.popupOpen(this._modal);
 
@@ -716,19 +716,19 @@ class _StockPopupLegacy {
         const tp = pr.target_price || 0;
         const conf = ((pr.confidence || 0) * 100).toFixed(0);
         const actual = pr.actual_return_pct;
-        const hitIcon = pr.hit_target === true ? '&check;' : pr.hit_target === false ? '&times;' : '—';
+        const hitIcon = pr.hit_target === true ? '&check;' : pr.hit_target === false ? '&times;' : '�';
         const hitColor = pr.hit_target === true ? 'var(--bull)' : pr.hit_target === false ? 'var(--bear)' : 'var(--t3)';
         predRows += `<tr style="border-bottom:1px solid #42475422;">
-          <td style="padding:10px 12px;font-weight:700;color:#dfe2eb;font-size:13px;">${h}</td>
+          <td style="padding:10px 12px;font-weight:700;color:var(--text-primary);font-size:13px;">${h}</td>
           <td style="padding:10px 12px;color:${retColor};font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;">${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%</td>
-          <td style="padding:10px 12px;color:#c2c6d6;font-family:'Geist Mono',monospace;font-size:12px;">${tp > 0 ? '₹' + tp.toFixed(2) : '—'}</td>
-          <td style="padding:10px 12px;color:#8c909f;font-size:11px;">${conf}%</td>
+          <td style="padding:10px 12px;color:var(--text-primary);font-family:'Geist Mono',monospace;font-size:12px;">${tp > 0 ? '?' + tp.toFixed(2) : '�'}</td>
+          <td style="padding:10px 12px;color:var(--text-secondary);font-size:11px;">${conf}%</td>
           <td style="padding:10px 12px;text-align:center;color:${hitColor};font-size:14px;">${hitIcon}</td>
         </tr>`;
       }
     }
     if (!predRows) {
-      predRows = '<tr><td colspan="5" style="padding:16px;text-align:center;color:#8c909f55;font-size:12px;">No predictions yet</td></tr>';
+      predRows = '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--text-secondary)55;font-size:12px;">No predictions yet</td></tr>';
     }
 
     const priceChange = p.change_pct || 0;
@@ -740,59 +740,59 @@ class _StockPopupLegacy {
         <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:20px;">
           <div>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-              <span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:900;color:#dfe2eb;">${d.ticker}</span>
+              <span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:900;color:var(--text-primary);">${d.ticker}</span>
               ${sig ? `<span style="font-size:9px;padding:3px 8px;border-radius:4px;background:${sentColor}22;color:${sentColor};font-weight:700;text-transform:uppercase;">${sent}</span>` : ''}
             </div>
-            <div style="font-size:12px;color:#8c909f;">${d.company}</div>
-            ${p.sector ? `<div style="font-size:10px;color:#8c909f88;margin-top:2px;">${p.sector}${p.industry ? ' / ' + p.industry : ''}</div>` : ''}
+            <div style="font-size:12px;color:var(--text-secondary);">${d.company}</div>
+            ${p.sector ? `<div style="font-size:10px;color:var(--text-secondary)88;margin-top:2px;">${p.sector}${p.industry ? ' / ' + p.industry : ''}</div>` : ''}
           </div>
-          <button onclick="StockPopup.close()" style="background:none;border:none;color:#8c909f;cursor:pointer;font-size:20px;padding:4px;">&times;</button>
+          <button onclick="StockPopup.close()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;padding:4px;">&times;</button>
         </div>
 
         <!-- Price -->
-        <div style="display:flex;gap:16px;margin-bottom:20px;padding:16px;background:#10141a;border-radius:12px;border:1px solid #42475422;">
+        <div style="display:flex;gap:16px;margin-bottom:20px;padding:16px;background:var(--surface-0);border-radius:12px;border:1px solid #42475422;">
           <div style="flex:1;">
-            <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Current Price</div>
-            <div style="font-size:28px;font-weight:900;color:#dfe2eb;font-family:'Geist Mono',monospace;">${p.price ? '₹' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2}) : '—'}</div>
+            <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Current Price</div>
+            <div style="font-size:28px;font-weight:900;color:var(--text-primary);font-family:'Geist Mono',monospace;">${p.price ? '?' + p.price.toLocaleString('en-IN', {minimumFractionDigits:2}) : '�'}</div>
             <div style="font-size:13px;font-weight:700;color:${priceColor};">${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</div>
           </div>
           ${sig ? `<div style="text-align:right;">
-            <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Alpha Score</div>
+            <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Alpha Score</div>
             <div style="font-size:28px;font-weight:700;font-family:var(--font-mono);color:${UIHelper.alphaColor(alpha)};">${alpha.toFixed(1)}</div>
           </div>` : ''}
         </div>
 
         <!-- Quick Stats -->
         ${p.price ? `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
-          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
-            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day High</div>
-            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'Geist Mono',monospace;">₹${(p.day_high||0).toFixed(0)}</div>
+          <div style="padding:10px;background:var(--surface-0);border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;">Day High</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);font-family:'Geist Mono',monospace;">?${(p.day_high||0).toFixed(0)}</div>
           </div>
-          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
-            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">Day Low</div>
-            <div style="font-size:12px;font-weight:700;color:#dfe2eb;font-family:'Geist Mono',monospace;">₹${(p.day_low||0).toFixed(0)}</div>
+          <div style="padding:10px;background:var(--surface-0);border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;">Day Low</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);font-family:'Geist Mono',monospace;">?${(p.day_low||0).toFixed(0)}</div>
           </div>
-          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
-            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W High</div>
-            <div style="font-size:12px;font-weight:700;color:#4edea3;font-family:'Geist Mono',monospace;">₹${(p.fifty_two_week_high||0).toFixed(0)}</div>
+          <div style="padding:10px;background:var(--surface-0);border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;">52W High</div>
+            <div style="font-size:12px;font-weight:700;color:#4edea3;font-family:'Geist Mono',monospace;">?${(p.fifty_two_week_high||0).toFixed(0)}</div>
           </div>
-          <div style="padding:10px;background:#10141a;border-radius:8px;text-align:center;">
-            <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;">52W Low</div>
-            <div style="font-size:12px;font-weight:700;color:#ffb4ab;font-family:'Geist Mono',monospace;">₹${(p.fifty_two_week_low||0).toFixed(0)}</div>
+          <div style="padding:10px;background:var(--surface-0);border-radius:8px;text-align:center;">
+            <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;">52W Low</div>
+            <div style="font-size:12px;font-weight:700;color:#ffb4ab;font-family:'Geist Mono',monospace;">?${(p.fifty_two_week_low||0).toFixed(0)}</div>
           </div>
         </div>` : ''}
 
         <!-- Predictions Table -->
         <div style="margin-bottom:16px;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">Predicted Returns</div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;font-weight:800;">Predicted Returns</div>
           <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="border-bottom:1px solid #42475444;">
-                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Horizon</th>
-                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Return</th>
-                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Target</th>
-                <th style="padding:8px 12px;text-align:left;font-size:9px;color:#8c909f;text-transform:uppercase;">Conf</th>
-                <th style="padding:8px 12px;text-align:center;font-size:9px;color:#8c909f;text-transform:uppercase;">Hit</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:var(--text-secondary);text-transform:uppercase;">Horizon</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:var(--text-secondary);text-transform:uppercase;">Return</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:var(--text-secondary);text-transform:uppercase;">Target</th>
+                <th style="padding:8px 12px;text-align:left;font-size:9px;color:var(--text-secondary);text-transform:uppercase;">Conf</th>
+                <th style="padding:8px 12px;text-align:center;font-size:9px;color:var(--text-secondary);text-transform:uppercase;">Hit</th>
               </tr>
             </thead>
             <tbody>${predRows}</tbody>
@@ -802,85 +802,85 @@ class _StockPopupLegacy {
         <!-- Price Chart -->
         <div style="margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Price Chart</span>
+            <span style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;">Price Chart</span>
             <div style="display:flex;gap:4px;" id="chartPeriodBtns">
               <button onclick="StockPopup.loadChart('${d.ticker}','1mo')" class="cp-btn" data-p="1mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:#adc6ff22;color:#adc6ff;cursor:pointer;">1M</button>
-              <button onclick="StockPopup.loadChart('${d.ticker}','3mo')" class="cp-btn" data-p="3mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">3M</button>
-              <button onclick="StockPopup.loadChart('${d.ticker}','6mo')" class="cp-btn" data-p="6mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">6M</button>
-              <button onclick="StockPopup.loadChart('${d.ticker}','1y')" class="cp-btn" data-p="1y" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:#8c909f;cursor:pointer;">1Y</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','3mo')" class="cp-btn" data-p="3mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:var(--text-secondary);cursor:pointer;">3M</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','6mo')" class="cp-btn" data-p="6mo" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:var(--text-secondary);cursor:pointer;">6M</button>
+              <button onclick="StockPopup.loadChart('${d.ticker}','1y')" class="cp-btn" data-p="1y" style="padding:2px 8px;font-size:9px;font-weight:700;border:1px solid #42475444;border-radius:4px;background:transparent;color:var(--text-secondary);cursor:pointer;">1Y</button>
             </div>
           </div>
-          <div style="position:relative;background:#0a0e14;border-radius:10px;border:1px solid #42475422;overflow:hidden;">
+          <div style="position:relative;background:var(--surface-0);border-radius:10px;border:1px solid #42475422;overflow:hidden;">
             <canvas id="priceChart" width="452" height="160" style="width:100%;height:160px;display:block;"></canvas>
-            <div id="chartTooltip" style="display:none;position:absolute;top:8px;left:8px;background:#1c2026ee;border:1px solid #42475444;border-radius:6px;padding:6px 10px;font-size:10px;color:#dfe2eb;pointer-events:none;z-index:10;"></div>
+            <div id="chartTooltip" style="display:none;position:absolute;top:8px;left:8px;background:#1c2026ee;border:1px solid #42475444;border-radius:6px;padding:6px 10px;font-size:10px;color:var(--text-primary);pointer-events:none;z-index:10;"></div>
           </div>
         </div>
 
         ${sig ? `
         <!-- Signal Details with Explanations -->
-        <div style="padding:14px;background:#10141a;border-radius:10px;border:1px solid #42475422;font-size:11px;color:#c2c6d6;line-height:1.8;">
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Signal Analysis</div>
+        <div style="padding:14px;background:var(--surface-0);border-radius:10px;border:1px solid #42475422;font-size:11px;color:var(--text-primary);line-height:1.8;">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Signal Analysis</div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-            <span style="color:#8c909f;" title="The type of market event that triggered this signal">Event Type</span>
+            <span style="color:var(--text-secondary);" title="The type of market event that triggered this signal">Event Type</span>
             <span style="font-weight:700;text-transform:uppercase;color:#adc6ff;">${(sig.event_type || '').replace(/_/g, ' ')}</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-            <span style="color:#8c909f;" title="Current market regime detected from volatility, momentum, and trend analysis across 32 stocks">Regime</span>
+            <span style="color:var(--text-secondary);" title="Current market regime detected from volatility, momentum, and trend analysis across 32 stocks">Regime</span>
             <span>${(sig.regime || '').replace(/_/g, ' ')}</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-            <span style="color:#8c909f;" title="How confident the NLP engine is about the sentiment classification (higher = more certain)">Confidence</span>
+            <span style="color:var(--text-secondary);" title="How confident the NLP engine is about the sentiment classification (higher = more certain)">Confidence</span>
             <span>${((sig.confidence || 0) * 100).toFixed(0)}%</span>
           </div>
 
-          ${sig.headline ? `<div style="margin-top:8px;padding:8px;background:#0a0e14;border-radius:6px;font-size:10px;color:#8c909f;font-style:italic;line-height:1.5;">${sig.headline}</div>` : ''}
+          ${sig.headline ? `<div style="margin-top:8px;padding:8px;background:var(--surface-0);border-radius:6px;font-size:10px;color:var(--text-secondary);font-style:italic;line-height:1.5;">${sig.headline}</div>` : ''}
 
           <!-- Metric Explanations -->
           <div style="margin-top:12px;padding-top:10px;border-top:1px solid #42475422;">
             <div style="font-size:8px;color:#42475488;text-transform:uppercase;letter-spacing:0.15em;font-weight:800;margin-bottom:6px;">What these numbers mean</div>
-            <div style="font-size:9px;color:#8c909f88;line-height:1.7;">
-              <div><span style="color:#adc6ff;font-weight:700;">Alpha Score</span> — Composite signal strength (0-100). Combines event importance, sentiment, market regime, sector momentum, relative performance, and timing. Above 60 = strong signal.</div>
-              <div style="margin-top:3px;"><span style="color:#4edea3;font-weight:700;">Predicted Return</span> — Expected price move based on event type, alpha quality, stock volatility, and market conditions. Positive = expected to go up.</div>
-              <div style="margin-top:3px;"><span style="color:#c2c6d6;font-weight:700;">Confidence</span> — Probability that the predicted direction is correct. 60%+ = worth watching. Based on NLP certainty and regime clarity.</div>
-              <div style="margin-top:3px;"><span style="color:#8c909f;font-weight:700;">Target Price</span> — Where the stock price could reach if the prediction plays out. Entry price × (1 + predicted return).</div>
+            <div style="font-size:9px;color:var(--text-secondary)88;line-height:1.7;">
+              <div><span style="color:#adc6ff;font-weight:700;">Alpha Score</span> � Composite signal strength (0-100). Combines event importance, sentiment, market regime, sector momentum, relative performance, and timing. Above 60 = strong signal.</div>
+              <div style="margin-top:3px;"><span style="color:#4edea3;font-weight:700;">Predicted Return</span> � Expected price move based on event type, alpha quality, stock volatility, and market conditions. Positive = expected to go up.</div>
+              <div style="margin-top:3px;"><span style="color:var(--text-primary);font-weight:700;">Confidence</span> � Probability that the predicted direction is correct. 60%+ = worth watching. Based on NLP certainty and regime clarity.</div>
+              <div style="margin-top:3px;"><span style="color:var(--text-secondary);font-weight:700;">Target Price</span> � Where the stock price could reach if the prediction plays out. Entry price � (1 + predicted return).</div>
             </div>
           </div>
 
           <!-- Compare link -->
           <div style="margin-top:10px;text-align:center;">
-            <a href="compare.html?t=${d.ticker}" style="font-size:10px;color:#adc6ff;text-decoration:none;font-weight:700;">Compare with other stocks →</a>
+            <a href="compare.html?t=${d.ticker}" style="font-size:10px;color:#adc6ff;text-decoration:none;font-weight:700;">Compare with other stocks ?</a>
           </div>
-        </div>` : '<div style="padding:16px;text-align:center;color:#8c909f55;font-size:12px;">No active signal — this stock has no recent news events.</div>'}
+        </div>` : '<div style="padding:16px;text-align:center;color:var(--text-secondary)55;font-size:12px;">No active signal � this stock has no recent news events.</div>'}
 
         <!-- Event Timeline -->
         <div style="margin-top:16px;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Event Timeline</div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Event Timeline</div>
           <div id="popupTimeline" style="max-height:200px;overflow-y:auto;"></div>
         </div>
 
         <!-- Why this signal? Reasoning chain -->
         ${sig?.event_id ? `<div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Why this signal?</div>
-          <div id="popupReasoning" data-event-id="${sig.event_id}"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Generating reasoning...</div></div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Why this signal?</div>
+          <div id="popupReasoning" data-event-id="${sig.event_id}"><div style="text-align:center;color:var(--text-secondary)44;font-size:10px;padding:12px;">Generating reasoning...</div></div>
         </div>` : ''}
 
         <!-- Forensics Intelligence -->
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Forensics</div>
-          <div id="popupForensics"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Analyzing forensics...</div></div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Forensics</div>
+          <div id="popupForensics"><div style="text-align:center;color:var(--text-secondary)44;font-size:10px;padding:12px;">Analyzing forensics...</div></div>
         </div>
 
         <!-- Volume + OBV Intelligence -->
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Volume / OBV</div>
-          <div id="popupVolume"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Loading volume analysis...</div></div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Volume / OBV</div>
+          <div id="popupVolume"><div style="text-align:center;color:var(--text-secondary)44;font-size:10px;padding:12px;">Loading volume analysis...</div></div>
         </div>
 
         <!-- Promoter Intelligence -->
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #42475422;">
-          <div style="font-size:10px;color:#8c909f;text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Promoter Intelligence</div>
-          <div id="popupPromoter"><div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Loading promoter data...</div></div>
+          <div style="font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.1em;font-weight:800;margin-bottom:8px;">Promoter Intelligence</div>
+          <div id="popupPromoter"><div style="text-align:center;color:var(--text-secondary)44;font-size:10px;padding:12px;">Loading promoter data...</div></div>
         </div>
       </div>`;
 
@@ -903,27 +903,27 @@ class _StockPopupLegacy {
     try { res = await API.get(`/signal/${encodeURIComponent(eventId)}/reasoning`); }
     catch (e) { res = null; }
     if (!res?.success) {
-      host.innerHTML = '<div style="text-align:center;color:#8c909f55;font-size:11px;padding:12px">Reasoning unavailable for this signal</div>';
+      host.innerHTML = '<div style="text-align:center;color:var(--text-secondary)55;font-size:11px;padding:12px">Reasoning unavailable for this signal</div>';
       return;
     }
     const r = res.data;
     const meta = r.meta || {};
     const tickerCodeColor = r.why_ticker_code === 'direct' ? '#4edea3'
-                          : r.why_ticker_code === 'sector' ? '#f2c96b' : '#8c909f';
+                          : r.why_ticker_code === 'sector' ? '#f2c96b' : 'var(--text-secondary)';
     const tickerCodeLabel = r.why_ticker_code === 'direct' ? 'DIRECT MENTION'
                           : r.why_ticker_code === 'sector' ? 'SECTOR LINK' : 'KEYWORD MATCH';
 
     const bullets = (r.bullets || []).map(b => {
       // Color-code the prefix "Ticker:" / "Direction:" / etc
       const m = b.match(/^([A-Za-z ]+):\s*(.*)$/);
-      if (!m) return `<li style="margin-bottom:8px;color:#dfe2eb;line-height:1.5">${b}</li>`;
+      if (!m) return `<li style="margin-bottom:8px;color:var(--text-primary);line-height:1.5">${b}</li>`;
       const label = m[1];
       const body = m[2];
       const labelColor = {
         'Ticker': '#8eb4e0', 'Direction': '#4edea3', 'Magnitude': '#f2c96b',
-        'Confidence': '#adc6ff', 'Risks': '#ffb4ab', 'Source': '#8c909f',
-      }[label] || '#8c909f';
-      return `<li style="margin-bottom:10px;line-height:1.55;color:#c2c6d6">
+        'Confidence': '#adc6ff', 'Risks': '#ffb4ab', 'Source': 'var(--text-secondary)',
+      }[label] || 'var(--text-secondary)';
+      return `<li style="margin-bottom:10px;line-height:1.55;color:var(--text-primary)">
         <span style="color:${labelColor};font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.1em">${label}</span>
         <span style="margin-left:6px">${body}</span>
       </li>`;
@@ -938,12 +938,12 @@ class _StockPopupLegacy {
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
           <span style="background:${tickerCodeColor}22;color:${tickerCodeColor};padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.1em">${tickerCodeLabel}</span>
           ${meta.empirical_event_hit_rate != null ? `
-            <span style="background:#142a3a;color:#8eb4e0;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700">
+            <span style="background:var(--info-dim);color:#8eb4e0;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700">
               ${meta.event_type?.toUpperCase()} HIT-RATE: ${(meta.empirical_event_hit_rate*100).toFixed(0)}% (n=${meta.event_prior_samples})
             </span>` : ''}
           ${meta.sector ? `<span style="background:#1a2418;color:#9eddb9;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700">${meta.sector}</span>` : ''}
         </div>
-        <div style="font-size:12px;color:#dfe2eb;margin-bottom:10px;font-style:italic;line-height:1.55">
+        <div style="font-size:12px;color:var(--text-primary);margin-bottom:10px;font-style:italic;line-height:1.55">
           ${r.primary_driver || ''}
         </div>
         <ul style="list-style:none;padding:0;margin:0;font-size:11px">${bullets}</ul>
@@ -953,13 +953,13 @@ class _StockPopupLegacy {
   static async loadTimeline(ticker) {
     const container = document.getElementById('popupTimeline');
     if (!container) return;
-    container.innerHTML = '<div style="text-align:center;color:#8c909f44;font-size:10px;padding:12px;">Loading events...</div>';
+    container.innerHTML = '<div style="text-align:center;color:var(--text-secondary)44;font-size:10px;padding:12px;">Loading events...</div>';
 
     const res = await API.get(`/stock/${ticker}/timeline`);
     const events = res?.data || [];
 
     if (events.length === 0) {
-      container.innerHTML = '<div style="text-align:center;color:#8c909f33;font-size:10px;padding:12px;">No events recorded for this stock yet</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--text-secondary)33;font-size:10px;padding:12px;">No events recorded for this stock yet</div>';
       return;
     }
 
@@ -1000,9 +1000,9 @@ class _StockPopupLegacy {
         <div style="flex:1;min-width:0;padding-bottom:${isLast ? '4' : '12'}px;margin-left:4px;">
           <div style="display:flex;align-items:start;gap:8px;">
             <div style="flex:1;min-width:0;">
-              <div style="font-size:10px;color:#dfe2eb;font-weight:600;line-height:1.35;margin-bottom:2px;">${(ev.headline || evType).substring(0, 70)}</div>
+              <div style="font-size:10px;color:var(--text-primary);font-weight:600;line-height:1.35;margin-bottom:2px;">${(ev.headline || evType).substring(0, 70)}</div>
               <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                <span style="font-size:7px;color:#8c909f66;">${UIHelper.formatTime(ev.created_at)}</span>
+                <span style="font-size:7px;color:var(--text-secondary)66;">${UIHelper.formatTime(ev.created_at)}</span>
                 <span style="font-size:7px;padding:1px 4px;border-radius:3px;background:${sentColor}12;color:${sentColor};font-weight:700;text-transform:uppercase;">${evType}</span>
                 ${predChips}
               </div>
@@ -1036,7 +1036,7 @@ class _StockPopupLegacy {
     if (!res?.success || !res.data?.length) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#8c909f44';
+      ctx.fillStyle = 'var(--text-secondary)44';
       ctx.font = '12px Inter';
       ctx.textAlign = 'center';
       ctx.fillText('No chart data', canvas.width / 2, canvas.height / 2);
@@ -1109,7 +1109,7 @@ class _StockPopupLegacy {
       octx.font = '8px Geist Mono';
       octx.fillStyle = '#adc6ff';
       octx.textAlign = 'center';
-      octx.fillText('₹' + pt.close, overlay.width - 27, py + 3);
+      octx.fillText('?' + pt.close, overlay.width - 27, py + 3);
 
       // Tooltip
       const tip = document.getElementById('chartTooltip');
@@ -1120,10 +1120,10 @@ class _StockPopupLegacy {
       tip.style.left = Math.min(mx + 12, rect.width - 140) + 'px';
       tip.innerHTML = `
         <div style="font-weight:700;margin-bottom:3px;">${pt.date}</div>
-        <div style="font-size:14px;font-weight:800;color:#dfe2eb;font-family:Geist Mono,monospace;">₹${pt.close.toLocaleString('en-IN')}</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text-primary);font-family:Geist Mono,monospace;">?${pt.close.toLocaleString('en-IN')}</div>
         <div style="color:${changeColor};font-size:10px;font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)</div>
-        <div style="color:#8c909f55;font-size:8px;margin-top:2px;">H: ₹${pt.high} &nbsp; L: ₹${pt.low}</div>
-        ${pt.volume ? `<div style="color:#8c909f44;font-size:8px;">Vol: ${(pt.volume/1e6).toFixed(1)}M</div>` : ''}`;
+        <div style="color:var(--text-secondary)55;font-size:8px;margin-top:2px;">H: ?${pt.high} &nbsp; L: ?${pt.low}</div>
+        ${pt.volume ? `<div style="color:var(--text-secondary)44;font-size:8px;">Vol: ${(pt.volume/1e6).toFixed(1)}M</div>` : ''}`;
     };
     canvas.parentElement.onmouseleave = () => {
       const tip = document.getElementById('chartTooltip');
@@ -1227,16 +1227,16 @@ class _StockPopupLegacy {
 
     // Price labels
     ctx.font = '9px Geist Mono, monospace';
-    ctx.fillStyle = '#8c909f66';
+    ctx.fillStyle = 'var(--text-secondary)66';
     ctx.textAlign = 'left';
-    ctx.fillText('₹' + max.toFixed(0), pad.left + 4, pad.top + 10);
-    ctx.fillText('₹' + min.toFixed(0), pad.left + 4, H - pad.bottom - 2);
+    ctx.fillText('?' + max.toFixed(0), pad.left + 4, pad.top + 10);
+    ctx.fillText('?' + min.toFixed(0), pad.left + 4, H - pad.bottom - 2);
     const midPrice = ((max + min) / 2).toFixed(0);
-    ctx.fillText('₹' + midPrice, pad.left + 4, pad.top + cH / 2 + 3);
+    ctx.fillText('?' + midPrice, pad.left + 4, pad.top + cH / 2 + 3);
 
     // Date labels
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#8c909f55';
+    ctx.fillStyle = 'var(--text-secondary)55';
     ctx.fillText(data[0].date.slice(5), points[0].x + 15, H - 4);
     ctx.fillText(data[data.length - 1].date.slice(5), points[points.length - 1].x - 15, H - 4);
     if (data.length > 10) {
@@ -1275,7 +1275,7 @@ class _StockPopupLegacy {
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.clip();
       // Redraw background
-      ctx.fillStyle = '#0a0e14';
+      ctx.fillStyle = 'var(--surface-0)';
       ctx.fillRect(x - r, y - r, r * 2, r * 2);
       ctx.restore();
 
@@ -1319,7 +1319,7 @@ class _StockPopupLegacy {
     catch (e) { res = null; }
 
     if (!res?.success) {
-      host.innerHTML = '<div style="text-align:center;color:#8c909f55;font-size:11px;padding:12px">Forensics unavailable</div>';
+      host.innerHTML = '<div style="text-align:center;color:var(--text-secondary)55;font-size:11px;padding:12px">Forensics unavailable</div>';
       return;
     }
     const d = res.data;
@@ -1339,30 +1339,65 @@ class _StockPopupLegacy {
 
     const evidenceHtml = (pd.evidence || []).map(e => `
       <div style="padding:6px 10px;border-bottom:1px solid #42475422;font-size:11px">
-        <div style="color:#dfe2eb">${e.detail}</div>
-        <div style="color:#8c909f;font-size:9px;margin-top:2px">+${e.score} pts · ${e.code.replace(/_/g,' ')}</div>
-      </div>`).join('') || '<div style="padding:10px;color:#8c909f55;font-size:10px;text-align:center">no pump-pattern evidence</div>';
+        <div style="color:var(--text-primary)">${e.detail}</div>
+        <div style="color:var(--text-secondary);font-size:9px;margin-top:2px">+${e.score} pts � ${e.code.replace(/_/g,' ')}</div>
+      </div>`).join('') || '<div style="padding:10px;color:var(--text-secondary)55;font-size:10px;text-align:center">no pump-pattern evidence</div>';
 
+    // Translate cryptic intent codes into plain English so users actually
+    // understand what triggered the flag (e.g. "intent_promote" -> "Promotional intent").
+    const REASON_COPY = {
+      'intent_promote':       'Promotional intent',
+      'intent_pump':          'Pump pattern',
+      'anonymous_source':     'Anonymous source',
+      'unsourced_target':     'Unsourced price target',
+      'promotional_language': 'Promotional language',
+      'bear_language':        'Bearish hyperbole',
+      'no_filing_match':      'No SEBI filing match',
+      'price_action_lead':    'Price moved before news',
+      'multi_pump_post':      'Cross-platform pump',
+      'low_credibility':      'Low-credibility source',
+      'paid_subscription':    'Paid-tip language',
+    };
+    function reasonLabel(r){
+      if (!r) return '';
+      const key = String(r).toLowerCase();
+      return REASON_COPY[key] || String(r).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
     const reasonsHtml = (latest?.reasons || []).map(r => `
-      <span style="background:#3a1418;color:#ffb4ab;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin:2px 2px 2px 0;display:inline-block">${r.replace(/_/g,' ')}</span>
-    `).join('') || '<span style="color:#8c909f55;font-size:10px">no manipulation reasons flagged</span>';
+      <span style="background:var(--bear-dim);color:#ffb4ab;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin:2px 2px 2px 0;display:inline-block" title="Forensics: this flag fired on the latest article">${reasonLabel(r)}</span>
+    `).join('') || '<span style="color:var(--text-secondary)55;font-size:10px">no manipulation flags</span>';
 
     const recentHtml = recent.slice(0, 5).map(s => {
       const c = s.band === 'likely_manipulated' ? '#ffb4ab'
               : s.band === 'unverified' ? '#f2c96b' : '#4edea3';
       return `<div style="padding:6px 8px;border-bottom:1px solid #42475422;font-size:11px" data-event-id="${s.event_id}">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <span style="color:#dfe2eb;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.headline || '').slice(0,70)}</span>
+          <span style="color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.headline || '').slice(0,70)}</span>
           <span style="color:${c};font-weight:700;font-size:10px">${s.score}</span>
         </div>
       </div>`;
-    }).join('') || '<div style="padding:10px;color:#8c909f55;font-size:10px;text-align:center">no recent signals</div>';
+    }).join('') || '<div style="padding:10px;color:var(--text-secondary)55;font-size:10px;text-align:center">no recent signals</div>';
+
+    // Plain-English caption for the risk band (replaces uppercase ALL CAPS
+    // jargon like "CLEAN" / "SUSPICIOUS" with something humans parse fast).
+    const PUMP_BAND_COPY = {
+      'clean':       'No pump pattern detected',
+      'suspicious':  'Some pump-like patterns',
+      'likely_pump': 'Likely pump activity',
+    };
+    const MANIP_BAND_COPY = {
+      'clean':              'Article looks clean',
+      'unverified':         'Article unverified',
+      'likely_manipulated': 'Likely manipulated',
+    };
+    const pumpCaption  = PUMP_BAND_COPY[pd.band || 'clean'] || pd.band || 'unknown';
+    const manipCaption = latest ? (MANIP_BAND_COPY[latest.band] || latest.band || 'unknown') : 'No recent article';
 
     host.innerHTML = `
       <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px;margin-bottom:12px">
         <!-- Pump-dump gauge card -->
-        <div style="padding:12px;background:#10141a;border:1px solid #42475422;border-radius:10px;text-align:center">
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump-Dump Risk</div>
+        <div style="padding:12px;background:var(--surface-0);border:1px solid #42475422;border-radius:10px;text-align:center" title="0 = clean · 100 = high pump-pattern probability. Computed from price/volume divergence, social pumping, and source credibility.">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump-Dump Risk · /100</div>
           <div style="position:relative;width:72px;height:72px;margin:6px auto">
             <svg width="72" height="72" viewBox="0 0 72 72">
               <circle cx="36" cy="36" r="26" fill="none" stroke="#42475433" stroke-width="6"/>
@@ -1375,18 +1410,18 @@ class _StockPopupLegacy {
                     fill="${pumpColor}">0</text>
             </svg>
           </div>
-          <div style="font-size:10px;color:${pumpColor};text-transform:uppercase;font-weight:700">${pd.band || 'unknown'}</div>
+          <div style="font-size:11px;color:${pumpColor};font-weight:700;line-height:1.3">${pumpCaption}</div>
           ${pd.liquidity_multiplier > 1 ? `<div style="font-size:9px;color:#f2c96b;margin-top:4px">small-cap ×${pd.liquidity_multiplier}</div>` : ''}
         </div>
 
         <!-- Manipulation card -->
-        <div style="padding:12px;background:#10141a;border:1px solid #42475422;border-radius:10px">
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em">Latest article</div>
+        <div style="padding:12px;background:var(--surface-0);border:1px solid #42475422;border-radius:10px" title="0 = clean · 100 = many manipulation flags on the most recent article (anonymous sources, unsourced targets, promotional language, etc.)">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em">Latest article · /100</div>
           <div style="font-size:24px;font-weight:700;color:${manipColor};font-family:'Geist Mono',monospace;margin:4px 0">
             ${latest?.score != null ? latest.score : '—'}
           </div>
-          <div style="font-size:10px;color:${manipColor};text-transform:uppercase;font-weight:700;margin-bottom:6px">
-            ${latest?.band?.replace(/_/g,' ') || 'no recent signal'}
+          <div style="font-size:11px;color:${manipColor};font-weight:700;margin-bottom:6px;line-height:1.3">
+            ${manipCaption}
           </div>
           <div>${reasonsHtml}</div>
         </div>
@@ -1394,14 +1429,14 @@ class _StockPopupLegacy {
 
       <!-- Evidence -->
       <div style="margin-bottom:12px">
-        <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump evidence</div>
-        <div style="background:#10141a;border:1px solid #42475422;border-radius:8px;max-height:180px;overflow-y:auto">${evidenceHtml}</div>
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump evidence</div>
+        <div style="background:var(--surface-0);border:1px solid #42475422;border-radius:8px;max-height:180px;overflow-y:auto">${evidenceHtml}</div>
       </div>
 
       <!-- Recent signals -->
       <div>
-        <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Recent signals (score)</div>
-        <div style="background:#10141a;border:1px solid #42475422;border-radius:8px;max-height:160px;overflow-y:auto">${recentHtml}</div>
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Recent signals (score)</div>
+        <div style="background:var(--surface-0);border:1px solid #42475422;border-radius:8px;max-height:160px;overflow-y:auto">${recentHtml}</div>
       </div>`;
 
     // Animate gauge fill
@@ -1423,7 +1458,7 @@ class _StockPopupLegacy {
     let res;
     try { res = await API.get(`/stock/${encodeURIComponent(ticker)}/volume`); } catch (e) { res = null; }
     if (!res?.success || !res.data?.series) {
-      host.innerHTML = '<div style="text-align:center;color:#8c909f55;font-size:11px;padding:12px">No volume history available</div>';
+      host.innerHTML = '<div style="text-align:center;color:var(--text-secondary)55;font-size:11px;padding:12px">No volume history available</div>';
       return;
     }
     const d = res.data;
@@ -1431,27 +1466,27 @@ class _StockPopupLegacy {
     const s = d.series || {};
     const surge = a.vol_surge_ratio || 0;
     const div = a.obv_divergence_flag;
-    const divColor = div === 'bearish' ? '#ffb4ab' : div === 'bullish' ? '#4edea3' : '#8c909f';
-    const surgeColor = surge >= 2.5 ? '#f2c96b' : '#8c909f';
+    const divColor = div === 'bearish' ? '#ffb4ab' : div === 'bullish' ? '#4edea3' : 'var(--text-secondary)';
+    const surgeColor = surge >= 2.5 ? '#f2c96b' : 'var(--text-secondary)';
 
     host.innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
-        <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
-          <div style="font-size:8px;color:#8c909f;text-transform:uppercase">Surge vs 20d</div>
-          <div style="font-size:13px;font-weight:700;color:${surgeColor};font-family:'Geist Mono',monospace">${surge.toFixed(2)}×</div>
+        <div style="padding:8px;background:var(--surface-0);border-radius:8px;text-align:center">
+          <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase">Surge vs 20d</div>
+          <div style="font-size:13px;font-weight:700;color:${surgeColor};font-family:'Geist Mono',monospace">${surge.toFixed(2)}�</div>
         </div>
-        <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
-          <div style="font-size:8px;color:#8c909f;text-transform:uppercase">OBV divergence</div>
+        <div style="padding:8px;background:var(--surface-0);border-radius:8px;text-align:center">
+          <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase">OBV divergence</div>
           <div style="font-size:13px;font-weight:700;color:${divColor};text-transform:uppercase">${div || 'none'}</div>
         </div>
-        <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
-          <div style="font-size:8px;color:#8c909f;text-transform:uppercase">Pre-news</div>
-          <div style="font-size:13px;font-weight:700;color:${a.unexplained_volume ? '#f2c96b' : '#8c909f'}">${a.unexplained_volume ? 'unexplained' : 'explained'}</div>
+        <div style="padding:8px;background:var(--surface-0);border-radius:8px;text-align:center">
+          <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase">Pre-news</div>
+          <div style="font-size:13px;font-weight:700;color:${a.unexplained_volume ? '#f2c96b' : 'var(--text-secondary)'}">${a.unexplained_volume ? 'unexplained' : 'explained'}</div>
         </div>
       </div>
-      <div style="position:relative;background:#0a0e14;border:1px solid #42475422;border-radius:8px;padding:4px">
+      <div style="position:relative;background:var(--surface-0);border:1px solid #42475422;border-radius:8px;padding:4px">
         <canvas id="obvSpark" width="440" height="80" style="width:100%;height:80px;display:block"></canvas>
-        <div style="position:absolute;top:6px;left:10px;font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em">OBV · 60d</div>
+        <div style="position:absolute;top:6px;left:10px;font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em">OBV � 60d</div>
       </div>`;
 
     // Native canvas sparkline (no Chart.js needed for a simple line)
@@ -1510,7 +1545,7 @@ class _StockPopupLegacy {
 
     if (!res?.success || !res.data?.has_data) {
       host.innerHTML = `
-        <div style="text-align:center;color:#8c909f55;font-size:11px;padding:16px;">
+        <div style="text-align:center;color:var(--text-secondary)55;font-size:11px;padding:16px;">
           No promoter data yet for ${ticker}.<br>
           <span style="font-size:9px;opacity:.7">Run the quarterly scraper or POST /api/admin/seed_promoter to populate.</span>
         </div>`;
@@ -1528,43 +1563,43 @@ class _StockPopupLegacy {
 
     const flagBadge = (f) => {
       const palette = f.severity === 'critical'
-        ? { bg: '#3a1418', fg: '#ffb4ab' }
+        ? { bg: 'var(--bear-dim)', fg: '#ffb4ab' }
         : f.severity === 'warn'
           ? { bg: '#3a3214', fg: '#f2c96b' }
-          : { bg: '#142a3a', fg: '#8eb4e0' };
+          : { bg: 'var(--info-dim)', fg: '#8eb4e0' };
       return `<span title="${(f.detail || '').replace(/"/g,'&quot;')}" style="display:inline-block;margin:2px;padding:3px 8px;border-radius:10px;background:${palette.bg};color:${palette.fg};font-size:10px;font-weight:700">${f.label}</span>`;
     };
 
     const statBox = (label, value, color) => `
-      <div style="padding:8px;background:#10141a;border-radius:8px;text-align:center">
-        <div style="font-size:8px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em">${label}</div>
-        <div style="font-size:14px;font-weight:700;color:${color};font-family:'Geist Mono',monospace;margin-top:2px">${value == null ? '—' : value.toFixed(2) + '%'}</div>
+      <div style="padding:8px;background:var(--surface-0);border-radius:8px;text-align:center">
+        <div style="font-size:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em">${label}</div>
+        <div style="font-size:14px;font-weight:700;color:${color};font-family:'Geist Mono',monospace;margin-top:2px">${value == null ? '�' : value.toFixed(2) + '%'}</div>
       </div>`;
 
     const eventsHtml = (events.slice(0, 5).map(e => `
       <div style="padding:6px 8px;border-bottom:1px solid #42475422;font-size:11px">
-        <div style="color:#8c909f;font-size:9px">${e.event_date || ''}</div>
-        <div style="color:#dfe2eb">${(e.event_type || '').replace(/_/g,' ')} · ${(e.reason || '').slice(0, 80)}</div>
-      </div>`).join('')) || '<div style="padding:8px;color:#8c909f55;font-size:10px;text-align:center">no recent promoter events</div>';
+        <div style="color:var(--text-secondary);font-size:9px">${e.event_date || ''}</div>
+        <div style="color:var(--text-primary)">${(e.event_type || '').replace(/_/g,' ')} � ${(e.reason || '').slice(0, 80)}</div>
+      </div>`).join('')) || '<div style="padding:8px;color:var(--text-secondary)55;font-size:10px;text-align:center">no recent promoter events</div>';
 
     const sebiHtml = (sebi.slice(0, 5).map(s => {
       const c = s.transaction_type === 'buy' ? '#4edea3' : s.transaction_type === 'sell' ? '#ffb4ab' : '#adc6ff';
       return `<div style="padding:6px 8px;border-bottom:1px solid #42475422;font-size:11px">
-        <div style="color:#8c909f;font-size:9px">${s.transaction_date || ''} · ${s.disclosure_type || ''}</div>
-        <div style="color:${c}">${s.transaction_type || ''} ${s.quantity ? '· ' + Number(s.quantity).toLocaleString() + ' sh' : ''} ${(s.person_name || '')}</div>
+        <div style="color:var(--text-secondary);font-size:9px">${s.transaction_date || ''} � ${s.disclosure_type || ''}</div>
+        <div style="color:${c}">${s.transaction_type || ''} ${s.quantity ? '� ' + Number(s.quantity).toLocaleString() + ' sh' : ''} ${(s.person_name || '')}</div>
       </div>`;
-    }).join('')) || '<div style="padding:8px;color:#8c909f55;font-size:10px;text-align:center">no SEBI disclosures in window</div>';
+    }).join('')) || '<div style="padding:8px;color:var(--text-secondary)55;font-size:10px;text-align:center">no SEBI disclosures in window</div>';
 
     const personsHtml = (persons.slice(0, 6).map(p => `
       <div style="padding:4px 8px;font-size:11px">
-        <span style="color:#dfe2eb">${p.person_name || ''}</span>
-        <span style="color:#8c909f;font-size:9px;margin-left:6px">${p.role || ''}</span>
+        <span style="color:var(--text-primary)">${p.person_name || ''}</span>
+        <span style="color:var(--text-secondary);font-size:9px;margin-left:6px">${p.role || ''}</span>
       </div>`).join('')) || '';
 
     host.innerHTML = `
       <!-- Insights narrative -->
-      <div style="padding:10px;background:#10141a;border-radius:8px;border:1px solid #42475422;margin-bottom:12px;font-size:11px;color:#c2c6d6;line-height:1.7">
-        ${insights.map(i => `<div>• ${i}</div>`).join('')}
+      <div style="padding:10px;background:var(--surface-0);border-radius:8px;border:1px solid #42475422;margin-bottom:12px;font-size:11px;color:var(--text-primary);line-height:1.7">
+        ${insights.map(i => `<div>� ${i}</div>`).join('')}
       </div>
 
       <!-- Red flags -->
@@ -1573,19 +1608,19 @@ class _StockPopupLegacy {
       <!-- Current snapshot stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
         ${statBox('Promoter', cur.promoter_pct, '#adc6ff')}
-        ${statBox('Pledge', cur.promoter_pledge_pct, (cur.promoter_pledge_pct || 0) > 20 ? '#ffb4ab' : '#8c909f')}
+        ${statBox('Pledge', cur.promoter_pledge_pct, (cur.promoter_pledge_pct || 0) > 20 ? '#ffb4ab' : 'var(--text-secondary)')}
         ${statBox('FII', cur.fii_pct, '#4edea3')}
         ${statBox('DII', cur.dii_pct, '#f2c96b')}
       </div>
 
       <!-- Charts row -->
       <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-bottom:12px">
-        <div style="padding:8px;background:#0a0e14;border:1px solid #42475422;border-radius:8px">
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Current breakdown</div>
+        <div style="padding:8px;background:var(--surface-0);border:1px solid #42475422;border-radius:8px">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Current breakdown</div>
           <canvas id="promoterDonut" width="180" height="160" style="width:100%;max-height:160px"></canvas>
         </div>
-        <div style="padding:8px;background:#0a0e14;border:1px solid #42475422;border-radius:8px">
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">8-quarter history</div>
+        <div style="padding:8px;background:var(--surface-0);border:1px solid #42475422;border-radius:8px">
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">8-quarter history</div>
           <canvas id="promoterHistory" width="280" height="160" style="width:100%;max-height:160px"></canvas>
         </div>
       </div>
@@ -1593,19 +1628,19 @@ class _StockPopupLegacy {
       <!-- Recent events + SEBI + persons -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Promoter events</div>
-          <div style="background:#10141a;border:1px solid #42475422;border-radius:8px;max-height:140px;overflow-y:auto">${eventsHtml}</div>
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Promoter events</div>
+          <div style="background:var(--surface-0);border:1px solid #42475422;border-radius:8px;max-height:140px;overflow-y:auto">${eventsHtml}</div>
         </div>
         <div>
-          <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">SEBI disclosures</div>
-          <div style="background:#10141a;border:1px solid #42475422;border-radius:8px;max-height:140px;overflow-y:auto">${sebiHtml}</div>
+          <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">SEBI disclosures</div>
+          <div style="background:var(--surface-0);border:1px solid #42475422;border-radius:8px;max-height:140px;overflow-y:auto">${sebiHtml}</div>
         </div>
       </div>
 
       ${persons.length ? `
       <div>
-        <div style="font-size:9px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Key persons</div>
-        <div style="background:#10141a;border:1px solid #42475422;border-radius:8px;padding:4px">${personsHtml}</div>
+        <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Key persons</div>
+        <div style="background:var(--surface-0);border:1px solid #42475422;border-radius:8px;padding:4px">${personsHtml}</div>
       </div>` : ''}
     `;
 
@@ -1622,14 +1657,14 @@ class _StockPopupLegacy {
           datasets: [{
             data: [cur.promoter_pct || 0, cur.fii_pct || 0, cur.dii_pct || 0, others],
             backgroundColor: ['#adc6ff', '#4edea3', '#f2c96b', '#42475466'],
-            borderColor: '#10141a',
+            borderColor: 'var(--surface-0)',
             borderWidth: 2,
           }],
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { color: '#c2c6d6', font: { size: 10 }, boxWidth: 10 } },
+            legend: { position: 'bottom', labels: { color: 'var(--text-primary)', font: { size: 10 }, boxWidth: 10 } },
             tooltip: { callbacks: { label: (c) => `${c.label}: ${(+c.parsed).toFixed(2)}%` } },
           },
         },
@@ -1669,11 +1704,11 @@ class _StockPopupLegacy {
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: '#c2c6d6', font: { size: 10 }, boxWidth: 10 } },
+            legend: { labels: { color: 'var(--text-primary)', font: { size: 10 }, boxWidth: 10 } },
           },
           scales: {
-            x: { ticks: { color: '#8c909f', font: { size: 9 } }, grid: { color: '#42475422' } },
-            y: { ticks: { color: '#8c909f', font: { size: 9 }, callback: (v) => v + '%' }, grid: { color: '#42475422' } },
+            x: { ticks: { color: 'var(--text-secondary)', font: { size: 9 } }, grid: { color: '#42475422' } },
+            y: { ticks: { color: 'var(--text-secondary)', font: { size: 9 }, callback: (v) => v + '%' }, grid: { color: '#42475422' } },
           },
         },
       });
@@ -1681,7 +1716,7 @@ class _StockPopupLegacy {
   }
 }
 
-// (Legacy global click handler that called StockPopup.show was removed —
+// (Legacy global click handler that called StockPopup.show was removed �
 //  the canonical handler lives in shared/js/stock-popup.js, attached on
 //  window in capture phase so it wins over every other delegated handler.)
 
@@ -1737,10 +1772,10 @@ class MarketTicker {
     const items = data.map(idx => {
       const pos = idx.change_pct >= 0;
       const color = pos ? '#4edea3' : '#ffb4ab';
-      const arrow = pos ? '▲' : '▼';
+      const arrow = pos ? '?' : '?';
       const price = idx.price > 0
         ? idx.price.toLocaleString('en-IN', { maximumFractionDigits: idx.price > 1000 ? 0 : 2 })
-        : '—';
+        : '�';
       return `<span class="ticker-item">
         <span class="ticker-index-name">${idx.short}</span>
         <span class="ticker-price" style="color:${color}">${price}</span>
@@ -1792,11 +1827,11 @@ class MarketPulse {
 
     // Derive trend label + strength
     let trendKey, trendLabel, trendColor, trendEmoji;
-    if      (avgChg >=  1.5) { trendKey = 'strong_bull'; trendLabel = 'STRONG BULL';  trendColor = '#4edea3'; trendEmoji = '▲▲'; }
-    else if (avgChg >=  0.4) { trendKey = 'bull';        trendLabel = 'BULLISH';      trendColor = '#4edea3'; trendEmoji = '▲';  }
-    else if (avgChg >= -0.4) { trendKey = 'sideways';    trendLabel = 'SIDEWAYS';     trendColor = '#adc6ff'; trendEmoji = '→';  }
-    else if (avgChg >= -1.5) { trendKey = 'bear';        trendLabel = 'BEARISH';      trendColor = '#ffb4ab'; trendEmoji = '▼';  }
-    else                     { trendKey = 'strong_bear'; trendLabel = 'STRONG BEAR';  trendColor = '#ffb4ab'; trendEmoji = '▼▼'; }
+    if      (avgChg >=  1.5) { trendKey = 'strong_bull'; trendLabel = 'STRONG BULL';  trendColor = '#4edea3'; trendEmoji = '??'; }
+    else if (avgChg >=  0.4) { trendKey = 'bull';        trendLabel = 'BULLISH';      trendColor = '#4edea3'; trendEmoji = '?';  }
+    else if (avgChg >= -0.4) { trendKey = 'sideways';    trendLabel = 'SIDEWAYS';     trendColor = '#adc6ff'; trendEmoji = '?';  }
+    else if (avgChg >= -1.5) { trendKey = 'bear';        trendLabel = 'BEARISH';      trendColor = '#ffb4ab'; trendEmoji = '?';  }
+    else                     { trendKey = 'strong_bear'; trendLabel = 'STRONG BEAR';  trendColor = '#ffb4ab'; trendEmoji = '??'; }
 
     // VIX interpretation
     const vixVal = vix?.price || 0;
@@ -1845,7 +1880,7 @@ class MarketPulse {
     const niftyStr  = `NIFTY ${niftyChg >= 0 ? '+' : ''}${niftyChg}%`;
     const breadthStr = `${pulse.greenCount}/4 indices positive`;
     const vixStr    = `VIX ${vixVal} (${fearLabel})`;
-    const fiiStr    = fiiSell ? ' — likely FII outflows.' : '.';
+    const fiiStr    = fiiSell ? ' � likely FII outflows.' : '.';
     return `${trendLabel} session: ${niftyStr}, ${breadthStr}. ${vixStr}${fiiStr} Rupee ${rupeeDir}.`;
   }
 
@@ -1856,17 +1891,17 @@ class MarketPulse {
     const bull = sentiment === 'bullish';
     if (trendKey === 'strong_bear' || trendKey === 'bear') {
       return bull
-        ? `Despite broad market selling (NIFTY ${niftyChg}%), this company-specific catalyst may deliver counter-trend alpha — stock-specific events outperform in down markets.`
+        ? `Despite broad market selling (NIFTY ${niftyChg}%), this company-specific catalyst may deliver counter-trend alpha � stock-specific events outperform in down markets.`
         : `Bear market (NIFTY ${niftyChg}%) amplifies downside; VIX ${vixVal} signals ${fearLabel.toLowerCase()}.`;
     }
     if (trendKey === 'strong_bull' || trendKey === 'bull') {
       return bull
         ? `Bullish market tailwind (NIFTY +${niftyChg}%) reinforces the upside thesis.`
-        : `Even in an up market (NIFTY +${niftyChg}%) this bearish catalyst warrants caution — company-specific risk.`;
+        : `Even in an up market (NIFTY +${niftyChg}%) this bearish catalyst warrants caution � company-specific risk.`;
     }
     // Sideways
     return bull
-      ? `Sideways market (NIFTY ${niftyChg}%) means this catalyst is the primary driver — less noise from macro.`
+      ? `Sideways market (NIFTY ${niftyChg}%) means this catalyst is the primary driver � less noise from macro.`
       : `Choppy market reduces conviction on direction.`;
   }
 }
@@ -1907,7 +1942,7 @@ class MobileNav {
       this._backdrop = bd;
     }
 
-    // Inject mobile top bar — defer so ticker bar inserts first
+    // Inject mobile top bar � defer so ticker bar inserts first
     if (!main.querySelector('.mobile-top-bar')) {
       const pageTitle = document.title.split('|')[1]?.trim() || 'Tickwave';
       const bar = document.createElement('div');
@@ -1961,7 +1996,7 @@ class MobileNav {
 // Auto-init MobileNav on every page
 document.addEventListener('DOMContentLoaded', () => MobileNav.init());
 
-// Auto-load AlphaFX (GSAP-based animations) — adds itself once
+// Auto-load AlphaFX (GSAP-based animations) � adds itself once
 (function autoloadFx() {
   if (typeof document === 'undefined') return;
   // Skip if already loaded (some pages may include fx.js directly)
@@ -1977,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', () => MobileNav.init());
 
 // ============ JARGON ANNOTATOR (Phase 1.5) ============
 // Scans rendered text for glossary terms and wraps them in clickable chips.
-// Uses a simple longest-match scan — good enough for ~300 terms.
+// Uses a simple longest-match scan � good enough for ~300 terms.
 class Jargon {
   static _terms = null;
   static _cache = new Map();
@@ -2057,11 +2092,11 @@ class Jargon {
     if (!pop) {
       pop = document.createElement('div');
       pop.id = 'jargon-popover';
-      pop.style.cssText = 'position:absolute;z-index:10000;background:#1b2030;color:#e7ecf5;padding:12px 14px;border:1px solid #2a3142;border-radius:8px;max-width:340px;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,0.4);';
+      pop.style.cssText = 'position:absolute;z-index:10000;background:#1b2030;color:#e7ecf5;padding:12px 14px;border:1px solid var(--surface-3);border-radius:8px;max-width:340px;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,0.4);';
       document.body.appendChild(pop);
       document.addEventListener('click', (e) => { if (!pop.contains(e.target) && !e.target.classList.contains('jargon-term')) pop.style.display = 'none'; });
     }
-    pop.innerHTML = '<em style="opacity:.6">loading…</em>';
+    pop.innerHTML = '<em style="opacity:.6">loading�</em>';
     pop.style.display = 'block';
     if (ev) {
       const r = ev.target.getBoundingClientRect();
@@ -2081,11 +2116,11 @@ class ForensicBadge {
   static render(score, band) {
     if (score == null) return '';
     const palette = band === 'likely_manipulated'
-      ? { bg: '#3a1418', fg: '#f26b6b', label: 'Likely manipulated' }
+      ? { bg: 'var(--bear-dim)', fg: '#f26b6b', label: 'Likely manipulated' }
       : band === 'unverified'
         ? { bg: '#3a3214', fg: '#f2c96b', label: 'Unverified' }
         : { bg: '#14331f', fg: '#2dd4aa', label: 'Clean' };
-    return `<span class="forensic-badge" data-score="${score}" style="background:${palette.bg};color:${palette.fg};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${palette.label} · ${score}</span>`;
+    return `<span class="forensic-badge" data-score="${score}" style="background:${palette.bg};color:${palette.fg};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${palette.label} � ${score}</span>`;
   }
 }
 
@@ -2095,8 +2130,8 @@ class PriorityChip {
     if (!firstSeenSource) return '';
     const social = ['reddit', 'twitter', 'telegram'].some(p => String(firstSeenSource).startsWith(p));
     if (!social) return '';
-    const edge = edgeMinutes ? ` · ${Math.round(edgeMinutes)}m ahead` : '';
-    return `<span style="background:#142a3a;color:#8eb4e0;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">⚡ ${firstSeenSource}${edge}</span>`;
+    const edge = edgeMinutes ? ` � ${Math.round(edgeMinutes)}m ahead` : '';
+    return `<span style="background:var(--info-dim);color:#8eb4e0;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">? ${firstSeenSource}${edge}</span>`;
   }
 }
 
@@ -2117,7 +2152,7 @@ class PriorityChip {
     el.id = FOOTER_ID;
     el.style.cssText = [
       'position:fixed','left:0','right:0','bottom:0','z-index:9998',
-      'background:rgba(10,14,20,0.94)','color:#8c909f','font-size:10px',
+      'background:rgba(10,14,20,0.94)','color:var(--text-secondary)','font-size:10px',
       'padding:5px 12px','border-top:1px solid rgba(140,144,159,0.15)',
       'text-align:center','line-height:1.4','backdrop-filter:blur(6px)',
       'pointer-events:auto','font-family:sans-serif',
@@ -2148,7 +2183,7 @@ class PriorityChip {
       '<p style="margin:0 0 8px 0">AlphaEvent is a market intelligence dashboard that surfaces news-driven trading signals from public Indian-market data.</p>' +
       '<p style="margin:0 0 8px 0">It is <strong>not</strong> investment advice. AlphaEvent is not a SEBI-registered Research Analyst or Investment Advisor. Signals are computed from model heuristics over public news; outcomes are never guaranteed.</p>' +
       '<p style="margin:0 0 14px 0">By continuing you confirm you understand that any trading decision is yours alone.</p>' +
-      '<button id="sebi-disclaimer-ok" style="background:#2dd4aa;color:#0a0e14;border:0;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer">I understand</button>' +
+      '<button id="sebi-disclaimer-ok" style="background:#2dd4aa;color:var(--surface-0);border:0;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer">I understand</button>' +
       '</div>';
     document.body.appendChild(ov);
     document.getElementById('sebi-disclaimer-ok').addEventListener('click', () => {

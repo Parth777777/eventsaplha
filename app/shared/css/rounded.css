@@ -1,0 +1,7 @@
+/* rounded.css — DISABLED.
+ *
+ * Earlier this file applied a sitewide border-radius pass to soften the
+ * "boxy" look. User asked to revert to the original theme and only add new
+ * features on top of it. Keeping the file (and the bootstrap.js include) as
+ * a no-op so we don't have to chase every page that already references it.
+ */

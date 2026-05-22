@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goal SIP Calculator — How Much to Invest Monthly | Tickwave</title>
+<meta name="description" content="Reverse SIP calculator: enter target corpus, tenure, expected return — get the required monthly SIP amount. Plan goals like child education, home down payment, retirement.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/goal-sip-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Goal SIP</div>
+<h1>How much SIP do you need to <span class="accent">reach your goal?</span></h1>
+<p class="lead">Pick a target corpus (₹50 lakh house, ₹2 cr retirement, ₹40 lakh child education) and a horizon. We'll tell you the monthly SIP that gets you there at your chosen expected return.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g transform="translate(100 100)"><circle r="70" fill="none" stroke="#1c2435" stroke-width="14"/><circle r="70" fill="none" stroke="#2dd4aa" stroke-width="14" stroke-dasharray="330 440" stroke-dashoffset="0" transform="rotate(-90)"/><text text-anchor="middle" y="-4" font-family="Geist Mono" font-size="9" fill="#8a94a8" letter-spacing="1.5">TARGET</text><text text-anchor="middle" y="14" font-family="Plus Jakarta Sans" font-weight="700" font-size="16" fill="#2dd4aa">₹50 L</text></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your goal</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Target corpus <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="tIn" value="5000000" min="100000" step="100000"></span></div><input type="range" id="t" class="tk-slider" min="100000" max="100000000" step="100000" value="5000000"><div class="tk-slider-bounds"><span>₹1 L</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Time to goal <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="15" min="1" max="40" step="1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="1" max="40" step="1" value="15"><div class="tk-slider-bounds"><span>1 yr</span><span>40 yr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Expected return p.a. <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="12" min="1" max="30" step="0.5"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="30" step="0.5" value="12"><div class="tk-slider-bounds"><span>1%</span><span>30%</span></div></div>
+</div>
+<div class="tk-card"><h2>What you need</h2>
+<div class="tk-result-headline">Required monthly SIP</div>
+<div class="tk-result-value" id="sip">—</div>
+<div class="tk-result-sub">to reach <span id="subT">—</span> in <span id="subY">—</span> years</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>You invest<strong id="lgI">—</strong></span><span><span class="dot" style="background:#2dd4aa"></span>Compounding earns<strong id="lgR">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total invested</div><div class="val" id="inv">—</div></div><div class="tk-stat"><div class="lbl">Returns earned</div><div class="val bull" id="ret">—</div></div></div>
+</div></section>
+
+<section class="tk-content">
+<section><h2>The reverse SIP formula</h2>
+<div class="tk-formula">SIP = FV × (r/12) / [ ((1 + r/12)<sup>12n</sup> − 1) × (1 + r/12) ]</div>
+<p>This is the SIP formula rearranged to solve for the monthly contribution. The more time you have, the smaller the monthly amount you need — that's compounding at work.</p>
+</section>
+<section><h2>Goal planning examples (12% return assumption)</h2>
+<ul><li><strong>₹50 lakh in 15 years</strong> — about ₹10,000/month</li><li><strong>₹1 crore in 20 years</strong> — about ₹10,100/month (yes, that's how powerful compounding is)</li><li><strong>₹2 crore in 25 years</strong> — about ₹10,600/month</li><li><strong>₹5 crore in 30 years</strong> — about ₹17,400/month</li></ul>
+<p>Start early — every 5 years of delay roughly doubles the required SIP.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Should I adjust the goal for inflation?</summary><p>Yes. A ₹40 lakh goal today is ₹80 lakh in 12 years at 6% inflation. Use our <a href="inflation-calculator.html">Inflation Calculator</a> to compute the inflated target before plugging it in here.</p></details>
+<details><summary>Can I use a step-up SIP to reach the goal with a smaller starting amount?</summary><p>Yes — see the <a href="step-up-sip-calculator.html">Step-up SIP Calculator</a>. A 10% annual increase often cuts the starting SIP by 30-40%.</p></details>
+<details><summary>What return rate is safe to assume?</summary><p>For long horizons (15+ yrs) in equity mutual funds, 11-12% is widely used. For shorter horizons (3-7 yrs), 9-10% with hybrid funds. For < 3 yrs use debt at 6-7%.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Forward — start from amount</span></a>
+<a href="step-up-sip-calculator.html">Step-up SIP<span class="sub">Increase SIP yearly</span></a>
+<a href="retirement-calculator.html">Retirement Calculator<span class="sub">Common goal</span></a>
+<a href="inflation-calculator.html">Inflation Calculator<span class="sub">Adjust target for inflation</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var FV=+document.getElementById('t').value, n=+document.getElementById('y').value, r=+document.getElementById('r').value/100/12, months=n*12;
+  var sip=r===0?FV/months:FV*r/((Math.pow(1+r,months)-1)*(1+r));
+  var invested=sip*months, returns=FV-invested;
+  T.animateNumber(document.getElementById('sip'),sip);
+  T.animateNumber(document.getElementById('inv'),invested);
+  T.animateNumber(document.getElementById('ret'),returns);
+  document.getElementById('subT').textContent=T.formatINRShort(FV);
+  document.getElementById('subY').textContent=n;
+  document.getElementById('lgI').textContent=T.formatINRShort(invested);
+  document.getElementById('lgR').textContent=T.formatINRShort(returns);
+  T.drawDonut(document.getElementById('donut'),[{value:invested,color:'#8eb4e0'},{value:returns,color:'#2dd4aa'}],{centerLabel:'Target',centerValue:T.formatINRShort(FV)});
+}
+T.bindSlider({slider:document.getElementById('t'),input:document.getElementById('tIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Should I adjust the goal for inflation?',a:'Yes — a 40 lakh goal today is 80 lakh in 12 years at 6% inflation. Inflate the target first.'},{q:'Can I use step-up SIP to reach the goal with smaller starting amount?',a:'Yes — 10% annual step-up cuts starting SIP by 30-40%.'},{q:'What return rate is safe to assume?',a:'15+ yr equity: 11-12%. 3-7 yr hybrid: 9-10%. < 3 yr debt: 6-7%.'}]);
+T.mountSoftwareSchema({name:'Goal SIP Calculator',description:'Reverse SIP — required monthly investment for a target corpus.'});
+})();
+</script>
+</body></html>

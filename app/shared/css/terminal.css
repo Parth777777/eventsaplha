@@ -1,0 +1,76 @@
+/* Event Terminal — live SSE/WS feed with audio squawk + event-window backtest.
+   Used standalone on terminal.html and embedded as the primary home view on
+   index.html. Scoped under .tk-terminal so it can't bleed into other widgets. */
+
+.tk-terminal { max-width: 920px; margin: 0 auto; padding: 8px 0 24px; }
+
+.tk-terminal .tk-headline {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700; letter-spacing: -0.02em;
+}
+
+.tk-terminal .tk-card {
+    background: #111720; border: 1px solid #253040; border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 12px;
+    transition: border-color .25s ease, transform .15s ease;
+}
+.tk-terminal .tk-card:hover { border-color: #3d4a5c; }
+.tk-terminal .tk-card[data-new="1"] {
+    border-color: #2dd4aa;
+    box-shadow: inset 0 0 0 1px rgba(45,212,170,.20);
+}
+
+.tk-terminal .tk-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    background: #161d28; color: #8a94a8; border: 1px solid #253040;
+    font-family: 'Geist Mono', monospace; letter-spacing: .02em;
+}
+.tk-terminal .tk-pill.is-bull   { color: #2dd4aa; border-color: rgba(45,212,170,.28); }
+.tk-terminal .tk-pill.is-bear   { color: #f26b6b; border-color: rgba(242,107,107,.28); }
+.tk-terminal .tk-pill.is-caution{ color: #e6b84a; border-color: rgba(230,184,74,.28); }
+
+.tk-terminal .tk-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+.tk-terminal .tk-stat { background: #161d28; border-radius: 10px; padding: 8px 10px; }
+.tk-terminal .tk-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #8a94a8; }
+.tk-terminal .tk-stat .val { font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 600; margin-top: 2px; }
+.tk-terminal .tk-stat .val.bull  { color: #2dd4aa; }
+.tk-terminal .tk-stat .val.bear  { color: #f26b6b; }
+.tk-terminal .tk-stat .val.muted { color: #8a94a8; }
+
+.tk-terminal .tk-bar {
+    position: sticky; top: 0; z-index: 10;
+    background: #080c12cc; backdrop-filter: blur(8px);
+    padding: 12px 0 16px; border-bottom: 1px solid #253040; margin-bottom: 16px;
+}
+
+.tk-terminal .tk-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    border: 1px solid #3d4a5c; background: #161d28; color: #dde3ef; cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.tk-terminal .tk-btn:hover { background: #1c2435; border-color: #6ba3d6; }
+.tk-terminal .tk-btn.is-live { background: #2dd4aa; color: #080c12; border-color: #2dd4aa; }
+.tk-terminal .tk-btn.is-live:hover { background: #26b893; border-color: #26b893; }
+
+.tk-terminal .tk-conn {
+    font-family: 'Geist Mono', monospace; font-size: 11px; color: #8a94a8;
+}
+.tk-terminal .tk-conn .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #8a94a8; margin-right: 6px; vertical-align: middle;
+}
+.tk-terminal .tk-conn.live .dot { background: #2dd4aa; box-shadow: 0 0 8px #2dd4aa; }
+.tk-terminal .tk-conn.err  .dot { background: #f26b6b; }
+
+.tk-terminal .tk-empty { color: #8a94a8; text-align: center; padding: 48px 0; }
+.tk-terminal .tk-time { color: #8a94a8; font-family: 'Geist Mono', monospace; font-size: 11px; }
+.tk-terminal .tk-tail { color: #8a94a8; font-size: 13px; margin-top: 6px; line-height: 1.45; }
+.tk-terminal .tk-ticker { font-family: 'Geist Mono', monospace; color: #8eb4e0; font-weight: 600; }
+
+.tk-terminal a.tk-link { color: #8eb4e0; text-decoration: none; }
+.tk-terminal a.tk-link:hover { text-decoration: underline; }
+
+@keyframes tk-flash-kf { 0% { background: #161d28; } 100% { background: transparent; } }
+.tk-terminal .tk-flash { animation: tk-flash-kf 1.2s ease-out; }

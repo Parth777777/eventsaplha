@@ -96,18 +96,43 @@ except Exception:  # pragma: no cover — keep pipeline working if module missin
     alpha_cap_for_status = freshness_label = None
 
 
-def enrich_events_with_tiering(events, articles):
+def enrich_events_with_tiering(events, articles, db=None):
     """Attach source_tier, freshness, confirmation status to each event.
 
     Mutates events in place (also returns the list for chaining).
     Downstream alpha scoring reads `event['tier_weight']` and
     `event['confirmation']` to penalise single-source / unverified news.
+
+    Addendum 2026-05-18: when `db` is supplied, persist the clusters to the
+    `event_clusters` table so multi-source confirmation accumulates across
+    scrape cycles (previously clusters were thrown away after each cycle).
+    Each event is tagged with its `cluster_hash` for downstream signal-row
+    stamping at insert time.
     """
     if not classify_source:
         return events
 
     # Cluster the raw articles first so each event can pick up its cluster
     clusters = cluster_events(articles or [])
+
+    # Persist the cluster set to event_clusters so /api/signals can JOIN
+    # back to it for cluster_size + sources list + canonical_headline.
+    # No-op if db isn't supplied (e.g. unit tests, dry-run pipelines).
+    cluster_hash_by_key = {}
+    if db is not None and clusters:
+        try:
+            from cluster_persister import persist_clusters
+        except Exception:
+            try:
+                from scraper.cluster_persister import persist_clusters
+            except Exception:
+                persist_clusters = None
+        if persist_clusters is not None:
+            try:
+                cluster_hash_by_key = persist_clusters(db, clusters) or {}
+            except Exception as exc:
+                logger.warning("cluster persistence skipped: %s", exc)
+
     title_to_cluster = {}
     for cl in clusters:
         title_to_cluster[cl.canonical_title] = cl
@@ -158,6 +183,16 @@ def enrich_events_with_tiering(events, articles):
             ev["cluster_sources"] = sorted({
                 s.get("canonical") or s.get("name") for s in cl.sources if s.get("canonical")
             })
+
+        # Addendum 2026-05-18: stamp cluster_hash on the event so signal
+        # insert paths can copy it into signals.cluster_hash. Lookups against
+        # title first (more reliable), then link as fallback.
+        if cl and cluster_hash_by_key:
+            ch = cluster_hash_by_key.get(cl.canonical_title) \
+                 or cluster_hash_by_key.get(link)
+            if ch:
+                ev["cluster_hash"] = ch
+                ev["cluster_size"] = cl.source_count
 
         # Filing-first override: if any source in this cluster is Tier-1
         # (BSE / NSE / SEBI / RBI filing), flag it as filing-grade so the alpha
@@ -1000,6 +1035,31 @@ class PolicyParser:
             if self._is_subject_ticker(t, text, title_zone)
         ]
 
+        # ── Pass 4: subject-confidence scoring + exchange-context veto ───
+        # Surgical fix for the "Mstar order tagged to BSE" class of bug.
+        # entity_linker rejects BSE/NSE when used as exchange references and
+        # scores remaining tickers 0.0-1.0. Drops below the min_conf threshold
+        # are filtered out of `companies`; full scores are kept under
+        # `company_confidence` for downstream signal-write filtering.
+        try:
+            import entity_linker
+            min_conf = float(os.getenv('ENTITY_MIN_CONF', '0.30'))
+            scored = entity_linker.filter_candidates(
+                entities['companies'], text, title=title or text[:200],
+                min_conf=min_conf,
+                short_names_map=UNIVERSE_SHORT_NAMES,
+                companies_map=STOCK_COMPANIES,
+            )
+            kept = [t for t, c, ev in scored]
+            entities['company_confidence'] = {
+                t: {'confidence': c, 'evidence': ev} for t, c, ev in scored
+            }
+            entities['companies'] = kept
+        except Exception as exc:
+            # Never let entity_linker crash the pipeline — fall back to Pass 3 output.
+            logger.debug("entity_linker failed (using Pass 3 output): %s", exc)
+            entities.setdefault('company_confidence', {})
+
         return entities
 
     # Domestic Indian stock news keywords — these should NOT generate geo events
@@ -1416,6 +1476,10 @@ class SignalEngine:
                         'distinct_sources': event.get('distinct_sources', 1),
                         'news_velocity_per_hour': event.get('news_velocity_per_hour', 0),
                         'high_velocity': event.get('high_velocity', False),
+                        # Addendum 2026-05-18: carry cluster identity onto the signal
+                        # so upsert_signal can persist + multiplier can apply.
+                        'cluster_hash': event.get('cluster_hash'),
+                        'cluster_size': event.get('cluster_size', 1),
                         'timestamp': datetime.now().isoformat()
                     }
 
@@ -1554,8 +1618,11 @@ class DataPipeline:
 
         # Step 3.5: Enrich events with source tiering + freshness + cross-source
         # confirmation. Drops weight on single-source / stale / tipster items.
+        # Addendum 2026-05-18: pass `self.db` so clusters get persisted to
+        # event_clusters and `cluster_hash` gets stamped on each event for
+        # downstream signal-row JOINs.
         try:
-            events = enrich_events_with_tiering(events, articles)
+            events = enrich_events_with_tiering(events, articles, db=self.db)
         except Exception as _tier_exc:
             logger.warning(f"source tiering enrichment skipped: {_tier_exc}")
 
@@ -1665,6 +1732,16 @@ class DataPipeline:
         # circulars per day. Apply a much shorter cooldown so the feed stays
         # fresh — the previous 24h window dropped every same-day update.
         policy_cooldown_h = int(os.getenv('POLICY_SIGNAL_COOLDOWN_HOURS', '2'))
+        # Classify news_type + score subject confidence once per signal so the
+        # write path persists both. SignalEngine doesn't always carry company
+        # confidence forward, so we re-score here using the event's headline +
+        # the assigned ticker — cheap and gives us a per-row gate.
+        try:
+            import entity_linker as _el
+        except Exception:
+            _el = None
+        promote_gate = os.getenv('PROMOTE_GATE', '1') == '1'
+        rejected_low_conf = 0
         for signal in signals:
             # Cooldown: skip if same (ticker, event_type, sentiment) is already active
             # within the cooldown window. Stops the same news re-firing every cycle.
@@ -1675,6 +1752,28 @@ class DataPipeline:
             ):
                 deduped += 1
                 continue
+            # ----- News-quality gate -----
+            news_type = None
+            subj_conf = None
+            subj_ev = None
+            if _el is not None:
+                src = signal.get('source') or ''
+                link = signal.get('link') or ''
+                headline = signal.get('headline') or ''
+                news_type = _el.classify_news_type(src, link)
+                try:
+                    subj_conf, subj_ev = _el.score(
+                        signal['ticker'], headline, title=headline,
+                        short_names_map=UNIVERSE_SHORT_NAMES,
+                        companies_map=STOCK_COMPANIES,
+                    )
+                except Exception:
+                    subj_conf, subj_ev = None, None
+                # Drop signal if the gate says it's a mis-tag — the Mstar/BSE fix.
+                if promote_gate and subj_conf is not None and \
+                   not _el.is_promotable_to_signal(news_type, subj_conf):
+                    rejected_low_conf += 1
+                    continue
             success = self.db.upsert_signal(
                 event_id=signal['event_id'],
                 event_type=signal['event_type'],
@@ -1690,7 +1789,16 @@ class DataPipeline:
                 impact_score=signal.get('impact_score', 0),
                 source=signal.get('source'),
                 headline=signal.get('headline'),
-                link=signal.get('link')
+                link=signal.get('link'),
+                news_type=news_type,
+                subject_confidence=subj_conf,
+                subject_evidence=subj_ev,
+                # Addendum 2026-05-18: pass through cluster info stamped by
+                # enrich_events_with_tiering so upsert_signal can apply the
+                # cluster-size multiplier + JOIN target for /api/signals.
+                cluster_hash=signal.get('cluster_hash'),
+                cluster_size=signal.get('cluster_size'),
+                raw_alpha_score=signal.get('alpha_score'),
             )
             if success:
                 signal_count += 1
@@ -1721,7 +1829,8 @@ class DataPipeline:
 
         logger.info(
             f"  DB writes: {event_count} events, {geo_count} geo, "
-            f"{signal_count} signals (skipped {deduped} cooldown dupes)"
+            f"{signal_count} signals (skipped {deduped} cooldown dupes, "
+            f"{rejected_low_conf} mis-tag rejects)"
         )
 
     def save_output(self, data: Dict) -> Optional[Path]:

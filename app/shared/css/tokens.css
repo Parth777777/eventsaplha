@@ -1,0 +1,97 @@
+/* ============================================================
+   AlphaEvent / Tickwave — DESIGN TOKEN CONTRACT
+   ============================================================
+
+   This file is the single source of truth for colors, spacing,
+   typography, radius, shadow, and motion.
+
+   CONTRACT (enforced by tools/check-no-hex.ps1):
+     - All widget JS and inline HTML styles MUST read colors via
+       `var(--token)` or `ThemeTokens.color('--token')` (see
+       app/shared/js/theme-tokens.js). Raw hex outside this file
+       and tokens-aware *.css files is forbidden.
+     - Widgets that paint on <canvas> (advanced-chart, etc.) must
+       subscribe to the `themechange` event on document and re-render.
+     - When adding a new color, add it here first, then consume.
+
+   LOAD ORDER:
+     1. tokens.css                  (this file)
+     2. style.css                   (consumes tokens; legacy aliases live here)
+     3. macos.css, premium.css      (component layers; consume tokens)
+
+   LIGHT MODE FIX (trader feedback 2026-05-17):
+     Light bg moved from #f6f7fb (cold grey, looked "dirty") to
+     #fbfbfd (warmer off-white). Shadows recalibrated for both
+     themes so cards have elevation without harsh contrast.
+   ============================================================ */
+
+/* ── SHARED (theme-independent) ─────────────────────────── */
+:root {
+  /* Motion */
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:   cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+  --dur-slow:  360ms;
+
+  /* Note: spacing (--sp-*), radius (--r-*), and type scale (--fs-*)
+     are already defined in style.css :root and remain authoritative.
+     New semantic aliases below ADD to that vocabulary, they do not
+     replace it. */
+}
+
+/* ── DARK THEME (default) ───────────────────────────────── */
+:root {
+  /* New semantic surface vocabulary — aliases to existing --bg/--s* */
+  --surface-0: #0a0d13;   /* page background (slightly deeper than legacy #080c12) */
+  --surface-1: #11151d;   /* panel — maps to legacy --s1 #111720 */
+  --surface-2: #181d28;   /* card  — maps to legacy --s2 #161d28 */
+  --surface-3: #222937;   /* hover/overlay — maps to legacy --s4 #222c3d */
+
+  /* New semantic text vocabulary — aliases to existing --t1/--t2/--t3 */
+  --text-primary:   #e6eaf2;   /* slightly brighter than legacy --t1 for AA contrast */
+  --text-secondary: #98a1b3;
+  --text-tertiary:  #5b6373;
+
+  /* Border (new semantic names) */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Accent — periwinkle, same in both themes for brand consistency */
+  --accent: #6f7eff;
+  --accent-hover: #8492ff;
+  --accent-dim:   rgba(111, 126, 255, 0.12);
+}
+
+/* ── LIGHT THEME ─────────────────────────────────────────── */
+:root[data-theme='light'] {
+  /* WARMER off-white — was #f6f7fb (cold grey), now #fbfbfd. Fixes the
+     "dirty design" feedback. Cards remain pure white to maximise
+     contrast for data-dense tables. */
+  --surface-0: #fbfbfd;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #f3f4f9;
+
+  --text-primary:   #0d1020;
+  --text-secondary: #5b6374;
+  --text-tertiary:  #9097a8;
+
+  --border-subtle: rgba(15, 18, 36, 0.06);
+  --border-strong: rgba(15, 18, 36, 0.14);
+
+  /* Slightly deeper accent on white so WCAG AA passes for text-on-button */
+  --accent: #4a5cff;
+  --accent-hover: #5c6dff;
+  --accent-dim:   rgba(74, 92, 255, 0.10);
+
+  /* Recalibrated shadows — softer, neutral, no warm cast */
+  --shadow-sm: 0 1px 2px  rgba(15, 18, 36, 0.05);
+  --shadow-md: 0 4px 14px rgba(15, 18, 36, 0.07);
+  --shadow-lg: 0 16px 40px rgba(15, 18, 36, 0.10);
+}
+
+/* ── SEMANTIC EVENT-DRIVEN TOKENS ────────────────────────── */
+/* Bull/bear/caution already exist in style.css :root with both-theme
+   variants. The new --accent layer above is the only addition. */

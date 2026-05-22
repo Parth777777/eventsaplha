@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickwave | Event Terminal</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./shared/css/terminal.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+    <style>
+        body { background:#080c12; color:#dde3ef; font-family:'DM Sans',system-ui,sans-serif; margin:0; }
+        .tk-page { max-width: 920px; margin: 0 auto; padding: 24px 20px 96px; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body>
+
+<div class="tk-page tk-terminal">
+
+    <header class="tk-headline" style="font-size:28px; margin-bottom:4px;">
+        Event Terminal
+    </header>
+    <p style="color:#8a94a8; font-size:14px; margin-bottom:18px;">
+        Live NSE/BSE filings with voice squawk and event-window backtest. Free to use, no login.
+    </p>
+
+    <div class="tk-bar">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <button id="tkAudioBtn" class="tk-btn" type="button">
+                    <span class="material-symbols-outlined" style="font-size:18px;">volume_up</span>
+                    <span id="tkAudioLabel">Launch Audio Station</span>
+                </button>
+                <span id="tkConn" class="tk-conn">
+                    <span class="dot"></span><span id="tkConnLabel">Connecting…</span>
+                </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label class="tk-conn" style="display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="tkScoredOnly" style="accent-color:#2dd4aa;">
+                    Scored only (alpha &ge; 50)
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <main id="tkFeed">
+        <div class="tk-empty" id="tkEmpty">
+            <div class="material-symbols-outlined" style="font-size:40px; color:#3d4a5c;">graphic_eq</div>
+            <div style="margin-top:8px; font-size:14px;">Waiting for the next announcement…</div>
+        </div>
+    </main>
+
+</div>
+
+<script src="./shared/js/terminal.js"></script>
+
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

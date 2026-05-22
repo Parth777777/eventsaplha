@@ -1,0 +1,344 @@
+/* site-premium.css — site-wide design polish overlay (v2, UX-brief aligned).
+ *
+ * Loaded AFTER all legacy CSS on every page (39/40 — landing.html excluded).
+ * Implements the UX brief site-wide:
+ *   1. Strict slate palette — slate-900 bg, slate-800 surface, white/gray text
+ *   2. Semantic colors ONLY — mint = bull, rose = bear, nothing else
+ *   3. Kill every decorative pulse + glow (no animation: pulse infinite)
+ *   4. Drastic padding bumps on cards + main-content
+ *   5. Hover state on every interactive card/row (5% white overlay + lift)
+ *   6. Clean tables — kill borders, mono numerals, soft hover row
+ *   7. Visible focus ring, slim scrollbars, mint selection
+ *   8. Motion: data-motion-* hooks read by site-motion.js for fade-up,
+ *      stagger, smooth expand, number flash
+ *   9. prefers-reduced-motion respected completely
+ */
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1. STRICT SLATE PALETTE — applied site-wide as CSS variables
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  --site-bg:          #0F172A;            /* slate-900 */
+  --site-bg-2:        #131c2f;            /* a touch lighter for nested */
+  --site-surface:     #1E293B;            /* slate-800 */
+  --site-surface-hi:  #293548;            /* hover state */
+  --site-surface-3:   #334155;            /* slate-700 */
+  --site-line:        rgba(255,255,255,0.05);
+  --site-line-2:      rgba(255,255,255,0.10);
+  --site-line-3:      rgba(255,255,255,0.18);
+
+  --site-text:        #f1f5f9;            /* slate-50 — primary */
+  --site-text-2:      #cbd5e1;            /* slate-300 */
+  --site-text-3:      #94a3b8;            /* slate-400 — secondary/dates */
+  --site-text-4:      #64748b;            /* slate-500 — captions */
+
+  /* Semantic colors ONLY */
+  --site-bull:        #34d399;            /* emerald-400 — bullish */
+  --site-bull-bg:     rgba(52,211,153,0.10);
+  --site-bull-line:   rgba(52,211,153,0.30);
+  --site-bear:        #fb7185;            /* rose-400 — bearish */
+  --site-bear-bg:     rgba(251,113,133,0.10);
+  --site-bear-line:   rgba(251,113,133,0.30);
+
+  /* Spacing scale (use everywhere) */
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+}
+
+/* Page background — applied to body universally except where pages opt out */
+body:not(.no-site-bg) {
+  background-color: var(--site-bg) !important;
+  color: var(--site-text);
+}
+html, body { color-scheme: dark; }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1b. TAILWIND UTILITY HIJACK — the site uses Tailwind utilities for its
+       surface colors (bg-surface-container, bg-surface-container-low, etc.)
+       and Tailwind binds those tokens to dim hex values (#111720 etc).
+       Force them to the new slate palette so the visual shift actually
+       propagates across all 39 Tailwind-utility pages without touching HTML.
+   ──────────────────────────────────────────────────────────────────────── */
+.bg-background,
+body.bg-background                              { background-color: var(--site-bg)        !important; }
+.bg-surface,
+.bg-surface-container-lowest                    { background-color: var(--site-bg-2)      !important; }
+.bg-surface-container-low                       { background-color: #182236                !important; }
+.bg-surface-container                           { background-color: var(--site-surface)   !important; }
+.bg-surface-container-high                      { background-color: #243046                !important; }
+.bg-surface-container-highest, .bg-surface-bright { background-color: var(--site-surface-3) !important; }
+
+/* Text utilities */
+.text-on-surface           { color: var(--site-text)   !important; }
+.text-on-surface-variant   { color: var(--site-text-3) !important; }
+
+/* Outline utilities — soften to slate hairlines */
+.border-outline,
+[class*="border-outline-variant"]               { border-color: var(--site-line-2)        !important; }
+
+/* Primary accent in Tailwind config (#8eb4e0 — washed-out blue) → mint */
+.text-primary, .text-secondary                  { color: var(--site-bull)                 !important; }
+.bg-primary                                     { background-color: var(--site-bull)      !important; color: #0a0a0a !important; }
+.border-primary,
+[class*="border-primary/"]                      { border-color: var(--site-bull)          !important; }
+
+/* The "live ticker dot" and similar pulsing decorative elements */
+.bg-secondary, .bg-secondary\/40                 { background-color: var(--site-bull)     !important; }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   2. KILL DECORATIVE PULSES + GLOWS (defensive — non-skeleton only)
+   ──────────────────────────────────────────────────────────────────────── */
+.lp-dot, .ticker-live-dot, .pulse, .rf-hero-eyebrow::before,
+.tw-feed-head .pulse, .live-ring, .geo-pulse, .qp-tape-dot {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   3. BREATHING ROOM — main-content + common card padding bumps
+   ──────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1280px) { .main-content { padding: 28px 36px !important; } }
+@media (min-width: 1600px) { .main-content { padding: 32px 48px !important; } }
+
+/* BEM-style component classes (legacy / playground) */
+.card, .ae-card, .signal-card, .sig-card, .metric-tile, .widget,
+.rf-kpi, .tier1-card, .tier2-card, .fo-card, .fc-card {
+  padding: 22px !important;
+}
+@media (min-width: 1280px) {
+  .card, .ae-card, .signal-card, .sig-card, .metric-tile,
+  .tier1-card, .tier2-card, .fo-card, .fc-card {
+    padding: 26px !important;
+  }
+}
+
+/* Tailwind utility cards — the actual pattern in use across the site:
+   <div class="bg-surface-container rounded-lg border border-outline-variant/10 p-4">
+   Match elements that have BOTH a surface-container class AND a rounded class.
+   This is the de-facto "card" signature and excludes non-card uses. */
+[class*="bg-surface-container"][class*="rounded-lg"],
+[class*="bg-surface-container"][class*="rounded-xl"],
+[class*="bg-surface"][class*="rounded-lg"][class*="border"],
+[class*="bg-surface"][class*="rounded-xl"][class*="border"] {
+  padding: 22px !important;
+  border-radius: 12px !important;
+}
+@media (min-width: 1280px) {
+  [class*="bg-surface-container"][class*="rounded-lg"],
+  [class*="bg-surface-container"][class*="rounded-xl"],
+  [class*="bg-surface"][class*="rounded-lg"][class*="border"],
+  [class*="bg-surface"][class*="rounded-xl"][class*="border"] {
+    padding: 26px !important;
+  }
+}
+
+/* Slightly more generous gaps between sections */
+.grid, .ae-grid, [class*="grid-cols-"] { gap: var(--s-5); }
+section, .section { margin-bottom: var(--s-8); }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   4. HOVER STATES — 5% white overlay on cards + lift, pointer cursor on rows
+   ──────────────────────────────────────────────────────────────────────── */
+.card, .ae-card, .signal-card, .sig-card, .metric-tile, .rf-kpi,
+.tier1-card, .tier2-card, .widget, .fo-card, .fc-card,
+[class*="bg-surface-container"][class*="rounded-lg"],
+[class*="bg-surface-container"][class*="rounded-xl"],
+[class*="bg-surface"][class*="rounded-lg"][class*="border"],
+[class*="bg-surface"][class*="rounded-xl"][class*="border"] {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 220ms ease,
+              border-color 220ms ease !important;
+}
+.card:hover, .ae-card:hover, .signal-card:hover, .sig-card:hover,
+.metric-tile:hover, .rf-kpi:hover, .tier1-card:hover, .tier2-card:hover,
+.fo-card:hover, .fc-card:hover,
+[class*="bg-surface-container"][class*="rounded-lg"]:hover,
+[class*="bg-surface-container"][class*="rounded-xl"]:hover,
+[class*="bg-surface"][class*="rounded-lg"][class*="border"]:hover,
+[class*="bg-surface"][class*="rounded-xl"][class*="border"]:hover {
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: var(--site-line-3) !important;
+  transform: translateY(-2px);
+}
+
+/* Any element with [data-row] is a clickable row */
+[data-row], .clickable-row, tr.is-clickable {
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+[data-row]:hover, .clickable-row:hover, tr.is-clickable:hover {
+  background-color: rgba(255,255,255,0.04);
+}
+
+/* Buttons + chips lift slightly on hover (no glow) */
+.rf-chip, .filter-btn, .ae-btn, .btn-secondary, button.btn, .qp-btn {
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 180ms ease,
+              border-color 180ms ease !important;
+}
+.rf-chip:hover, .filter-btn:hover, .ae-btn:hover, .btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   5. CLEAN DATA TABLES — kill cell borders, mono numerals, soft hover
+   ──────────────────────────────────────────────────────────────────────── */
+table.fo-table, table.qp-legs, table.data-table, table.clean-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+table.fo-table th, table.qp-legs th, table.data-table th, table.clean-table th {
+  font: 600 10.5px/1.4 'Plus Jakarta Sans', sans-serif !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--site-text-3) !important;
+  text-align: left;
+  padding: 12px 14px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--site-line) !important;
+}
+table.fo-table td, table.qp-legs td, table.data-table td, table.clean-table td {
+  padding: 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--site-line) !important;
+  color: var(--site-text);
+  font-size: 13px;
+  vertical-align: middle;
+}
+table.fo-table tbody tr:last-child td,
+table.qp-legs tbody tr:last-child td,
+table.data-table tbody tr:last-child td,
+table.clean-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+table.fo-table tbody tr, table.qp-legs tbody tr,
+table.data-table tbody tr, table.clean-table tbody tr {
+  transition: background-color 160ms ease;
+}
+table.fo-table tbody tr:hover, table.qp-legs tbody tr:hover,
+table.data-table tbody tr:hover, table.clean-table tbody tr:hover {
+  background-color: rgba(255,255,255,0.025);
+}
+
+/* Mono-numeral cells — apply via class or auto on td:has(.num) */
+.num, td.num, .qp-mono {
+  font-family: 'Geist Mono', ui-monospace, monospace !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   6. SEMANTIC-ONLY COLOR  (helpers to opt into bull/bear styling)
+   ──────────────────────────────────────────────────────────────────────── */
+.text-bull, .is-profit, .is-up { color: var(--site-bull); }
+.text-bear, .is-loss, .is-down { color: var(--site-bear); }
+.bg-bull-soft { background: var(--site-bull-bg); }
+.bg-bear-soft { background: var(--site-bear-bg); }
+
+/* Category badges — defensive desaturation of rainbow legacy classes */
+.badge-cat, .cat-pill, .tag.cat {
+  background: rgba(255,255,255,0.04) !important;
+  color: var(--site-text-2) !important;
+  border-color: var(--site-line-2) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   7. FOCUS, SCROLLBARS, SELECTION, DIVIDERS, TYPOGRAPHY
+   ──────────────────────────────────────────────────────────────────────── */
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--site-bull);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+hr, .divider, .section-divider {
+  border: 0 !important;
+  border-top: 1px solid var(--site-line) !important;
+  margin: var(--s-6) 0 !important;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); background-clip: padding-box; }
+
+::selection { background: rgba(52,211,153,0.28); color: var(--site-text); }
+
+h1, h2, h3, .ae-page-title, .rf-hero-title {
+  letter-spacing: -0.015em;
+  color: var(--site-text);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   8. MOTION HOOKS — site-motion.js targets these
+   ──────────────────────────────────────────────────────────────────────── */
+/* Initial state: invisible + 12px below. site-motion.js adds .is-in to reveal. */
+[data-motion="up"] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+[data-motion="up"].is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Number flash — site-motion.js adds .is-flash briefly when value changes */
+.num-flash {
+  transition: background-color 180ms ease, color 180ms ease;
+  border-radius: 3px;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+.num-flash.is-flash-up   { background: var(--site-bull-bg); color: var(--site-bull); }
+.num-flash.is-flash-down { background: var(--site-bear-bg); color: var(--site-bear); }
+
+/* Smooth expandable region (mimics Framer Motion's layout) */
+[data-expandable] {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+[data-expandable][data-open="true"] { grid-template-rows: 1fr; }
+[data-expandable] > * { overflow: hidden; min-height: 0; }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   9. REDUCED-MOTION RESPECT
+   ──────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card:hover, .ae-card:hover, .signal-card:hover, .sig-card:hover,
+  .metric-tile:hover, .rf-kpi:hover, .tier1-card:hover, .tier2-card:hover,
+  .fo-card:hover, .fc-card:hover,
+  .rf-chip:hover, .filter-btn:hover, .ae-btn:hover, .btn-secondary:hover {
+    transform: none !important;
+  }
+  [data-motion="up"] { opacity: 1; transform: none; }
+}

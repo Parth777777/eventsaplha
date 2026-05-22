@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TickerWave · Developers · Public Data API</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg">
+<meta name="description" content="TickerWave is a data platform for Indian markets. Programmatic access to NSE/BSE movers, news, events, earnings, IPOs, commodities, and structured stock data.">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c12;
+  --surface: #0d1118;
+  --surface-2: #131822;
+  --surface-3: #1c2330;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.14);
+  --text: #e6ecf5;
+  --text-mute: #a4afc2;
+  --text-dim: #6a7484;
+  --teal: #2dd4aa;
+  --teal-soft: rgba(45,212,170,0.10);
+  --blue: #8eb4e0;
+  --blue-soft: rgba(142,180,224,0.10);
+  --pink: #f29090;
+  --yellow: #e6b84a;
+  --code-bg: #0a0e15;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', system-ui, sans-serif; margin: 0; padding: 0; }
+body { display: grid; grid-template-columns: 256px 1fr; min-height: 100vh; }
+@media (max-width: 880px) { body { grid-template-columns: 1fr; } .sidebar { display: none; } }
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--teal); }
+
+/* ── Sidebar ───────────────────────────────────────────────────── */
+.sidebar {
+  background: #0a0e14;
+  border-right: 1px solid var(--border);
+  padding: 28px 18px 28px 24px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sb-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.sb-brand img { width: 30px; height: 30px; border-radius: 7px; }
+.sb-brand .name { font: 800 16px 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.01em; }
+.sb-brand .sub { font: 600 9px 'Geist Mono', monospace; color: var(--teal); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1px; }
+.sb-section { font: 800 10px 'Inter', sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin: 22px 0 8px; padding: 0 6px; }
+.sb-link {
+  display: block; padding: 7px 10px; border-radius: 6px;
+  font: 500 13px 'DM Sans', sans-serif; color: var(--text-mute);
+  transition: all 120ms; line-height: 1.3;
+}
+.sb-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.sb-link.active { color: var(--teal); background: var(--teal-soft); font-weight: 600; }
+.sb-link code { font: 500 11px 'Geist Mono', monospace; color: inherit; opacity: 0.85; }
+
+/* ── Main ──────────────────────────────────────────────────────── */
+main { padding: 60px 56px 80px; max-width: 880px; }
+@media (max-width: 880px) { main { padding: 36px 22px; } }
+
+.hero { margin-bottom: 56px; }
+.hero .eyebrow { font: 700 11px 'Geist Mono', monospace; color: var(--teal); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px; }
+.hero h1 {
+  font: 800 42px/1.1 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em; margin: 0 0 14px;
+}
+.hero .lede { font: 400 17px/1.55 'DM Sans', sans-serif; color: var(--text-mute); max-width: 640px; }
+
+.section { margin: 56px 0 36px; }
+.section > h2 {
+  font: 800 22px 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.015em; margin: 0 0 18px;
+  scroll-margin-top: 24px;
+}
+.section > h3 {
+  font: 700 15px 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.005em; margin: 24px 0 10px; color: var(--text);
+  scroll-margin-top: 24px;
+}
+.section p { font-size: 15px; line-height: 1.6; color: var(--text-mute); margin: 10px 0; }
+.section p code, .section li code, .table code {
+  font: 500 12.5px 'Geist Mono', monospace;
+  background: rgba(255,255,255,0.04); color: var(--teal);
+  padding: 2px 6px; border-radius: 4px;
+}
+.section ul { padding-left: 20px; line-height: 1.7; color: var(--text-mute); }
+
+/* ── Endpoint card ─────────────────────────────────────────────── */
+.endpoint {
+  margin: 18px 0 28px; padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+.endpoint-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+}
+.method {
+  font: 800 10px 'Geist Mono', monospace; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 5px;
+  background: var(--teal-soft); color: var(--teal);
+  border: 1px solid rgba(45,212,170,0.25);
+}
+.method.GET { background: var(--blue-soft); color: var(--blue); border-color: rgba(142,180,224,0.25); }
+.endpoint-path {
+  font: 600 14px 'Geist Mono', monospace; color: var(--text);
+  flex: 1; word-break: break-all;
+}
+.endpoint-desc { padding: 14px 18px 4px; color: var(--text-mute); font-size: 14px; line-height: 1.55; }
+.endpoint-body { padding: 6px 18px 18px; }
+
+/* ── Params table ──────────────────────────────────────────────── */
+.params {
+  width: 100%; border-collapse: collapse;
+  margin: 14px 0 4px; font-size: 13px;
+}
+.params th, .params td {
+  text-align: left; padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.params th {
+  font: 700 11px 'Inter', sans-serif; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.params td { color: var(--text-mute); }
+.params td:first-child code {
+  font: 600 12px 'Geist Mono', monospace;
+  color: var(--teal); background: var(--teal-soft);
+  padding: 2px 7px; border-radius: 4px;
+}
+.params td .type {
+  font: 500 11px 'Geist Mono', monospace; color: var(--text-dim);
+  margin-left: 4px;
+}
+.params td .req {
+  font: 700 9px 'Inter', sans-serif; letter-spacing: 0.08em;
+  color: var(--pink); margin-left: 6px;
+}
+.params td .def {
+  font: 500 11px 'Geist Mono', monospace;
+  color: var(--yellow); margin-left: 6px;
+}
+
+/* ── Code blocks ───────────────────────────────────────────────── */
+.code-tabs { display: flex; gap: 4px; padding: 12px 14px 0; background: var(--code-bg); border-top: 1px solid var(--border); }
+.code-tab {
+  font: 600 11px 'Geist Mono', monospace; letter-spacing: 0.04em;
+  padding: 5px 10px; border-radius: 5px 5px 0 0;
+  background: transparent; color: var(--text-dim);
+  border: none; cursor: pointer;
+}
+.code-tab.on { color: var(--teal); background: var(--surface); }
+pre.code {
+  margin: 0; padding: 16px 18px 18px;
+  background: var(--code-bg);
+  font: 500 12.5px/1.55 'Geist Mono', monospace;
+  color: #c7d3e5; overflow-x: auto;
+  border-top: none;
+}
+pre.code.bottom-rounded { border-radius: 0 0 12px 12px; }
+.code-line .key  { color: #8eb4e0; }
+.code-line .str  { color: #2dd4aa; }
+.code-line .num  { color: #e6b84a; }
+.code-line .com  { color: var(--text-dim); font-style: italic; }
+.code-line .url  { color: #f29090; }
+
+/* ── Misc ──────────────────────────────────────────────────────── */
+.callout {
+  margin: 24px 0;
+  padding: 14px 18px;
+  background: rgba(142,180,224,0.06);
+  border: 1px solid rgba(142,180,224,0.18);
+  border-left: 3px solid var(--blue);
+  border-radius: 8px;
+  font-size: 13.5px; line-height: 1.55; color: var(--text-mute);
+}
+.callout strong { color: var(--text); font-weight: 700; }
+
+.tag {
+  display: inline-block;
+  font: 700 10px 'Geist Mono', monospace; letter-spacing: 0.06em;
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--teal-soft); color: var(--teal);
+  margin-right: 6px;
+}
+.tag.beta { background: rgba(230,184,74,0.10); color: var(--yellow); }
+.tag.free { background: rgba(142,180,224,0.10); color: var(--blue); }
+
+.footer {
+  margin-top: 80px; padding-top: 22px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-dim);
+}
+.footer a { color: var(--blue); }
+</style>
+
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <img src="./shared/img/logo.jpeg" alt="TickerWave" onerror="this.style.display='none'">
+    <div>
+      <div class="name">TickerWave</div>
+      <div class="sub">Developers · v1</div>
+    </div>
+  </div>
+
+  <div class="sb-section">Getting started</div>
+  <a class="sb-link active" href="#overview">Overview</a>
+  <a class="sb-link" href="#auth">Authentication & rate limits</a>
+  <a class="sb-link" href="#responses">Response envelope</a>
+  <a class="sb-link" href="#errors">Errors</a>
+
+  <div class="sb-section">Market data</div>
+  <a class="sb-link" href="#movers"><code>GET /movers</code></a>
+  <a class="sb-link" href="#news"><code>GET /news</code></a>
+  <a class="sb-link" href="#events"><code>GET /events</code></a>
+  <a class="sb-link" href="#earnings"><code>GET /earnings</code></a>
+  <a class="sb-link" href="#ipos"><code>GET /ipos</code></a>
+  <a class="sb-link" href="#commodities"><code>GET /commodities</code></a>
+  <a class="sb-link" href="#sectors"><code>GET /sectors</code></a>
+
+  <div class="sb-section">Stock data</div>
+  <a class="sb-link" href="#stock"><code>GET /stocks/{ticker}</code></a>
+  <a class="sb-link" href="#stock-profile"><code>GET /stocks/{ticker}/profile</code></a>
+  <a class="sb-link" href="#stock-financials"><code>GET /stocks/{ticker}/financials</code></a>
+  <a class="sb-link" href="#stock-technicals"><code>GET /stocks/{ticker}/technicals</code></a>
+  <a class="sb-link" href="#stock-fundamentals"><code>GET /stocks/{ticker}/fundamentals</code></a>
+
+  <div class="sb-section">Filings &amp; archive</div>
+  <a class="sb-link" href="#filings"><code>GET /filings</code></a>
+  <a class="sb-link" href="#filing-detail"><code>GET /filings/{id}</code></a>
+  <a class="sb-link" href="#earnings-reactions"><code>GET /earnings/reactions/{ticker}</code></a>
+  <a class="sb-link" href="#event-related"><code>GET /events/{id}/related</code></a>
+  <a class="sb-link" href="#smart-money"><code>GET /smart-money/{ticker}</code></a>
+  <a class="sb-link" href="#concalls"><code>GET /concalls/search</code></a>
+
+  <div class="sb-section">Platform</div>
+  <a class="sb-link" href="#sla"><code>GET /sla</code></a>
+
+  <div class="sb-section">More</div>
+  <a class="sb-link" href="/">← Back to app</a>
+</aside>
+
+<main>
+
+<!-- ════════════════════════════════════════════════════════════
+     HERO
+═════════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="eyebrow">API · v1</div>
+  <h1>TickerWave Public Data API</h1>
+  <p class="lede">
+    Programmatic access to NSE/BSE markets data — movers, news, events,
+    earnings, IPOs, commodities, and structured stock data. India-focused.
+    Real JSON. Stable contracts.
+  </p>
+  <div style="margin-top: 22px;">
+    <span class="tag free">FREE TIER</span>
+    <span class="tag beta">v1 · BETA</span>
+    <span style="font: 500 12px 'Geist Mono', monospace; color: var(--text-dim);">
+      Base URL: <code style="font-size:12px;color:var(--text);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:4px;">https://&lt;your-host&gt;/api/v1</code>
+    </span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     OVERVIEW
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="overview">Overview</h2>
+  <p>
+    Every endpoint returns JSON in a uniform envelope:
+    <code>{ data, count, as_of }</code>. All timestamps are ISO-8601 UTC.
+    All ₹ values are in <code>crore</code> unless stated otherwise. All
+    tickers are NSE symbols, uppercase.
+  </p>
+  <p>
+    Try it now — paste this in your terminal:
+  </p>
+
+  <div class="endpoint" style="margin-bottom: 14px;">
+    <pre class="code bottom-rounded"><span class="code-line"><span class="com"># Latest India market news, high-impact only</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/news?min_quality=high&amp;limit=5"</span></span>
+
+<span class="code-line"><span class="com"># Top NSE gainers, sorted descending by % change</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/movers?mode=gainers&amp;limit=10"</span></span>
+
+<span class="code-line"><span class="com"># Reliance: profile + price + RSI + MA + F-score in one call</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/RELIANCE"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     AUTH + RATE LIMITS
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="auth">Authentication & rate limits</h2>
+  <p>
+    <strong>Free tier:</strong> unauthenticated, rate-limited to
+    <code>60 requests / minute / IP</code>. No API key required.
+  </p>
+  <p>
+    <strong>Future paid tier:</strong> will accept an API key via
+    <code>X-API-Key</code> header for higher quotas and longer windows.
+    Free-tier traffic without a key is fine for analysts, students,
+    side-projects, and most quant prototyping.
+  </p>
+  <div class="callout">
+    <strong>Caching:</strong> hot endpoints (<code>/movers</code>,
+    <code>/news</code>) are server-cached for 30–60 seconds. Heavy
+    fundamentals + financials endpoints are cached for hours. Use the
+    <code>as_of</code> field in every response to detect staleness.
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     RESPONSES
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="responses">Response envelope</h2>
+  <p>Every successful response follows this shape:</p>
+  <pre class="code bottom-rounded" style="border-radius:12px;border:1px solid var(--border);"><span class="code-line">{</span>
+<span class="code-line">  <span class="key">"data"</span>: [...],         <span class="com">// or {...} for single-object endpoints</span></span>
+<span class="code-line">  <span class="key">"count"</span>: <span class="num">12</span>,             <span class="com">// only present when data is a list</span></span>
+<span class="code-line">  <span class="key">"as_of"</span>: <span class="str">"2026-05-18T14:32:05Z"</span>  <span class="com">// server response time</span></span>
+<span class="code-line">}</span></pre>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     ERRORS
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="errors">Errors</h2>
+  <p>
+    Errors use proper HTTP status codes. Body shape:
+  </p>
+  <pre class="code bottom-rounded" style="border-radius:12px;border:1px solid var(--border);"><span class="code-line">{</span>
+<span class="code-line">  <span class="key">"error"</span>: {</span>
+<span class="code-line">    <span class="key">"code"</span>: <span class="str">"invalid_ticker"</span>,</span>
+<span class="code-line">    <span class="key">"message"</span>: <span class="str">"ticker '!!!' contains invalid characters"</span></span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></pre>
+  <table class="params">
+    <thead><tr><th>Status</th><th>Code</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>400</code></td><td><code>invalid_ticker</code> / <code>invalid_mode</code> / <code>invalid_region</code></td><td>Bad query parameters</td></tr>
+      <tr><td><code>429</code></td><td><code>rate_limit_exceeded</code></td><td>Free-tier quota exceeded</td></tr>
+      <tr><td><code>500</code></td><td><code>internal_error</code></td><td>Unhandled server error</td></tr>
+      <tr><td><code>503</code></td><td><code>db_unavailable</code></td><td>Database temporarily offline</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /movers
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="movers">Top movers</h2>
+  <p>Top NSE stocks by price move, turnover, unusual volume, or volatility.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/movers</span>
+    </div>
+    <div class="endpoint-desc">
+      Slices the broad NSE universe by the requested <code>mode</code> and
+      returns the top <code>limit</code> rows. Updated every 5 minutes.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>mode</code> <span class="type">string</span> <span class="def">gainers</span></td>
+            <td>One of: <code>gainers</code>, <code>losers</code>, <code>volume</code> (by ₹ turnover), <code>unusual</code> (vol multiple ≥ 1.5×), <code>volatile</code> (by absolute % change).</td>
+          </tr>
+          <tr>
+            <td><code>limit</code> <span class="type">int</span> <span class="def">25</span></td>
+            <td>Max rows. <code>1..100</code>.</td>
+          </tr>
+          <tr>
+            <td><code>min_pct</code> <span class="type">float</span> <span class="def">0</span></td>
+            <td>Minimum absolute % change (for gainers/losers/volatile).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/movers?mode=gainers&amp;limit=5"</span></span>
+
+<span class="code-line">{</span>
+<span class="code-line">  <span class="key">"data"</span>: [</span>
+<span class="code-line">    {</span>
+<span class="code-line">      <span class="key">"ticker"</span>: <span class="str">"GLAND"</span>,</span>
+<span class="code-line">      <span class="key">"price"</span>: <span class="num">2156.60</span>,</span>
+<span class="code-line">      <span class="key">"pct_change"</span>: <span class="num">15.43</span>,</span>
+<span class="code-line">      <span class="key">"vol_multiple"</span>: <span class="num">45.02</span>,</span>
+<span class="code-line">      <span class="key">"turnover_cr"</span>: <span class="num">1537.7</span>,</span>
+<span class="code-line">      <span class="key">"as_of"</span>: <span class="str">"2026-05-18T09:25:00Z"</span></span>
+<span class="code-line">    }</span>
+<span class="code-line">  ],</span>
+<span class="code-line">  <span class="key">"count"</span>: <span class="num">5</span>,</span>
+<span class="code-line">  <span class="key">"mode"</span>: <span class="str">"gainers"</span>,</span>
+<span class="code-line">  <span class="key">"as_of"</span>: <span class="str">"2026-05-18T14:32:05Z"</span></span>
+<span class="code-line">}</span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /news
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="news">News</h2>
+  <p>India market news feed with classifier enrichment — every row carries an <code>impact_tier</code>, <code>sentiment</code>, <code>kinds</code> (detected event types), and an optional <code>market_implication</code>.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/news</span>
+    </div>
+    <div class="endpoint-desc">
+      The same feed that powers the Newsroom, filterable by category, ticker,
+      freshness, and quality tier. Default: domestic India news, last 24h,
+      <code>meaningful+</code> quality (noise dropped).
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>category</code> <span class="type">string</span></td><td>One of: <code>corporate</code>, <code>earnings</code>, <code>policy</code>, <code>ipo</code>, <code>geopolitical</code>, <code>commodity</code>, <code>social</code>.</td></tr>
+          <tr><td><code>ticker</code> <span class="type">string</span></td><td>Filter to items mentioning this ticker.</td></tr>
+          <tr><td><code>min_quality</code> <span class="type">string</span> <span class="def">meaningful</span></td><td>One of: <code>generic</code>, <code>meaningful</code>, <code>high</code>, <code>critical</code>.</td></tr>
+          <tr><td><code>region</code> <span class="type">string</span> <span class="def">domestic</span></td><td><code>domestic</code> excludes Reuters/Bloomberg/Dow Jones wires.</td></tr>
+          <tr><td><code>hours</code> <span class="type">int</span> <span class="def">24</span></td><td>Lookback window. <code>1..720</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">30</span></td><td>Max rows. <code>1..200</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/news?category=earnings&amp;min_quality=high&amp;limit=3"</span></span>
+
+<span class="code-line">{</span>
+<span class="code-line">  <span class="key">"data"</span>: [</span>
+<span class="code-line">    {</span>
+<span class="code-line">      <span class="key">"event_id"</span>: <span class="str">"a4f2c..."</span>,</span>
+<span class="code-line">      <span class="key">"title"</span>: <span class="str">"Subros Q4 Results | Net profit up 7% as revenue climbs 16%"</span>,</span>
+<span class="code-line">      <span class="key">"sentiment"</span>: <span class="str">"bullish"</span>,</span>
+<span class="code-line">      <span class="key">"impact_tier"</span>: <span class="str">"high"</span>,</span>
+<span class="code-line">      <span class="key">"impact_score"</span>: <span class="num">62</span>,</span>
+<span class="code-line">      <span class="key">"kinds"</span>: [<span class="str">"earnings_result"</span>],</span>
+<span class="code-line">      <span class="key">"companies"</span>: [<span class="str">"SUBROS"</span>],</span>
+<span class="code-line">      <span class="key">"published_at"</span>: <span class="str">"2026-05-18T13:14:00Z"</span>,</span>
+<span class="code-line">      <span class="key">"source"</span>: <span class="str">"cnbctv18_business"</span></span>
+<span class="code-line">    }</span>
+<span class="code-line">  ],</span>
+<span class="code-line">  <span class="key">"count"</span>: <span class="num">3</span>,</span>
+<span class="code-line">  <span class="key">"as_of"</span>: <span class="str">"2026-05-18T14:32:05Z"</span></span>
+<span class="code-line">}</span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /events
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="events">Events</h2>
+  <p>Structured market events from filings + scraped news — earnings, M&amp;A, policy, IPO, insider, etc.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/events</span>
+    </div>
+    <div class="endpoint-desc">
+      Returns rows from the canonical <code>events</code> table.
+      Pass <code>type=corporate</code> to get buyback/dividend/split/bonus/rights/merger in one shot.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code> <span class="type">string</span></td><td>One of: <code>earnings</code>, <code>merger</code>, <code>policy</code>, <code>order_win</code>, <code>dividend</code>, <code>supply</code>, <code>insider</code>, <code>ipo</code>, <code>buyback</code>, <code>split</code>, <code>bonus</code>, <code>rights</code>, <code>corporate</code> (group).</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">50</span></td><td>Max rows. <code>1..200</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/events?type=corporate&amp;limit=5"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /earnings
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="earnings">Earnings calendar</h2>
+  <p>Forward-looking earnings dates for NSE-listed stocks. Past dates are filtered out automatically.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/earnings</span>
+    </div>
+    <div class="endpoint-desc">
+      Returns upcoming earnings within <code>days_ahead</code>, sorted earliest-first. Each row carries <code>ticker</code>, <code>company</code>, <code>sector</code>, <code>earnings_date</code>, and <code>days_until</code>.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>days_ahead</code> <span class="type">int</span> <span class="def">45</span></td><td>Window in days. <code>7..120</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">20</span></td><td>Max rows. <code>5..60</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/earnings?days_ahead=14"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /ipos
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="ipos">IPOs</h2>
+  <p>Upcoming and recently-listed IPOs with status, price band, lot size, and TickerWave IPO alpha score.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/ipos</span>
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">12</span></td><td>Max rows. <code>1..50</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/ipos"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /commodities
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="commodities">Commodities</h2>
+  <p>
+    Live commodity prices + the <em>equity-impact narrative</em> — every
+    commodity row tells you which Indian sectors benefit and which get hurt
+    by the current move. Powered by <code>causal_map</code>.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/commodities</span>
+    </div>
+    <div class="endpoint-desc">
+      e.g. crude oil up → <code>beneficiary_sectors: ["Upstream Oil &amp; Gas", "ONGC"]</code>,
+      <code>affected_sectors: ["Aviation", "Paints", "Tyres"]</code>.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>category</code> <span class="type">string</span></td><td>One of: <code>Bullion</code>, <code>Energy</code>, <code>Base Metals</code>, <code>Agri</code>, <code>FX</code>.</td></tr>
+          <tr><td><code>hours</code> <span class="type">int</span> <span class="def">168</span></td><td>Event lookback window. <code>24..720</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/commodities?category=Energy"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /sectors
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="sectors">Sectors</h2>
+  <p>Sector-level breakdown — bullish vs bearish signal counts per sector.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/sectors</span>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/sectors"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /stocks/{ticker}
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="stock">Stock snapshot</h2>
+  <p>Combined stock snapshot: profile + technicals + fundamentals score in a single flat object.</p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/stocks/{ticker}</span>
+    </div>
+    <div class="endpoint-desc">
+      For deeper data, hit the dedicated sub-endpoints below.
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/RELIANCE"</span></span>
+
+<span class="code-line">{</span>
+<span class="code-line">  <span class="key">"data"</span>: {</span>
+<span class="code-line">    <span class="key">"ticker"</span>: <span class="str">"RELIANCE"</span>,</span>
+<span class="code-line">    <span class="key">"company"</span>: <span class="str">"Reliance Industries Limited"</span>,</span>
+<span class="code-line">    <span class="key">"sector"</span>: <span class="str">"Energy"</span>,</span>
+<span class="code-line">    <span class="key">"market_cap"</span>: <span class="num">18078031151104</span>,</span>
+<span class="code-line">    <span class="key">"price"</span>: <span class="num">1335.90</span>,</span>
+<span class="code-line">    <span class="key">"pct_change_1d"</span>: <span class="num">-0.04</span>,</span>
+<span class="code-line">    <span class="key">"rsi_14"</span>: <span class="num">38.76</span>,</span>
+<span class="code-line">    <span class="key">"ma_50"</span>: <span class="num">1379.14</span>,</span>
+<span class="code-line">    <span class="key">"ma_200"</span>: <span class="num">1431.18</span>,</span>
+<span class="code-line">    <span class="key">"trend"</span>: <span class="str">"down"</span>,</span>
+<span class="code-line">    <span class="key">"week_52_high"</span>: <span class="num">1592.30</span>,</span>
+<span class="code-line">    <span class="key">"week_52_low"</span>: <span class="num">1304.60</span>,</span>
+<span class="code-line">    <span class="key">"fundamentals_score"</span>: <span class="num">74</span>,</span>
+<span class="code-line">    <span class="key">"fundamentals_tier"</span>: <span class="str">"decent"</span></span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /stocks/{ticker}/profile
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="stock-profile">Stock profile</h2>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/stocks/{ticker}/profile</span>
+    </div>
+    <div class="endpoint-desc">
+      Company name, sector, industry, business summary, market cap,
+      shares outstanding, ISIN, exchange, top officers.
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/TCS/profile"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /stocks/{ticker}/financials
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="stock-financials">Stock financials</h2>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/stocks/{ticker}/financials</span>
+    </div>
+    <div class="endpoint-desc">
+      Annual and quarterly: <code>income_statement</code> (5y),
+      <code>balance_sheet</code> (5y), <code>cash_flow</code> (5y),
+      <code>income_statement_q</code> (4q). Values in ₹ crore.
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/INFY/financials"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /stocks/{ticker}/technicals
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="stock-technicals">Stock technicals</h2>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/stocks/{ticker}/technicals</span>
+    </div>
+    <div class="endpoint-desc">
+      <code>last_price</code>, <code>pct_change_1d</code>, <code>rsi_14</code>
+      (Wilder smoothing), <code>ma_50</code>, <code>ma_200</code>,
+      <code>trend</code> label (strong_up / mildly_up / range_bound /
+      mildly_down / down), and 52-week high/low. Computed from 1-year
+      daily history.
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/HDFCBANK/technicals"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /stocks/{ticker}/fundamentals
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="stock-fundamentals">Stock fundamentals</h2>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/stocks/{ticker}/fundamentals</span>
+    </div>
+    <div class="endpoint-desc">
+      Composite F-score (0-100) with tier (<code>strong</code> /
+      <code>decent</code> / <code>weak</code> / <code>avoid</code>),
+      narrative label, <code>positives</code> list, <code>red_flags</code>
+      list, and per-component breakdown:
+      <code>valuation</code> (PE, PB) · <code>profitability</code> (ROE,
+      op margin) · <code>growth</code> (revenue, EPS) ·
+      <code>leverage</code> (D/E) · <code>cashflow</code> (FCF, OCF) ·
+      <code>promoter_pledge</code> · <code>institutional</code>.
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/stocks/ADANIENT/fundamentals"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /filings
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="filings">Filings archive</h2>
+  <p>
+    Searchable BSE/NSE filings — every quarterly result, order intimation,
+    AGM, and corporate-action PDF we've indexed, with extracted text and
+    parsed numeric fields. Filterable by ticker, type, keyword, and date.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/filings</span>
+    </div>
+    <div class="endpoint-desc">
+      Each row carries metadata only (id, ticker, filing_type, title,
+      pdf_url, filed_at, source). Use <code>/filings/{id}</code> to get
+      <code>raw_text_excerpt</code> + parsed numbers.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>ticker</code> <span class="type">string</span></td><td>Filter to one NSE symbol.</td></tr>
+          <tr><td><code>type</code> <span class="type">string</span></td><td>One of: <code>quarterly_result</code>, <code>order_intimation</code>, <code>agm</code>, <code>other</code>.</td></tr>
+          <tr><td><code>q</code> <span class="type">string</span></td><td>Full-text search across title + raw_text.</td></tr>
+          <tr><td><code>since</code> <span class="type">date</span></td><td><code>YYYY-MM-DD</code>; lower bound on <code>filed_at</code>.</td></tr>
+          <tr><td><code>until</code> <span class="type">date</span></td><td><code>YYYY-MM-DD</code>; upper bound on <code>filed_at</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">50</span></td><td>Max rows. <code>1..200</code>.</td></tr>
+          <tr><td><code>offset</code> <span class="type">int</span> <span class="def">0</span></td><td>Pagination offset.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/filings?ticker=RELIANCE&amp;type=quarterly_result"</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/filings?q=concall&amp;since=2026-01-01&amp;limit=20"</span></span></pre>
+  </div>
+</section>
+
+<section class="section">
+  <h3 id="filing-detail">Single filing detail</h3>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/filings/{id}</span>
+    </div>
+    <div class="endpoint-desc">
+      Returns metadata + <code>raw_text_excerpt</code> (first 8 KB) +
+      <code>numbers</code> array (extracted metrics: revenue, profit, EPS,
+      margin, etc. with units).
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/filings/12345"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /earnings/reactions/{ticker}
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="earnings-reactions">Earnings reaction archive</h2>
+  <p>
+    Historical earnings dates for a ticker, each with the realized
+    <strong>T+1 / T+3 / T+5</strong> trading-day price reaction.
+    Pure data — no judgment.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/earnings/reactions/{ticker}</span>
+    </div>
+    <div class="endpoint-desc">
+      Each row: <code>earnings_date</code>, <code>base_close</code>,
+      <code>ret_1d_pct</code>, <code>ret_3d_pct</code>, <code>ret_5d_pct</code>,
+      <code>eps_estimate</code>, <code>eps_reported</code>, <code>surprise_pct</code>.
+      Cached 6 hours.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>lookback_quarters</code> <span class="type">int</span> <span class="def">12</span></td><td>Number of past quarters. <code>4..20</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/earnings/reactions/INFY?lookback_quarters=8"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /events/{id}/related
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="event-related">Related events</h2>
+  <p>
+    Events on the same companies, within ± <code>window_days</code> of the
+    anchor event. Each row carries <code>lag_days</code> (negative = before,
+    positive = after) and <code>relation</code> (<code>precedes</code>,
+    <code>follows</code>, <code>concurrent</code>).
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/events/{event_id}/related</span>
+    </div>
+    <div class="endpoint-desc">
+      Used to surface chains like <em>"QIP 3 days after insider sale, 1 week
+      before the earnings miss"</em>. Same-ticker only for now; future
+      versions will add sector linkages.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>window_days</code> <span class="type">int</span> <span class="def">14</span></td><td>Time window each side. <code>1..60</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">15</span></td><td>Max related rows. <code>1..50</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/events/a4f2c.../related?window_days=30"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /smart-money/{ticker}
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="smart-money">Smart-money tracker</h2>
+  <p>
+    Longitudinal view of insider + promoter activity for a ticker —
+    SAST disclosures, PIT regulation 7 transactions, pledges, releases.
+    Combines <code>promoter_events</code> + <code>sebi_disclosures</code>
+    into one chronological feed with aggregate stats.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/smart-money/{ticker}</span>
+    </div>
+    <div class="endpoint-desc">
+      Response includes <code>data</code> (chronological events),
+      <code>stats</code> (buys, sells, pledges, unique_persons, net_buy_quantity),
+      and <code>people</code> (distinct insider/promoter names involved).
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>months</code> <span class="type">int</span> <span class="def">24</span></td><td>Lookback in months. <code>1..120</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">50</span></td><td>Max events. <code>1..200</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/smart-money/RELIANCE?months=36"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /concalls/search
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="concalls">Concall transcript search</h2>
+  <p>
+    Full-text search across indexed concall / earnings-call / investor-meet
+    transcripts. The indexer walks the <code>filings</code> table, identifies
+    concall-type rows (by <code>filing_type</code> + title heuristics),
+    fetches the source PDF, extracts text, and splits into paragraphs
+    stored in <code>concall_paragraphs</code>.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/concalls/search</span>
+    </div>
+    <div class="endpoint-desc">
+      Each row carries <code>filing_id</code>, <code>ticker</code>,
+      <code>filed_at</code>, <code>paragraph_idx</code>, <code>text</code>,
+      and a <code>snippet</code> (~140 chars windowed around the match).
+      Use <code>/api/v1/filings/{filing_id}</code> for parent filing's
+      pdf_url + extracted numbers.
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>q</code> <span class="type">string</span> <span class="req">required</span></td><td>Free-text query (≥3 chars). Case-insensitive LIKE for now; FTS upgrade tracked.</td></tr>
+          <tr><td><code>ticker</code> <span class="type">string</span></td><td>Filter to one NSE symbol.</td></tr>
+          <tr><td><code>since</code> <span class="type">date</span></td><td><code>YYYY-MM-DD</code>; lower bound on <code>filed_at</code>.</td></tr>
+          <tr><td><code>limit</code> <span class="type">int</span> <span class="def">25</span></td><td>Max rows. <code>1..100</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/concalls/search?q=capex&amp;limit=10"</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/concalls/search?q=guidance&amp;ticker=RELIANCE"</span></span>
+<span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/concalls/search?q=margin%20pressure&amp;since=2026-01-01"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     /sla
+═════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2 id="sla">Service-level latency</h2>
+  <p>
+    The data-platform pitch is partly speed. This endpoint exposes our
+    realized alert delivery latency — median, p95, p99 — bucketed by stage
+    (e.g. <code>bse_filing_to_classify</code>, <code>classify_to_alert</code>,
+    <code>alert_to_telegram</code>). Transparency, not promises.
+  </p>
+  <div class="endpoint">
+    <div class="endpoint-head">
+      <span class="method GET">GET</span>
+      <span class="endpoint-path">/api/v1/sla</span>
+    </div>
+    <div class="endpoint-body">
+      <table class="params">
+        <thead><tr><th>Param</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>hours</code> <span class="type">int</span> <span class="def">24</span></td><td>Sample window in hours. <code>1..168</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre class="code bottom-rounded"><span class="code-line">curl <span class="str">"https://&lt;your-host&gt;/api/v1/sla?hours=168"</span></span></pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     FOOTER
+═════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  <p>
+    TickerWave is a data platform for Indian markets. v1 is in beta —
+    contract stability is best-effort; breaking changes will ship as v2.
+  </p>
+  <p>
+    Have a use case we haven't covered? <a href="mailto:hello@tickerwave.in">Email us</a>.
+    Bug reports welcome via the same.
+  </p>
+</div>
+
+</main>
+
+<script>
+// Highlight the in-view section in the sidebar as you scroll.
+const links = document.querySelectorAll('.sb-link');
+const sections = Array.from(document.querySelectorAll('section[id], [id]')).filter(el => el.id);
+function onScroll() {
+  const y = window.scrollY + 120;
+  let active = null;
+  for (const s of sections) {
+    if (s.offsetTop <= y) active = s.id;
+  }
+  if (!active) return;
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active));
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+</script>
+
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

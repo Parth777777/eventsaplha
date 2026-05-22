@@ -156,6 +156,176 @@ def outcomes_source_stats():
     }})
 
 
+# =====================================================================
+# PHASE D — Public methodology endpoint
+# Published as `/api/methodology/hit-rates` so the static /methodology page
+# can show live performance numbers without exposing the internal /edge/*
+# namespace. Adds per-conviction-tier breakdown on top of the source +
+# event-type rollups.
+# =====================================================================
+
+@bp.route("/api/methodology/hit-rates", methods=["GET"])
+def methodology_hit_rates():
+    """Public, cached aggregate of signal hit-rate performance.
+
+    Query: ?days=N  (default 30, min 7, max 365)
+
+    Response data:
+        days, generated_at,
+        overall:    {n, hit_rate, avg_return_pct, brier_score?},
+        by_tier:    [{tier:"strong"|"moderate"|"watch", n, hit_rate, avg_return_pct, avg_alpha}, ...]
+        by_source:  [{source, horizon, n, hit_rate, avg_return_pct, avg_alpha}, ...]
+        by_event:   [{event_type, horizon, n, hit_rate, avg_return_pct}, ...]
+        disclaimer
+    """
+    try:
+        days = max(7, min(365, int(request.args.get("days", 30))))
+    except ValueError:
+        days = 30
+
+    db = _get_db() if _get_db else None
+    if db is None:
+        return jsonify({"success": True, "data": {
+            "days": days, "overall": None, "by_tier": [], "by_source": [], "by_event": [],
+        }})
+
+    p = _placeholder(db)
+    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+
+    overall = None
+    by_tier: List[Dict] = []
+    by_source: List[Dict] = []
+    by_event: List[Dict] = []
+
+    # ── overall hit rate + brier score ─────────────────────────────────────
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            f"""SELECT COUNT(*) AS n,
+                       AVG(CASE WHEN p.hit_target = 1 THEN 1.0 ELSE 0.0 END) AS hit_rate,
+                       AVG(p.actual_return_pct) AS avg_return
+                  FROM predictions p
+                 WHERE p.hit_target IS NOT NULL
+                   AND p.created_at >= {p}""",
+            (cutoff,),
+        )
+        row = cur.fetchone()
+        n = int(_row_get(row, 0, "n") or 0)
+        if n > 0:
+            overall = {
+                "n":              n,
+                "hit_rate":       round(float(_row_get(row, 1, "hit_rate") or 0), 3),
+                "avg_return_pct": round(float(_row_get(row, 2, "avg_return") or 0), 3),
+            }
+    except Exception as e:
+        logger.debug("methodology overall failed: %s", e)
+
+    # ── per-conviction-tier breakdown ──────────────────────────────────────
+    # Tier boundaries mirror curated-signals.js convictionLabel():
+    #   alpha >= 80 → strong signal
+    #   60 <= alpha < 80 → moderate
+    #   alpha < 60 → watchlist
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            f"""SELECT CASE
+                         WHEN s.alpha_score >= 80 THEN 'strong'
+                         WHEN s.alpha_score >= 60 THEN 'moderate'
+                         ELSE 'watchlist'
+                       END AS tier,
+                       COUNT(*) AS n,
+                       AVG(CASE WHEN p.hit_target = 1 THEN 1.0 ELSE 0.0 END) AS hit_rate,
+                       AVG(p.actual_return_pct) AS avg_return,
+                       AVG(s.alpha_score) AS avg_alpha
+                  FROM predictions p
+                  JOIN signals s ON s.event_id = p.event_id
+                 WHERE p.hit_target IS NOT NULL
+                   AND p.created_at >= {p}
+              GROUP BY tier""",
+            (cutoff,),
+        )
+        # Preserve a stable display order regardless of how the DB returns it
+        order = {"strong": 0, "moderate": 1, "watchlist": 2}
+        rows = list(cur.fetchall() or [])
+        rows.sort(key=lambda r: order.get(_row_get(r, 0, "tier") or "", 9))
+        for r in rows:
+            by_tier.append({
+                "tier":           _row_get(r, 0, "tier") or "unknown",
+                "n":              int(_row_get(r, 1, "n") or 0),
+                "hit_rate":       round(float(_row_get(r, 2, "hit_rate") or 0), 3),
+                "avg_return_pct": round(float(_row_get(r, 3, "avg_return") or 0), 3),
+                "avg_alpha":      round(float(_row_get(r, 4, "avg_alpha") or 0), 1),
+            })
+    except Exception as e:
+        logger.debug("methodology by_tier failed: %s", e)
+
+    # ── reuse the source + event-type rollups from outcomes_source_stats ───
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            f"""SELECT s.source, p.horizon, COUNT(*) AS n,
+                       AVG(CASE WHEN p.hit_target = 1 THEN 1.0 ELSE 0.0 END) AS hit_rate,
+                       AVG(p.actual_return_pct) AS avg_return,
+                       AVG(s.alpha_score) AS avg_alpha
+                  FROM predictions p
+                  JOIN signals s ON s.event_id = p.event_id
+                 WHERE p.hit_target IS NOT NULL AND p.created_at >= {p}
+              GROUP BY s.source, p.horizon
+                HAVING n >= 3
+              ORDER BY hit_rate DESC""",
+            (cutoff,),
+        )
+        for row in cur.fetchall():
+            by_source.append({
+                "source":         _row_get(row, 0, "source") or "unknown",
+                "horizon":        _row_get(row, 1, "horizon"),
+                "n":              int(_row_get(row, 2, "n") or 0),
+                "hit_rate":       round(float(_row_get(row, 3, "hit_rate") or 0), 3),
+                "avg_return_pct": round(float(_row_get(row, 4, "avg_return") or 0), 3),
+                "avg_alpha":      round(float(_row_get(row, 5, "avg_alpha") or 0), 1),
+            })
+    except Exception as e:
+        logger.debug("methodology by_source failed: %s", e)
+
+    try:
+        cur = db.conn.cursor()
+        cur.execute(
+            f"""SELECT s.event_type, p.horizon, COUNT(*) AS n,
+                       AVG(CASE WHEN p.hit_target = 1 THEN 1.0 ELSE 0.0 END) AS hit_rate,
+                       AVG(p.actual_return_pct) AS avg_return
+                  FROM predictions p
+                  JOIN signals s ON s.event_id = p.event_id
+                 WHERE p.hit_target IS NOT NULL AND p.created_at >= {p}
+              GROUP BY s.event_type, p.horizon
+                HAVING n >= 3
+              ORDER BY hit_rate DESC""",
+            (cutoff,),
+        )
+        for row in cur.fetchall():
+            by_event.append({
+                "event_type":     _row_get(row, 0, "event_type") or "unknown",
+                "horizon":        _row_get(row, 1, "horizon"),
+                "n":              int(_row_get(row, 2, "n") or 0),
+                "hit_rate":       round(float(_row_get(row, 3, "hit_rate") or 0), 3),
+                "avg_return_pct": round(float(_row_get(row, 4, "avg_return") or 0), 3),
+            })
+    except Exception as e:
+        logger.debug("methodology by_event failed: %s", e)
+
+    return jsonify({"success": True, "data": {
+        "days":         days,
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "overall":      overall,
+        "by_tier":      by_tier,
+        "by_source":    by_source,
+        "by_event":     by_event,
+        "disclaimer": (
+            "Historical hit rates. Not a prediction of future returns. "
+            "AlphaEvent is not a SEBI-registered Investment Adviser or Research Analyst."
+        ),
+    }})
+
+
 @bp.route("/api/edge/outcomes/source-hit-rate", methods=["GET"])
 def outcomes_source_hit_rate():
     """Single-source quick lookup. Used by curated cards to show 'source: 58%'."""
@@ -304,8 +474,8 @@ def leak_check(event_id: str):
 def earnings_whisper(ticker: str):
     """Compare analyst-consensus EPS to the most recently reported EPS.
 
-    Uses yfinance's earnings_history / quarterly_income_stmt as a free proxy
-    for consensus — yfinance pulls from Yahoo's analyst aggregations.
+    Free for everyone. The daily count gate lives on /api/fundamentals/score
+    (the analyzer entry point) — see freemium.check_analysis_quota.
     """
     ticker = ticker.upper().strip()
 
@@ -327,26 +497,40 @@ def earnings_whisper(ticker: str):
                         est = row.get("epsEstimate")
                         act = row.get("epsActual")
                         if est is None or act is None: continue
-                        surprise_pct = ((act - est) / abs(est) * 100) if est else 0.0
+                        # Skip rows where estimate is too small — divides into noise.
+                        # yfinance occasionally returns near-zero estimates that flip
+                        # tiny deltas into 200% "misses" — root cause of the false
+                        # "recent miss pattern" chip that kept popping up.
+                        try:
+                            est_f = float(est); act_f = float(act)
+                        except Exception: continue
+                        if abs(est_f) < 0.10:  # < 10 paise — not a meaningful base
+                            continue
+                        surprise_pct = (act_f - est_f) / abs(est_f) * 100
+                        # Tighter bands (was ±2%): typical analyst margin is wider
+                        if surprise_pct > 5:    tag = "beat"
+                        elif surprise_pct < -5: tag = "miss"
+                        else:                   tag = "inline"
                         beat_history.append({
                             "period": str(idx),
-                            "estimate": float(est),
-                            "actual":   float(act),
+                            "estimate": est_f,
+                            "actual":   act_f,
                             "surprise_pct": round(float(surprise_pct), 2),
-                            "tag": ("beat" if surprise_pct > 2 else
-                                    "miss" if surprise_pct < -2 else "inline"),
+                            "tag": tag,
                         })
             except Exception as e:
                 logger.debug("earnings_history fetch failed for %s: %s", ticker, e)
 
-            # Recent beat streak / consistency
+            # Recent beat streak / consistency.
+            # Stricter: need 3+ misses (was 2+) for a "miss pattern" label —
+            # most stocks have one weird quarter and the chip should not fire.
             beats = sum(1 for r in beat_history if r["tag"] == "beat")
             misses = sum(1 for r in beat_history if r["tag"] == "miss")
             streak_label = None
             if beats >= 3:
                 streak_label = "Strong beat streak (3+ quarters)"
-            elif misses >= 2:
-                streak_label = "Recent miss pattern"
+            elif misses >= 3:
+                streak_label = "Recent miss pattern (3+ quarters)"
 
             return {
                 "ticker": ticker,
@@ -422,7 +606,10 @@ def sector_regime():
 @bp.route("/api/edge/insider-buys/<ticker>", methods=["GET"])
 def insider_buys(ticker: str):
     """Count SEBI PIT BUY disclosures in the last 30 days. Promoters/insiders
-    buying their OWN stock is a 4× stronger signal than analyst ratings."""
+    buying their OWN stock is a 4× stronger signal than analyst ratings.
+
+    Free for everyone; daily count gate is on the analyzer entry point.
+    """
     ticker = ticker.upper().strip()
     days = int(request.args.get("days", 30))
 
@@ -661,7 +848,10 @@ def bulk_deal_crossref():
 
 @bp.route("/api/edge/bulk-deal-crossref/<ticker>", methods=["GET"])
 def bulk_deal_crossref_one(ticker: str):
-    """Single-ticker variant — cheaper for card-level lookups."""
+    """Single-ticker variant — cheaper for card-level lookups.
+
+    Free for everyone; daily count gate is on the analyzer entry point.
+    """
     ticker = ticker.upper().strip()
     db = _get_db() if _get_db else None
     if db is None:

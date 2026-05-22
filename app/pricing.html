@@ -1,268 +1,499 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-<script src="./shared/js/theme-toggle.js" defer></script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tickwave | Pricing</title>
-    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
-    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
-    <link rel="manifest" href="./manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<script id="tailwind-config">
-  tailwind.config = { darkMode: "class", theme: { extend: { colors: {
-    "primary":"#8eb4e0","secondary":"#2dd4aa","tertiary":"#f29090","error":"#f26b6b",
-    "background":"#080c12","surface":"#0d1118","surface-container":"#111720",
-    "surface-container-high":"#161d28","surface-container-highest":"#1c2435",
-    "on-surface":"#dde3ef","on-surface-variant":"#8a94a8",
-    "outline":"#3d4a5c","outline-variant":"#253040",
-    "bull":"#2dd4aa","bear":"#f26b6b","caution":"#e6b84a","info":"#6ba3d6"
-  } } } }
-</script>
+<title>Pricing · AlphaEvent</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+<link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans&family=Geist+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<link rel="stylesheet" href="./shared/css/tokens.css">
 <link rel="stylesheet" href="./shared/css/style.css">
-    <link rel="stylesheet" href="./shared/css/refined.css">
-<script src="./shared/js/theme.js"></script>
-<script src="./shared/js/widgets.js"></script>
+<link rel="stylesheet" href="./shared/css/redesign.css">
+<link rel="stylesheet" href="./shared/css/components.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js" defer></script>
 <style>
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
-.plan-card { padding:22px 20px; border-radius:var(--r-lg); border:1px solid var(--b1); background:var(--s1); display:flex; flex-direction:column; gap:14px; min-height:520px; }
-.plan-card.featured { border:1px solid var(--info-border); box-shadow:0 0 0 1px var(--info-border), 0 8px 28px rgba(107,163,214,0.18); position:relative; }
-.plan-tag { position:absolute; top:-10px; right:18px; background:var(--info); color:#0b0e15; font-family:var(--font-mono); font-size:10px; font-weight:700; padding:3px 9px; border-radius:var(--r-sm); letter-spacing:0.1em; text-transform:uppercase; }
-.plan-name { font-family:var(--font-head); font-size:16px; font-weight:700; color:var(--t1); letter-spacing:-0.01em; }
-.plan-tag-line { font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
-.plan-price { font-family:var(--font-mono); font-size:32px; font-weight:700; color:var(--t1); letter-spacing:-0.02em; }
-.plan-price-sub { font-size:11px; color:var(--t3); }
-.plan-feature { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--t2); line-height:1.5; }
-.plan-feature.yes::before { content:''; width:14px; height:14px; border-radius:50%; background:var(--bull-dim); border:1px solid var(--bull-border); flex-shrink:0; margin-top:3px; position:relative; }
-.plan-feature.yes::after { content:''; width:6px; height:3px; border-left:1.5px solid var(--bull); border-bottom:1.5px solid var(--bull); transform:rotate(-45deg); position:absolute; margin-left:4px; margin-top:7px; }
-.plan-feature.no::before  { content:''; width:14px; height:14px; border-radius:50%; background:var(--s2); border:1px solid var(--b1); flex-shrink:0; margin-top:3px; }
-.plan-feature span { display:block; }
-.plan-cta { padding:11px 14px; border-radius:var(--r-sm); font-family:var(--font-ui); font-size:12px; font-weight:700; cursor:pointer; border:1px solid var(--b1); background:var(--s2); color:var(--t1); transition:all 0.15s; }
-.plan-cta:hover { background:var(--s3); }
-.plan-cta.primary { background:var(--info-dim); color:var(--info); border-color:var(--info-border); }
-.plan-cta.primary:hover { background:var(--info-border); color:#fff; }
-.compare-row { display:grid; grid-template-columns:2fr 1fr 1fr; padding:10px 14px; border-bottom:1px solid var(--b1); align-items:center; font-size:12px; }
-.compare-row:hover { background:var(--b0); }
-.compare-row > div:not(:first-child) { text-align:center; font-family:var(--font-mono); }
-.compare-head { font-family:var(--font-head); font-size:11px; color:var(--t3); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; padding:10px 14px; border-bottom:1px solid var(--b2); background:var(--s0); }
+  body { background: var(--bg); color: var(--text-primary); font-family: 'DM Sans', system-ui, sans-serif; margin: 0; }
+  .pr-shell { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+  .pr-head { text-align: center; margin-bottom: 40px; }
+  .pr-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .pr-title {
+    font-family: 'Plus Jakarta Sans', system-ui;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    color: var(--text-primary);
+    margin: 0 0 12px;
+  }
+  .pr-sub { font-size: 17px; color: var(--text-secondary); max-width: 620px; margin: 0 auto; line-height: 1.5; }
+
+  .pr-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 4px;
+    margin-top: 24px;
+  }
+  .pr-toggle button {
+    background: transparent;
+    border: 0;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .pr-toggle button.active {
+    background: var(--accent);
+    color: var(--surface-1);
+  }
+  .pr-save-badge {
+    margin-left: 6px;
+    font-size: 10px;
+    background: var(--bull-dim);
+    color: var(--bull);
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .pr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 36px;
+  }
+  @media (min-width: 880px) {
+    .pr-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .pr-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .pr-card.is-recommended {
+    border-color: var(--link);
+    box-shadow: 0 0 0 1px var(--link), var(--shadow-md);
+  }
+  .pr-card.is-recommended::before {
+    content: 'Most popular';
+    position: absolute;
+    top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--link);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .pr-card-name {
+    font-family: 'Plus Jakarta Sans', system-ui;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+  }
+  .pr-card-pitch {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0 0 22px;
+    line-height: 1.5;
+    min-height: 38px;
+  }
+  .pr-price {
+    margin-bottom: 22px;
+  }
+  .pr-price-amount {
+    font-family: 'Plus Jakarta Sans';
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+  .pr-price-unit {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .pr-price-annual {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .pr-cta {
+    display: block;
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 0;
+    background: var(--accent);
+    color: var(--surface-1);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 22px;
+    transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .pr-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .pr-cta.is-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+  }
+  .pr-cta.is-secondary:hover { background: var(--surface-3); }
+  .pr-cta.is-current {
+    background: var(--surface-3);
+    color: var(--text-secondary);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .pr-features { list-style: none; padding: 0; margin: 0; }
+  .pr-features li {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 7px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .pr-features li .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--bull);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .pr-features li strong { color: var(--text-primary); font-weight: 600; }
+
+  .pr-faq {
+    margin-top: 80px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 40px;
+  }
+  .pr-faq h2 {
+    font-family: 'Plus Jakarta Sans';
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px;
+    color: var(--text-primary);
+  }
+  details.faq-item {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+  details.faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    list-style: none;
+  }
+  details.faq-item summary::-webkit-details-marker { display: none; }
+  details.faq-item p {
+    margin: 10px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .pr-trust {
+    background: var(--surface-1);
+    border-left: 3px solid var(--caution);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 36px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
 </style>
 </head>
-<body class="bg-background text-on-surface font-body rf-page">
-<div class="rf-aurora-bg"></div>
-<div class="rf-dot-grid"></div>
+<body>
 
+<aside class="sidebar hidden md:flex"></aside>
 
-<aside class="sidebar hidden md:flex">
-  <div class="sidebar-header"><img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo><p class="sidebar-brand-sub">Plans</p></div>
-  <nav class="sidebar-nav">
-    <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
-    <div class="sidebar-section">Markets</div>
-    <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
-    <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
-    <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
-    <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
-    <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
-    <div class="sidebar-section">News</div>
-    <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
-    <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
-    <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
-    <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
-    <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
-    <div class="sidebar-section">Tools</div>
-    <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
-    <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
-    <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
-    <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
-    <div class="sidebar-section">Insights</div>
-    <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
-    <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
-    <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
-  </nav>
-</aside>
+<main id="main" class="pr-shell">
 
-<main class="main-content" style="max-width:1200px;">
+  <div class="pr-head">
+    <div class="pr-eyebrow">Pricing</div>
+    <h1 class="pr-title">Pick the plan that fits your trading rhythm</h1>
+    <p class="pr-sub">Start free. Upgrade when you want the full feed, daily briefings, or desk-quality research delivered to your inbox.</p>
 
-<header style="padding:18px 0;margin-bottom:18px;">
-  <div style="display:flex;align-items:baseline;gap:10px;">
-    <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
-    <span style="color:var(--b2);">·</span>
-    <h1 style="font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--t1);">Plans &amp; Pricing</h1>
-  </div>
-  <p style="color:var(--t2);font-size:13px;margin-top:6px;max-width:680px;">Free covers core scanning + watchlist. Pro unlocks the Tickwave-only edges: commodity × macro factor matrix, global spillover analysis, full policy backlog, custom screener export, and broader alert capacity.</p>
-</header>
-
-<!-- Current tier banner -->
-<div id="tierBanner" class="widget" style="min-height:auto;margin-bottom:18px;display:none;">
-  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-    <span class="material-symbols-outlined" style="color:var(--info);font-size:28px;">workspace_premium</span>
-    <div style="flex:1;min-width:200px;">
-      <div style="font-family:var(--font-head);font-weight:700;color:var(--t1);font-size:14px;">Your current plan: <span id="currentTier" style="color:var(--info);text-transform:capitalize;">free</span></div>
-      <div style="font-size:12px;color:var(--t2);" id="currentTierSub">Upgrade for full feature access.</div>
+    <div class="pr-toggle" role="tablist" aria-label="Billing period">
+      <button id="toggleMonthly" class="active" data-period="monthly">Monthly</button>
+      <button id="toggleAnnual" data-period="annual">
+        Annual <span class="pr-save-badge">Save ~17%</span>
+      </button>
     </div>
   </div>
-</div>
 
-<!-- Plan cards (3-up: Free, Pro, Team — Team kept as a "contact us" placeholder) -->
-<section style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:28px;">
+  <section class="pr-grid">
 
-  <!-- FREE -->
-  <div class="plan-card">
-    <div>
-      <div class="plan-tag-line">Hobby</div>
-      <div class="plan-name">Free</div>
+    <!-- ── FREE ───────────────────────────────────────── -->
+    <article class="pr-card" data-tier="free">
+      <h2 class="pr-card-name">Free</h2>
+      <p class="pr-card-pitch">Get a real feel for the engine. No card. Forever.</p>
+      <div class="pr-price">
+        <span class="pr-price-amount">₹0</span>
+        <span class="pr-price-unit">/ forever</span>
+        <span class="pr-price-annual">No payment required</span>
+      </div>
+      <a href="signup.html" class="pr-cta is-secondary" id="ctaFree">Start free</a>
+      <ul class="pr-features">
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>3 deep fundamental analyses / day</strong> — AI explainer, peer rank, full breakdown</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Top 5 signals/day with AI explanation</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Unlimited watchlist</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> 10 price alerts</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> 10 AI chat questions/day</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Event timeline + AI summaries</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Forensic flags (summary view)</li>
+      </ul>
+    </article>
+
+    <!-- ── STARTER (recommended) ──────────────────────── -->
+    <article class="pr-card is-recommended" data-tier="starter">
+      <h2 class="pr-card-name">Starter</h2>
+      <p class="pr-card-pitch">Full feed, daily morning brief, deep-dive any name you want.</p>
+      <div class="pr-price">
+        <span class="pr-price-amount" data-monthly="₹99" data-annual="₹83">₹99</span>
+        <span class="pr-price-unit">/ month</span>
+        <span class="pr-price-annual" data-annual-line style="display:none;">Or ₹999/year (2 months free)</span>
+      </div>
+      <a href="#upgrade" class="pr-cta" data-checkout="starter">Upgrade to Starter</a>
+      <ul class="pr-features">
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Everything in Free, plus:</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>30 fundamental analyses / day</strong> — enough to evaluate every Nifty 50 name</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>Full signal feed</strong> (30-50/day)</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>50 alerts</strong></li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>50 AI chat questions/day</strong></li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Daily briefing 08:30 IST (email + push)</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Full forensic patterns</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> 5 saved custom screeners</li>
+      </ul>
+    </article>
+
+    <!-- ── PRO ─────────────────────────────────────────── -->
+    <article class="pr-card" data-tier="pro">
+      <h2 class="pr-card-name">Pro</h2>
+      <p class="pr-card-pitch">Active trader package — pre-market briefs, instant alerts, unlimited analysis.</p>
+      <div class="pr-price">
+        <span class="pr-price-amount" data-monthly="₹299" data-annual="₹208">₹299</span>
+        <span class="pr-price-unit">/ month</span>
+        <span class="pr-price-annual" data-annual-line style="display:none;">Or ₹2,499/year (2 months free)</span>
+      </div>
+      <a href="#upgrade" class="pr-cta" data-checkout="pro">Upgrade to Pro</a>
+      <ul class="pr-features">
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Everything in Starter, plus:</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>Unlimited fundamental analyses</strong></li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>Unlimited alerts</strong></li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>200 AI chat questions/day</strong></li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>Pre-market briefing</strong> 07:30 IST</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> <strong>Instant priority email</strong> for high-alpha watchlist signals</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> Instant forensic red-flag alerts</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> AI summary of every earnings call on your watchlist</li>
+        <li><span class="material-symbols-outlined" aria-hidden="true">check</span> 25 saved custom screeners</li>
+      </ul>
+    </article>
+
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       FUNDAMENTAL ANALYSIS — the headline feature deserves its own
+       section so prospective users see what they actually get.
+       ════════════════════════════════════════════════════════════════ -->
+  <section style="margin-top:64px;padding:48px 0;text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);color:var(--accent);padding:6px 14px;border-radius:999px;font:700 10px 'Inter',sans-serif;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:18px;">
+      <span class="material-symbols-outlined" style="font-size:14px;">auto_awesome</span>
+      Our weapon
     </div>
-    <div>
-      <div class="plan-price">₹0</div>
-      <div class="plan-price-sub">forever · no card needed</div>
+    <h2 style="font-family:'Plus Jakarta Sans',system-ui;font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-0.025em;color:var(--text-primary);margin:0 0 14px;line-height:1.15;">
+      One click. Desk-quality fundamental analysis.
+    </h2>
+    <p style="font-size:16px;color:var(--text-secondary);max-width:560px;margin:0 auto 32px;line-height:1.5;">
+      Hit Analyze on any stock. We score it 0-100 across 7 dimensions, surface the positives and red flags, then write an AI explainer in plain English. Free users get 3/day; paid users keep going.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:920px;margin:0 auto;text-align:left;">
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">7-dimension score</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">Valuation, profitability, growth, leverage, cashflow, promoter pledge, institutional holding — each weighted and aggregated into a single 0-100 grade.</div>
+      </div>
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">AI explainer</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">Plain-English bottom-line verdict, per-component "why it scored what it did", risk callout, and one concrete next step.</div>
+      </div>
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Peer rank</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">Sector percentile — where this stock sits vs every other name in its sector you've analyzed. Beats the "PE looks fine" pseudo-comparison.</div>
+      </div>
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Score trajectory</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">Sparkline of the score over time so you can see if fundamentals are improving or degrading — not just a snapshot.</div>
+      </div>
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Insider buys</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">SEBI PIT BUY disclosures last 30d. Promoter buys of their own stock are a 4× stronger signal than analyst ratings.</div>
+      </div>
+      <div style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:14px;padding:20px;">
+        <div style="font:700 11px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Earnings whisper + bulk deals</div>
+        <div style="font:600 14px 'DM Sans',sans-serif;color:var(--text-primary);">Beat/miss history, consensus vs trailing EPS, plus a 7-day cross-reference of bulk-deal smart-money flow.</div>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="plan-feature yes"><span>Up to 50 watchlist tickers</span></div>
-      <div class="plan-feature yes"><span>2 active alerts</span></div>
-      <div class="plan-feature yes"><span>Pre-built screeners</span></div>
-      <div class="plan-feature yes"><span>Custom screener · 50 result rows</span></div>
-      <div class="plan-feature yes"><span>Stock detail · event track record + chart</span></div>
-      <div class="plan-feature yes"><span>Policy fast-track · 24h window</span></div>
-      <div class="plan-feature no"><span>Financials / ratios / shareholding tabs</span></div>
-      <div class="plan-feature no"><span>CSV export</span></div>
-      <div class="plan-feature no"><span>Commodity × macro factor matrix</span></div>
-      <div class="plan-feature no"><span>Global spillover analysis</span></div>
-      <div class="plan-feature no"><span>F&amp;O unusual options activity</span></div>
-      <div class="plan-feature yes"><span>Pre-mover candidates · top-5 preview</span></div>
-    </div>
-    <button class="plan-cta" style="margin-top:auto;" disabled id="freeCta">Current plan</button>
+  </section>
+
+  <div class="pr-trust">
+    <strong style="color:var(--caution);">Informational only — not investment advice.</strong>
+    AlphaEvent / Tickwave publishes statistical signals derived from public Indian market data (NSE/BSE filings, SEBI disclosures, RBI press, financial news). We are <strong>not a SEBI-registered Investment Adviser</strong>. Nothing in any signal, briefing, or research report is a recommendation or solicitation. Past performance does not guarantee future results.
   </div>
 
-  <!-- PRO (featured) -->
-  <div class="plan-card featured">
-    <span class="plan-tag">Most popular</span>
-    <div>
-      <div class="plan-tag-line">Investor</div>
-      <div class="plan-name">Pro</div>
-    </div>
-    <div>
-      <div class="plan-price">₹299<span style="font-size:14px;color:var(--t3);font-weight:500;">/mo</span></div>
-      <div class="plan-price-sub">billed monthly · cancel anytime</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="plan-feature yes"><span>1,000 watchlist tickers</span></div>
-      <div class="plan-feature yes"><span>50 active alerts</span></div>
-      <div class="plan-feature yes"><span>Pre-built + custom screeners · 500 rows</span></div>
-      <div class="plan-feature yes"><span>Stock detail · all tabs (financials, ratios, shareholding, corp actions)</span></div>
-      <div class="plan-feature yes"><span>Policy fast-track · 30-day backlog</span></div>
-      <div class="plan-feature yes"><span>CSV export across all tables</span></div>
-      <div class="plan-feature yes"><span>Commodity × macro factor matrix</span></div>
-      <div class="plan-feature yes"><span>Global driver × Indian sector spillover</span></div>
-      <div class="plan-feature yes"><span>F&amp;O unusual options activity feed</span></div>
-      <div class="plan-feature yes"><span>Pre-mover candidates · full ranking with reasoning</span></div>
-      <div class="plan-feature yes"><span>Forensics + manipulation flags</span></div>
-    </div>
-    <button class="plan-cta primary" onclick="upgrade()" style="margin-top:auto;">Upgrade to Pro</button>
-  </div>
+  <section class="pr-faq">
+    <h2>FAQ</h2>
 
-  <!-- TEAM -->
-  <div class="plan-card">
-    <div>
-      <div class="plan-tag-line">For desks</div>
-      <div class="plan-name">Team</div>
-    </div>
-    <div>
-      <div class="plan-price">Custom</div>
-      <div class="plan-price-sub">5+ seats · annual billing</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="plan-feature yes"><span>Everything in Pro</span></div>
-      <div class="plan-feature yes"><span>Shared watchlists &amp; portfolios</span></div>
-      <div class="plan-feature yes"><span>Webhook alert delivery</span></div>
-      <div class="plan-feature yes"><span>Audit trail + admin dashboard</span></div>
-      <div class="plan-feature yes"><span>Priority data refresh window</span></div>
-      <div class="plan-feature yes"><span>Onboarding + training session</span></div>
-      <div class="plan-feature yes"><span>SLA: 99.5% uptime</span></div>
-    </div>
-    <a class="plan-cta" href="mailto:sales@tickwave.example" style="margin-top:auto;text-align:center;text-decoration:none;">Contact sales</a>
-  </div>
+    <details class="faq-item">
+      <summary>How do payments work?</summary>
+      <p>Razorpay (UPI, cards, netbanking, wallets) — same gateway your broker uses. Annual plans are billed once; monthly auto-renew via Razorpay subscriptions. Cancel anytime from Settings; access continues until the end of the paid period.</p>
+    </details>
 
-</section>
+    <details class="faq-item">
+      <summary>Can I switch tiers later?</summary>
+      <p>Yes. Upgrade takes effect immediately and is pro-rated. Downgrades take effect at the end of your current billing period — you keep paid access until then.</p>
+    </details>
 
-<!-- Comparison detail driven by /api/tier -->
-<div class="widget" style="min-height:auto;margin-bottom:28px;">
-  <div class="widget__head">
-    <div><div class="widget__title">Detailed limits</div><div class="widget__meta">live from /api/tier — exactly what the backend enforces</div></div>
-  </div>
-  <div id="tierMatrix"></div>
-</div>
+    <details class="faq-item">
+      <summary>Why two paid tiers?</summary>
+      <p>Most retail traders need the full signal feed + a daily briefing — that's the Starter pitch. Active intraday/F&amp;O traders also want pre-market positioning, instant alerts when their watchlist moves, and earnings-call summaries delivered within 30 min — that's Pro.</p>
+    </details>
 
-<!-- Disclaimers / data attribution row -->
-<section class="widget" style="min-height:auto;margin-bottom:28px;">
-  <div class="widget__head">
-    <div><div class="widget__title">What you should know before you subscribe</div><div class="widget__meta">disclosures · data sourcing · refunds</div></div>
-  </div>
-  <div style="font-size:12px;color:var(--t2);line-height:1.7;">
-    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Not investment advice.</strong> Tickwave is a market intelligence and analytics tool. Outputs (alpha scores, predictions, signals, ratings) are model-generated views derived from public news and market data. They are not investment recommendations, research-analyst opinions, or solicitations to trade any security. Decide based on your own analysis or licensed adviser.</p>
-    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Data sourcing.</strong> Fundamentals and quotes shown on this site are aggregated from third-party providers (e.g. Yahoo Finance) and public exchange disclosures (NSE / BSE). Prices may be delayed; corporate filings may lag the original release. We do not redistribute raw exchange feeds.</p>
-    <p style="margin-bottom:10px;"><strong style="color:var(--t1);">Cancellation &amp; refunds.</strong> You can cancel any time from your account; access continues until the end of the current billing cycle. We do not offer pro-rata refunds for partial months.</p>
-    <p><strong style="color:var(--t1);">Privacy.</strong> Watchlists, alerts, and portfolio entries are tied to your user id and stored on Tickwave servers. We do not sell user data to third parties. See <a href="privacy.html" style="color:var(--info);text-decoration:none;">privacy policy</a> and <a href="terms.html" style="color:var(--info);text-decoration:none;">terms of use</a>.</p>
-  </div>
-</section>
+    <details class="faq-item">
+      <summary>What do you mean by "AI research"?</summary>
+      <p>An 8-section equity report composed from our scraped tables (signals, events, forensic flags, peers, fundamentals) with AI-written narrative for the investment thesis and risk factors. Every claim cites the source. Cached server-side for 24h so re-opening a report is instant.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Is AlphaEvent a broker or advisor?</summary>
+      <p>Neither. We're a research and intelligence tool. No order execution; no portfolio management; not a SEBI-registered investment adviser. Use AlphaEvent to find ideas — execute and consult through your broker and a SEBI-RIA.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Can I get a refund?</summary>
+      <p>Monthly plans are non-refundable but cancellable anytime. Annual plans — full refund within 7 days of purchase; pro-rated thereafter for the first 30 days. Email <a href="mailto:support@alphaevent.in" style="color:var(--link);">support@alphaevent.in</a>.</p>
+    </details>
+  </section>
 
 </main>
 
-<script src="./shared/js/app.js"></script>
-<script src="./shared/js/bootstrap.js"></script>
 <script>
-async function loadTier() {
-  const r = await API.get('/tier');
-  if (!r || !r.success) return;
-  const t = r.data.current_tier || 'free';
-  document.getElementById('currentTier').textContent = t;
-  document.getElementById('tierBanner').style.display = '';
-  if (t === 'pro') {
-    document.getElementById('currentTierSub').textContent = 'Pro features active. Manage billing from your account page.';
-    document.getElementById('freeCta').textContent = 'Downgrade to Free';
-    document.getElementById('freeCta').disabled = false;
-    document.querySelector('.plan-card.featured .plan-cta').textContent = 'Current plan';
-    document.querySelector('.plan-card.featured .plan-cta').disabled = true;
-  }
-  renderMatrix(r.data.limits);
-}
+  // Tier toggle (monthly / annual)
+  (function () {
+    const m = document.getElementById('toggleMonthly');
+    const a = document.getElementById('toggleAnnual');
+    const prices = document.querySelectorAll('[data-monthly]');
+    const annuals = document.querySelectorAll('[data-annual-line]');
+    function set(period) {
+      const isAnnual = period === 'annual';
+      m.classList.toggle('active', !isAnnual);
+      a.classList.toggle('active', isAnnual);
+      prices.forEach((el) => {
+        el.textContent = isAnnual ? el.dataset.annual : el.dataset.monthly;
+      });
+      annuals.forEach((el) => {
+        el.style.display = isAnnual ? '' : 'none';
+      });
+    }
+    m.addEventListener('click', () => set('monthly'));
+    a.addEventListener('click', () => set('annual'));
+    set('monthly');
+  })();
 
-function renderMatrix(limits) {
-  const free = limits.free, pro = limits.pro;
-  const rows = [
-    ['Watchlist size',                 free.watchlist_size,           pro.watchlist_size],
-    ['Active alerts',                  free.alerts_active,            pro.alerts_active],
-    ['Screener result rows',           free.screener_max_rows,        pro.screener_max_rows],
-    ['CSV export',                     free.screener_export_csv,      pro.screener_export_csv],
-    ['Stock detail · full tabs',       free.stock_detail_full,        pro.stock_detail_full],
-    ['Policy fast-track window (h)',   free.policy_fast_window,       pro.policy_fast_window],
-    ['Commodity × macro matrix',       free.commodity_macro,          pro.commodity_macro],
-    ['Global spillover analysis',      free.global_spillover,         pro.global_spillover],
-    ['F&O unusual activity',           free.fo_unusual,               pro.fo_unusual],
-    ['Pre-mover candidates · full',    free.pre_mover_full,           pro.pre_mover_full],
-    ['Pre-mover preview rows',         free.pre_mover_preview,        pro.pre_mover_preview],
-  ];
-  const fmt = v => typeof v === 'boolean' ? (v ? '<span style="color:var(--bull);">✓</span>' : '<span style="color:var(--t3);">—</span>') : v;
-  const html = ['<div class="compare-head" style="display:grid;grid-template-columns:2fr 1fr 1fr;">',
-    '<div>Capability</div><div style="text-align:center;">Free</div><div style="text-align:center;">Pro</div></div>'];
-  rows.forEach(([k, a, b]) => {
-    html.push(`<div class="compare-row"><div style="color:var(--t2);">${k}</div><div>${fmt(a)}</div><div>${fmt(b)}</div></div>`);
+  // Current tier indicator — dim the CTA for the user's current tier.
+  // Razorpay checkout itself is stubbed for v1.
+  (function () {
+    const tok = localStorage.getItem('tw_token') || localStorage.getItem('auth_token') || '';
+    if (!tok) return;
+    fetch('/api/me/tier', { headers: { Authorization: 'Bearer ' + tok } })
+      .then((r) => r.ok ? r.json() : null)
+      .then((j) => {
+        if (!j || !j.success) return;
+        const tier = j.tier;
+        document.querySelectorAll('.pr-card').forEach((c) => {
+          const cardTier = c.dataset.tier;
+          const cta = c.querySelector('.pr-cta');
+          if (cardTier === tier) {
+            cta.classList.add('is-current');
+            cta.classList.remove('is-secondary');
+            cta.textContent = 'Your current plan';
+            cta.href = '#';
+          }
+        });
+      })
+      .catch(() => {});
+  })();
+
+  // Razorpay checkout stub — until the integration ships, surface a polite
+  // "coming soon" inline message instead of a dead button.
+  document.querySelectorAll('[data-checkout]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const tier = btn.dataset.checkout;
+      const tok = localStorage.getItem('tw_token') || localStorage.getItem('auth_token') || '';
+      if (!tok) { location.href = 'signup.html?next=pricing.html&plan=' + tier; return; }
+      try {
+        const r = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+          body: JSON.stringify({ plan: tier + '_monthly' }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (j.status === 'coming_soon' || !r.ok) {
+          if (btn.nextElementSibling && btn.nextElementSibling.classList.contains('cs-msg')) return;
+          const note = document.createElement('div');
+          note.className = 'cs-msg';
+          note.style.cssText = 'margin:-12px 0 22px;padding:10px 12px;background:var(--accent-dim);border-radius:8px;font-size:12px;color:var(--text-secondary);text-align:center;';
+          note.innerHTML = 'Razorpay payments launch next week. <a href="mailto:support@alphaevent.in" style="color:var(--link);font-weight:600;">Email us</a> to get notified.';
+          btn.parentNode.insertBefore(note, btn.nextSibling);
+        } else if (j.checkout_url) {
+          location.href = j.checkout_url;
+        }
+      } catch (_) {}
+    });
   });
-  document.getElementById('tierMatrix').innerHTML = html.join('');
-}
-
-async function upgrade() {
-  const r = await API.post('/tier/upgrade', {});
-  if (r && r.success) {
-    alert('Upgrade complete — refresh to use Pro features.');
-    location.reload();
-  } else {
-    alert('Payment provider not configured yet. Wire Razorpay/Stripe at /api/tier/upgrade — once that returns success:true, this UI is ready.');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', loadTier);
 </script>
+
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

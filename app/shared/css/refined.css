@@ -217,11 +217,6 @@ main.main-content {
 .rf-hero-eyebrow::before {
   content: ''; width: 5px; height: 5px; border-radius: 50%;
   background: var(--rf-bull);
-  animation: rf-pulse 2.4s ease-in-out infinite;
-}
-@keyframes rf-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
 }
 
 .rf-hero-title {

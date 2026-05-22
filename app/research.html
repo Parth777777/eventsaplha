@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equity Research · AlphaEvent</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+<link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans&family=Geist+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<link rel="stylesheet" href="./shared/css/tokens.css">
+<link rel="stylesheet" href="./shared/css/style.css">
+<link rel="stylesheet" href="./shared/css/redesign.css">
+<link rel="stylesheet" href="./shared/css/components.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js" defer></script>
+<style>
+  body { background: var(--bg); color: var(--text-primary); font-family: 'DM Sans', system-ui, sans-serif; margin: 0; }
+  .research-shell { max-width: 980px; margin: 0 auto; padding: 32px 24px 96px; }
+  .research-head { margin-bottom: 32px; }
+  .research-eyebrow { font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+  .research-title {
+    font-family: 'Plus Jakarta Sans', system-ui;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    margin: 8px 0 6px;
+    line-height: 1.1;
+  }
+  .research-sub { color: var(--text-secondary); font-size: 15px; }
+  .ticker-row {
+    display: flex; gap: 10px; align-items: center;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 10px 14px;
+    max-width: 380px;
+    margin-top: 16px;
+  }
+  .ticker-row input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: var(--text-primary);
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    text-transform: uppercase;
+  }
+  .ticker-row .material-symbols-outlined { color: var(--text-tertiary); font-size: 18px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar hidden md:flex"></aside>
+
+<main id="main" class="research-shell">
+  <header class="research-head">
+    <div class="research-eyebrow">Equity Research</div>
+    <h1 class="research-title">Desk-quality research, AI-grounded</h1>
+    <p class="research-sub">8 sections per stock: snapshot, recent catalysts, financials, forensic flags, peers, AI thesis, AI risks, methodology. Cached for 24 hours so repeat lookups are instant.</p>
+    <div class="ticker-row">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <input id="tickerInput" placeholder="Type ticker and press Enter (e.g. RELIANCE)" autocomplete="off" />
+    </div>
+  </header>
+
+  <section id="ae-research-host" data-ticker=""></section>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const t = (params.get('ticker') || params.get('t') || '').toUpperCase();
+      const host = document.getElementById('ae-research-host');
+      const input = document.getElementById('tickerInput');
+      if (t) {
+        host.setAttribute('data-ticker', t);
+        input.value = t;
+      } else {
+        host.innerHTML = '<div style="color:var(--text-tertiary);padding:48px 24px;text-align:center;font-size:14px;">Enter a ticker above to load research, or open a stock page and use the inline research panel.</div>';
+      }
+      input.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const v = (e.target.value || '').toUpperCase().trim();
+        if (!v) return;
+        location.search = '?ticker=' + encodeURIComponent(v);
+      });
+    })();
+  </script>
+</main>
+
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

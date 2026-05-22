@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,8 +23,11 @@
   }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["Geist Mono"] } } } }
 </script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
 <link rel="stylesheet" href="./shared/css/refined.css">
 <link rel="stylesheet" href="./shared/css/search-bar.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <style>
@@ -93,7 +96,7 @@
     <div style="flex:1;min-width:280px;">
       <h1 class="text-4xl font-black font-headline text-on-surface mb-2">F&amp;O</h1>
       <p class="text-on-surface-variant text-sm mb-4">
-        Index OI heatmap, unusual options activity, and FII/DII derivative flow — ranked by alpha score.
+        Index OI heatmap, unusual options activity, and FII/DII derivative flow � ranked by alpha score.
       </p>
       <div data-tw-search></div>
     </div>
@@ -119,10 +122,10 @@
 <!-- Top-line scanner KPIs -->
 <section class="px-6 mb-6">
   <div class="rf-bento" style="margin: 0;">
-    <div class="rf-kpi"><div class="rf-kpi-label">Tickers tracked</div><div class="rf-kpi-value" id="kpiTrackedCount">—</div><div class="rf-kpi-delta" id="kpiSubTracked">latest snapshots</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">Unusual OI · 24h</div><div class="rf-kpi-value" id="kpiUnusualCount">—</div><div class="rf-kpi-delta">flagged</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">Top α</div><div class="rf-kpi-value" id="kpiTopAlpha">—</div><div class="rf-kpi-delta" id="kpiTopAlphaTicker">—</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">FII idx fut · today</div><div class="rf-kpi-value" id="kpiFiiToday">—</div><div class="rf-kpi-delta">net contracts</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Tickers tracked</div><div class="rf-kpi-value" id="kpiTrackedCount">�</div><div class="rf-kpi-delta" id="kpiSubTracked">latest snapshots</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Unusual OI � 24h</div><div class="rf-kpi-value" id="kpiUnusualCount">�</div><div class="rf-kpi-delta">flagged</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Top a</div><div class="rf-kpi-value" id="kpiTopAlpha">�</div><div class="rf-kpi-delta" id="kpiTopAlphaTicker">�</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">FII idx fut � today</div><div class="rf-kpi-value" id="kpiFiiToday">�</div><div class="rf-kpi-delta">net contracts</div></div>
   </div>
 </section>
 
@@ -131,8 +134,8 @@
   <div class="fo-card" style="padding:0;">
     <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rf-line);">
       <div>
-        <div style="font: 600 13px 'Inter',sans-serif;color:var(--rf-text);">FII / DII derivatives — 30 day trend</div>
-        <div style="font-size:11px;color:var(--rf-text-mute);">net long–short contracts from NSE FAO daily report</div>
+        <div style="font: 600 13px 'Inter',sans-serif;color:var(--rf-text);">FII / DII derivatives � 30 day trend</div>
+        <div style="font-size:11px;color:var(--rf-text-mute);">net long�short contracts from NSE FAO daily report</div>
       </div>
       <div style="display:flex;gap:14px;font-size:11px;color:var(--rf-text-mute);">
         <span><span style="display:inline-block;width:10px;height:10px;background:#2dd4aa;border-radius:2px;vertical-align:middle;"></span> FII idx fut</span>
@@ -153,10 +156,10 @@
       <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rf-line);gap:12px;">
         <div>
           <div style="font: 600 13px 'Inter',sans-serif;color:var(--rf-text);">Scanner</div>
-          <div style="font-size:11px;color:var(--rf-text-mute);">latest snapshot per ticker · click to drill</div>
+          <div style="font-size:11px;color:var(--rf-text-mute);">latest snapshot per ticker � click to drill</div>
         </div>
         <div class="rf-chips" id="sortChips">
-          <button class="rf-chip active" data-sort="alpha">α</button>
+          <button class="rf-chip active" data-sort="alpha">a</button>
           <button class="rf-chip" data-sort="iv_rank">IV rank</button>
           <button class="rf-chip" data-sort="pcr">PCR</button>
         </div>
@@ -164,31 +167,31 @@
       <div style="overflow-x:auto;">
         <table class="fo-table" id="scannerTable">
           <thead><tr>
-            <th>Ticker</th><th>α</th><th>Spot</th><th>Max pain</th><th>PCR</th><th>IV / rank</th><th>1σ move</th><th>Unusual</th>
+            <th>Ticker</th><th>a</th><th>Spot</th><th>Max pain</th><th>PCR</th><th>IV / rank</th><th>1s move</th><th>Unusual</th>
           </tr></thead>
           <tbody id="scannerBody">
-            <tr><td colspan="8" class="fo-empty">Loading scanner…</td></tr>
+            <tr><td colspan="8" class="fo-empty">Loading scanner�</td></tr>
           </tbody>
         </table>
       </div>
-      <div id="scannerCount" style="padding:10px 18px;font-size:12px;color:var(--rf-text-dim);border-top:1px solid var(--rf-line);">—</div>
+      <div id="scannerCount" style="padding:10px 18px;font-size:12px;color:var(--rf-text-dim);border-top:1px solid var(--rf-line);">�</div>
     </div>
 
     <div class="fo-card" style="padding:0;">
       <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rf-line);">
         <div>
           <div style="font: 600 13px 'Inter',sans-serif;color:var(--rf-text);">Unusual OI flags</div>
-          <div style="font-size:11px;color:var(--rf-text-mute);">strikes with 2× median OI change near spot</div>
+          <div style="font-size:11px;color:var(--rf-text-mute);">strikes with 2� median OI change near spot</div>
         </div>
         <span id="foFlowAsOf" style="font: 500 10px 'Geist Mono', monospace;color:var(--rf-text-dim);"></span>
       </div>
       <div style="overflow-x:auto;">
         <table class="fo-table" id="foFlowTable">
           <thead><tr>
-            <th>Ticker</th><th>Strike</th><th>Kind</th><th style="text-align:right;">ΔOI</th><th style="text-align:right;">Score</th><th style="text-align:right;">When</th>
+            <th>Ticker</th><th>Strike</th><th>Kind</th><th style="text-align:right;">?OI</th><th style="text-align:right;">Score</th><th style="text-align:right;">When</th>
           </tr></thead>
           <tbody id="foFlowBody">
-            <tr><td colspan="6" class="fo-empty">Loading unusual flow…</td></tr>
+            <tr><td colspan="6" class="fo-empty">Loading unusual flow�</td></tr>
           </tbody>
         </table>
       </div>
@@ -201,27 +204,28 @@
   <div class="fo-card" style="padding:0;">
     <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rf-line);">
       <div>
-        <div style="font: 700 18px 'Plus Jakarta Sans',sans-serif;color:var(--rf-text);" id="drillTitle">—</div>
-        <div style="font-size:11px;color:var(--rf-text-mute);" id="drillSub">—</div>
+        <div style="font: 700 18px 'Plus Jakarta Sans',sans-serif;color:var(--rf-text);" id="drillTitle">�</div>
+        <div style="font-size:11px;color:var(--rf-text-mute);" id="drillSub">�</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button id="drillWatch" class="rf-chip">+ Watchlist</button>
+        <a id="drillPlayground" class="rf-chip" style="text-decoration:none;color:#6ddec0;border-color:rgba(45,212,170,0.30);background:rgba(45,212,170,0.08);" href="playground.html?tool=greeks">→ Open in Playground</a>
         <button id="drillClose" class="rf-chip">Close</button>
       </div>
     </div>
     <div class="drill-grid" style="padding: 16px 18px;">
       <div>
-        <h3 style="font-size:13px;font-weight:600;margin:0 0 10px;color:var(--rf-text);">Option chain · nearest expiry</h3>
+        <h3 style="font-size:13px;font-weight:600;margin:0 0 10px;color:var(--rf-text);">Option chain � nearest expiry</h3>
         <div id="chainTable" style="overflow-x:auto;">
           <div class="rf-skel" style="height: 220px; border-radius: 0; border: none;"></div>
         </div>
       </div>
       <div>
-        <h3 style="font-size:13px;font-weight:600;margin:0 0 10px;color:var(--rf-text);">ATM IV history · 90d</h3>
+        <h3 style="font-size:13px;font-weight:600;margin:0 0 10px;color:var(--rf-text);">ATM IV history � 90d</h3>
         <div id="ivHistChart" style="height: 220px;">
           <div class="rf-skel" style="height: 100%; border-radius: 0; border: none;"></div>
         </div>
-        <h3 style="font-size:13px;font-weight:600;margin:18px 0 8px;color:var(--rf-text);">Recent unusual flags · 72h</h3>
+        <h3 style="font-size:13px;font-weight:600;margin:18px 0 8px;color:var(--rf-text);">Recent unusual flags � 72h</h3>
         <div id="drillUnusual"></div>
       </div>
     </div>
@@ -235,9 +239,9 @@
 <script src="./shared/js/company-logo.js"></script>
 <script src="./shared/js/search-bar.js" defer></script>
 <script>
-const fmt   = (v, d=0) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('en-IN', { maximumFractionDigits: d });
-const fmtPx = v => v == null || isNaN(v) ? '—' : '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 1 });
-const fmtSigned = v => v == null || isNaN(v) ? '—' : (v >= 0 ? '+' : '') + Number(v).toLocaleString('en-IN');
+const fmt   = (v, d=0) => v == null || isNaN(v) ? '�' : Number(v).toLocaleString('en-IN', { maximumFractionDigits: d });
+const fmtPx = v => v == null || isNaN(v) ? '�' : '?' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 1 });
+const fmtSigned = v => v == null || isNaN(v) ? '�' : (v >= 0 ? '+' : '') + Number(v).toLocaleString('en-IN');
 const escape = s => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const alphaPill = a => a == null ? 'alpha-lo' : (a >= 70 ? 'alpha-hi' : (a >= 50 ? 'alpha-mid' : 'alpha-lo'));
 function ago(ts) {
@@ -291,16 +295,16 @@ function renderIndexStrip(items) {
     return `<div class="fo-card">
       <div style="display:flex;justify-content:space-between;align-items:baseline;">
         <h3 style="font:700 18px 'Plus Jakarta Sans',sans-serif;margin:0;">${name}</h3>
-        <span style="font-size:11px;color:var(--rf-text-dim);font-family:'Geist Mono',monospace;">${escape(s.expiry || '')} · ${ago(s.fetched_at)}</span>
+        <span style="font-size:11px;color:var(--rf-text-dim);font-family:'Geist Mono',monospace;">${escape(s.expiry || '')} � ${ago(s.fetched_at)}</span>
       </div>
       <div style="font:700 30px 'Plus Jakarta Sans',sans-serif;margin-top:6px;font-variant-numeric:tabular-nums;">${fmtPx(s.spot)}</div>
       <div class="idx-stat-grid">
         <div><div style="color:var(--rf-text-mute);font-size:11px;">Max pain</div><div style="font-family:'Geist Mono',monospace;">${fmtPx(s.max_pain)}${dist != null ? ` <span style="color:var(--rf-text-dim);">(${(dist>=0?'+':'')+dist.toFixed(2)}%)</span>` : ''}</div></div>
-        <div><div style="color:var(--rf-text-mute);font-size:11px;">PCR</div><div style="font-family:'Geist Mono',monospace;">${s.pcr ? Number(s.pcr).toFixed(2) : '—'}</div></div>
-        <div><div style="color:var(--rf-text-mute);font-size:11px;">ATM IV</div><div style="font-family:'Geist Mono',monospace;">${s.atm_iv ? Number(s.atm_iv).toFixed(1) + '%' : '—'}</div></div>
-        <div><div style="color:var(--rf-text-mute);font-size:11px;">Implied 1σ</div><div style="font-family:'Geist Mono',monospace;">${s.implied_move_pct ? Number(s.implied_move_pct).toFixed(2) + '%' : '—'}</div></div>
-        <div><div style="color:var(--rf-text-mute);font-size:11px;">Rollover</div><div style="font-family:'Geist Mono',monospace;">${ro.rollover_pct != null ? ro.rollover_pct.toFixed(1) + '%' : '—'}</div></div>
-        <div><div style="color:var(--rf-text-mute);font-size:11px;">FII idx fut</div><div style="font-family:'Geist Mono',monospace;">${fii ? fmtSigned(fii.fii_index_fut_net) : '—'}</div></div>
+        <div><div style="color:var(--rf-text-mute);font-size:11px;">PCR</div><div style="font-family:'Geist Mono',monospace;">${s.pcr ? Number(s.pcr).toFixed(2) : '�'}</div></div>
+        <div><div style="color:var(--rf-text-mute);font-size:11px;">ATM IV</div><div style="font-family:'Geist Mono',monospace;">${s.atm_iv ? Number(s.atm_iv).toFixed(1) + '%' : '�'}</div></div>
+        <div><div style="color:var(--rf-text-mute);font-size:11px;">Implied 1s</div><div style="font-family:'Geist Mono',monospace;">${s.implied_move_pct ? Number(s.implied_move_pct).toFixed(2) + '%' : '�'}</div></div>
+        <div><div style="color:var(--rf-text-mute);font-size:11px;">Rollover</div><div style="font-family:'Geist Mono',monospace;">${ro.rollover_pct != null ? ro.rollover_pct.toFixed(1) + '%' : '�'}</div></div>
+        <div><div style="color:var(--rf-text-mute);font-size:11px;">FII idx fut</div><div style="font-family:'Geist Mono',monospace;">${fii ? fmtSigned(fii.fii_index_fut_net) : '�'}</div></div>
       </div>
     </div>`;
   }).join('');
@@ -314,10 +318,10 @@ function renderTopKpis(rows, fii) {
     document.getElementById('kpiTopAlpha').textContent = Math.round(top.fo_alpha_score);
     document.getElementById('kpiTopAlphaTicker').textContent = top.ticker;
   } else {
-    document.getElementById('kpiTopAlpha').textContent = '—';
+    document.getElementById('kpiTopAlpha').textContent = '�';
     document.getElementById('kpiTopAlphaTicker').textContent = 'no data';
   }
-  document.getElementById('kpiFiiToday').textContent = (fii && fii[0]) ? fmtSigned(fii[0].fii_index_fut_net) : '—';
+  document.getElementById('kpiFiiToday').textContent = (fii && fii[0]) ? fmtSigned(fii[0].fii_index_fut_net) : '�';
 }
 
 function renderScanner() {
@@ -340,12 +344,12 @@ function renderScanner() {
           <span>${escape(r.ticker)}</span>
         </span>
       </td>
-      <td><span class="fo-pill ${alphaPill(a)}">${a != null ? a : '—'}</span></td>
+      <td><span class="fo-pill ${alphaPill(a)}">${a != null ? a : '�'}</span></td>
       <td style="font-family:'Geist Mono',monospace;">${fmtPx(r.spot)}</td>
       <td style="font-family:'Geist Mono',monospace;">${fmtPx(r.max_pain)}</td>
-      <td style="font-family:'Geist Mono',monospace;">${r.pcr ? Number(r.pcr).toFixed(2) : '—'}</td>
-      <td style="font-family:'Geist Mono',monospace;">${r.atm_iv ? Number(r.atm_iv).toFixed(1) : '—'}${r.iv_rank != null ? ` <span style="color:var(--rf-text-dim);">/ ${Math.round(r.iv_rank)}</span>` : ''}</td>
-      <td style="font-family:'Geist Mono',monospace;">${r.implied_move_pct ? Number(r.implied_move_pct).toFixed(2) + '%' : '—'}</td>
+      <td style="font-family:'Geist Mono',monospace;">${r.pcr ? Number(r.pcr).toFixed(2) : '�'}</td>
+      <td style="font-family:'Geist Mono',monospace;">${r.atm_iv ? Number(r.atm_iv).toFixed(1) : '�'}${r.iv_rank != null ? ` <span style="color:var(--rf-text-dim);">/ ${Math.round(r.iv_rank)}</span>` : ''}</td>
+      <td style="font-family:'Geist Mono',monospace;">${r.implied_move_pct ? Number(r.implied_move_pct).toFixed(2) + '%' : '�'}</td>
       <td>${r.unusual_24h || 0}</td>
     </tr>`;
   }).join('');
@@ -368,7 +372,7 @@ document.getElementById('sortChips').addEventListener('click', (e) => {
 async function loadFOFlow() {
   const hours = +document.getElementById('foHours').value || 24;
   const body = document.getElementById('foFlowBody');
-  body.innerHTML = '<tr><td colspan="6" class="fo-empty">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="6" class="fo-empty">Loading�</td></tr>';
   try {
     const r = await fetch('/api/fo/unusual?hours=' + hours).then(x => x.json()).catch(() => null);
     const rows = (r && (r.data || r.success && r.data)) || [];
@@ -413,8 +417,10 @@ async function openDrill(ticker) {
     '<span style="display:inline-flex;align-items:center;gap:10px;">'
     + CompanyLogo.img(ticker, { size: 28 })
     + '<span data-ticker="' + escape(ticker) + '">' + escape(ticker) + '</span></span>';
-  document.getElementById('drillSub').textContent = 'loading…';
+  document.getElementById('drillSub').textContent = 'loading�';
   document.getElementById('drillWatch').textContent = '+ Watchlist';
+  var pg = document.getElementById('drillPlayground');
+  if (pg) pg.href = 'playground.html?tool=greeks&ticker=' + encodeURIComponent(ticker);
   document.getElementById('chainTable').innerHTML = '<div class="rf-skel" style="height: 220px; border:none; border-radius:0;"></div>';
   document.getElementById('ivHistChart').innerHTML = '<div class="rf-skel" style="height: 100%; border:none; border-radius:0;"></div>';
   document.getElementById('drillUnusual').innerHTML = '';
@@ -427,7 +433,7 @@ async function openDrill(ticker) {
       return;
     }
     const snap = j.data.snapshot || {};
-    document.getElementById('drillSub').textContent = `Spot ${fmtPx(snap.spot)} · α ${snap.fo_alpha_score != null ? Math.round(snap.fo_alpha_score) : '—'} · ${ago(snap.fetched_at)}`;
+    document.getElementById('drillSub').textContent = `Spot ${fmtPx(snap.spot)} � a ${snap.fo_alpha_score != null ? Math.round(snap.fo_alpha_score) : '�'} � ${ago(snap.fetched_at)}`;
     renderChain(snap);
     renderIvHistory(j.data.iv_history || []);
     renderDrillUnusual(j.data.unusual || []);
@@ -465,16 +471,16 @@ function renderChain(snap) {
     </tr>`;
   }).join('');
   document.getElementById('chainTable').innerHTML = `
-    <div style="font-size:11px;color:var(--rf-text-dim);margin-bottom:8px;">Spot ${fmtPx(spot)} · ATM ${fmt(atm)}</div>
+    <div style="font-size:11px;color:var(--rf-text-dim);margin-bottom:8px;">Spot ${fmtPx(spot)} � ATM ${fmt(atm)}</div>
     <table class="fo-table">
-      <thead><tr><th>Call OI</th><th>Δ Call</th><th style="text-align:center;">Strike</th><th>Δ Put</th><th>Put OI</th></tr></thead>
+      <thead><tr><th>Call OI</th><th>? Call</th><th style="text-align:center;">Strike</th><th>? Put</th><th>Put OI</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }
 
 function renderIvHistory(hist) {
   const el = document.getElementById('ivHistChart');
-  if (!hist.length) { el.innerHTML = '<div class="fo-empty">No IV history yet — accumulates over time as snapshots are taken.</div>'; return; }
+  if (!hist.length) { el.innerHTML = '<div class="fo-empty">No IV history yet � accumulates over time as snapshots are taken.</div>'; return; }
   const w = el.clientWidth || 600, h = 220;
   const ivs = hist.map(p => p.atm_iv).filter(v => v != null);
   if (!ivs.length) { el.innerHTML = '<div class="fo-empty">No IV data points.</div>'; return; }
@@ -489,7 +495,7 @@ function renderIvHistory(hist) {
       <polyline fill="none" stroke="var(--rf-bull,#2dd4aa)" stroke-width="1.5" points="${pts.join(' ')}" />
     </svg>
     <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--rf-text-dim);margin-top:4px;font-family:'Geist Mono',monospace;">
-      <span>${escape(hist[0].date)}</span><span>min ${minIv.toFixed(1)} · max ${maxIv.toFixed(1)}</span><span>${escape(hist[hist.length-1].date)}</span>
+      <span>${escape(hist[0].date)}</span><span>min ${minIv.toFixed(1)} � max ${maxIv.toFixed(1)}</span><span>${escape(hist[hist.length-1].date)}</span>
     </div>`;
 }
 
@@ -499,7 +505,7 @@ function renderDrillUnusual(rows) {
   el.innerHTML = rows.slice(0, 8).map(u => `
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--rf-line);font-size:13px;">
       <span style="font-family:'Geist Mono',monospace;">${escape(u.kind)} ${fmt(u.strike)}</span>
-      <span style="font-family:'Geist Mono',monospace;">ΔOI ${fmtSigned(u.oi_change)}</span>
+      <span style="font-family:'Geist Mono',monospace;">?OI ${fmtSigned(u.oi_change)}</span>
       <span style="color:var(--rf-text-dim);font-family:'Geist Mono',monospace;font-size:11px;">${ago(u.fetched_at)}</span>
     </div>
   `).join('');
@@ -512,7 +518,7 @@ document.getElementById('drillClose').addEventListener('click', () => {
 
 document.getElementById('drillWatch').addEventListener('click', async () => {
   const ticker = document.getElementById('drillTitle').textContent.trim();
-  if (!ticker || ticker === '—') return;
+  if (!ticker || ticker === '�') return;
   try {
     const r = await fetch('/api/watchlist', {
       method: 'POST',
@@ -520,16 +526,16 @@ document.getElementById('drillWatch').addEventListener('click', async () => {
       body: JSON.stringify({ ticker })
     });
     const j = await r.json();
-    document.getElementById('drillWatch').textContent = (j && j.success) ? '✓ added' : '✗ ' + (j && j.error || 'failed');
+    document.getElementById('drillWatch').textContent = (j && j.success) ? '? added' : '? ' + (j && j.error || 'failed');
   } catch (err) {
-    document.getElementById('drillWatch').textContent = '✗ network';
+    document.getElementById('drillWatch').textContent = '? network';
   }
 });
 
 // --- FII/DII chart ---
 function renderFiiDiiChart(rows) {
   const el = document.getElementById('fiiDiiChart');
-  if (!rows.length) { el.innerHTML = '<div class="fo-empty">No FII/DII data yet — daily NSE FAO report is ingested overnight.</div>'; return; }
+  if (!rows.length) { el.innerHTML = '<div class="fo-empty">No FII/DII data yet � daily NSE FAO report is ingested overnight.</div>'; return; }
   rows = rows.slice().reverse();
   const w = el.clientWidth || 800, h = 200;
   const series = [
@@ -564,5 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

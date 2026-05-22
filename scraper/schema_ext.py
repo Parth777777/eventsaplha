@@ -228,8 +228,208 @@ ALTER TABLE signals ADD COLUMN IF NOT EXISTS edge_minutes FLOAT;
 ALTER TABLE signals ADD COLUMN IF NOT EXISTS coordinated_campaign BOOLEAN DEFAULT FALSE;
 ALTER TABLE signals ADD COLUMN IF NOT EXISTS news_type VARCHAR(20) DEFAULT 'news_article';
 ALTER TABLE events ADD COLUMN IF NOT EXISTS news_type VARCHAR(20) DEFAULT 'news_article';
+-- Track 1 Phase A: per-row exchange tag so screeners can filter NSE vs BSE
+-- vs DUAL. Backfilled to 'NSE' for legacy rows (matches prior universe).
+ALTER TABLE signals ADD COLUMN IF NOT EXISTS exchange VARCHAR(8) DEFAULT 'NSE';
+ALTER TABLE events  ADD COLUMN IF NOT EXISTS exchange VARCHAR(8) DEFAULT 'NSE';
+-- Track 1 Phase B: bucketed corporate filings (concalls, presentations,
+-- ratings, etc.) gain per-row exchange + AI-generated summary cache.
+ALTER TABLE filings ADD COLUMN IF NOT EXISTS exchange VARCHAR(8);
+ALTER TABLE filings ADD COLUMN IF NOT EXISTS summary  TEXT;
+-- Addendum 2026-05-18: multi-source aggregation. Each signal links back
+-- to its event_clusters row (cluster_hash) so we can JOIN to get sources
+-- list + member_count. raw_alpha_score preserves the pre-multiplier value
+-- for transparency / debugging. cluster_size is denormalized snapshot so
+-- screeners don't have to JOIN for every list query.
+ALTER TABLE signals ADD COLUMN IF NOT EXISTS cluster_hash   VARCHAR(64);
+ALTER TABLE signals ADD COLUMN IF NOT EXISTS raw_alpha_score FLOAT;
+ALTER TABLE signals ADD COLUMN IF NOT EXISTS cluster_size   INTEGER DEFAULT 1;
 CREATE INDEX IF NOT EXISTS idx_signals_news_type ON signals(news_type);
 CREATE INDEX IF NOT EXISTS idx_events_news_type ON events(news_type);
+CREATE INDEX IF NOT EXISTS idx_signals_exchange  ON signals(exchange);
+CREATE INDEX IF NOT EXISTS idx_events_exchange   ON events(exchange);
+CREATE INDEX IF NOT EXISTS idx_filings_type_filed ON filings(filing_type, filed_at);
+CREATE INDEX IF NOT EXISTS idx_signals_cluster_hash ON signals(cluster_hash);
+
+-- Concall transcript paragraphs (Track 1, Phase D — 2026-05-19).
+-- Splits filings.raw_text from concall-type filings into searchable
+-- paragraphs. Powers /api/v1/concalls/search. The compounding archive moat:
+-- every quarter management commentary becomes queryable across all NSE.
+CREATE TABLE IF NOT EXISTS concall_paragraphs (
+    id SERIAL PRIMARY KEY,
+    filing_id INTEGER REFERENCES filings(id) ON DELETE CASCADE,
+    ticker VARCHAR(20),
+    filed_at TIMESTAMP,
+    paragraph_idx INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    char_count INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (filing_id, paragraph_idx)
+);
+CREATE INDEX IF NOT EXISTS idx_cp_ticker ON concall_paragraphs(ticker);
+CREATE INDEX IF NOT EXISTS idx_cp_filed_at ON concall_paragraphs(filed_at);
+CREATE INDEX IF NOT EXISTS idx_cp_filing ON concall_paragraphs(filing_id);
+
+-- Earnings reaction archive (Track 1, Phase C — 2026-05-18).
+-- Every historical earnings date × T+1/T+3/T+5 price reaction × EPS surprise.
+-- Populated by backend/earnings_reactions_backfill.py; the v1 endpoint
+-- /api/v1/earnings/reactions/<ticker> reads from here first, falls back to
+-- live yfinance only on cache miss. This is the data-accumulation moat —
+-- every quarter the archive deepens; competitors with no historical store
+-- can't replicate the comp-against-history view.
+CREATE TABLE IF NOT EXISTS earnings_reactions (
+    id SERIAL PRIMARY KEY,
+    ticker VARCHAR(20) NOT NULL,
+    earnings_date DATE NOT NULL,
+    base_close FLOAT,            -- closing price ON or just before the announcement
+    ret_1d_pct FLOAT,
+    ret_3d_pct FLOAT,
+    ret_5d_pct FLOAT,
+    eps_estimate FLOAT,
+    eps_reported FLOAT,
+    surprise_pct FLOAT,          -- (reported - estimate) / |estimate| * 100
+    ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (ticker, earnings_date)
+);
+CREATE INDEX IF NOT EXISTS idx_er_ticker ON earnings_reactions(ticker);
+CREATE INDEX IF NOT EXISTS idx_er_date ON earnings_reactions(earnings_date);
+
+-- Earnings forecast archive (Track A, 2026-05-19).
+-- Predicts next-quarter results: revenue/EPS estimate + CI, beat probability,
+-- expected reaction, post-event entry window. Powers /api/v1/earnings/forecast.
+-- Reused by the wedge audit log ("we forecasted this beat 7 days ago") and
+-- the Pro-Research dashboard. Idempotent on (ticker, target_earnings_date,
+-- model_version) so daily re-runs update in place.
+CREATE TABLE IF NOT EXISTS earnings_forecasts (
+    id SERIAL PRIMARY KEY,
+    ticker VARCHAR(20) NOT NULL,
+    forecast_date DATE NOT NULL,
+    target_earnings_date DATE NOT NULL,
+    model_version VARCHAR(20) NOT NULL DEFAULT 'v0',
+    revenue_estimate FLOAT,
+    revenue_low FLOAT,
+    revenue_high FLOAT,
+    eps_estimate FLOAT,
+    eps_low FLOAT,
+    eps_high FLOAT,
+    -- Multi-metric forecasts (in crores ₹ unless _pct)
+    net_profit_estimate FLOAT,
+    net_profit_low FLOAT,
+    net_profit_high FLOAT,
+    ebitda_estimate FLOAT,
+    ebitda_low FLOAT,
+    ebitda_high FLOAT,
+    operating_income_estimate FLOAT,
+    operating_margin_pct FLOAT,
+    ebitda_margin_pct FLOAT,
+    revenue_growth_yoy_pct FLOAT,
+    revenue_growth_qoq_pct FLOAT,
+    -- Hit/miss
+    p_beat FLOAT,
+    p_meet FLOAT,
+    p_miss FLOAT,
+    predicted_hit VARCHAR(10),
+    hit_confidence FLOAT,
+    expected_ret_1d_pct FLOAT,
+    ret_1d_ci_low FLOAT,
+    ret_1d_ci_high FLOAT,
+    dump_risk_score FLOAT,
+    recommended_action VARCHAR(20),
+    wait_minutes_estimate INTEGER,
+    optimal_entry_start_min INTEGER,
+    optimal_entry_end_min INTEGER,
+    expected_gap_pct FLOAT,
+    fade_probability FLOAT,
+    expected_5d_max_drawdown_pct FLOAT,
+    expected_5d_max_gain_pct FLOAT,
+    analogs_used INTEGER,
+    fallback_to_sector BOOLEAN DEFAULT FALSE,
+    top_drivers TEXT,
+    narrative_summary TEXT,
+    llm_generated BOOLEAN DEFAULT FALSE,
+    features_json TEXT,
+    data_insufficient BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (ticker, target_earnings_date, model_version)
+);
+CREATE INDEX IF NOT EXISTS idx_ef_ticker ON earnings_forecasts(ticker);
+CREATE INDEX IF NOT EXISTS idx_ef_target ON earnings_forecasts(target_earnings_date);
+CREATE INDEX IF NOT EXISTS idx_ef_forecast_date ON earnings_forecasts(forecast_date);
+
+CREATE TABLE IF NOT EXISTS concall_guidance_llm (
+    id SERIAL PRIMARY KEY,
+    filing_id INTEGER NOT NULL,
+    direction VARCHAR(20),
+    magnitude VARCHAR(20),
+    time_horizon VARCHAR(40),
+    confidence FLOAT,
+    raw_extract TEXT,
+    model_used VARCHAR(40),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (filing_id)
+);
+CREATE INDEX IF NOT EXISTS idx_cgl_filing ON concall_guidance_llm(filing_id);
+
+CREATE TABLE IF NOT EXISTS news_extraction_llm (
+    id SERIAL PRIMARY KEY,
+    news_event_id VARCHAR(200) NOT NULL,
+    event_type VARCHAR(40),
+    entities TEXT,
+    monetary_value_cr FLOAT,
+    time_horizon VARCHAR(40),
+    sector_impact TEXT,
+    confidence FLOAT,
+    model_used VARCHAR(40),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (news_event_id)
+);
+CREATE INDEX IF NOT EXISTS idx_nel_news ON news_extraction_llm(news_event_id);
+
+-- Financial planner agent (Track A, 2026-05-20) — multi-turn threads,
+-- per-message persistence, scope/recommendation refusal log, user profile.
+-- See [[financial-planner-agent]] memory. Powered by backend/chat_routes.py.
+CREATE TABLE IF NOT EXISTS chat_threads (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_active_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    archived BOOLEAN DEFAULT FALSE
+);
+CREATE INDEX IF NOT EXISTS idx_chat_threads_user_active
+    ON chat_threads(user_id, last_active_at DESC);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id SERIAL PRIMARY KEY,
+    thread_id INTEGER NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
+    role VARCHAR(16) NOT NULL,                -- 'user' | 'assistant'
+    content TEXT NOT NULL,
+    citations_json TEXT,
+    tokens INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_thread
+    ON chat_messages(thread_id, created_at);
+
+CREATE TABLE IF NOT EXISTS user_profile (
+    user_id TEXT PRIMARY KEY,
+    risk_profile VARCHAR(16),                 -- low | med | high
+    horizon VARCHAR(16),                      -- intraday | swing | short | medium | long
+    sectors_json TEXT,                        -- JSON array, ≤10 entries
+    goals_text TEXT,                          -- ≤500 chars
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS chat_refusals (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    thread_id INTEGER,
+    question TEXT,
+    reason VARCHAR(20),                       -- 'recommendation' | 'off_topic'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_chat_refusals_user ON chat_refusals(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_refusals_reason ON chat_refusals(reason);
 """
 
 
@@ -417,6 +617,170 @@ CREATE TABLE IF NOT EXISTS overnight_snapshots (
     confidence REAL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Concall paragraphs — see comment on the Postgres definition.
+CREATE TABLE IF NOT EXISTS concall_paragraphs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filing_id INTEGER,
+    ticker TEXT,
+    filed_at TIMESTAMP,
+    paragraph_idx INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    char_count INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (filing_id, paragraph_idx)
+);
+CREATE INDEX IF NOT EXISTS idx_cp_ticker ON concall_paragraphs(ticker);
+CREATE INDEX IF NOT EXISTS idx_cp_filed_at ON concall_paragraphs(filed_at);
+CREATE INDEX IF NOT EXISTS idx_cp_filing ON concall_paragraphs(filing_id);
+
+-- Earnings reaction archive — see comment on the Postgres definition.
+CREATE TABLE IF NOT EXISTS earnings_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker TEXT NOT NULL,
+    earnings_date DATE NOT NULL,
+    base_close REAL,
+    ret_1d_pct REAL,
+    ret_3d_pct REAL,
+    ret_5d_pct REAL,
+    eps_estimate REAL,
+    eps_reported REAL,
+    surprise_pct REAL,
+    ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (ticker, earnings_date)
+);
+CREATE INDEX IF NOT EXISTS idx_er_ticker ON earnings_reactions(ticker);
+CREATE INDEX IF NOT EXISTS idx_er_date ON earnings_reactions(earnings_date);
+
+-- Earnings forecast archive — see comment on the Postgres definition.
+CREATE TABLE IF NOT EXISTS earnings_forecasts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker TEXT NOT NULL,
+    forecast_date DATE NOT NULL,
+    target_earnings_date DATE NOT NULL,
+    model_version TEXT NOT NULL DEFAULT 'v0',
+    revenue_estimate REAL,
+    revenue_low REAL,
+    revenue_high REAL,
+    eps_estimate REAL,
+    eps_low REAL,
+    eps_high REAL,
+    -- Multi-metric forecasts (in crores ₹ unless _pct)
+    net_profit_estimate REAL,
+    net_profit_low REAL,
+    net_profit_high REAL,
+    ebitda_estimate REAL,
+    ebitda_low REAL,
+    ebitda_high REAL,
+    operating_income_estimate REAL,
+    operating_margin_pct REAL,
+    ebitda_margin_pct REAL,
+    revenue_growth_yoy_pct REAL,
+    revenue_growth_qoq_pct REAL,
+    p_beat REAL,
+    p_meet REAL,
+    p_miss REAL,
+    predicted_hit TEXT,
+    hit_confidence REAL,
+    expected_ret_1d_pct REAL,
+    ret_1d_ci_low REAL,
+    ret_1d_ci_high REAL,
+    dump_risk_score REAL,
+    recommended_action TEXT,
+    wait_minutes_estimate INTEGER,
+    optimal_entry_start_min INTEGER,
+    optimal_entry_end_min INTEGER,
+    expected_gap_pct REAL,
+    fade_probability REAL,
+    expected_5d_max_drawdown_pct REAL,
+    expected_5d_max_gain_pct REAL,
+    analogs_used INTEGER,
+    fallback_to_sector INTEGER DEFAULT 0,
+    top_drivers TEXT,
+    narrative_summary TEXT,
+    llm_generated INTEGER DEFAULT 0,
+    features_json TEXT,
+    data_insufficient INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (ticker, target_earnings_date, model_version)
+);
+CREATE INDEX IF NOT EXISTS idx_ef_ticker ON earnings_forecasts(ticker);
+CREATE INDEX IF NOT EXISTS idx_ef_target ON earnings_forecasts(target_earnings_date);
+CREATE INDEX IF NOT EXISTS idx_ef_forecast_date ON earnings_forecasts(forecast_date);
+
+CREATE TABLE IF NOT EXISTS concall_guidance_llm (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filing_id INTEGER NOT NULL,
+    direction TEXT,
+    magnitude TEXT,
+    time_horizon TEXT,
+    confidence REAL,
+    raw_extract TEXT,
+    model_used TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (filing_id)
+);
+CREATE INDEX IF NOT EXISTS idx_cgl_filing ON concall_guidance_llm(filing_id);
+
+CREATE TABLE IF NOT EXISTS news_extraction_llm (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    news_event_id TEXT NOT NULL,
+    event_type TEXT,
+    entities TEXT,
+    monetary_value_cr REAL,
+    time_horizon TEXT,
+    sector_impact TEXT,
+    confidence REAL,
+    model_used TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (news_event_id)
+);
+CREATE INDEX IF NOT EXISTS idx_nel_news ON news_extraction_llm(news_event_id);
+
+-- Financial planner agent (Track A, 2026-05-20) — see PG block for design notes.
+CREATE TABLE IF NOT EXISTS chat_threads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    title TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_active_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    archived INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_chat_threads_user_active
+    ON chat_threads(user_id, last_active_at DESC);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id INTEGER NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    citations_json TEXT,
+    tokens INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(thread_id) REFERENCES chat_threads(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_thread
+    ON chat_messages(thread_id, created_at);
+
+CREATE TABLE IF NOT EXISTS user_profile (
+    user_id TEXT PRIMARY KEY,
+    risk_profile TEXT,
+    horizon TEXT,
+    sectors_json TEXT,
+    goals_text TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS chat_refusals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    thread_id INTEGER,
+    question TEXT,
+    reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_chat_refusals_user ON chat_refusals(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_refusals_reason ON chat_refusals(reason);
 """
 
 
@@ -434,10 +798,30 @@ SIGNAL_EXT_COLUMNS = [
     ("coordinated_campaign", "INTEGER DEFAULT 0"),
     ("news_type", "TEXT DEFAULT 'news_article'"),
     ("reasoning", "TEXT"),  # JSON blob: structured why-this-pick chain
+    # Track 1 Phase A — distinguishes NSE vs BSE vs DUAL listings so screeners,
+    # movers, and ticker-resolution paths can branch on exchange.
+    ("exchange", "TEXT DEFAULT 'NSE'"),
+    # Subject-confidence: how confident is the entity_linker that this ticker
+    # is the editorial subject of the source article (0.0–1.0). Lets the
+    # curated-signals filter and the LLM explainer reason about match quality.
+    ("subject_confidence", "REAL"),
+    ("subject_evidence", "TEXT"),  # JSON: reasons + intermediate scores
+    # Addendum 2026-05-18 — multi-source aggregation
+    ("cluster_hash",    "TEXT"),
+    ("raw_alpha_score", "REAL"),
+    ("cluster_size",    "INTEGER DEFAULT 1"),
 ]
 
 EVENT_EXT_COLUMNS = [
     ("news_type", "TEXT DEFAULT 'news_article'"),
+    ("exchange", "TEXT DEFAULT 'NSE'"),
+    ("subject_confidence", "REAL"),
+    ("subject_evidence", "TEXT"),
+]
+
+FILING_EXT_COLUMNS = [
+    ("exchange", "TEXT"),
+    ("summary", "TEXT"),
 ]
 
 
@@ -485,11 +869,21 @@ def apply(conn) -> None:
                     cursor.execute(f"ALTER TABLE events ADD COLUMN {col} {spec}")
                 except Exception as exc:
                     logger.warning("sqlite add column events.%s failed: %s", col, exc)
+        existing_fl = {r[1] for r in cursor.execute("PRAGMA table_info(filings)").fetchall()}
+        for col, spec in FILING_EXT_COLUMNS:
+            if col not in existing_fl:
+                try:
+                    cursor.execute(f"ALTER TABLE filings ADD COLUMN {col} {spec}")
+                except Exception as exc:
+                    logger.warning("sqlite add column filings.%s failed: %s", col, exc)
         try:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_news_type ON signals(news_type)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_events_news_type ON events(news_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_exchange ON signals(exchange)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_events_exchange ON events(exchange)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_cluster_hash ON signals(cluster_hash)")
         except Exception as exc:
-            logger.debug("news_type index create: %s", exc)
+            logger.debug("news_type/exchange/cluster_hash index create: %s", exc)
         conn.commit()
     logger.info("schema extensions applied")
 

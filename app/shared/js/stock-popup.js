@@ -1,10 +1,10 @@
-﻿/* stock-popup.js — instant ticker quick-view modal.
+/* stock-popup.js — instant ticker quick-view modal.
  *
- * Click any element with [data-ticker="XXX"] anywhere in the app → opens a
+ * Click any element with [data-ticker="XXX"] anywhere in the app ? opens a
  * centered modal with: company name, sector, last price/change, alpha score,
  * recent news headlines, top signal, and an AI summary (Groq) on demand.
  *
- * Click "Open full page →" to navigate to stock.html.
+ * Click "Open full page ?" to navigate to stock.html.
  *
  * Auto-mounts: nothing to call. Just include this script and add the
  *   data-ticker  attribute to any clickable element.
@@ -46,7 +46,7 @@
                 border: 1px solid rgba(141,180,224,0.25);
                 border-radius: 14px;
                 box-shadow: 0 24px 80px rgba(0,0,0,0.7);
-                color: #dde3ef;
+                color: var(--text-primary);
                 transform: translateY(8px) scale(0.98);
                 transition: transform 160ms ease;
             }
@@ -83,16 +83,16 @@
                 letter-spacing: -0.01em; line-height: 1;
             }
             .sp-head .co {
-                font-size: 11px; color: #8a94a8; margin-top: 4px;
+                font-size: 11px; color: var(--text-secondary); margin-top: 4px;
                 font-weight: 500;
             }
             .sp-head .meta {
-                font-size: 9px; color: #5a6373; margin-top: 6px;
+                font-size: 9px; color: var(--text-tertiary); margin-top: 6px;
                 text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800;
             }
             .sp-close {
                 background: transparent; border: none; cursor: pointer;
-                color: #8a94a8; padding: 4px; line-height: 0;
+                color: var(--text-secondary); padding: 4px; line-height: 0;
                 border-radius: 6px;
             }
             .sp-close:hover { color: #fff; background: rgba(141,180,224,0.1); }
@@ -119,18 +119,18 @@
             .sp-mini-chart-meta {
                 display: flex; justify-content: space-between; align-items: center;
                 margin-top: 4px;
-                font-size: 9px; color: #5a6373;
+                font-size: 9px; color: var(--text-tertiary);
                 text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
             }
             .sp-period-pills { display: inline-flex; gap: 3px; }
             .sp-period-pills button {
                 background: transparent; border: 1px solid rgba(37,48,64,0.6);
-                color: #8a94a8; font-size: 9px; font-weight: 800;
+                color: var(--text-secondary); font-size: 9px; font-weight: 800;
                 padding: 3px 7px; border-radius: 999px; cursor: pointer;
                 letter-spacing: 0.06em; text-transform: uppercase;
                 transition: all 80ms;
             }
-            .sp-period-pills button:hover { color: #dde3ef; border-color: rgba(141,180,224,0.5); }
+            .sp-period-pills button:hover { color: var(--text-primary); border-color: rgba(141,180,224,0.5); }
             .sp-period-pills button.on {
                 color: #2dd4aa; border-color: rgba(45,212,170,0.5);
                 background: rgba(45,212,170,0.08);
@@ -140,17 +140,17 @@
                 text-align: center;
             }
             .sp-stat .lbl {
-                font-size: 8.5px; color: #5a6373; font-weight: 800;
+                font-size: 8.5px; color: var(--text-tertiary); font-weight: 800;
                 text-transform: uppercase; letter-spacing: 0.12em;
                 margin-bottom: 4px;
             }
             .sp-stat .val {
                 font-family: 'Geist Mono', monospace;
-                font-size: 16px; font-weight: 800; color: #dde3ef;
+                font-size: 16px; font-weight: 800; color: var(--text-primary);
             }
             .sp-stat.up .val   { color: #2dd4aa; }
             .sp-stat.dn .val   { color: #f26b6b; }
-            .sp-stat.flat .val { color: #8a94a8; }
+            .sp-stat.flat .val { color: var(--text-secondary); }
 
             .sp-section {
                 margin-top: 16px;
@@ -158,7 +158,7 @@
                 padding-top: 12px;
             }
             .sp-section .h {
-                font-size: 9px; font-weight: 800; color: #8a94a8;
+                font-size: 9px; font-weight: 800; color: var(--text-secondary);
                 text-transform: uppercase; letter-spacing: 0.14em;
                 margin-bottom: 8px;
             }
@@ -166,7 +166,7 @@
                 display: flex; flex-direction: column; gap: 6px;
             }
             .sp-news a {
-                color: #dde3ef; text-decoration: none;
+                color: var(--text-primary); text-decoration: none;
                 font-size: 12px; line-height: 1.45;
                 padding: 6px 9px; border-radius: 6px;
                 background: rgba(13,17,24,0.45);
@@ -175,7 +175,7 @@
             }
             .sp-news a:hover { border-color: rgba(141,180,224,0.4); color: #fff; }
             .sp-news .meta {
-                font-size: 9px; color: #5a6373; margin-top: 3px;
+                font-size: 9px; color: var(--text-tertiary); margin-top: 3px;
                 font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
             }
 
@@ -195,7 +195,7 @@
                 background: rgba(141,180,224,0.06);
                 border: 1px solid rgba(141,180,224,0.2);
                 border-radius: 8px;
-                font-size: 12px; line-height: 1.55; color: #dde3ef;
+                font-size: 12px; line-height: 1.55; color: var(--text-primary);
                 display: none;
             }
             .sp-ai-out.show { display: block; }
@@ -221,7 +221,7 @@
             .sp-full-link:hover { color: #fff; }
             .sp-watchlist-btn {
                 background: transparent; border: 1px solid rgba(141,148,168,0.3);
-                color: #8a94a8; padding: 5px 10px; border-radius: 6px;
+                color: var(--text-secondary); padding: 5px 10px; border-radius: 6px;
                 font-size: 10px; font-weight: 700; cursor: pointer;
                 letter-spacing: 0.04em; text-transform: uppercase;
                 transition: all 100ms;
@@ -248,7 +248,7 @@
                 text-align: center; border: 1px solid rgba(37,48,64,0.4);
             }
             .sp-mini-cell .lbl {
-                font-size: 8.5px; color: #8a94a8; text-transform: uppercase;
+                font-size: 8.5px; color: var(--text-secondary); text-transform: uppercase;
                 letter-spacing: 0.1em; font-weight: 700;
             }
             .sp-mini-cell .val {
@@ -274,7 +274,7 @@
             }
             .sp-list-row:last-child { border-bottom: none; }
             .sp-empty {
-                padding: 10px; color: #5a6373; font-size: 10px; text-align: center;
+                padding: 10px; color: var(--text-tertiary); font-size: 10px; text-align: center;
             }
             .sp-spark-wrap {
                 position: relative; background: rgba(8,12,18,0.7);
@@ -284,7 +284,7 @@
             .sp-spark-wrap canvas { width: 100%; height: 70px; display: block; }
             .sp-spark-wrap .lbl {
                 position: absolute; top: 6px; left: 10px; font-size: 9px;
-                color: #8a94a8; text-transform: uppercase; letter-spacing: 0.1em;
+                color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;
             }
             .sp-grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
             .sp-tl-row { display: flex; gap: 0; padding: 0; }
@@ -318,8 +318,8 @@
     function fmtPx(v) {
         if (v == null || isNaN(v)) return '—';
         const n = Number(v);
-        if (n >= 1000) return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-        return '₹' + n.toFixed(2);
+        if (n >= 1000) return '?' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        return '?' + n.toFixed(2);
     }
     function fmtPct(v) {
         if (v == null || isNaN(v)) return '—';
@@ -327,10 +327,10 @@
         return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
     }
     function alphaColor(a) {
-        if (a == null) return '#5a6373';
+        if (a == null) return 'var(--text-tertiary)';
         if (a >= 65) return '#2dd4aa';
         if (a >= 50) return '#e6b84a';
-        return '#8a94a8';
+        return 'var(--text-secondary)';
     }
 
     function renderShell(ticker, company) {
@@ -369,9 +369,13 @@
                     <div class="sp-stat flat"><div class="lbl">Alpha</div><div class="val">—</div></div>
                 </div>
                 <div class="sp-mini-chart-wrap" id="sp-mini-chart-wrap">
-                    <canvas id="sp-mini-chart" width="640" height="140"></canvas>
+                    <!-- AdvancedChart (compact) mounts here so the popup chart looks
+                         identical to stock.html's. Legacy canvas kept hidden for
+                         downstream code that targets #sp-mini-chart by id. -->
+                    <div id="sp-mini-chart-adv" style="width:100%;height:170px;"></div>
+                    <canvas id="sp-mini-chart" width="640" height="140" style="display:none;"></canvas>
                     <div class="sp-mini-chart-meta">
-                        <span id="sp-mini-chart-label">Loading 1M chart…</span>
+                        <span id="sp-mini-chart-label" style="font:600 10px 'Geist Mono',monospace;color:var(--text-tertiary);">drag chart to zoom · dbl-click to reset</span>
                         <span class="sp-period-pills" id="sp-mini-chart-pills">
                             <button data-p="1D">1D</button>
                             <button data-p="1W">1W</button>
@@ -384,27 +388,27 @@
                 </div>
                 <div class="sp-section">
                     <div class="h">Top signal</div>
-                    <div id="sp-signal" style="font-size:12px;color:#8a94a8;">Loading…</div>
+                    <div id="sp-signal" style="font-size:12px;color:var(--text-secondary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h">Why this signal</div>
-                    <div id="sp-reasoning" style="font-size:11px;color:#5a6373;">Loading…</div>
+                    <div id="sp-reasoning" style="font-size:11px;color:var(--text-tertiary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h">Volume / OBV (60d)</div>
-                    <div id="sp-volume" style="font-size:11px;color:#5a6373;">Loading…</div>
+                    <div id="sp-volume" style="font-size:11px;color:var(--text-tertiary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h">Forensics intelligence</div>
-                    <div id="sp-forensics" style="font-size:11px;color:#5a6373;">Loading…</div>
+                    <div id="sp-forensics" style="font-size:11px;color:var(--text-tertiary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h">Promoter intelligence</div>
-                    <div id="sp-promoter" style="font-size:11px;color:#5a6373;">Loading…</div>
+                    <div id="sp-promoter" style="font-size:11px;color:var(--text-tertiary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h">Event timeline</div>
-                    <div id="sp-timeline" style="font-size:11px;color:#5a6373;">Loading…</div>
+                    <div id="sp-timeline" style="font-size:11px;color:var(--text-tertiary);">Loading…</div>
                 </div>
                 <div class="sp-section">
                     <div class="h" style="display:flex;align-items:center;justify-content:space-between;">
@@ -532,8 +536,8 @@
         const sig = data.signal || data;
         if (sig && sig.headline) {
             sigEl.innerHTML = `
-                <div style="font-weight:700;color:#dde3ef;line-height:1.45;">${_esc((sig.headline || '').slice(0, 200))}</div>
-                <div style="margin-top:4px;font-size:10px;color:#5a6373;text-transform:uppercase;letter-spacing:0.06em;">
+                <div style="font-weight:700;color:var(--text-primary);line-height:1.45;">${_esc((sig.headline || '').slice(0, 200))}</div>
+                <div style="margin-top:4px;font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">
                     ${_esc((sig.event_type || 'news').replace(/_/g, ' '))} · ${_esc(sig.source || '')}
                 </div>
             `;
@@ -546,7 +550,7 @@
         const el = modal && modal.querySelector('#sp-news');
         if (!el) return;
         if (!items || !items.length) {
-            el.innerHTML = `<div style="font-size:11px;color:#5a6373;">No recent news for this ticker.</div>`;
+            el.innerHTML = `<div style="font-size:11px;color:var(--text-tertiary);">No recent news for this ticker.</div>`;
             return;
         }
         el.innerHTML = items.slice(0, 4).map(n => `
@@ -629,15 +633,61 @@
     }
 
     // ============ Mini price chart =========================================
-    // UI labels (1D/1W/1M/3M/6M/1Y) → yfinance period strings.
+    // UI labels (1D/1W/1M/3M/6M/1Y) ? yfinance period strings.
     const _PERIOD_MAP = { '1D': '1d', '1W': '5d', '1M': '1mo', '3M': '3mo', '6M': '6mo', '1Y': '1y' };
+
+    // Lazy-load AdvancedChart on demand so the popup chart matches the
+    // main stock.html chart on EVERY page (not just stock.html itself).
+    // Previously the popup fell back to a canvas variant on pages that
+    // didn't explicitly load advanced-chart.js — looked different and
+    // sometimes blank.
+    function ensureAdvancedChart() {
+        return new Promise((resolve) => {
+            if (window.AdvancedChart) return resolve(true);
+            const existing = document.querySelector('script[data-tw-advanced-chart]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve(!!window.AdvancedChart));
+                existing.addEventListener('error', () => resolve(false));
+                return;
+            }
+            const s = document.createElement('script');
+            s.src = './shared/js/advanced-chart.js';
+            s.async = true;
+            s.setAttribute('data-tw-advanced-chart', '1');
+            s.addEventListener('load', () => resolve(!!window.AdvancedChart));
+            s.addEventListener('error', () => resolve(false));
+            document.head.appendChild(s);
+        });
+    }
+
+    // Try AdvancedChart compact first so visuals match stock.html. Falls back
+    // to the legacy hand-rolled canvas only if AdvancedChart can't be loaded.
     async function loadMiniChart(ticker, period) {
         if (!modal) return;
+        const advHost = modal.querySelector('#sp-mini-chart-adv');
+        const yfPer = _PERIOD_MAP[period] || period;
+        if (advHost) {
+            const ok = await ensureAdvancedChart();
+            if (ok && window.AdvancedChart) {
+                if (advHost.__advChart && advHost.__advChart.setPeriod) {
+                    advHost.__advChart.setPeriod(yfPer);
+                } else {
+                    try {
+                        advHost.__advChart = await AdvancedChart.mount(advHost, ticker, { period: yfPer, compact: true });
+                    } catch (e) {
+                        console.warn('[StockPopup] AdvancedChart.mount failed:', e);
+                    }
+                }
+                return;
+            }
+        }
+        // Legacy fallback --- (kept verbatim so older browsers still work)
         const cvs = modal.querySelector('#sp-mini-chart');
         const label = modal.querySelector('#sp-mini-chart-label');
         if (!cvs) return;
+        cvs.style.display = 'block';
         if (label) label.textContent = 'Loading ' + period + ' chart…';
-        let yfPeriod = _PERIOD_MAP[period] || period;
+        let yfPeriod = yfPer;
         async function fetchPeriod(p) {
             try {
                 const r = await fetch(`/api/stock/${encodeURIComponent(ticker)}/chart?period=${encodeURIComponent(p)}`);
@@ -653,14 +703,14 @@
             res = await fetchPeriod('2d');
             raw = (res && res.success && Array.isArray(res.data)) ? res.data : [];
         }
-        // Drop NaN/null closes — otherwise the line plunges to ₹0
+        // Drop NaN/null closes — otherwise the line plunges to ?0
         const data = raw.filter(d => d && d.close != null && isFinite(Number(d.close)));
         const ctx = cvs.getContext('2d');
         const w = cvs.width, h = cvs.height;
         if (data.length < 2) {
             ctx.clearRect(0, 0, w, h);
             if (label) label.textContent = 'No chart data';
-            ctx.fillStyle = '#5a6373';
+            ctx.fillStyle = 'var(--text-tertiary)';
             ctx.font = '11px Inter, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('No chart data', w / 2, h / 2);
@@ -724,9 +774,9 @@
             // Dot at crosshair point
             ctx.beginPath(); ctx.arc(hp.x, hp.y, 3.5, 0, Math.PI * 2);
             ctx.fillStyle = lineColor; ctx.fill();
-            ctx.strokeStyle = '#0a0e14'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = 'var(--surface-0)'; ctx.lineWidth = 2; ctx.stroke();
             // Tooltip
-            const txt = `${hp.date} · ₹${hp.close.toFixed(2)}`;
+            const txt = `${hp.date} · ?${hp.close.toFixed(2)}`;
             ctx.font = '11px Inter, sans-serif';
             const tw = ctx.measureText(txt).width + 14;
             let tx = hp.x + 10; if (tx + tw > w - 2) tx = hp.x - tw - 10;
@@ -734,7 +784,7 @@
             ctx.fillRect(tx, 3, tw, 18);
             ctx.strokeStyle = 'rgba(141,148,168,0.3)'; ctx.lineWidth = 1;
             ctx.strokeRect(tx + 0.5, 3.5, tw - 1, 17);
-            ctx.fillStyle = '#dde3ef';
+            ctx.fillStyle = 'var(--text-primary)';
             ctx.textAlign = 'left';
             ctx.fillText(txt, tx + 7, 16);
         }
@@ -757,18 +807,18 @@
         const pctMove = ((last - first) / first) * 100;
         const sign = pctMove >= 0 ? '+' : '';
         if (label) {
-            label.innerHTML = `<span style="color:#dde3ef;font-weight:800">${period}</span>
+            label.innerHTML = `<span style="color:var(--text-primary);font-weight:800">${period}</span>
                 <span style="color:${lineColor};margin-left:8px">${sign}${pctMove.toFixed(2)}%</span>
-                <span style="color:#5a6373;margin-left:8px">₹${min.toFixed(0)} – ₹${max.toFixed(0)}</span>`;
+                <span style="color:var(--text-tertiary);margin-left:8px">?${min.toFixed(0)} – ?${max.toFixed(0)}</span>`;
         }
     }
 
     // ============ Deep-detail loaders (ported from legacy popup) ============
     function _alphaColor(a) {
-        if (a == null) return '#5a6373';
+        if (a == null) return 'var(--text-tertiary)';
         if (a >= 65) return '#2dd4aa';
         if (a >= 50) return '#e6b84a';
-        return '#8a94a8';
+        return 'var(--text-secondary)';
     }
     function _fmtTime(iso) {
         if (!iso) return '';
@@ -798,15 +848,23 @@
         const d = res.data || {};
         const meta = d.meta || {};
         const codeColor = d.why_ticker_code === 'direct' ? '#2dd4aa'
-                       : d.why_ticker_code === 'sector' ? '#e6b84a' : '#8a94a8';
+                       : d.why_ticker_code === 'sector' ? '#e6b84a' : 'var(--text-secondary)';
         const codeLabel = d.why_ticker_code === 'direct' ? 'DIRECT'
                        : d.why_ticker_code === 'sector' ? 'SECTOR LINK' : 'KEYWORD MATCH';
         const bullets = (d.bullets || []).map(b => {
             const m = b.match(/^([A-Za-z ]+):\s*(.*)$/);
-            if (!m) return `<li style="margin-bottom:6px;color:#dde3ef">${_esc(b)}</li>`;
-            const labelColor = { 'Ticker':'#8eb4e0','Direction':'#2dd4aa','Magnitude':'#e6b84a',
-                'Confidence':'#a78bfa','Risks':'#f26b6b','Source':'#8a94a8'}[m[1]] || '#8a94a8';
-            return `<li style="margin-bottom:6px;line-height:1.5;color:#c2c6d6">
+            if (!m) return `<li style="margin-bottom:6px;color:var(--text-primary)">${_esc(b)}</li>`;
+            /* Semantic colors map to CSS tokens so chips render correctly
+               in both light + dark mode without per-theme branching here. */
+            const labelColor = {
+                'Ticker':     'var(--info)',
+                'Direction':  'var(--bull)',
+                'Magnitude':  'var(--caution)',
+                'Confidence': 'var(--accent)',
+                'Risks':      'var(--bear)',
+                'Source':     'var(--text-secondary)',
+            }[m[1]] || 'var(--text-secondary)';
+            return `<li style="margin-bottom:6px;line-height:1.5;color:var(--text-secondary)">
                 <span style="color:${labelColor};font-weight:800;text-transform:uppercase;font-size:9px;letter-spacing:.1em">${_esc(m[1])}</span>
                 <span style="margin-left:6px">${_esc(m[2])}</span></li>`;
         }).join('');
@@ -814,11 +872,11 @@
             <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
                 <span class="sp-pill" style="background:${codeColor}22;color:${codeColor}">${codeLabel}</span>
                 ${meta.empirical_event_hit_rate != null
-                    ? `<span class="sp-pill" style="background:#142a3a;color:#8eb4e0">${_esc((meta.event_type||'').toUpperCase())} HIT-RATE ${(meta.empirical_event_hit_rate*100).toFixed(0)}% (n=${meta.event_prior_samples})</span>`
+                    ? `<span class="sp-pill" style="background:var(--info-dim);color:var(--info);border:1px solid var(--info-border)">${_esc((meta.event_type||'').toUpperCase())} HIT-RATE ${(meta.empirical_event_hit_rate*100).toFixed(0)}% (n=${meta.event_prior_samples})</span>`
                     : ''}
-                ${meta.sector ? `<span class="sp-pill" style="background:#1a2418;color:#9eddb9">${_esc(meta.sector)}</span>` : ''}
+                ${meta.sector ? `<span class="sp-pill" style="background:var(--bull-dim);color:var(--bull);border:1px solid var(--bull-border)">${_esc(meta.sector)}</span>` : ''}
             </div>
-            ${d.primary_driver ? `<div style="font-size:11px;color:#dde3ef;font-style:italic;margin-bottom:8px;line-height:1.5">${_esc(d.primary_driver)}</div>` : ''}
+            ${d.primary_driver ? `<div style="font-size:11px;color:var(--text-primary);font-style:italic;margin-bottom:8px;line-height:1.5">${_esc(d.primary_driver)}</div>` : ''}
             <ul style="list-style:none;padding:0;margin:0;font-size:11px">${bullets}</ul>`;
     }
 
@@ -846,7 +904,7 @@
                 const p = preds[h]; if (!p) continue;
                 const ret = p.predicted || 0;
                 const c = ret >= 0 ? '#2dd4aa' : '#f26b6b';
-                const hit = p.hit === true || p.hit === 1 ? ' ✓' : p.hit === false || p.hit === 0 ? ' ✗' : '';
+                const hit = p.hit === true || p.hit === 1 ? ' ?' : p.hit === false || p.hit === 0 ? ' ?' : '';
                 chips += `<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:${c}1f;color:${c};font-family:Geist Mono,monospace;margin-right:3px">${h}:${ret>=0?'+':''}${ret.toFixed(1)}%${hit}</span>`;
             }
             return `<div class="sp-tl-row">
@@ -857,9 +915,9 @@
                 <div style="flex:1;min-width:0;padding-bottom:${isLast?'2':'10'}px;margin-left:4px">
                     <div style="display:flex;gap:8px;align-items:start">
                         <div style="flex:1;min-width:0">
-                            <div style="font-size:11px;color:#dde3ef;font-weight:600;line-height:1.35">${_esc((ev.headline || evType).slice(0, 90))}</div>
+                            <div style="font-size:11px;color:var(--text-primary);font-weight:600;line-height:1.35">${_esc((ev.headline || evType).slice(0, 90))}</div>
                             <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:2px">
-                                <span style="font-size:8px;color:#5a6373">${_fmtTime(ev.created_at)}</span>
+                                <span style="font-size:8px;color:var(--text-tertiary)">${_fmtTime(ev.created_at)}</span>
                                 <span style="font-size:8px;padding:1px 4px;border-radius:3px;background:${sentColor}1f;color:${sentColor};font-weight:700;text-transform:uppercase">${_esc(evType)}</span>
                                 ${chips}
                             </div>
@@ -889,13 +947,13 @@
         const s = res.data.series || {};
         const surge = a.vol_surge_ratio || 0;
         const div = a.obv_divergence_flag;
-        const divColor = div === 'bearish' ? '#f26b6b' : div === 'bullish' ? '#2dd4aa' : '#8a94a8';
-        const surgeColor = surge >= 2.5 ? '#e6b84a' : '#8a94a8';
+        const divColor = div === 'bearish' ? '#f26b6b' : div === 'bullish' ? '#2dd4aa' : 'var(--text-secondary)';
+        const surgeColor = surge >= 2.5 ? '#e6b84a' : 'var(--text-secondary)';
         host.innerHTML = `
             <div class="sp-mini-row">
                 <div class="sp-mini-cell"><div class="lbl">Surge vs 20d</div><div class="val" style="color:${surgeColor}">${surge.toFixed(2)}×</div></div>
                 <div class="sp-mini-cell"><div class="lbl">OBV divergence</div><div class="val" style="color:${divColor};font-size:12px;text-transform:uppercase">${_esc(div || 'none')}</div></div>
-                <div class="sp-mini-cell"><div class="lbl">Pre-news</div><div class="val" style="color:${a.unexplained_volume?'#e6b84a':'#8a94a8'};font-size:12px">${a.unexplained_volume?'unexplained':'explained'}</div></div>
+                <div class="sp-mini-cell"><div class="lbl">Pre-news</div><div class="val" style="color:${a.unexplained_volume?'#e6b84a':'var(--text-secondary)'};font-size:12px">${a.unexplained_volume?'unexplained':'explained'}</div></div>
             </div>
             <div class="sp-spark-wrap">
                 <canvas id="sp-obv-spark" width="600" height="70"></canvas>
@@ -948,18 +1006,18 @@
         const dash = (pumpScore / 100) * circ;
         const evHtml = (pd.evidence || []).slice(0, 6).map(e => `
             <div class="sp-list-row">
-                <div style="color:#dde3ef">${_esc(e.detail || '')}</div>
-                <div style="color:#8a94a8;font-size:9px;margin-top:2px">+${e.score} pts · ${_esc((e.code||'').replace(/_/g,' '))}</div>
+                <div style="color:var(--text-primary)">${_esc(e.detail || '')}</div>
+                <div style="color:var(--text-secondary);font-size:9px;margin-top:2px">+${e.score} pts · ${_esc((e.code||'').replace(/_/g,' '))}</div>
             </div>`).join('') || '<div class="sp-empty">no pump-pattern evidence</div>';
         const reasonsHtml = (latest?.reasons || []).map(r =>
-            `<span class="sp-pill" style="background:#3a1418;color:#f26b6b">${_esc(r.replace(/_/g,' '))}</span>`
-        ).join('') || '<span style="color:#5a6373;font-size:10px">no manipulation flags</span>';
+            `<span class="sp-pill" style="background:var(--bear-dim);color:#f26b6b">${_esc(r.replace(/_/g,' '))}</span>`
+        ).join('') || '<span style="color:var(--text-tertiary);font-size:10px">no manipulation flags</span>';
         const recentHtml = recent.slice(0, 5).map(s => {
             const c = s.band === 'likely_manipulated' ? '#f26b6b'
                     : s.band === 'unverified' ? '#e6b84a' : '#2dd4aa';
             return `<div class="sp-list-row">
                 <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-                    <span style="color:#dde3ef;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc((s.headline||'').slice(0,70))}</span>
+                    <span style="color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc((s.headline||'').slice(0,70))}</span>
                     <span style="color:${c};font-weight:800;font-size:10px">${s.score}</span>
                 </div>
             </div>`;
@@ -967,7 +1025,7 @@
         host.innerHTML = `
             <div class="sp-grid-2" style="margin-bottom:10px">
                 <div class="sp-gauge-card">
-                    <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump-Dump Risk</div>
+                    <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Pump-Dump Risk</div>
                     <div style="position:relative;width:72px;height:72px;margin:4px auto">
                         <svg width="72" height="72" viewBox="0 0 72 72">
                             <circle cx="36" cy="36" r="26" fill="none" stroke="rgba(141,148,168,0.2)" stroke-width="6"/>
@@ -983,18 +1041,18 @@
                     <div style="font-size:10px;color:${pumpColor};text-transform:uppercase;font-weight:800">${_esc(pd.band || 'unknown')}</div>
                 </div>
                 <div class="sp-gauge-card" style="text-align:left">
-                    <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em">Latest article</div>
+                    <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em">Latest article</div>
                     <div style="font-size:24px;font-weight:800;color:${manipColor};font-family:'Geist Mono',monospace;margin:4px 0">${latest?.score != null ? latest.score : '—'}</div>
                     <div style="font-size:10px;color:${manipColor};text-transform:uppercase;font-weight:700;margin-bottom:4px">${_esc(latest?.band?.replace(/_/g,' ') || 'no recent signal')}</div>
                     <div>${reasonsHtml}</div>
                 </div>
             </div>
             <div style="margin-bottom:8px">
-                <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Evidence</div>
+                <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Evidence</div>
                 <div class="sp-list">${evHtml}</div>
             </div>
             <div>
-                <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Recent signals · score</div>
+                <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Recent signals · score</div>
                 <div class="sp-list">${recentHtml}</div>
             </div>`;
     }
@@ -1036,27 +1094,27 @@
         const statBox = (label, value, color) => `
             <div class="sp-mini-cell">
                 <div class="lbl">${label}</div>
-                <div class="val" style="color:${value == null ? '#5a6373' : color};font-size:13px">${value == null ? '—' : value.toFixed(2) + '%'}</div>
+                <div class="val" style="color:${value == null ? 'var(--text-tertiary)' : color};font-size:13px">${value == null ? '—' : value.toFixed(2) + '%'}</div>
             </div>`;
         const flagBadge = (f) => {
-            const p = f.severity === 'critical' ? { bg: '#3a1418', fg: '#f26b6b' }
+            const p = f.severity === 'critical' ? { bg: 'var(--bear-dim)', fg: '#f26b6b' }
                     : f.severity === 'warn'    ? { bg: '#3a3214', fg: '#e6b84a' }
-                                               : { bg: '#142a3a', fg: '#8eb4e0' };
+                                               : { bg: 'var(--info-dim)', fg: '#8eb4e0' };
             return `<span class="sp-pill" title="${_esc(f.detail || '')}" style="background:${p.bg};color:${p.fg}">${_esc(f.label || '')}</span>`;
         };
         const sebiHtml = (sebi.slice(0, 4).map(s => {
             const c = s.transaction_type === 'buy' ? '#2dd4aa' : s.transaction_type === 'sell' ? '#f26b6b' : '#a78bfa';
             return `<div class="sp-list-row">
-                <div style="color:#8a94a8;font-size:9px">${_esc(s.transaction_date || '')} · ${_esc(s.disclosure_type || '')}</div>
+                <div style="color:var(--text-secondary);font-size:9px">${_esc(s.transaction_date || '')} · ${_esc(s.disclosure_type || '')}</div>
                 <div style="color:${c}">${_esc(s.transaction_type || '')} ${s.quantity ? '· ' + Number(s.quantity).toLocaleString() + ' sh' : ''} ${_esc(s.person_name || '')}</div>
             </div>`;
         }).join('')) || '<div class="sp-empty">no SEBI disclosures in window</div>';
 
         const insightsBlock = insights.length
-            ? `<div style="padding:8px 10px;background:rgba(13,17,24,0.7);border:1px solid rgba(37,48,64,0.4);border-radius:8px;margin-bottom:10px;font-size:11px;color:#c2c6d6;line-height:1.6">
+            ? `<div style="padding:8px 10px;background:rgba(13,17,24,0.7);border:1px solid rgba(37,48,64,0.4);border-radius:8px;margin-bottom:10px;font-size:11px;color:var(--text-primary);line-height:1.6">
                 ${insights.map(i => `<div>• ${_esc(i)}</div>`).join('')}
               </div>`
-            : `<div style="padding:8px 10px;background:rgba(13,17,24,0.55);border:1px dashed rgba(141,148,168,0.18);border-radius:8px;margin-bottom:10px;font-size:11px;color:#8a94a8;line-height:1.6">
+            : `<div style="padding:8px 10px;background:rgba(13,17,24,0.55);border:1px dashed rgba(141,148,168,0.18);border-radius:8px;margin-bottom:10px;font-size:11px;color:var(--text-secondary);line-height:1.6">
                 <em>No specific promoter insights this quarter — pledge/buyback/exit triggers will populate here once filed.</em>
               </div>`;
         const flagsBlock = flags.length
@@ -1073,29 +1131,29 @@
             ${flagsBlock}
             <div class="sp-mini-row" style="grid-template-columns:repeat(4,1fr)">
                 ${statBox('Promoter', cur.promoter_pct, '#8eb4e0')}
-                ${statBox('Pledge', cur.promoter_pledge_pct, (cur.promoter_pledge_pct || 0) > 20 ? '#f26b6b' : '#8a94a8')}
+                ${statBox('Pledge', cur.promoter_pledge_pct, (cur.promoter_pledge_pct || 0) > 20 ? '#f26b6b' : 'var(--text-secondary)')}
                 ${statBox('FII', cur.fii_pct, '#2dd4aa')}
                 ${statBox('DII', cur.dii_pct, '#e6b84a')}
             </div>
             <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-bottom:8px">
                 <div class="sp-gauge-card" style="padding:8px">
-                    <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Breakdown</div>
+                    <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Breakdown</div>
                     <canvas id="sp-promoter-donut" width="180" height="140" style="width:100%;max-height:140px"></canvas>
-                    ${stale ? '<div style="font-size:10px;color:#5a6373;margin-top:6px;text-align:center;">awaiting filing</div>' : ''}
+                    ${stale ? '<div style="font-size:10px;color:var(--text-tertiary);margin-top:6px;text-align:center;">awaiting filing</div>' : ''}
                 </div>
                 <div class="sp-gauge-card" style="padding:8px">
-                    <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">8-quarter history</div>
+                    <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">8-quarter history</div>
                     <canvas id="sp-promoter-history" width="280" height="140" style="width:100%;max-height:140px"></canvas>
-                    ${stale ? '<div style="font-size:10px;color:#5a6373;margin-top:6px;text-align:center;">history will appear once 2+ quarters are filed</div>' : ''}
+                    ${stale ? '<div style="font-size:10px;color:var(--text-tertiary);margin-top:6px;text-align:center;">history will appear once 2+ quarters are filed</div>' : ''}
                 </div>
             </div>
             <div>
-                <div style="font-size:9px;color:#8a94a8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">SEBI disclosures</div>
+                <div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">SEBI disclosures</div>
                 <div class="sp-list">${sebiHtml}</div>
             </div>`;
         const chartOk = await chartReady;
         if (!chartOk || !window.Chart) return;
-        if (stale) return; // no data → skip chart drawing
+        if (stale) return; // no data ? skip chart drawing
         const donut = modal.querySelector('#sp-promoter-donut');
         if (donut) {
             const others = Math.max(0, 100 - (cur.promoter_pct || 0) - (cur.fii_pct || 0) - (cur.dii_pct || 0));
@@ -1104,10 +1162,10 @@
                 data: { labels: ['Promoter','FII','DII','Public/Other'], datasets: [{
                     data: [cur.promoter_pct || 0, cur.fii_pct || 0, cur.dii_pct || 0, others],
                     backgroundColor: ['#8eb4e0','#2dd4aa','#e6b84a','rgba(141,148,168,0.4)'],
-                    borderColor: '#10141a', borderWidth: 2,
+                    borderColor: 'var(--surface-0)', borderWidth: 2,
                 }]},
                 options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position:'bottom', labels: { color:'#c2c6d6', font:{size:9}, boxWidth: 9 } } } },
+                    plugins: { legend: { position:'bottom', labels: { color:'var(--text-primary)', font:{size:9}, boxWidth: 9 } } } },
             });
         }
         const hist = modal.querySelector('#sp-promoter-history');
@@ -1121,9 +1179,9 @@
                         { label: 'FII %',      data: quarters.map(q => q.fii_pct), borderColor:'#2dd4aa', backgroundColor:'#2dd4aa22', tension: 0.25, borderWidth: 1.5, pointRadius: 2 },
                     ] },
                 options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color:'#c2c6d6', font:{size:9}, boxWidth: 9 } } },
-                    scales: { x: { ticks: { color:'#8a94a8', font:{size:8} }, grid: { color:'rgba(37,48,64,0.4)' } },
-                              y: { ticks: { color:'#8a94a8', font:{size:8}, callback: v => v+'%' }, grid: { color:'rgba(37,48,64,0.4)' } } } },
+                    plugins: { legend: { labels: { color:'var(--text-primary)', font:{size:9}, boxWidth: 9 } } },
+                    scales: { x: { ticks: { color:'var(--text-secondary)', font:{size:8} }, grid: { color:'rgba(37,48,64,0.4)' } },
+                              y: { ticks: { color:'var(--text-secondary)', font:{size:8}, callback: v => v+'%' }, grid: { color:'rgba(37,48,64,0.4)' } } } },
             });
         }
     }

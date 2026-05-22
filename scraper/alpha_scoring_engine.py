@@ -31,6 +31,38 @@ def get_magnitude_multipliers() -> Dict[str, float]:
     return dict(_MAGNITUDE_MULT)
 
 
+# Addendum 2026-05-18 — multi-source confirmation multiplier.
+# Applied in database_schema.upsert_signal(). Cap at 1.45× so a high-alpha
+# solo signal can still outrank a moderate-alpha 8-source one.
+_CLUSTER_MULT_TABLE = (
+    # (min_count, multiplier)  — first match wins (descending order)
+    (8, 1.45),
+    (6, 1.38),
+    (5, 1.30),
+    (4, 1.22),
+    (3, 1.15),
+    (2, 1.08),
+    (1, 1.00),
+)
+
+
+def cluster_size_multiplier(member_count) -> float:
+    """Alpha multiplier from cross-source confirmation. See _CLUSTER_MULT_TABLE."""
+    try:
+        n = max(1, int(member_count or 1))
+    except (TypeError, ValueError):
+        n = 1
+    for threshold, mult in _CLUSTER_MULT_TABLE:
+        if n >= threshold:
+            return mult
+    return 1.0
+
+
+def get_cluster_multiplier_table():
+    """For the /methodology page renderer (list of (min_count, multiplier))."""
+    return list(_CLUSTER_MULT_TABLE)
+
+
 class MarketRegime(Enum):
     """9 Market Regime Types"""
     BULL_STRONG = "bull_strong"           # Vol<15%, trend up, strong momentum

@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,6 +24,10 @@
 </script>
 <link rel="stylesheet" href="./shared/css/style.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <!-- Premium redesign layer — synchronous load eliminates FOUC. -->
+    <link rel="stylesheet" href="./shared/css/redesign.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
@@ -135,6 +139,15 @@
         <h1 id="stockTicker" style="font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--t1);"><span class="skel" style="display:inline-block;width:140px;height:28px;"></span></h1>
         <span id="stockExchange" style="font-family:var(--font-mono);font-size:11px;color:var(--t3);font-weight:600;letter-spacing:0.06em;">NSE</span>
         <button id="watchBtn" onclick="toggleWatch()" class="range-period" style="display:none;"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;">star</span> Watch</button>
+        <a id="quantPlayBtn" class="range-period" style="text-decoration:none;color:#6ddec0;border-color:rgba(45,212,170,0.30);background:rgba(45,212,170,0.06);" href="playground.html?tool=greeks"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px;">functions</span> Quant tools</a>
+        <script>(function(){var p=new URLSearchParams(location.search);var t=p.get('ticker');if(t){var a=document.getElementById('quantPlayBtn');if(a)a.href='playground.html?tool=greeks&ticker='+encodeURIComponent(t);}})();</script>
+        <button id="stockAnalyzeBtn" title="Open fundamental analysis (F-score + reasoning)"
+          style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;
+                 background:rgba(45,212,170,0.12);color:#2dd4aa;border:1px solid rgba(45,212,170,0.4);
+                 font:700 10px 'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;
+                 cursor:pointer;transition:all 120ms;">
+          <span class="material-symbols-outlined" style="font-size:14px;">analytics</span>Analyze
+        </button>
       </div>
       <p id="stockCompany" style="font-size:13px;color:var(--t2);margin-top:2px;"><span class="skel" style="display:inline-block;width:280px;height:14px;"></span></p>
     </div>
@@ -157,21 +170,78 @@
       style="background:transparent;border:0;color:var(--t3);cursor:pointer;display:none;font-size:14px;line-height:1;padding:2px 6px;">×</button>
   </div>
 
-  <div style="margin-top:14px;display:flex;gap:0;border-bottom:1px solid var(--b1);overflow-x:auto;">
-    <button class="tab-btn active" data-tab="events"><span class="material-symbols-outlined">bolt</span>Event Track Record</button>
-    <button class="tab-btn" data-tab="intelligence"><span class="material-symbols-outlined">lightbulb</span>Intelligence</button>
-    <button class="tab-btn" data-tab="overview"><span class="material-symbols-outlined">dashboard</span>Overview</button>
-    <button class="tab-btn" data-tab="chart"><span class="material-symbols-outlined">show_chart</span>Chart</button>
-    <button class="tab-btn" data-tab="financials"><span class="material-symbols-outlined">account_balance</span>Financials</button>
-    <button class="tab-btn" data-tab="ratios"><span class="material-symbols-outlined">percent</span>Ratios</button>
-    <button class="tab-btn" data-tab="peers"><span class="material-symbols-outlined">groups</span>Peers</button>
-    <button class="tab-btn" data-tab="shareholding"><span class="material-symbols-outlined">pie_chart</span>Shareholding</button>
-    <button class="tab-btn" data-tab="corp"><span class="material-symbols-outlined">redeem</span>Corp Actions</button>
-    <button class="tab-btn" data-tab="news"><span class="material-symbols-outlined">newspaper</span>News</button>
-    <button class="tab-btn" data-tab="documents"><span class="material-symbols-outlined">description</span>Documents</button>
-    <button class="tab-btn" data-tab="forensics"><span class="material-symbols-outlined">shield</span>Forensics</button>
+  <!-- Section pills — Track 2 Phase 4 IA simplification (founder feedback:
+       "app is too complex, dead-easy to understand"). Groups the 12 tabs
+       into 3 buckets + an "All tabs" overflow so first-time users see 5
+       choices instead of 12. JS shows/hides existing tab buttons based
+       on the active section. -->
+  <div class="stock-sections" data-role="section-bar"
+       style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+    <button class="stock-section-btn active" data-section="overview" type="button">
+      <span class="material-symbols-outlined" style="font-size:14px;">dashboard</span>Overview
+    </button>
+    <button class="stock-section-btn" data-section="fundamentals" type="button">
+      <span class="material-symbols-outlined" style="font-size:14px;">account_balance</span>Fundamentals
+    </button>
+    <button class="stock-section-btn" data-section="forensics" type="button">
+      <span class="material-symbols-outlined" style="font-size:14px;">shield</span>Forensics
+    </button>
+    <button class="stock-section-btn" data-section="all" type="button"
+            title="Show every available tab">
+      <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>More
+    </button>
+  </div>
+
+  <div data-role="tab-bar" style="margin-top:10px;display:flex;gap:0;border-bottom:1px solid var(--b1);overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;">
+    <button class="tab-btn active" data-tab="events"        data-section="overview"     style="scroll-snap-align:start;"><span class="material-symbols-outlined">bolt</span>Event Track Record</button>
+    <button class="tab-btn"        data-tab="intelligence"  data-section="overview"     style="scroll-snap-align:start;"><span class="material-symbols-outlined">lightbulb</span>Intelligence</button>
+    <button class="tab-btn"        data-tab="overview"      data-section="overview"     style="scroll-snap-align:start;"><span class="material-symbols-outlined">dashboard</span>Overview</button>
+    <button class="tab-btn"        data-tab="chart"         data-section="overview"     style="scroll-snap-align:start;"><span class="material-symbols-outlined">show_chart</span>Chart</button>
+    <button class="tab-btn"        data-tab="news"          data-section="overview"     style="scroll-snap-align:start;"><span class="material-symbols-outlined">newspaper</span>News</button>
+    <button class="tab-btn"        data-tab="financials"    data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">account_balance</span>Financials</button>
+    <button class="tab-btn"        data-tab="ratios"        data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">percent</span>Ratios</button>
+    <button class="tab-btn"        data-tab="peers"         data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">groups</span>Peers</button>
+    <button class="tab-btn"        data-tab="shareholding"  data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">pie_chart</span>Shareholding</button>
+    <button class="tab-btn"        data-tab="corp"          data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">redeem</span>Corp Actions</button>
+    <button class="tab-btn"        data-tab="documents"     data-section="fundamentals" style="scroll-snap-align:start;"><span class="material-symbols-outlined">description</span>Documents</button>
+    <button class="tab-btn"        data-tab="forensics"     data-section="forensics"    style="scroll-snap-align:start;"><span class="material-symbols-outlined">shield</span>Forensics</button>
   </div>
 </header>
+
+<style>
+  /* Section pills — small chip-style group selector above the tab bar */
+  .stock-section-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    font: 600 12px var(--font-ui);
+    cursor: pointer;
+    transition: all var(--dur-fast, 120ms) var(--ease-out, ease);
+  }
+  .stock-section-btn:hover {
+    background: var(--surface-2);
+    color: var(--text-primary);
+  }
+  .stock-section-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+  /* Hide tabs that aren't in the active section. "all" mode skips this rule. */
+  [data-role="tab-bar"][data-active-section="overview"]     .tab-btn[data-section]:not([data-section="overview"]),
+  [data-role="tab-bar"][data-active-section="fundamentals"] .tab-btn[data-section]:not([data-section="fundamentals"]),
+  [data-role="tab-bar"][data-active-section="forensics"]    .tab-btn[data-section]:not([data-section="forensics"]) {
+    display: none;
+  }
+  /* Mobile: section pills wrap, tab bar horizontally scrolls (scroll-snap above) */
+  @media (max-width: 640px) {
+    .stock-section-btn { padding: 6px 10px; font-size: 11px; }
+    .tab-btn { white-space: nowrap; }
+  }
+</style>
 
 <!-- ============================ TAB: EVENTS (default) ============================ -->
 <section class="tab-pane active" data-pane="events">
@@ -451,35 +521,72 @@
 
 <!-- ============================ TAB: CHART ============================ -->
 <section class="tab-pane" data-pane="chart">
-  <div class="widget" style="min-height:auto;">
+  <div class="widget chart-widget" style="min-height:auto;">
     <div class="widget__head" style="align-items:flex-start;">
       <div style="flex:1;min-width:200px;">
         <div class="widget__title">Price Chart</div>
-        <div class="widget__meta" id="chartMeta">close-of-day · drag on chart to measure range</div>
-        <div id="chartReadout" style="margin-top:8px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;min-height:32px;">
-          <span id="chartReadoutPrice" style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--t1);"></span>
-          <span id="chartReadoutChange" style="font-family:var(--font-mono);font-size:13px;font-weight:600;"></span>
-          <span id="chartReadoutDate" style="font-family:var(--font-mono);font-size:11px;color:var(--t3);"></span>
-        </div>
+        <div class="widget__meta" id="chartMeta">price · 50/200 DMA · volume · drag on chart to zoom</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="range-period" data-period="5d">5D</button>
-        <button class="range-period" data-period="1mo">1M</button>
-        <button class="range-period active" data-period="3mo">3M</button>
-        <button class="range-period" data-period="6mo">6M</button>
-        <button class="range-period" data-period="1y">1Y</button>
-        <button class="range-period" data-period="5y">5Y</button>
-        <button class="range-period" data-period="max">Max</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <!-- View Technical Charts opens the heavy-weight TradingView terminal
+             in a fullscreen overlay. Default chart stays on the in-house
+             canvas renderer so the pane loads instantly with site fonts. -->
+        <button id="openTvTerminalBtn" type="button" class="tv-terminal-btn" title="Open TradingView terminal (drawing tools, 50+ studies)">
+          <span class="material-symbols-outlined" style="font-size:16px;">candlestick_chart</span>
+          View Technical Charts
+          <span class="material-symbols-outlined" style="font-size:14px;opacity:0.7;">open_in_full</span>
+        </button>
       </div>
     </div>
-    <div id="priceChartWrap" style="height:460px;position:relative;">
-      <div id="priceChartHost" style="position:absolute;inset:0;"></div>
-      <div id="chartLoading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:12px;background:transparent;pointer-events:none;">Loading chart…</div>
-      <div id="chartHint" style="position:absolute;left:14px;bottom:8px;font-size:10px;color:var(--t3);font-family:var(--font-ui);pointer-events:none;opacity:.7;">drag to zoom · double-click to reset</div>
+    <!-- Premium in-house canvas chart — fills the pane, uses site fonts
+         (Plus Jakarta Sans + Geist Mono). Period bar (1M…Max) + legend
+         (price / 50 DMA / 200 DMA / volume toggles) live INSIDE the chart
+         frame via AdvancedChart. -->
+    <div id="advChartHost" class="chart-host-full"></div>
+    <!-- Legacy ApexCharts mount kept hidden so any straggler code that
+         still references #priceChartHost / #chartLoading doesn't NPE. -->
+    <div id="priceChartWrap" style="display:none;">
+      <div id="priceChartHost"></div>
+      <div id="chartLoading"></div>
+      <div id="chartHint"></div>
+      <div id="chartReadout" style="display:none;">
+        <span id="chartReadoutPrice"></span>
+        <span id="chartReadoutChange"></span>
+        <span id="chartReadoutDate"></span>
+      </div>
     </div>
   </div>
-  <div id="chartStats" style="margin-top:14px;" class="kv-grid"></div>
+  <div id="chartStats" style="margin-top:14px;display:none;" class="kv-grid"></div>
 </section>
+<style>
+  /* Chart pane fills the viewport below the page header + tabs so the
+     in-house canvas chart feels like a full-window technical workspace. */
+  .tab-pane[data-pane="chart"] .chart-widget { display:flex; flex-direction:column;
+    height:calc(100vh - 260px); min-height:560px; }
+  .chart-host-full { flex:1; min-height:480px; display:flex; }
+  .chart-host-full > .advc-wrap { flex:1; }
+  /* "View Technical Charts" — primary CTA on the chart pane. Same pill
+     language as the rest of the app, accent border to draw the eye. */
+  .tv-terminal-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    font:700 11px 'Plus Jakarta Sans',sans-serif; letter-spacing:0.06em; text-transform:uppercase;
+    padding:8px 14px; border-radius:10px;
+    color:var(--info,#8eb4e0);
+    background:rgba(142,180,224,0.08);
+    border:1px solid rgba(142,180,224,0.32);
+    cursor:pointer; transition:all 140ms ease;
+  }
+  .tv-terminal-btn:hover {
+    color:#cfe2f6;
+    background:rgba(142,180,224,0.16);
+    border-color:rgba(142,180,224,0.55);
+  }
+  .tv-terminal-btn .material-symbols-outlined { vertical-align:-2px; }
+  @media (max-width: 760px) {
+    .tab-pane[data-pane="chart"] .chart-widget { height:auto; min-height:520px; }
+    .chart-host-full { min-height:420px; }
+  }
+</style>
 
 <!-- ============================ TAB: FINANCIALS ============================ -->
 <section class="tab-pane" data-pane="financials">
@@ -600,32 +707,21 @@
   </div>
 </section>
 
-<!-- ============================ TAB: DOCUMENTS ============================ -->
-<!-- Screener-style document hub: Announcements, Annual Reports, Credit
-     Ratings, Concalls. Pulled from /api/stock/<ticker>/documents which
-     buckets the events table by title/source heuristics. -->
+<!-- ============================ TAB: DOCUMENTS / IR ============================ -->
+<!-- Investor-Relations hub. Pulled from /api/stock/<ticker>/ir which
+     buckets the `filings` table by structured filing_type (concall_transcript,
+     investor_presentation, board_outcome, credit_rating, corporate_action,
+     qualified_opinion, ma_deal, insider_disclosure, etc.) — populated by
+     the BSE + NSE filing fetchers under Track 1 Phase B. -->
 <section class="tab-pane" data-pane="documents">
-  <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:14px;" class="docs-grid">
+  <!-- Primary row: the four most-asked-for IR data classes -->
+  <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px;" class="docs-grid">
     <div class="widget" style="min-height:auto;">
       <div class="widget__head">
-        <div><div class="widget__title">Announcements</div><div class="widget__meta">BSE / NSE filings</div></div>
+        <div><div class="widget__title">Announcements</div><div class="widget__meta">BSE / NSE filings · quarterly results</div></div>
         <span class="widget__year-pill" id="docsAnnouncementsCount">—</span>
       </div>
       <div id="docsAnnouncements" class="docs-list"><div class="skel" style="height:60px;"></div></div>
-    </div>
-    <div class="widget" style="min-height:auto;">
-      <div class="widget__head">
-        <div><div class="widget__title">Annual Reports</div><div class="widget__meta">AGM, presentations</div></div>
-        <span class="widget__year-pill" id="docsAnnualCount">—</span>
-      </div>
-      <div id="docsAnnualReports" class="docs-list"></div>
-    </div>
-    <div class="widget" style="min-height:auto;">
-      <div class="widget__head">
-        <div><div class="widget__title">Credit Ratings</div><div class="widget__meta">CRISIL · ICRA · CARE · Fitch</div></div>
-        <span class="widget__year-pill" id="docsRatingsCount">—</span>
-      </div>
-      <div id="docsRatings" class="docs-list"></div>
     </div>
     <div class="widget" style="min-height:auto;">
       <div class="widget__head">
@@ -634,9 +730,72 @@
       </div>
       <div id="docsConcalls" class="docs-list"></div>
     </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Presentations</div><div class="widget__meta">investor decks · analyst meets</div></div>
+        <span class="widget__year-pill" id="docsPresentationsCount">—</span>
+      </div>
+      <div id="docsPresentations" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Credit Ratings</div><div class="widget__meta">CRISIL · ICRA · CARE · IND</div></div>
+        <span class="widget__year-pill" id="docsRatingsCount">—</span>
+      </div>
+      <div id="docsRatings" class="docs-list"></div>
+    </div>
+  </div>
+
+  <!-- Secondary row: internal notices, governance, M&A, ownership -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;" class="docs-grid">
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Board Outcomes</div><div class="widget__meta">resolutions · agenda</div></div>
+        <span class="widget__year-pill" id="docsBoardCount">—</span>
+      </div>
+      <div id="docsBoard" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Corporate Actions</div><div class="widget__meta">bonus · split · dividend · buyback</div></div>
+        <span class="widget__year-pill" id="docsCorpCount">—</span>
+      </div>
+      <div id="docsCorp" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">M&amp;A &amp; Audit</div><div class="widget__meta">deals · qualified opinions</div></div>
+        <span class="widget__year-pill" id="docsMaAuditCount">—</span>
+      </div>
+      <div id="docsMaAudit" class="docs-list"></div>
+    </div>
+    <div class="widget" style="min-height:auto;">
+      <div class="widget__head">
+        <div><div class="widget__title">Insider Disclosures</div><div class="widget__meta">SEBI PIT · SAST · shareholding</div></div>
+        <span class="widget__year-pill" id="docsInsiderCount">—</span>
+      </div>
+      <div id="docsInsider" class="docs-list"></div>
+    </div>
+  </div>
+
+  <!-- On-demand fetch — shown when most buckets are empty. Triggers a
+       live BSE filing pull for THIS ticker via /api/stock/<t>/ir/refresh
+       and re-renders the buckets when complete. -->
+  <div id="docsFetchBar" style="margin-top:14px;padding:12px 16px;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div id="docsFetchMsg" style="font-size:12px;color:var(--text-secondary);">
+      No filings cached for this ticker yet. Click to fetch live from BSE
+      (may take 10–20 seconds).
+    </div>
+    <button id="docsFetchBtn" type="button"
+      style="padding:8px 16px;background:var(--accent);color:var(--surface-1);border:0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+      <span class="material-symbols-outlined" style="font-size:14px;">refresh</span>
+      Fetch live filings
+    </button>
   </div>
   <div style="margin-top:14px;font-size:11px;color:var(--t3);">
-    Tip: each item links to the original filing. The list updates as new filings hit the scraper (typically within minutes of publication).
+    Each item links to the original filing PDF. List updates as new filings
+    hit the scraper (typically within minutes of BSE / NSE publication).
+    <em>Informational only — not investment advice.</em>
   </div>
 </section>
 
@@ -658,6 +817,11 @@
 }
 .docs-list .doc-row__src {
   font-size:11px; color:var(--t3); margin-top:4px;
+}
+.docs-list .doc-row__sum {
+  font-size:11.5px; color:var(--t2); margin-top:4px; line-height:1.45;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 .docs-list .doc-empty {
   padding:24px 4px; text-align:center; color:var(--t3); font-size:12px;
@@ -683,17 +847,108 @@
   </div>
 </section>
 
+<!-- ════════════════════════════════════════════════════════════════
+     STOCK PRO — broker-app charts for Financials / Shareholding / News.
+     Injected by app/shared/js/stock-pro.js directly INTO the existing
+     .tab-pane[data-pane="financials|shareholding|news"] sections above,
+     so the new content appears at the top of each tab. No separate
+     host element needed.
+   ════════════════════════════════════════════════════════════════ -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     INLINE AI CHAT — opt-in via #ae-chat-host. Auto-wires to /api/chat
+     with the current ticker. Inline per the no-overlay-popups policy.
+   ════════════════════════════════════════════════════════════════ -->
+<section id="ae-chat-host" data-ticker=""></section>
+<script>
+  (function () {
+    try {
+      const params = new URLSearchParams(location.search);
+      const t = (params.get('ticker') || params.get('t') || '').toUpperCase();
+      if (t) {
+        const c = document.getElementById('ae-chat-host');
+        if (c) c.setAttribute('data-ticker', t);
+      }
+    } catch (_) {}
+  })();
+</script>
+
 </main>
 
 <script src="./shared/js/app.js"></script>
 <script src="./shared/js/bootstrap.js"></script>
 <script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/advanced-chart.js"></script>
+<!-- TradingView Advanced Chart — free widget, full technical analysis stack.
+     Loads tv.js lazily, falls back to AdvancedChart canvas when blocked. -->
+<script src="./shared/js/tradingview-chart.js"></script>
 <script>
-const TICKER = (new URLSearchParams(location.search).get('t') ||
-                new URLSearchParams(location.search).get('ticker') ||
-                'RELIANCE').trim().toUpperCase();
+// Defensive ticker resolution. The .trim().toUpperCase() chain previously
+// produced an empty string for whitespace-only params ("?t=%20"), which
+// then made TradingView's widget silently load AAPL as its default. Coerce
+// any empty / whitespace result back to RELIANCE.
+const TICKER = (function () {
+  const qs = new URLSearchParams(location.search);
+  const raw = (qs.get('t') || qs.get('ticker') || '').trim().toUpperCase();
+  return raw || 'RELIANCE';
+})();
 document.getElementById('stockTicker').textContent = TICKER;
 document.title = 'Tickwave | ' + TICKER;
+// Wire the Analyze button — opens the sitewide fundamental modal (edge-analyzer.js)
+(function wireAnalyzeBtn(){
+  const btn = document.getElementById('stockAnalyzeBtn');
+  if (!btn) return;
+  btn.setAttribute('data-edge-analyze', TICKER);
+  // edge-analyzer.js delegates [data-edge-analyze] clicks site-wide; this also
+  // ensures direct invocation works even before the script has booted.
+  btn.addEventListener('click', () => {
+    if (window.EdgeAnalyzer && EdgeAnalyzer.open) EdgeAnalyzer.open(TICKER);
+  });
+})();
+
+// Mount the in-house premium canvas chart — fills the chart pane, uses site
+// fonts (Plus Jakarta Sans + Geist Mono), period bar inside the frame. The
+// chart loads instantly from /api/stock/<t>/chart and never depends on a
+// third-party CDN. TradingView is reserved for the on-demand terminal.
+(function mountStockChart(){
+  function tryMount(retries) {
+    if (window.AdvancedChart) {
+      AdvancedChart.mount('#advChartHost', TICKER, { period: '1y' });
+      return;
+    }
+    if (retries > 0) setTimeout(() => tryMount(retries - 1), 80);
+  }
+  tryMount(20);
+})();
+
+// "View Technical Charts" — opens the TradingView terminal in a fullscreen
+// overlay. tv.js loads lazily on first click, so the stock page itself
+// stays light. ESC or the close button dismisses; background scroll is
+// locked while the overlay is active.
+(function wireTvTerminal(){
+  const btn = document.getElementById('openTvTerminalBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (!window.TradingViewChart || !window.TradingViewChart.openTerminal) {
+      // tradingview-chart.js loads in the page head; this is paranoia for
+      // race conditions where the click fires before the script parses.
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.textContent = 'Loading…';
+      const wait = setInterval(() => {
+        if (window.TradingViewChart && window.TradingViewChart.openTerminal) {
+          clearInterval(wait);
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">candlestick_chart</span> View Technical Charts <span class="material-symbols-outlined" style="font-size:14px;opacity:0.7;">open_in_full</span>';
+          TradingViewChart.openTerminal(TICKER);
+        }
+      }, 80);
+      return;
+    }
+    TradingViewChart.openTerminal(TICKER);
+  });
+})();
 // Inject the company logo (parqet -> disk cache -> SVG initials)
 document.getElementById('stockLogo').innerHTML = CompanyLogo.img(TICKER, { size: 56, round: true });
 
@@ -755,6 +1010,48 @@ document.querySelectorAll('.tab-btn').forEach(b => {
     }
   });
 });
+
+// ---------- Section pills (IA simplification: 12 tabs → 3 groups + More) ----------
+// CSS hides non-matching tabs based on [data-active-section]; this JS just
+// updates that attribute + auto-activates the first visible tab when the
+// user clicks a section pill.
+(function () {
+  const sectionBar = document.querySelector('[data-role="section-bar"]');
+  const tabBar     = document.querySelector('[data-role="tab-bar"]');
+  if (!sectionBar || !tabBar) return;
+
+  function applySection(sec) {
+    sectionBar.querySelectorAll('.stock-section-btn').forEach(p => {
+      p.classList.toggle('active', p.dataset.section === sec);
+    });
+    if (sec === 'all') {
+      tabBar.removeAttribute('data-active-section');
+    } else {
+      tabBar.setAttribute('data-active-section', sec);
+      // If the currently-active tab is now hidden, switch to the first
+      // visible tab in this section so the user isn't staring at a pane
+      // they can't navigate back to.
+      const activeTab = tabBar.querySelector('.tab-btn.active');
+      const stillVisible = activeTab && activeTab.dataset.section === sec;
+      if (!stillVisible) {
+        const first = tabBar.querySelector(`.tab-btn[data-section="${sec}"]`);
+        if (first) first.click();
+      }
+    }
+  }
+
+  sectionBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.stock-section-btn');
+    if (!btn) return;
+    applySection(btn.dataset.section);
+  });
+
+  // Default: derive the active section from the initially-active tab so
+  // deep-links to #financials still land users on the Fundamentals section.
+  const initial = tabBar.querySelector('.tab-btn.active');
+  const initSec = initial ? (initial.dataset.section || 'overview') : 'overview';
+  applySection(initSec);
+})();
 
 // ---------- Load core (header + events tab) ----------
 let CORE = { signal: null, price: null };
@@ -986,26 +1283,45 @@ async function loadOverview() {
     document.getElementById('aboutBlock').textContent = prof.summary || 'No business summary available.';
 
     // Screener-style Pros / Cons — auto-generated thesis at a glance
+    // Falls back to Screener.in scrape (/api/v1/stocks/<t>/screener) when our
+    // internal /intelligence endpoint returns nothing.
     (async () => {
       const elPros = document.getElementById('overviewPros');
       const elCons = document.getElementById('overviewCons');
       if (!elPros || !elCons) return;
+      function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      let pros = [], cons = [], source = '';
       try {
         const r = await API.get(`/stock/${TICKER}/intelligence?days=30`);
         const d = (r && r.data) || {};
-        const pros = (d.pros || []).slice(0, 4);
-        const cons = (d.cons || []).slice(0, 4);
-        function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-        elPros.innerHTML = pros.length
-          ? pros.map(it => `<li>${esc(it.label)}${it.detail ? `<small>${esc(it.detail)}</small>` : (it.alpha != null ? `<small>α ${it.alpha} · ${esc(it.weight||'')}</small>` : '')}</li>`).join('')
-          : '<li style="color:var(--t3);">No bullish drivers in last 30 days.</li>';
-        elCons.innerHTML = cons.length
-          ? cons.map(it => `<li>${esc(it.label)}${it.detail ? `<small>${esc(it.detail)}</small>` : (it.alpha != null ? `<small>α ${it.alpha} · ${esc(it.weight||'')}</small>` : '')}</li>`).join('')
-          : '<li style="color:var(--t3);">No risks or forensic flags detected.</li>';
-      } catch (_) {
-        elPros.innerHTML = '<li style="color:var(--t3);">Couldn\'t load thesis.</li>';
-        elCons.innerHTML = '';
+        pros = (d.pros || []).slice(0, 4);
+        cons = (d.cons || []).slice(0, 4);
+        if (pros.length || cons.length) source = 'internal';
+      } catch (_) { /* fall through to Screener */ }
+
+      // Fallback: Screener.in scrape if internal is empty
+      if (!pros.length && !cons.length) {
+        try {
+          const r2 = await fetch(`/api/v1/stocks/${TICKER}/screener`);
+          if (r2.ok) {
+            const body = await r2.json();
+            const sd = (body && body.data) || {};
+            pros = (sd.pros || []).map(t => ({ label: t }));
+            cons = (sd.cons || []).map(t => ({ label: t }));
+            if (pros.length || cons.length) source = 'screener.in';
+          }
+        } catch (_) { /* silent */ }
       }
+
+      const fmt = it => `<li>${esc(it.label)}${it.detail ? `<small>${esc(it.detail)}</small>` : (it.alpha != null ? `<small>&alpha; ${it.alpha} &middot; ${esc(it.weight||'')}</small>` : '')}</li>`;
+      elPros.innerHTML = pros.length
+        ? pros.map(fmt).join('')
+        : '<li style="color:var(--t3);">No bullish drivers in last 30 days.</li>';
+      elCons.innerHTML = cons.length
+        ? cons.map(fmt).join('')
+        : '<li style="color:var(--t3);">No risks or forensic flags detected.</li>';
+      const foot = document.getElementById('overviewProsConsFoot');
+      if (foot && source) foot.textContent = `Source: ${source}`;
     })();
 
     const off = prof.officers || [];
@@ -1960,7 +2276,11 @@ async function loadIntelligence() {
   }
 }
 
-// ── Documents tab loader: filings, concalls, ratings, annual reports ──
+// ── Documents / IR tab loader: structured filing buckets from Phase B ──
+// Consumes /api/stock/<ticker>/ir which returns filing_type-bucketed rows
+// from the `filings` table (populated by BSE + NSE filing fetchers under
+// scraper/forensics/*). Falls back to the legacy /documents endpoint if
+// /ir returns nothing (older deployments without Phase B schema).
 async function loadDocuments() {
   const ESC = (s) => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   function fmtDate(s) {
@@ -1970,52 +2290,186 @@ async function loadDocuments() {
     const d = new Date(t);
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
+  // Generic row — both /ir and /documents items normalize to a similar shape.
+  // /ir uses .url, /documents uses .link — handle both for back-compat.
   function renderRow(it) {
-    const link = it.link || '#';
-    const ext = !!it.link;
+    const link = it.url || it.link || '#';
+    const ext = !!(it.url || it.link);
+    const src = (it.source || it.exchange || '').replace(/_/g, ' ');
+    const summary = (it.summary || '').slice(0, 180);
     return `<a class="doc-row" href="${ESC(link)}"${ext ? ' target="_blank" rel="noopener"' : ''}>
         <div class="doc-row__date">${ESC(fmtDate(it.date))}</div>
         <div class="doc-row__title">${ESC(it.title || '')}</div>
-        <div class="doc-row__src">${ESC((it.source || '').replace(/_/g, ' '))}</div>
+        ${summary ? `<div class="doc-row__sum">${ESC(summary)}</div>` : ''}
+        <div class="doc-row__src">${ESC(src)}</div>
       </a>`;
   }
-  function renderBucket(elId, items, emptyMsg) {
+  // Rating rows carry agency + action + grade transition — render richer.
+  function renderRatingRow(r) {
+    const link = r.url || '#';
+    const tier = (r.action || 'unknown').toLowerCase();
+    const tone = tier === 'upgrade'   ? 'var(--bull)'
+              : tier === 'downgrade' ? 'var(--bear)'
+              : tier === 'reaffirmed'? 'var(--text-secondary)'
+              : 'var(--info)';
+    const grade = r.prior && r.current
+      ? `${ESC(r.prior)} → ${ESC(r.current)}`
+      : (r.current ? ESC(r.current) : '');
+    return `<a class="doc-row" href="${ESC(link)}" ${link !== '#' ? 'target="_blank" rel="noopener"' : ''}>
+        <div class="doc-row__date">${ESC(fmtDate(r.date))}</div>
+        <div class="doc-row__title">
+          <strong>${ESC(r.agency || 'Rating')}</strong>
+          <span style="color:${tone};font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:0.06em;margin-left:6px;">${ESC(tier)}</span>
+          ${grade ? `<span style="font-family:'Geist Mono',monospace;color:var(--text-primary);margin-left:6px;">${grade}</span>` : ''}
+        </div>
+        ${r.title ? `<div class="doc-row__sum">${ESC(r.title.slice(0, 160))}</div>` : ''}
+      </a>`;
+  }
+  function renderBucket(elId, items, emptyMsg, useRating) {
     const el = document.getElementById(elId);
     if (!el) return;
     if (!items || !items.length) {
       el.innerHTML = `<div class="doc-empty">${ESC(emptyMsg)}</div>`;
       return;
     }
-    el.innerHTML = items.map(renderRow).join('');
+    el.innerHTML = items.map(useRating ? renderRatingRow : renderRow).join('');
   }
-  try {
-    const r = await API.get(`/stock/${TICKER}/documents?days=540`);
-    const d = (r && r.data) || {};
-    document.getElementById('docsAnnouncementsCount').textContent = (d.counts && d.counts.announcements) || 0;
-    document.getElementById('docsAnnualCount').textContent       = (d.counts && d.counts.annual_reports) || 0;
-    document.getElementById('docsRatingsCount').textContent      = (d.counts && d.counts.ratings) || 0;
-    document.getElementById('docsConcallsCount').textContent     = (d.counts && d.counts.concalls) || 0;
+  function setCount(elId, n) {
+    const el = document.getElementById(elId);
+    if (el) el.textContent = n || 0;
+  }
 
-    renderBucket('docsAnnouncements',  d.announcements,  'No filings tracked yet for this ticker.');
-    renderBucket('docsAnnualReports',  d.annual_reports, 'No annual reports yet.');
-    renderBucket('docsRatings',        d.ratings,        'No rating actions detected.');
-    renderBucket('docsConcalls',       d.concalls,       'No concall transcripts yet.');
+  try {
+    // Prefer Phase B endpoint
+    let r = await API.get(`/stock/${TICKER}/ir?limit=15`);
+    let d = (r && r.data) || null;
+    let usedIr = !!d;
+
+    // Fall back to legacy /documents if /ir is unavailable
+    if (!d) {
+      r = await API.get(`/stock/${TICKER}/documents?days=540`);
+      d = (r && r.data) || {};
+    }
+
+    if (usedIr) {
+      // Phase B schema — rich bucketing
+      const announcements = [].concat(d.quarterly_results || [], d.agm_notices || [], d.press_releases || []);
+      const ma_audit       = [].concat(d.ma_deals || [], d.audit_qualifications || []);
+      const insider        = [].concat(d.insider_disclosures || [], d.shareholding_filings || []);
+
+      setCount('docsAnnouncementsCount', announcements.length);
+      setCount('docsConcallsCount',      (d.concalls || []).length);
+      setCount('docsPresentationsCount', (d.presentations || []).length);
+      setCount('docsRatingsCount',       (d.ratings || []).length);
+      setCount('docsBoardCount',         (d.board_outcomes || []).length);
+      setCount('docsCorpCount',          (d.corporate_actions || []).length);
+      setCount('docsMaAuditCount',       ma_audit.length);
+      setCount('docsInsiderCount',       insider.length);
+
+      renderBucket('docsAnnouncements',  announcements,            'No filings or quarterly results yet.');
+      renderBucket('docsConcalls',       d.concalls,               'No concall transcripts yet — scraper pulls from BSE/NSE/IR pages.');
+      renderBucket('docsPresentations',  d.presentations,          'No investor presentations published.');
+      renderBucket('docsRatings',        d.ratings,                'No CRISIL / ICRA / CARE rating actions detected.', true);
+      renderBucket('docsBoard',          d.board_outcomes,         'No board meeting outcomes filed.');
+      renderBucket('docsCorp',           d.corporate_actions,      'No bonus / split / dividend / buyback filings.');
+      renderBucket('docsMaAudit',        ma_audit,                 'No M&A activity or audit qualifications.');
+      renderBucket('docsInsider',        insider,                  'No SEBI PIT/SAST insider disclosures filed.');
+
+      // Show the on-demand fetch bar if total filings across all buckets
+      // is sparse (≤3). Common for tickers the scraper hasn't covered yet.
+      const totalFilings = announcements.length + (d.concalls || []).length
+                         + (d.presentations || []).length + (d.ratings || []).length
+                         + (d.board_outcomes || []).length + (d.corporate_actions || []).length
+                         + ma_audit.length + insider.length;
+      const fetchBar = document.getElementById('docsFetchBar');
+      if (fetchBar && totalFilings <= 3) {
+        fetchBar.style.display = 'flex';
+      }
+    } else {
+      // Legacy /documents schema — best-effort map into the new layout
+      setCount('docsAnnouncementsCount', (d.counts && d.counts.announcements) || 0);
+      setCount('docsConcallsCount',      (d.counts && d.counts.concalls) || 0);
+      setCount('docsRatingsCount',       (d.counts && d.counts.ratings) || 0);
+      setCount('docsPresentationsCount', (d.counts && d.counts.annual_reports) || 0);
+      renderBucket('docsAnnouncements',  d.announcements,  'No filings tracked yet for this ticker.');
+      renderBucket('docsConcalls',       d.concalls,       'No concall transcripts yet.');
+      renderBucket('docsPresentations',  d.annual_reports, 'No annual reports yet.');
+      renderBucket('docsRatings',        d.ratings,        'No rating actions detected.');
+      renderBucket('docsBoard',          null,             'Upgrade backend to Phase B for board outcomes.');
+      renderBucket('docsCorp',           null,             'Upgrade backend to Phase B for corporate actions.');
+      renderBucket('docsMaAudit',        null,             'Upgrade backend to Phase B for M&A / audit data.');
+      renderBucket('docsInsider',        null,             'Upgrade backend to Phase B for insider disclosures.');
+    }
   } catch (e) {
-    ['docsAnnouncements','docsAnnualReports','docsRatings','docsConcalls'].forEach(id => {
+    ['docsAnnouncements','docsConcalls','docsPresentations','docsRatings',
+     'docsBoard','docsCorp','docsMaAudit','docsInsider'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.innerHTML = '<div class="doc-empty">Couldn\'t load documents — backend offline?</div>';
+      if (el) el.innerHTML = '<div class="doc-empty">Couldn\'t load IR data — backend offline?</div>';
     });
   }
 }
 
 const TAB_LOADERS = {
   events: loadEvents, intelligence: loadIntelligence,
-  overview: loadOverview, chart: () => loadChart(chartActivePeriod),
+  overview: loadOverview, chart: () => {/* canvas chart mounted on page load via AdvancedChart; legacy loadChart kept for any deep links that call it directly */},
   financials: loadFinancials, ratios: loadRatios, peers: loadPeers,
   shareholding: loadShareholding, corp: loadCorp, news: loadNews,
   documents: loadDocuments, forensics: loadForensics,
 };
 TAB_LOADERS.events._loaded = true;
+
+// ── Documents tab: live-fetch button handler ────────────────────────────
+// Triggers POST /api/stock/<ticker>/ir/refresh which runs the BSE filing
+// fetcher synchronously for this one ticker. On success, re-runs the tab
+// loader so the newly-scraped data shows up immediately.
+(function () {
+  const btn = document.getElementById('docsFetchBtn');
+  const msg = document.getElementById('docsFetchMsg');
+  const bar = document.getElementById('docsFetchBar');
+  if (!btn || !msg) return;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const origLabel = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;animation:spin 1s linear infinite;">progress_activity</span> Fetching from BSE…';
+    msg.textContent = 'Reaching BSE corporate-announcements API for ' + TICKER + '… (10–20s)';
+    try {
+      const r = await fetch(`/api/stock/${encodeURIComponent(TICKER)}/ir/refresh`, { method: 'POST' });
+      const j = await r.json();
+      if (!r.ok || !j.success) {
+        msg.textContent = (j && j.error) || 'BSE API unreachable. Try again in a few minutes.';
+        btn.innerHTML = origLabel;
+        btn.disabled = false;
+        return;
+      }
+      const inserted = (j.data && j.data.inserted) || 0;
+      msg.textContent = inserted > 0
+        ? `Fetched ${inserted} new filing(s). Reloading…`
+        : 'No new filings found on BSE for this ticker. The company may file under a different scrip code, or simply have nothing recent.';
+      btn.innerHTML = origLabel;
+      btn.disabled = false;
+      if (inserted > 0) {
+        // Re-run the tab loader; bar will auto-hide when totalFilings > 3
+        bar.style.display = 'none';
+        TAB_LOADERS.documents._loaded = false;
+        loadDocuments();
+      }
+    } catch (e) {
+      msg.textContent = 'Network error: ' + (e.message || e);
+      btn.innerHTML = origLabel;
+      btn.disabled = false;
+    }
+  });
+})();
+
+// Spinner keyframes for the fetch button
+(function () {
+  if (document.getElementById('docs-fetch-spin')) return;
+  const s = document.createElement('style');
+  s.id = 'docs-fetch-spin';
+  s.textContent = '@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }';
+  document.head.appendChild(s);
+})();
 
 loadCore();
 
@@ -2492,5 +2946,6 @@ if (initialHash && TAB_LOADERS[initialHash]) {
   );
 })();
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

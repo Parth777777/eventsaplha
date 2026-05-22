@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NPS Calculator — Corpus & Annuity Pension | Tickwave</title>
+<meta name="description" content="National Pension System (NPS) calculator. Monthly contribution + years to retirement → corpus, 60% lumpsum, 40% annuity, expected monthly pension.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/nps-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">NPS Calculator</div>
+<h1>NPS — <span class="accent">lumpsum + monthly pension</span></h1>
+<p class="lead">National Pension System builds a corpus while you work, then at 60 splits into a lumpsum (60% tax-free) and an annuity (40% mandatory) that pays monthly pension for life.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="80" r="22" fill="#b794ff" opacity="0.3" stroke="#b794ff"/><text x="100" y="86" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="12" font-weight="700" fill="#b794ff">CORPUS</text><path d="M70 120 L100 105 L130 120" stroke="#b794ff" stroke-width="2"/><rect x="40" y="130" width="50" height="35" rx="6" fill="#161d28" stroke="#2dd4aa"/><text x="65" y="148" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#2dd4aa">60%</text><text x="65" y="160" text-anchor="middle" font-family="Geist Mono" font-size="8" fill="#8a94a8">LUMPSUM</text><rect x="110" y="130" width="50" height="35" rx="6" fill="#161d28" stroke="#e6b84a"/><text x="135" y="148" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#e6b84a">40%</text><text x="135" y="160" text-anchor="middle" font-family="Geist Mono" font-size="8" fill="#8a94a8">ANNUITY</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your NPS plan</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Monthly contribution <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="mIn" value="10000" min="500" step="500"></span></div><input type="range" id="m" class="tk-slider" min="500" max="100000" step="500" value="10000"><div class="tk-slider-bounds"><span>₹500</span><span>₹1 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current age <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="aIn" value="30" min="18" max="65" step="1"><span class="suffix">yr</span></span></div><input type="range" id="a" class="tk-slider" min="18" max="65" step="1" value="30"><div class="tk-slider-bounds"><span>18</span><span>65</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Expected return <span class="hint">(% p.a.)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="10" min="4" max="15" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="4" max="15" step="0.25" value="10"><div class="tk-slider-bounds"><span>4%</span><span>15%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annuity rate <span class="hint">(% p.a.)</span></label><span class="tk-field-value-wrap"><input type="number" id="anIn" value="6" min="4" max="10" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="an" class="tk-slider" min="4" max="10" step="0.25" value="6"><div class="tk-slider-bounds"><span>4%</span><span>10%</span></div></div>
+</div>
+<div class="tk-card"><h2>At retirement (age 60)</h2>
+<div class="tk-result-headline">Total corpus</div>
+<div class="tk-result-value" id="corpus">—</div>
+<div class="tk-result-sub">Monthly pension thereafter: <span id="pen">—</span></div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Contributed<strong id="lgC">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Returns<strong id="lgR">—</strong></span></div></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Lumpsum (60%, tax-free)</div><div class="val bull" id="lump">—</div></div>
+<div class="tk-stat"><div class="lbl">Annuity (40%)</div><div class="val" id="annuity">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>NPS tax benefits</h2>
+<ul>
+<li><strong>Section 80CCD(1):</strong> Employee contribution up to 10% of salary (within ₹1.5L 80C limit) — old regime</li>
+<li><strong>Section 80CCD(1B):</strong> Additional ₹50,000 over and above 80C — old regime only</li>
+<li><strong>Section 80CCD(2):</strong> Employer contribution up to 14% of basic — available in BOTH regimes</li>
+<li><strong>At maturity:</strong> 60% lumpsum is tax-free; annuity income taxed at slab</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>NPS Tier I or Tier II?</summary><p>Tier I: tax benefits + 60-year lock. Tier II: liquid, no tax benefit. Use Tier I for retirement, Tier II as a flexible parking.</p></details>
+<details><summary>Why is 40% annuity mandatory?</summary><p>Regulatory rule to ensure NPS members have lifelong pension income post-retirement.</p></details>
+<details><summary>Asset allocation in NPS?</summary><p>Auto choice (age-based glide path) or Active choice (you pick equity/corporate bonds/govt securities up to 75% equity before age 50).</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="retirement-calculator.html">Retirement Calculator<span class="sub">Total corpus needed</span></a>
+<a href="ppf-calculator.html">PPF Calculator<span class="sub">Tax-free alternative</span></a>
+<a href="epf-calculator.html">EPF Calculator<span class="sub">Employer-led savings</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var M=+document.getElementById('m').value, age=+document.getElementById('a').value, r=+document.getElementById('r').value/100/12, an=+document.getElementById('an').value/100;
+  var months=Math.max(0,(60-age)*12);
+  var fv=r===0?M*months:M*((Math.pow(1+r,months)-1)/r)*(1+r);
+  var contrib=M*months, returns=fv-contrib;
+  var lump=fv*0.6, annuityCorpus=fv*0.4;
+  var monthlyPen=annuityCorpus*an/12;
+  T.animateNumber(document.getElementById('corpus'),fv);
+  document.getElementById('pen').textContent=T.formatINRShort(monthlyPen);
+  T.animateNumber(document.getElementById('lump'),lump);
+  T.animateNumber(document.getElementById('annuity'),annuityCorpus);
+  document.getElementById('lgC').textContent=T.formatINRShort(contrib);
+  document.getElementById('lgR').textContent=T.formatINRShort(returns);
+  T.drawDonut(document.getElementById('donut'),[{value:contrib,color:'#8eb4e0'},{value:returns,color:'#b794ff'}],{centerLabel:'Corpus',centerValue:T.formatINRShort(fv)});
+}
+T.bindSlider({slider:document.getElementById('m'),input:document.getElementById('mIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('an'),input:document.getElementById('anIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'NPS Tier I or Tier II?',a:'Tier I: tax benefits + 60-yr lock. Tier II: liquid, no tax benefit. Use Tier I for retirement.'},{q:'Why is 40% annuity mandatory?',a:'Regulatory rule for guaranteed lifelong post-retirement income.'},{q:'NPS asset allocation?',a:'Auto (age-based glide path) or Active (you pick equity/bonds, up to 75% equity pre-50).'}]);
+T.mountSoftwareSchema({name:'NPS Calculator',description:'National Pension System corpus + lumpsum + annuity pension.'});
+})();
+</script>
+</body></html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Step-up SIP Calculator — Raise SIP Every Year | Tickwave</title>
+<meta name="description" content="Step-up SIP (top-up SIP) calculator. Raise your SIP by a fixed % every year to match salary growth. See how much extra corpus you build vs flat SIP.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/step-up-sip-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Step-up SIP</div>
+<h1>Raise SIP every year — <span class="accent">corpus grows much faster</span></h1>
+<p class="lead">A step-up SIP increases your monthly investment by a fixed percentage every year — matching your salary growth. The compounding boost from those later contributions is bigger than people think.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2dd4aa"/><stop offset="1" stop-color="#b794ff"/></linearGradient></defs>
+<g transform="translate(20 170)"><rect x="0" y="-30" width="22" height="30" fill="url(#g)" rx="2" opacity="0.5"/><rect x="30" y="-50" width="22" height="50" fill="url(#g)" rx="2" opacity="0.65"/><rect x="60" y="-75" width="22" height="75" fill="url(#g)" rx="2" opacity="0.8"/><rect x="90" y="-105" width="22" height="105" fill="url(#g)" rx="2" opacity="0.9"/><rect x="120" y="-140" width="22" height="140" fill="url(#g)" rx="2"/></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Starting monthly SIP <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="aIn" value="10000" min="500" step="500"></span></div><input type="range" id="a" class="tk-slider" min="500" max="200000" step="500" value="10000"><div class="tk-slider-bounds"><span>₹500</span><span>₹2,00,000</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual step-up <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="sIn" value="10" min="0" max="30" step="1"><span class="suffix">%</span></span></div><input type="range" id="s" class="tk-slider" min="0" max="30" step="1" value="10"><div class="tk-slider-bounds"><span>0%</span><span>30%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Expected return p.a. <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="12" min="1" max="30" step="0.5"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="30" step="0.5" value="12"><div class="tk-slider-bounds"><span>1%</span><span>30%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="20" min="1" max="40" step="1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="1" max="40" step="1" value="20"><div class="tk-slider-bounds"><span>1 yr</span><span>40 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">Future value</div>
+<div class="tk-result-value" id="fv">—</div>
+<div class="tk-result-sub">Step-up SIP — boost over flat SIP: <span id="boost">—</span></div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Invested<strong id="lgI">—</strong></span><span><span class="dot" style="background:#2dd4aa"></span>Returns<strong id="lgR">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total invested</div><div class="val" id="inv">—</div></div><div class="tk-stat"><div class="lbl">Returns</div><div class="val bull" id="ret">—</div></div></div>
+</div></section>
+
+<section class="tk-chart" style="margin-bottom:40px"><h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif">Step-up SIP vs flat SIP — year-by-year</h2><svg id="cmp"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Flat SIP value</span><span><span class="dot" style="background:#2dd4aa"></span>Step-up SIP value</span></div></section>
+
+<section class="tk-content">
+<section><h2>How step-up SIP works</h2>
+<p>Each year, your monthly SIP increases by the step-up percentage. If you start at ₹10,000/month with a 10% step-up, year 2 is ₹11,000, year 3 is ₹12,100, and so on. The earlier years' contributions still compound the longest; the later years' larger contributions compound less but on bigger principal — both forces add up.</p>
+<div class="tk-formula">FV = Σ over each year y: SIP<sub>y</sub> × [((1+r)<sup>12(n-y+1)</sup> − 1) / r] × (1+r)</div>
+</section>
+<section><h2>How much does a step-up actually add?</h2>
+<p>At 10%/year step-up vs flat, starting at ₹10k for 20 years at 12%: flat SIP gives ₹99 lakh; step-up gives ₹1.83 cr — roughly 85% more. Of course you also invested more (₹68 lakh vs ₹24 lakh), but the proportional gain is real.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Do all mutual funds support step-up SIP?</summary><p>Most AMCs allow registering an annual top-up at SIP creation. Some also let you increment via the mobile app. If yours doesn't, manually increase the SIP amount each year.</p></details>
+<details><summary>What step-up % is realistic?</summary><p>Match your expected salary growth — typically 8-10% for India. Aggressive savers push to 15%.</p></details>
+<details><summary>Should step-up % equal inflation?</summary><p>At minimum, yes — otherwise your real SIP shrinks. Ideally 2-4% above inflation so your real investment grows.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Flat SIP baseline</span></a>
+<a href="goal-sip-calculator.html">Goal SIP<span class="sub">Target corpus reverse-calc</span></a>
+<a href="inflation-calculator.html">Inflation Calculator<span class="sub">Why step-up beats flat</span></a>
+<a href="retirement-calculator.html">Retirement Calculator<span class="sub">Corpus needed</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function fvSeries(start,stepup,annualR,years){
+  var m=annualR/12, sip=start, vals=[], totalInv=0, balance=0;
+  for(var y=1;y<=years;y++){
+    for(var k=0;k<12;k++){ balance=(balance+sip)*(1+m); totalInv+=sip; }
+    vals.push({balance:balance,invested:totalInv,sip:sip});
+    sip=sip*(1+stepup);
+  }
+  return vals;
+}
+function compute(){
+  var P=+document.getElementById('a').value, s=+document.getElementById('s').value/100, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  var stepSeries=fvSeries(P,s,r,n);
+  var flatSeries=fvSeries(P,0,r,n);
+  var last=stepSeries[stepSeries.length-1], flatLast=flatSeries[flatSeries.length-1];
+  var fv=last.balance, invested=last.invested, returns=fv-invested;
+  var boostPct=((fv-flatLast.balance)/flatLast.balance)*100;
+  T.animateNumber(document.getElementById('fv'),fv);
+  T.animateNumber(document.getElementById('inv'),invested);
+  T.animateNumber(document.getElementById('ret'),returns);
+  document.getElementById('boost').textContent='+'+boostPct.toFixed(1)+'%';
+  document.getElementById('lgI').textContent=T.formatINRShort(invested);
+  document.getElementById('lgR').textContent=T.formatINRShort(returns);
+  T.drawDonut(document.getElementById('donut'),[{value:invested,color:'#8eb4e0'},{value:returns,color:'#2dd4aa'}],{centerLabel:'Future value',centerValue:T.formatINRShort(fv)});
+  // Comparison chart: stacked area showing flat (blue) and step-up (green) balances over years
+  var flatVals=flatSeries.map(function(x){return x.balance;}), stepVals=stepSeries.map(function(x,i){return Math.max(0,x.balance-flatSeries[i].balance);});
+  var lbs=[];for(var i=1;i<=n;i++)lbs.push('Y'+i);
+  T.drawStackedArea(document.getElementById('cmp'),[{label:'Flat',color:'#3a6ea8',values:flatVals},{label:'Step-up extra',color:'#2dd4aa',values:stepVals}],{xLabels:lbs});
+}
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('s'),input:document.getElementById('sIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Do mutual funds support step-up SIP?',a:'Most AMCs allow annual top-up at SIP creation. Some allow manual increment via app.'},{q:'What step-up percentage is realistic?',a:'Match your salary growth — typically 8-10% in India. Aggressive savers push to 15%.'},{q:'Should step-up equal inflation?',a:'Minimum yes, else real SIP shrinks. Ideal: 2-4% above inflation.'}]);
+T.mountSoftwareSchema({name:'Step-up SIP Calculator',description:'SIP with annual top-up — see corpus growth vs flat SIP.'});
+})();
+</script>
+</body></html>

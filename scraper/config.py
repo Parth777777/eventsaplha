@@ -77,6 +77,28 @@ RSS_SOURCES = {
     # --- Stock-specific aggregators ---
     'mc_latest_news': 'https://www.moneycontrol.com/rss/latestnews.xml',
     'mc_corp_action': 'https://www.moneycontrol.com/rss/results.xml',
+
+    # --- International press wires (Reuters / Bloomberg / Dow Jones / etc.) ---
+    # These feeds carry the clean, factual press-wire headlines the user
+    # expects in the newsroom (e.g. "Afcons Infrastructure March-Quarter
+    # Consol Net Loss 884 Million Rupees"). Where a native RSS isn't free,
+    # we use a Google News search restricted to the publisher domain — same
+    # downstream classification path as the rest of the feeds.
+    'reuters_business_global': 'https://news.google.com/rss/search?q=site%3Areuters.com+(markets+OR+earnings+OR+India)&hl=en&gl=US&ceid=US:en',
+    'bloomberg_markets':       'https://news.google.com/rss/search?q=site%3Abloomberg.com+(markets+OR+India+OR+earnings)&hl=en&gl=US&ceid=US:en',
+    'dow_jones_newswires':     'https://news.google.com/rss/search?q=%22Dow+Jones+Newswires%22+(India+OR+earnings+OR+results)&hl=en&gl=US&ceid=US:en',
+    'globe_newswire':          'https://news.google.com/rss/search?q=site%3Aglobenewswire.com+(earnings+OR+results+OR+contract+OR+India)&hl=en&gl=US&ceid=US:en',
+    'marketwatch_top':         'http://feeds.marketwatch.com/marketwatch/topstories/',
+    'marketwatch_marketpulse': 'http://feeds.marketwatch.com/marketwatch/marketpulse/',
+    'cnbc_top_news':           'https://www.cnbc.com/id/100003114/device/rss/rss.html',
+    'cnbc_economy':            'https://www.cnbc.com/id/20910258/device/rss/rss.html',
+    'cnbc_finance':            'https://www.cnbc.com/id/10000664/device/rss/rss.html',
+    'cnbctv18_business':       'https://www.cnbctv18.com/commonfeeds/v1/cne/rss/business.xml',
+    'bbc_business':            'http://feeds.bbci.co.uk/news/business/rss.xml',
+    'ft_markets':              'https://news.google.com/rss/search?q=site%3Aft.com+(markets+OR+earnings+OR+India)&hl=en&gl=US&ceid=US:en',
+    'wsj_markets':             'https://news.google.com/rss/search?q=site%3Awsj.com+(markets+OR+India+OR+earnings)&hl=en&gl=US&ceid=US:en',
+    'tradingeconomics_news':   'https://news.google.com/rss/search?q=site%3Atradingeconomics.com&hl=en&gl=US&ceid=US:en',
+    'yahoo_finance_top':       'https://news.google.com/rss/search?q=site%3Afinance.yahoo.com+(earnings+OR+markets+OR+India)&hl=en&gl=US&ceid=US:en',
 }
 
 # Google News RSS - per-sector (free, no API key)

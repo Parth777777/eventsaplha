@@ -1,0 +1,191 @@
+/* ============================================================
+   DISCLOSURES — SEBI compliance footer, modal, per-card chips
+   ============================================================
+   All styling consumes tokens from tokens.css. No hardcoded hex.
+   ============================================================ */
+
+/* ── Sitewide SEBI footer (mounted by bootstrap.js) ─────── */
+.ea-footer {
+  margin: 48px 24px 24px;
+  padding: 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.ea-footer__row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.ea-footer__icon {
+  color: var(--caution);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.ea-footer__body {
+  flex: 1;
+  min-width: 240px;
+}
+.ea-footer__title {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.ea-footer__sep {
+  color: var(--text-tertiary);
+}
+.ea-footer__link {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ea-footer__link:hover { color: var(--accent-hover); text-decoration: underline; }
+
+/* ── Statistical-reference framing on signal cards ──────── */
+.curated-metrics-header {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.curated-ind {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/* ── Per-signal card disclaimer (curated-signals.js) ────── */
+.curated-disclaimer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  line-height: 1.4;
+}
+.curated-disclaimer a {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.curated-disclaimer a:hover { color: var(--accent); }
+
+/* ── Methodology details on each card ───────────────────── */
+.curated-method {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.curated-method > summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.curated-method > summary::-webkit-details-marker { display: none; }
+.curated-method > summary::before {
+  content: '▸';
+  font-size: 9px;
+  transition: transform var(--dur-fast, 120ms) var(--ease-out, ease);
+}
+.curated-method[open] > summary::before { transform: rotate(90deg); }
+.curated-method[open] > summary { color: var(--text-secondary); }
+.curated-method__body {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── First-load compliance modal ────────────────────────── */
+.compliance-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.compliance-modal__card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+}
+.compliance-modal__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compliance-modal__title .material-symbols-outlined { color: var(--caution); font-size: 24px; }
+.compliance-modal__body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.compliance-modal__body strong { color: var(--text-primary); }
+.compliance-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.compliance-modal__btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 0;
+  transition: background var(--dur-fast, 120ms) var(--ease-out, ease);
+}
+.compliance-modal__btn--primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+.compliance-modal__btn--primary:hover { background: var(--accent-hover); }
+.compliance-modal__btn--secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.compliance-modal__btn--secondary:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}

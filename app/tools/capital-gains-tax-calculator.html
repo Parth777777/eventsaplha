@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capital Gains Tax Calculator (STCG / LTCG) India | Tickwave</title>
+<meta name="description" content="Calculate STCG and LTCG tax on equity, debt, mutual funds and real estate in India. Post-Jul-2024 rules: 20% STCG, 12.5% LTCG over ₹1.25L.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/capital-gains-tax-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Capital Gains Tax</div>
+<h1>STCG &amp; LTCG — <span class="accent">exact tax owed</span></h1>
+<p class="lead">Equity, debt mutual fund or real estate. Plug in buy price, sell price, holding period — get STCG or LTCG tax under current (post-July-2024) Indian rules with the ₹1.25 lakh equity LTCG exemption applied.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="60" width="50" height="80" rx="6" fill="#161d28" stroke="#8eb4e0"/><text x="55" y="80" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">BUY</text><text x="55" y="105" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="13" font-weight="700" fill="#8eb4e0">₹P</text><rect x="120" y="40" width="50" height="100" rx="6" fill="#161d28" stroke="#2dd4aa"/><text x="145" y="60" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">SELL</text><text x="145" y="85" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="13" font-weight="700" fill="#2dd4aa">₹S</text><path d="M85 90 L115 60" stroke="#2dd4aa" stroke-width="2" stroke-dasharray="3 3"/></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your transaction</h2>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Asset type</label>
+<div class="tk-tabs" id="kind"><button data-k="equity" aria-pressed="true">Equity / equity MF</button><button data-k="debt" aria-pressed="false">Debt MF</button><button data-k="property" aria-pressed="false">Real estate / gold</button></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Purchase price <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="pIn" value="200000" min="1" step="1000"></span></div><input type="range" id="p" class="tk-slider" min="1000" max="100000000" step="1000" value="200000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Sale price <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="sIn" value="350000" min="1" step="1000"></span></div><input type="range" id="s" class="tk-slider" min="1000" max="500000000" step="1000" value="350000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹50 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Holding period <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="3" min="0.1" max="40" step="0.1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.1" max="40" step="0.1" value="3"><div class="tk-slider-bounds"><span>0.1 yr</span><span>40 yr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Your tax slab <span class="hint">(for STCG on debt)</span></label><span class="tk-field-value-wrap"><input type="number" id="slabIn" value="30" min="5" max="42" step="5"><span class="suffix">%</span></span></div><input type="range" id="slab" class="tk-slider" min="5" max="42" step="5" value="30"><div class="tk-slider-bounds"><span>5%</span><span>42%</span></div></div>
+</div>
+<div class="tk-card"><h2>Tax owed</h2>
+<div class="tk-result-headline">Capital gains tax</div>
+<div class="tk-result-value" id="tax">—</div>
+<div class="tk-result-sub" id="taxKind">—</div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Capital gain</div><div class="val bull" id="gain">—</div></div>
+<div class="tk-stat"><div class="lbl">Effective tax %</div><div class="val" id="eff">—</div></div>
+<div class="tk-stat"><div class="lbl">Net proceeds</div><div class="val bull" id="net">—</div></div>
+<div class="tk-stat"><div class="lbl">Exemption used</div><div class="val" id="exemption">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Indian capital gains rules (FY 2025-26)</h2>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="border-bottom:1px solid #253040"><th style="text-align:left;padding:8px 4px">Asset</th><th style="text-align:left">STCG</th><th style="text-align:left">LTCG</th></tr>
+<tr><td style="padding:6px 4px">Equity / equity MF</td><td>20% (held &lt; 12 mo)</td><td>12.5% on gains over ₹1.25 L (≥ 12 mo)</td></tr>
+<tr><td style="padding:6px 4px">Debt MF (post Apr-2023)</td><td colspan="2">Always taxed at slab (no LTCG benefit)</td></tr>
+<tr><td style="padding:6px 4px">Real estate / gold</td><td>Slab (held &lt; 24 mo)</td><td>12.5% without indexation (≥ 24 mo)</td></tr>
+</table>
+<p style="margin-top:14px">Plus 4% health & education cess on all capital gains tax.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>How does the ₹1.25 L equity LTCG exemption work?</summary><p>Per financial year, total equity LTCG up to ₹1.25 lakh is tax-free. Above that, 12.5% on the excess.</p></details>
+<details><summary>Is indexation still available?</summary><p>For property and gold sold after Jul 23 2024 you have a choice: 12.5% without indexation OR 20% with indexation (older purchases). For debt MF post-Apr-2023, no indexation.</p></details>
+<details><summary>How are mutual fund SIPs taxed?</summary><p>Each instalment is a separate buy. FIFO determines order. Use our <a href="mutual-fund-return-calculator.html">MF Return Calculator</a> for SIP-style tax estimate.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="mutual-fund-return-calculator.html">Mutual Fund Returns<span class="sub">Absolute + CAGR + tax</span></a>
+<a href="income-tax-calculator.html">Income Tax<span class="sub">Old vs new regime</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Pre-tax SIP corpus</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var kind='equity';
+function compute(){
+  var P=+document.getElementById('p').value, S=+document.getElementById('s').value, y=+document.getElementById('y').value, slab=+document.getElementById('slab').value/100;
+  var gain=Math.max(0,S-P);
+  var tax=0, label='', exempt=0;
+  if(kind==='equity'){
+    if(y>=1){ exempt=Math.min(gain,125000); tax=(gain-exempt)*0.125; label='LTCG @ 12.5% (₹1.25L exempt)'; }
+    else { tax=gain*0.20; label='STCG @ 20%'; }
+  } else if(kind==='debt'){
+    tax=gain*slab; label='Slab @ '+(slab*100).toFixed(0)+'%';
+  } else {
+    if(y>=2){ tax=gain*0.125; label='LTCG @ 12.5% (no indexation)'; }
+    else { tax=gain*slab; label='STCG @ slab '+(slab*100).toFixed(0)+'%'; }
+  }
+  tax*=1.04; // cess
+  var net=S-tax-P, eff=gain>0?(tax/gain)*100:0;
+  T.animateNumber(document.getElementById('tax'),tax);
+  document.getElementById('taxKind').textContent=label+' + 4% cess';
+  T.animateNumber(document.getElementById('gain'),gain);
+  document.getElementById('eff').textContent=T.formatPct(eff,2);
+  T.animateNumber(document.getElementById('net'),net+P);
+  document.getElementById('exemption').textContent=exempt>0?T.formatINRShort(exempt):'—';
+}
+document.querySelectorAll('#kind button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#kind button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');kind=b.dataset.k;compute();});});
+['p','s','y','slab'].forEach(function(id){T.bindSlider({slider:document.getElementById(id),input:document.getElementById(id+'In'),onChange:compute});});
+compute();
+T.mountFAQ([{q:'How does Rs 1.25L equity LTCG exemption work?',a:'Per financial year, total equity LTCG up to Rs 1.25 lakh tax-free. Above that 12.5%.'},{q:'Is indexation still available?',a:'Property/gold post-Jul-2024: choice of 12.5% no-indexation or 20% with indexation. Debt MF post-Apr-2023: no indexation.'},{q:'How are SIP units taxed?',a:'Each instalment is a separate buy. FIFO determines order.'}]);
+T.mountSoftwareSchema({name:'Capital Gains Tax Calculator',description:'STCG/LTCG tax on equity, debt MF and real estate India FY 2025-26.'});
+})();
+</script>
+</body></html>

@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +28,10 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
@@ -70,7 +73,7 @@
 <div class="rf-dot-grid"></div>
 
 
-<!-- ── Sidebar ────────────────────────────────────────── -->
+<!-- -- Sidebar ------------------------------------------ -->
 <aside class="sidebar hidden md:flex">
     <div class="sidebar-header">
         <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
@@ -105,7 +108,7 @@
 
 <main class="main-content">
 
-<!-- ── Header ────────────────────────────────────────── -->
+<!-- -- Header ------------------------------------------ -->
 <header class="sticky top-0 z-40 bg-background border-b border-outline-variant/15 px-6 py-4 mb-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -114,19 +117,19 @@
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right">
-                <div id="istClock" class="font-mono text-lg font-black text-secondary">—</div>
+                <div id="istClock" class="font-mono text-lg font-black text-secondary">�</div>
                 <div class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider">IST</div>
             </div>
             <div id="giftNiftyBadge" class="px-3 py-2 rounded-lg bg-surface-container text-center min-w-[110px]">
                 <div class="text-[9px] text-on-surface-variant/60 uppercase tracking-wider mb-0.5">GIFT Nifty</div>
-                <div id="giftNiftyVal" class="font-mono font-black text-sm text-primary">Loading…</div>
+                <div id="giftNiftyVal" class="font-mono font-black text-sm text-primary">Loading�</div>
             </div>
         </div>
     </div>
 </header>
     <!-- ============ PASTEL KPI ROW ============ -->    <div id="pastelKPI" style="margin:0 8px 24px;"></div>    <script>document.addEventListener('DOMContentLoaded', () => { if (window.Widgets) Widgets.mountPastelKPI('pastelKPI', {variant:'global'}); });</script>
 
-<!-- ── Session Status Bar ─────────────────────────────── -->
+<!-- -- Session Status Bar ------------------------------- -->
 <section class="px-4 mb-6">
     <div class="flex flex-wrap gap-3" id="sessionBar"></div>
 </section>
@@ -137,7 +140,7 @@
         <div class="widget" style="min-height:240px;">
           <div class="widget__head">
             <div>
-              <div class="widget__title">World indices · live</div>
+              <div class="widget__title">World indices � live</div>
               <div class="widget__meta">Top movers across regions</div>
             </div>
           </div>
@@ -213,7 +216,7 @@
     </script>
     <!-- ============ END GLOBAL INSIGHT STUDIO ============ -->
 
-<!-- ── Market Overview Table (live indices · sparkline per row) ──────────────── -->
+<!-- -- Market Overview Table (live indices � sparkline per row) ---------------- -->
 <!-- Replaces the old 9-card grid with a screener-style table that pulls
      /api/global/markets + /api/global/history. Each row gets a real
      30-day sparkline rendered via the shared Charts.spark wrapper. -->
@@ -238,7 +241,7 @@
             </tr>
           </thead>
           <tbody id="indexTableBody">
-            <tr><td colspan="5" class="gm-loading">Loading global indices…</td></tr>
+            <tr><td colspan="5" class="gm-loading">Loading global indices�</td></tr>
           </tbody>
         </table>
       </div>
@@ -312,7 +315,7 @@
 .gm-empty { padding: 28px; text-align: center; color: var(--rf-text-dim); font-size: 12px; }
 </style>
 
-<!-- ── Main: Forecast + News ──────────────────────────── -->
+<!-- -- Main: Forecast + News ---------------------------- -->
 <div class="px-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
     <!-- Left 2/3: Prediction + Charts -->
@@ -337,8 +340,8 @@
                     <div id="predLabel" class="font-mono font-black text-2xl text-secondary">+0.48%</div>
                     <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Predicted Nifty gap-open</div>
                     <div class="flex items-center justify-center gap-2 mt-2">
-                        <div id="predBias" class="text-[10px] px-2 py-0.5 rounded font-bold">—</div>
-                        <div id="predConf" class="text-[10px] text-on-surface-variant/50">—</div>
+                        <div id="predBias" class="text-[10px] px-2 py-0.5 rounded font-bold">�</div>
+                        <div id="predConf" class="text-[10px] text-on-surface-variant/50">�</div>
                     </div>
                 </div>
 
@@ -389,7 +392,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-black font-headline uppercase tracking-widest flex items-center gap-2">
                     <span class="material-symbols-outlined text-caution text-base">bar_chart</span>
-                    Overnight Global Move → Next-Day Nifty Gap
+                    Overnight Global Move ? Next-Day Nifty Gap
                 </h2>
                 <span class="text-[9px] text-on-surface-variant/50">Last 15 sessions</span>
             </div>
@@ -409,7 +412,7 @@
                     Global News Feed
                 </h2>
                 <div class="flex items-center gap-2">
-                    <a href="events.html?category=geopolitical" class="text-[10px] text-on-surface-variant hover:text-on-surface underline decoration-dotted underline-offset-2">View all in Newsroom →</a>
+                    <a href="events.html?category=geopolitical" class="text-[10px] text-on-surface-variant hover:text-on-surface underline decoration-dotted underline-offset-2">View all in Newsroom ?</a>
                     <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
                     <span class="text-[9px] text-secondary">LIVE</span>
                 </div>
@@ -417,15 +420,15 @@
             <!-- Filters -->
             <div class="flex flex-wrap gap-1.5 mb-3">
                 <button class="filter-btn active" onclick="filterNews('ALL')">All</button>
-                <button class="filter-btn" onclick="filterNews('US')">🇺🇸 US</button>
-                <button class="filter-btn" onclick="filterNews('EU')">🇪🇺 EU</button>
-                <button class="filter-btn" onclick="filterNews('CN')">🇨🇳 China</button>
-                <button class="filter-btn" onclick="filterNews('JP')">🇯🇵 Japan</button>
+                <button class="filter-btn" onclick="filterNews('US')">???? US</button>
+                <button class="filter-btn" onclick="filterNews('EU')">???? EU</button>
+                <button class="filter-btn" onclick="filterNews('CN')">???? China</button>
+                <button class="filter-btn" onclick="filterNews('JP')">???? Japan</button>
             </div>
             <div class="flex flex-wrap gap-1.5 mb-4">
                 <button class="filter-btn" onclick="filterSentiment('ALL')">All Sentiment</button>
-                <button class="filter-btn" onclick="filterSentiment('bull')">🟢 Bullish</button>
-                <button class="filter-btn" onclick="filterSentiment('bear')">🔴 Bearish</button>
+                <button class="filter-btn" onclick="filterSentiment('bull')">?? Bullish</button>
+                <button class="filter-btn" onclick="filterSentiment('bear')">?? Bearish</button>
             </div>
             <div id="newsFeed" class="space-y-2 max-h-[600px] overflow-y-auto pr-1"></div>
         </div>
@@ -446,7 +449,7 @@
         <div class="mc">
             <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-3 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base">hub</span>
-                Index ↔ Nifty Correlations
+                Index ? Nifty Correlations
                 <span class="text-[9px] font-normal text-on-surface-variant/50">30D rolling</span>
             </h2>
             <div id="corrList" class="space-y-2"></div>
@@ -454,7 +457,7 @@
     </div>
 </div>
 
-<!-- ── Sector Sensitivity Heatmap ─────────────────────── -->
+<!-- -- Sector Sensitivity Heatmap ----------------------- -->
 <section class="px-4 mb-8">
     <div class="mc">
         <h2 class="text-sm font-black font-headline uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -482,13 +485,13 @@
         </div>
         <div class="mt-3 flex items-center gap-4 text-[9px] text-on-surface-variant/50">
             <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(45,212,170,0.7)"></span> High correlation (>0.6)</div>
-            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(230,184,74,0.5)"></span> Medium (0.3–0.6)</div>
+            <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(230,184,74,0.5)"></span> Medium (0.3�0.6)</div>
             <div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(61,74,92,0.4)"></span> Low (<0.3)</div>
         </div>
     </div>
 </section>
 
-<!-- ── Pie Charts Row ──────────────────────────────────── -->
+<!-- -- Pie Charts Row ------------------------------------ -->
 <section class="px-4 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
 
     <!-- Regional Market Weight Pie -->
@@ -511,15 +514,15 @@
         </h2>
         <svg id="riskGauge" width="200" height="110" viewBox="0 0 200 110" style="margin:0 auto;display:block;"></svg>
         <div id="riskLabel" class="font-mono font-black text-xl mt-2 text-secondary">Risk-On</div>
-        <div id="riskScore" class="text-[10px] text-on-surface-variant/60 mt-1">Score: —/100</div>
+        <div id="riskScore" class="text-[10px] text-on-surface-variant/60 mt-1">Score: �/100</div>
         <div class="mt-3 grid grid-cols-2 gap-2 text-[10px]">
             <div class="bg-surface-container rounded p-2">
                 <div class="text-on-surface-variant/50">VIX</div>
-                <div id="vixVal" class="font-mono font-bold text-sm text-caution">—</div>
+                <div id="vixVal" class="font-mono font-bold text-sm text-caution">�</div>
             </div>
             <div class="bg-surface-container rounded p-2">
                 <div class="text-on-surface-variant/50">DXY</div>
-                <div id="dxyVal" class="font-mono font-bold text-sm text-primary">—</div>
+                <div id="dxyVal" class="font-mono font-bold text-sm text-primary">�</div>
             </div>
         </div>
     </div>
@@ -549,18 +552,18 @@
 <script src="./shared/js/phase_1_5.js"></script>
 <script src="./shared/js/event-card.js"></script>
 <script>
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 // DATA
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 
-// All page data is fetched live — no hardcoded prices/correlations/calendars.
+// All page data is fetched live � no hardcoded prices/correlations/calendars.
 // Loaders below populate these in-place once the API responds.
-let ALL_INDICES = [];      // /api/global/markets → [{id, name, price, change, region, color}]
+let ALL_INDICES = [];      // /api/global/markets ? [{id, name, price, change, region, color}]
 let MODEL_WEIGHTS = [];    // derived from /api/global/correlations (top-5 by |corr|)
 let CORRELATIONS_DATA = []; // /api/global/correlations
 let SECTOR_HEATMAP = [];    // populated from /api/sectors when available; section hidden if empty
 
-// Stable color palette by index id — used when the API doesn't supply a color
+// Stable color palette by index id � used when the API doesn't supply a color
 const _IDX_COLOR = {
     nasdaq:'#6ba3d6', sp500:'#8eb4e0', dow:'#adc6ff',
     dax:'#e6b84a', ftse:'#c9a63a', cac:'#ddb84a',
@@ -577,7 +580,7 @@ const _SYMBOL_TO_ID = {
 // NEWS_DATA used to be a hardcoded mock array. It is now populated live from
 // /api/feed?category=geopolitical (the unified Newsroom feed). The shape kept
 // here is purely for the legacy renderNewsFeed and renderSentimentDonut helpers
-// — region/sectors are inferred from title text since the unified backend
+// � region/sectors are inferred from title text since the unified backend
 // doesn't tag region itself.
 let NEWS_DATA = [];
 
@@ -605,7 +608,7 @@ function _detectSentimentTag(s) {
     return 'neut';
 }
 
-// Populated live from /api/global/calendar → real policy / earnings /
+// Populated live from /api/global/calendar ? real policy / earnings /
 // IPO catalysts surfaced from the events table. No hardcoded calendar.
 let WEEK_EVENTS = [];
 
@@ -634,9 +637,9 @@ function gen30D(seed, vol = 1.2, trend = 0.04) {
     return genSpark(seed, 30, vol, trend);
 }
 
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 // SVG HELPERS
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 
 function polyPoints(data, w, h, pad = 8) {
     const min = Math.min(...data), max = Math.max(...data);
@@ -846,8 +849,8 @@ function gaugeSVG(value, min = -3, max = 3, w = 220, h = 120) {
     <circle cx="${cx}" cy="${cy}" r="5" fill="#dde3ef"/>`;
 
     // Labels
-    const labels = `<text x="${cx - r - 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#f26b6b">Gap↓</text>
-    <text x="${cx + r + 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#2dd4aa">Gap↑</text>`;
+    const labels = `<text x="${cx - r - 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#f26b6b">Gap?</text>
+    <text x="${cx + r + 4}" y="${cy + 4}" text-anchor="middle" font-size="9" fill="#2dd4aa">Gap?</text>`;
 
     return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${arcs}${needle}${labels}</svg>`;
 }
@@ -863,16 +866,16 @@ function lerpColor(a, b, t) {
     return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
 }
 
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 // RENDER FUNCTIONS
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 
 function renderSessionBar() {
     const now = new Date();
     const el = document.getElementById('sessionBar');
     el.innerHTML = SESSIONS.map(s => {
         const tzOpts = { timeZone: s.tz, hour:'2-digit', minute:'2-digit', hour12:false };
-        let localStr = '—';
+        let localStr = '�';
         try { localStr = now.toLocaleTimeString('en-US', tzOpts); } catch(_){}
 
         // Simplified open/closed (IST-offset heuristic)
@@ -884,9 +887,9 @@ function renderSessionBar() {
 
         let open = false;
         if (isGift)  open = true; // almost always open
-        if (isUS)    open = istHour >= 19 || istHour < 2;   // 19:00–01:30 IST ≈ NYSE open
-        if (isEU)    open = istHour >= 13 && istHour < 22;  // 13:30–21:30 IST ≈ EU open
-        if (isAsia)  open = istHour >= 5  && istHour < 12;  // 5:00–12:00 IST ≈ Asia open
+        if (isUS)    open = istHour >= 19 || istHour < 2;   // 19:00�01:30 IST � NYSE open
+        if (isEU)    open = istHour >= 13 && istHour < 22;  // 13:30�21:30 IST � EU open
+        if (isAsia)  open = istHour >= 5  && istHour < 12;  // 5:00�12:00 IST � Asia open
 
         const flagChip = (window.MarketVisuals && MarketVisuals.flag)
             ? MarketVisuals.flag(s.region, { size: 'sm', label: false })
@@ -913,8 +916,8 @@ function getISTHour() {
 // (30-day series for the per-row sparkline). Mounts via Charts.spark so
 // every page on the site shares one chart language.
 const FLAG_BY_REGION = {
-    USA: '🇺🇸', UK: '🇬🇧', JPN: '🇯🇵', HKG: '🇭🇰', CHN: '🇨🇳',
-    DEU: '🇩🇪', FRA: '🇫🇷', IND: '🇮🇳', GLB: '🌐',
+    USA: '????', UK: '????', JPN: '????', HKG: '????', CHN: '????',
+    DEU: '????', FRA: '????', IND: '????', GLB: '??',
 };
 
 // Map yfinance symbols to history-endpoint keys so we can hand each row
@@ -928,7 +931,7 @@ const SYMBOL_TO_HISTORY_KEY = {
 async function renderIndexGrid() {
     const tbody = document.getElementById('indexTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" class="gm-loading">Loading global indices…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="gm-loading">Loading global indices�</td></tr>';
 
     let markets = null, history = null;
     try {
@@ -942,7 +945,7 @@ async function renderIndexGrid() {
 
     const indices = (markets && markets.indices) || [];
     if (!indices.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="gm-empty">Couldn\'t load global indices — backend offline or rate-limited.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="gm-empty">Couldn\'t load global indices � backend offline or rate-limited.</td></tr>';
         return;
     }
 
@@ -972,7 +975,7 @@ async function renderIndexGrid() {
                 <div class="gm-row__flag" style="border:none;background:transparent;padding:0;">${flagChip}</div>
                 <div class="gm-row__name__txt">
                   <div class="gm-row__title">${idx.name || idx.symbol}</div>
-                  <div class="gm-row__sub" style="color:${accent}99;">${idx.region || ''} · ${idx.symbol}</div>
+                  <div class="gm-row__sub" style="color:${accent}99;">${idx.region || ''} � ${idx.symbol}</div>
                 </div>
               </div>
             </td>
@@ -983,7 +986,7 @@ async function renderIndexGrid() {
           </tr>`;
     }).join('');
 
-    // Render sparklines from the history payload — fall back to a tiny
+    // Render sparklines from the history payload � fall back to a tiny
     // synthesized series if the index isn't in the history response.
     indices.forEach((idx, i) => {
         const key = SYMBOL_TO_HISTORY_KEY[idx.symbol];
@@ -1024,7 +1027,7 @@ async function loadGlobalState() {
         cal = (kr && kr.data) || null;
     } catch (_) {}
 
-    // 1) ALL_INDICES from /api/global/markets — every downstream renderer
+    // 1) ALL_INDICES from /api/global/markets � every downstream renderer
     //    keys off `id` and `change` so we map them directly.
     const indices = (markets && markets.indices) || [];
     ALL_INDICES = indices.map(idx => {
@@ -1036,7 +1039,7 @@ async function loadGlobalState() {
         };
     });
 
-    // 2) CORRELATIONS_DATA from /api/global/correlations — already in the
+    // 2) CORRELATIONS_DATA from /api/global/correlations � already in the
     //    right shape, just attach a stable colour by id.
     CORRELATIONS_DATA = (Array.isArray(corrs) ? corrs : []).map(c => ({
         id: c.id, label: c.label, corr: Number(c.corr || 0), beta: Number(c.beta || 0),
@@ -1045,7 +1048,7 @@ async function loadGlobalState() {
 
     // 3) MODEL_WEIGHTS derived from the correlations: the top-5 absolute
     //    correlations get weights normalised to sum to 1. This keeps the
-    //    forecast model honest — weights move with the data, not a baked-in
+    //    forecast model honest � weights move with the data, not a baked-in
     //    array.
     const top = CORRELATIONS_DATA.slice(0, 5);
     const totalAbs = top.reduce((s, c) => s + Math.abs(c.corr), 0) || 1;
@@ -1055,7 +1058,7 @@ async function loadGlobalState() {
         color: c.color,
     }));
 
-    // 4) WEEK_EVENTS from /api/global/calendar — already day/label/region/impact.
+    // 4) WEEK_EVENTS from /api/global/calendar � already day/label/region/impact.
     WEEK_EVENTS = (cal || []).slice(0, 8);
 }
 
@@ -1079,10 +1082,10 @@ function renderForecast() {
 
     const bias = document.getElementById('predBias');
     if (up) {
-        bias.textContent = '▲ BULLISH BIAS';
+        bias.textContent = '? BULLISH BIAS';
         bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-secondary/10 text-secondary border border-secondary/20';
     } else {
-        bias.textContent = '▼ BEARISH BIAS';
+        bias.textContent = '? BEARISH BIAS';
         bias.className = 'text-[10px] px-2 py-0.5 rounded font-bold bg-bear/10 text-bear border border-bear/20';
     }
 
@@ -1134,7 +1137,7 @@ function renderForecast() {
     ];
     strip.innerHTML = sectors.slice(0, 5).map(s => {
         return `<div class="flex items-center gap-1 px-2 py-1 rounded ${bias2 === 'bull' ? 'bg-secondary/10 text-secondary border border-secondary/20' : 'bg-bear/10 text-bear border border-bear/20'} text-[10px] font-bold">
-            ${bias2 === 'bull' ? '▲' : '▼'} ${s.name}
+            ${bias2 === 'bull' ? '?' : '?'} ${s.name}
         </div>`;
     }).join('');
 }
@@ -1263,7 +1266,7 @@ function renderCorrList() {
                 </div>
                 <div class="text-right">
                     <span class="font-mono text-xs font-bold text-primary">${c.corr.toFixed(2)}</span>
-                    <span class="text-[9px] text-on-surface-variant/50 ml-1">β=${c.beta}</span>
+                    <span class="text-[9px] text-on-surface-variant/50 ml-1">�=${c.beta}</span>
                 </div>
             </div>
             <div class="corr-bar-wrap">
@@ -1288,7 +1291,7 @@ function renderHeatmap() {
 
     const body = document.getElementById('heatmapBody');
     if (!SECTOR_HEATMAP.length) {
-        // Sector × global-index correlations require sector-ETF history.
+        // Sector � global-index correlations require sector-ETF history.
         // Until a backend computation is wired, the table renders an honest
         // empty state instead of fabricating numbers.
         body.innerHTML = `<tr><td colspan="${cols.length + 2}" class="py-6 px-3 text-center text-[11px] text-on-surface-variant/50">
@@ -1305,7 +1308,7 @@ function renderHeatmap() {
                 </td>
             `).join('')}
             <td class="py-1.5 px-2">
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver || '—'}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant/70 font-medium whitespace-nowrap">${row.driver || '�'}</span>
             </td>
         </tr>
     `).join('');
@@ -1332,7 +1335,7 @@ function renderRiskGauge() {
     const vix = (20 - avgChg * 3 + Math.random() * 2).toFixed(1);
     const dxy = (104.2 - avgChg * 0.4).toFixed(2);
 
-    // Gauge value: 0-100 → map to -1 to 1 range
+    // Gauge value: 0-100 ? map to -1 to 1 range
     const gaugeVal = (clamped - 50) / 50 * 2.5;
     const gaugeEl = document.getElementById('riskGauge');
     gaugeEl.outerHTML = gaugeSVG(gaugeVal, -2.5, 2.5, 200, 110).replace('<svg', '<svg id="riskGauge"');
@@ -1359,11 +1362,11 @@ function renderWeekEvents() {
     }
     root.innerHTML = WEEK_EVENTS.map(e => `
         <div class="flex items-start gap-2 p-2 rounded-lg ${e.day === today ? 'bg-surface-container border border-outline-variant/20' : ''}">
-            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day || '—'}</div>
+            <div class="text-[9px] font-mono font-black text-on-surface-variant/50 w-6 flex-shrink-0 mt-0.5">${e.day || '�'}</div>
             <div class="flex-1 min-w-0">
                 <div class="text-[10px] font-medium text-on-surface leading-snug">${(e.label || '').replace(/</g,'&lt;')}</div>
                 <div class="flex items-center gap-1.5 mt-0.5">
-                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region || '—'}</span>
+                    <span class="text-[8px] font-bold ${regColor[e.region] || 'text-primary'}">${e.region || '�'}</span>
                     <span class="text-[8px] ${impactColor[e.impact] || ''}">${(e.impact || 'low').toUpperCase()} IMPACT</span>
                 </div>
             </div>
@@ -1377,7 +1380,7 @@ function renderGiftNifty() {
     const giftPremium = pred * niftySpot / 100;
     const giftVal = (niftySpot + giftPremium).toFixed(0);
     const up = giftPremium >= 0;
-    document.getElementById('giftNiftyVal').textContent = `${Number(giftVal).toLocaleString('en-IN')} ${up ? '▲' : '▼'}`;
+    document.getElementById('giftNiftyVal').textContent = `${Number(giftVal).toLocaleString('en-IN')} ${up ? '?' : '?'}`;
     document.getElementById('giftNiftyVal').className = `font-mono font-black text-sm ${up ? 'text-secondary' : 'text-bear'}`;
 }
 
@@ -1393,16 +1396,16 @@ function updateClock() {
     document.getElementById('overviewUpdated').textContent = `Updated ${h}:${m} IST`;
 }
 
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 // INIT
-// ══════════════════════════════════════════════════════
+// ------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(renderSessionBar, 60000);
 
     renderSessionBar();
-    renderIndexGrid();         // table → /api/global/markets + history
+    renderIndexGrid();         // table ? /api/global/markets + history
     loadGeopoliticalNews();    // /api/feed?category=geopolitical
 
     // Everything below depends on live state pulled via loadGlobalState().
@@ -1433,5 +1436,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 60000);
 });
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

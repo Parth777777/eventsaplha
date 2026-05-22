@@ -103,3 +103,14 @@
     text-transform: lowercase;
     min-width: 72px;
 }
+/* "Open full page →" CTA — prepended when the typed query looks like a ticker
+   so the user has a one-click route to stock.html instead of relying on the
+   row-tap. */
+.tw-search__row--cta {
+    background: linear-gradient(135deg, rgba(45,212,170,0.06), rgba(45,212,170,0.015));
+    border-top: 1px solid rgba(45,212,170,0.2);
+    border-bottom: 1px solid rgba(45,212,170,0.2);
+}
+.tw-search__row--cta:hover { background: linear-gradient(135deg, rgba(45,212,170,0.12), rgba(45,212,170,0.04)); }
+.tw-search__row--cta .ticker { color: #2dd4aa; font-weight: 700; }
+.tw-search__row--cta .name { color: var(--rf-text); font-weight: 500; }

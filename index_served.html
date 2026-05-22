@@ -1,0 +1,3453 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<!-- FORCE-HIDE the leftover edge modal so the blank dark strip with `—` +
+     × stops blocking the page. Inline style on #edgeModalBackdrop was
+     setting display:flex; this `!important` rule beats inline non-important.
+     The open()/close() JS below was upgraded to use setProperty(...,
+     'important') so legitimate analyze() calls still summon the modal. -->
+<style id="edge-modal-killswitch">
+  #edgeModalBackdrop { display: none !important; }
+  #edgeModalBackdrop[data-open="1"] { display: flex !important; }
+</style>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script src="./shared/js/theme-toggle.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickwave | Home</title>
+    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                "primary": "#8eb4e0", "primary-container": "#3a6ea8", "secondary": "#2dd4aa", "tertiary": "#f29090",
+                "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+                "surface-container-lowest": "#060a0f", "surface-container-low": "#0d1118",
+                "surface-container": "#111720", "surface-container-high": "#161d28",
+                "surface-container-highest": "#1c2435", "surface-bright": "#222c3d",
+                "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+                "outline": "#3d4a5c", "outline-variant": "#253040",
+                "bull": "#2dd4aa", "bear": "#f26b6b", "caution": "#e6b84a", "info": "#6ba3d6"
+            }, fontFamily: { "headline": ["Plus Jakarta Sans"], "body": ["DM Sans"], "mono": ["Geist Mono"] } } }
+        }
+    </script>
+    <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
+    <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/search-bar.css">
+    <script src="./shared/js/theme.js"></script>
+    <script src="./shared/js/widgets.js"></script>
+    <style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body rf-page">
+<div class="rf-aurora-bg"></div>
+<div class="rf-dot-grid"></div>
+
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120" data-tw-logo>
+        <p class="sidebar-brand-sub">Alpha Terminal</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link active" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="ipo.html"><span class="material-symbols-outlined sidebar-icon">rocket_launch</span>IPOs</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&O</a>
+      <a class="sidebar-link" href="ma.html"><span class="material-symbols-outlined sidebar-icon">handshake</span>M&A</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="compare.html"><span class="material-symbols-outlined sidebar-icon">compare_arrows</span>Compare</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link" href="alerts.html"><span class="material-symbols-outlined sidebar-icon">notifications_active</span>Alerts</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="analytics.html"><span class="material-symbols-outlined sidebar-icon">insights</span>Analytics</a>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+      <a class="sidebar-link" href="trust.html"><span class="material-symbols-outlined sidebar-icon">verified</span>Trust</a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/15 px-6">
+        <div class="engine-status p-4 rounded-lg">
+            <p class="text-[10px] text-on-surface-variant mb-2 uppercase tracking-widest font-bold">Engine Status</p>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="text-xs font-bold text-on-surface uppercase">Active</span>
+                </div>
+                <span class="text-[10px] text-on-surface-variant/60 font-mono">v4.2.9</span>
+            </div>
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center text-[9px] text-on-surface-variant">
+                    <span>Latency</span>
+                    <span class="text-secondary font-mono">14ms</span>
+                </div>
+                <div class="w-full bg-surface-container-lowest h-1 rounded-full overflow-hidden">
+                    <div class="bg-secondary/40 h-full w-[88%]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="authStatus" class="mt-auto pt-4 border-t border-outline-variant/15 px-6"></div>
+</aside>
+
+<main class="main-content" id="main">
+
+    <!-- ════════════════════════════════════════════════════════════════
+         NEW "TODAY" LAYOUT (2026-05-18)
+         Personalized panel for logged-in users. Uses the canonical
+         <ae-card>, <ae-error-boundary>, <ae-signal-row> components so
+         one failed fetch never blanks the whole page.
+         Legacy widgets below remain so existing wiring keeps working;
+         delete them once this layout is verified end-to-end.
+       ════════════════════════════════════════════════════════════════ -->
+    <section id="ae-today" style="display:grid;grid-template-columns:1fr;gap:16px;margin:0 0 28px;">
+        <ae-card title="Today" id="ae-today-hero" style="background:linear-gradient(180deg,var(--surface-1),var(--surface-1));">
+            <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;">
+                <div>
+                    <div class="rf-hero-eyebrow" style="margin-bottom:8px;">Your market snapshot · Live</div>
+                    <h1 style="font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;letter-spacing:-0.025em;">
+                        <span id="aeTodayGreeting">Good morning.</span>
+                    </h1>
+                    <div id="aeTodayTagline" style="color:var(--text-secondary);font-size:15px;">Loading your market summary…</div>
+                </div>
+                <div id="aeTodayKpis" style="display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:12px;min-width:280px;">
+                    <div class="rf-kpi-tile"><div class="rf-kpi-lbl">Regime</div><div class="rf-kpi-num" id="aeKpiRegime">—</div></div>
+                    <div class="rf-kpi-tile"><div class="rf-kpi-lbl">India VIX</div><div class="rf-kpi-num" id="aeKpiVix">—</div></div>
+                    <div class="rf-kpi-tile"><div class="rf-kpi-lbl">Watchlist</div><div class="rf-kpi-num" id="aeKpiWatch">—</div></div>
+                </div>
+            </div>
+        </ae-card>
+
+        <!-- TWO-CARD GRID — the old <ae-error-boundary>-based cards were
+             silently empty because ae-components.js isn't loaded on this
+             page. Replaced with vanilla blocks that always populate.
+             "Events you should know" card removed: the dedicated "Latest
+             news" section below is the single canonical news surface. -->
+        <div style="display:grid;grid-template-columns:1fr;gap:16px;" id="aeTodayGrid">
+            <div class="rf-card" id="aeTopSignalsCard">
+                <h3 class="rf-card-title">Top signals for you</h3>
+                <div id="aeTopSignalsBody" style="margin-top:8px;"></div>
+            </div>
+            <div class="rf-card" id="aeWatchMoversCard">
+                <h3 class="rf-card-title">Watchlist movers</h3>
+                <div id="aeWatchMoversBody" style="margin-top:8px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .rf-card { background: var(--surface-1, #0d1118); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 18px; }
+        .rf-card-title { font-size: 14px; font-weight: 700; color: #dde3ef; margin: 0; letter-spacing: -0.005em; }
+        .ae-row { display: grid; grid-template-columns: 78px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; color: inherit; cursor: pointer; }
+        .ae-row:last-child { border-bottom: none; }
+        .ae-row:hover { background: rgba(255,255,255,0.02); }
+        .ae-row-tk { font-family: var(--font-mono, 'Geist Mono', monospace); font-weight: 700; font-size: 13px; color: #dde3ef; }
+        .ae-row-reason { font-size: 12px; color: #a4afc2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ae-row-meta { font-family: var(--font-mono, 'Geist Mono', monospace); font-size: 12px; text-align: right; min-width: 64px; }
+        .ae-row-meta .alpha { color: #8eb4e0; font-weight: 700; }
+        .ae-row-meta .ch.up { color: #2dd4aa; }
+        .ae-row-meta .ch.dn { color: #f26b6b; }
+        .ae-empty-row { font-size: 12px; color: #8a94a8; padding: 18px 0; text-align: center; }
+        .ae-empty-row a { color: #8eb4e0; text-decoration: none; }
+    </style>
+
+    <script>
+    (function(){
+      function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      function authHeader() {
+        try {
+          const t = (window.Auth && window.Auth.token && window.Auth.token()) ||
+                    localStorage.getItem('tw_jwt') ||
+                    localStorage.getItem('jwt');
+          return t ? { 'Authorization': 'Bearer ' + t } : {};
+        } catch(_) { return {}; }
+      }
+      function rowSignal(s) {
+        const ticker = s.ticker || s.symbol || '—';
+        const score = s.alpha_score != null ? Math.round(s.alpha_score) : '';
+        const reason = (s.canonical_headline || s.headline || s.summary || s.explanation || (s.event_type || '').replace(/_/g, ' ')).toString();
+        // data-analyze-ticker → page-wide delegate opens the Analyze modal.
+        // href is a fallback (right-click "open in new tab" still works).
+        const href = `stock.html?ticker=${encodeURIComponent(ticker)}`;
+        return `<a class="ae-row" href="${href}" data-analyze-ticker="${esc(ticker)}">
+          <span class="ae-row-tk">${esc(ticker)}</span>
+          <span class="ae-row-reason">${esc(reason)}</span>
+          <span class="ae-row-meta">${score !== '' ? `<span class="alpha">α ${score}</span>` : ''}</span>
+        </a>`;
+      }
+      function rowMover(m) {
+        const ticker = m.ticker || m.symbol || '—';
+        const ch = Number(m.pct_change != null ? m.pct_change : (m.day_change_pct || 0));
+        const cls = ch >= 0 ? 'up' : 'dn';
+        const sign = ch >= 0 ? '+' : '';
+        const reason = m.canonical_headline || m.headline || (m.reasoning && m.reasoning[0]) || (m.sector ? `Sector: ${m.sector}` : '');
+        const href = `stock.html?ticker=${encodeURIComponent(ticker)}`;
+        return `<a class="ae-row" href="${href}" data-analyze-ticker="${esc(ticker)}">
+          <span class="ae-row-tk">${esc(ticker)}</span>
+          <span class="ae-row-reason">${esc(reason)}</span>
+          <span class="ae-row-meta"><span class="ch ${cls}">${sign}${ch.toFixed(2)}%</span></span>
+        </a>`;
+      }
+
+      async function loadTopSignals() {
+        const body = document.getElementById('aeTopSignalsBody');
+        if (!body) return;
+        body.innerHTML = '<div class="ae-empty-row">Loading…</div>';
+        try {
+          const r = await fetch('/api/signals?limit=5');
+          const j = await r.json();
+          const arr = (j.data || j.signals || []).slice(0, 5);
+          if (!arr.length) {
+            body.innerHTML = '<div class="ae-empty-row">No signals in the active window. <a href="explore.html">Explore →</a></div>';
+            return;
+          }
+          body.innerHTML = arr.map(rowSignal).join('');
+        } catch (e) {
+          body.innerHTML = '<div class="ae-empty-row">Couldn\'t load signals.</div>';
+        }
+      }
+
+      async function loadWatchMovers() {
+        const body = document.getElementById('aeWatchMoversBody');
+        if (!body) return;
+        body.innerHTML = '<div class="ae-empty-row">Loading…</div>';
+        // 1) Try authenticated watchlist first.
+        try {
+          const r = await fetch('/api/watchlist?with_quotes=1', { headers: authHeader() });
+          if (r.ok) {
+            const j = await r.json();
+            const items = (j.data || j.items || []).slice(0, 6);
+            if (items.length) {
+              body.innerHTML = items.map(rowMover).join('');
+              return;
+            }
+          }
+        } catch (_) { /* fall through */ }
+        // 2) Fall back to universe-wide biggest movers so the card never goes
+        //    empty for signed-out / empty-watchlist users.
+        try {
+          const r = await fetch('/api/movers/spike?min_pct=2&limit=6');
+          const j = await r.json();
+          const items = (j.data || []).slice(0, 6);
+          if (!items.length) {
+            body.innerHTML = '<div class="ae-empty-row">No movers yet. <a href="explore.html">Explore →</a></div>';
+            return;
+          }
+          body.innerHTML = items.map(rowMover).join('') +
+            '<div class="ae-empty-row" style="padding:8px 0 0;"><a href="watchlist.html">Add to watchlist →</a></div>';
+        } catch (e) {
+          body.innerHTML = '<div class="ae-empty-row">Couldn\'t load movers.</div>';
+        }
+      }
+
+      function boot() {
+        loadTopSignals();
+        loadWatchMovers();
+        setInterval(loadTopSignals, 90 * 1000);
+        setInterval(loadWatchMovers, 90 * 1000);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+      else boot();
+    })();
+    </script>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         HOME · TOP MOVERS + INDIA NEWS (2026-05-18)
+         Adds the same Gainers/Losers/Volume strip and clean news list as
+         the Newsroom, but India-only (region=domestic) so international
+         press wires stay confined to events.html.
+       ════════════════════════════════════════════════════════════════ -->
+    <style>
+        .tw-home-movers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin: 0 0 28px 0; }
+        @media (min-width: 700px) { .tw-home-movers { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+        @media (min-width: 1100px) { .tw-home-movers { grid-template-columns: repeat(5, minmax(0,1fr)); } }
+        .tw-home-movers .tw-movers-card { padding: 14px 16px; background: var(--surface-1, #0d1118); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; }
+        .tw-home-movers .tw-movers-card h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a94a8; margin: 0 0 10px 0; }
+        .tw-home-movers .tw-movers-list { display: flex; flex-direction: column; gap: 8px; }
+        .tw-home-movers .tw-movers-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; padding: 4px 0; }
+        .tw-home-movers .tw-movers-row:hover { background: rgba(255,255,255,0.03); }
+        .tw-home-movers .tw-movers-tk { font-weight: 700; font-size: 13px; color: #dde3ef; font-family: var(--font-mono, 'Geist Mono', monospace); }
+        .tw-home-movers .tw-movers-px { font-family: var(--font-mono, 'Geist Mono', monospace); font-size: 12px; color: #a4afc2; }
+        .tw-home-movers .tw-movers-ch { font-family: var(--font-mono, 'Geist Mono', monospace); font-size: 12px; font-weight: 700; }
+        .tw-home-movers .tw-movers-ch.up { color: #2dd4aa; }
+        .tw-home-movers .tw-movers-ch.dn { color: #f26b6b; }
+        .tw-home-movers .tw-movers-empty { font-size: 11px; color: #8a94a8; padding: 12px 0; text-align: center; }
+        .tw-home-section-head { display:flex; align-items:baseline; justify-content:space-between; margin: 4px 4px 14px; }
+        .tw-home-section-head h2 { font-size: 18px; font-weight: 700; letter-spacing:-0.01em; color:#dde3ef; margin:0; }
+        .tw-home-section-head a { font-size: 12px; color: #8eb4e0; text-decoration: none; }
+        /* Clean newsroom rows — source dot + time/source + headline.
+           2-column grid on wide screens packs more headlines per scroll. */
+        .tw-home-news-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            margin-bottom: 4px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        @media (min-width: 900px) {
+            .tw-home-news-list { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+        }
+        .tw-home-news-row {
+            display: grid;
+            grid-template-columns: 24px 1fr auto;
+            gap: 10px;
+            padding: 12px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            color: inherit;
+            text-decoration: none;
+            align-items: start;
+        }
+        .tw-home-news-row:hover { background: rgba(255,255,255,0.025); }
+        .tw-home-news-dot {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            margin-top: 2px;
+        }
+        .tw-home-news-dot.bull { background: rgba(45,212,170,0.22); }
+        .tw-home-news-dot.bear { background: rgba(242,107,107,0.22); }
+        .tw-home-news-body { min-width: 0; }
+        .tw-home-news-meta { font-size: 11px; color: #8a94a8; margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .tw-home-news-meta .src { color: #b0bccf; font-weight: 600; }
+        .tw-home-news-meta .sentiment {
+            font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 1px 6px; border-radius: 3px;
+        }
+        .tw-home-news-meta .sentiment.bull { color: #2dd4aa; background: rgba(45,212,170,0.10); }
+        .tw-home-news-meta .sentiment.bear { color: #f26b6b; background: rgba(242,107,107,0.10); }
+        .tw-home-news-meta .tier {
+            font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+            color: #6ba3d6;
+        }
+        .tw-home-news-meta .ticker {
+            font-family: var(--font-mono, 'Geist Mono', monospace);
+            font-size: 10px; font-weight: 700;
+            color: #6ddec0; padding: 1px 6px; border-radius: 3px;
+            background: rgba(45,212,170,0.08);
+        }
+        .tw-home-news-title {
+            font-size: 14px; font-weight: 600; color: #e6ecf5; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .tw-home-news-impact {
+            font-family: var(--font-mono, 'Geist Mono', monospace);
+            font-size: 11px; font-weight: 700;
+            color: #8a94a8; padding-top: 2px;
+            min-width: 28px; text-align: right; white-space: nowrap;
+        }
+        .tw-home-news-impact.hi  { color: #e6b84a; }
+        .tw-home-news-impact.crt { color: #ff8e8e; }
+        .tw-home-news-body { min-width: 0; }
+        .tw-home-news-dot { width: 16px; height: 16px; }
+    </style>
+
+    <!-- Top Movers + Latest News moved to AFTER the hero — see the
+         "HOME · MARKET PULSE FEEDS" section just below </header> of rf-hero.
+         The widget bootstraps (loadHomeMovers / loadHomeNews) stay in this
+         script block; they target the DOM ids by name regardless of where
+         the markup lives. -->
+
+    <script>
+    (function(){
+      // ---- Top Movers (home) — 5 distinct categories user asked for:
+      //      Gainers · Losers · Highest volume · Unusual volume · Most volatile.
+      //      Single /api/movers/spike call with min_pct=0 returns the broad set;
+      //      each card slices it with a different sort key.
+      async function loadHomeMovers() {
+        const strip = document.getElementById('twHomeMovers');
+        if (!strip) return;
+        const placeholders = ['Gainers','Losers','Highest volume','Unusual volume','Most volatile'];
+        strip.innerHTML = placeholders
+          .map(t => `<div class="tw-movers-card"><h4>${t}</h4><div class="tw-movers-empty">Loading…</div></div>`).join('');
+        let rows = [];
+        try {
+          // min_pct=0 widens the universe to every stock with quote data so
+          // the volume/turnover cards aren't constrained to big movers.
+          const r = await fetch('/api/movers/spike?min_pct=0&limit=200', { credentials: 'same-origin' });
+          const j = await r.json();
+          rows = Array.isArray(j.data) ? j.data : [];
+        } catch (_) {}
+        function fmtCr(v){ if (v == null) return ''; const n = Number(v); return n >= 1000 ? '₹' + (n/1000).toFixed(2) + 'k cr' : '₹' + n.toFixed(1) + ' cr'; }
+        function rowHtml(r, mode){
+          const ch = Number(r.pct_change || 0);
+          const cls = ch >= 0 ? 'up' : 'dn';
+          const sign = ch >= 0 ? '+' : '';
+          const pct = (Math.abs(ch) >= 100 ? ch.toFixed(0) : ch.toFixed(2));
+          // For volume / unusual-volume / volatile cards, the right column
+          // shows the metric that earned the row its slot — not just %.
+          let right;
+          if (mode === 'volume') {
+            right = `<span class="tw-movers-px">${fmtCr(r.turnover_cr)}</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+          } else if (mode === 'unusual') {
+            right = `<span class="tw-movers-px">${r.vol_multiple != null ? r.vol_multiple.toFixed(1) + '×' : ''} avg vol</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+          } else if (mode === 'volatile') {
+            right = `<span class="tw-movers-px">₹${Number(r.price || 0).toFixed(2)}</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+          } else {
+            right = `<span class="tw-movers-px">₹${Number(r.price || 0).toFixed(2)}</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+          }
+          return `<div class="tw-movers-row" data-tk="${r.ticker}" data-analyze-ticker="${r.ticker}">
+            <span class="tw-movers-tk">${r.ticker}</span>
+            <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;">${right}</div>
+          </div>`;
+        }
+        function block(title, list, mode, emptyMsg){
+          const body = list.length
+            ? `<div class="tw-movers-list">${list.map(r => rowHtml(r, mode)).join('')}</div>`
+            : `<div class="tw-movers-empty">${emptyMsg}</div>`;
+          return `<div class="tw-movers-card"><h4>${title}</h4>${body}</div>`;
+        }
+        const gainers  = rows.filter(r => r.pct_change > 0).sort((a,b) => b.pct_change - a.pct_change).slice(0, 5);
+        const losers   = rows.filter(r => r.pct_change < 0).sort((a,b) => a.pct_change - b.pct_change).slice(0, 5);
+        const turnover = rows.filter(r => r.turnover_cr != null).sort((a,b) => (b.turnover_cr||0) - (a.turnover_cr||0)).slice(0, 5);
+        const unusual  = rows.filter(r => r.vol_multiple != null && r.vol_multiple >= 1.5)
+                             .sort((a,b) => (b.vol_multiple||0) - (a.vol_multiple||0)).slice(0, 5);
+        const volatile = rows.slice().sort((a,b) => Math.abs(b.pct_change||0) - Math.abs(a.pct_change||0)).slice(0, 5);
+        strip.innerHTML = [
+          block('Gainers',         gainers,  'gainers',  'No qualifying gainers yet.'),
+          block('Losers',          losers,   'losers',   'No qualifying losers yet.'),
+          block('Highest volume',  turnover, 'volume',   'No turnover data yet.'),
+          block('Unusual volume',  unusual,  'unusual',  'No volume outliers yet.'),
+          block('Most volatile',   volatile, 'volatile', 'No volatile names yet.'),
+        ].join('');
+        // Row clicks handled by the page-wide [data-analyze-ticker] delegate
+        // defined at the bottom of the file — no per-card wiring needed.
+      }
+
+      // ---- Latest news (home) — India-only, finance + geopolitics focus,
+      // small-caps included. Clean row-style rendering: dot + meta + title.
+      async function loadHomeNews() {
+        const list = document.getElementById('twHomeNews');
+        if (!list) return;
+        list.innerHTML = '<div class="tw-movers-empty" style="padding:24px 0;">Loading…</div>';
+        let items = [];
+        try {
+          // Wider window (24h) + meaningful+ quality. Small-cap earnings
+          // (Subros, MODINATUR, etc.) all clear "meaningful"; Reddit musings
+          // like "review my SIP portfolio" sit at "generic" and stay out.
+          // Limit raised to 20 to give the list more breathing room.
+          const r = await fetch('/api/feed?region=domestic&min_quality=meaningful&max_age_hours=24&hours=48&limit=20', { credentials: 'same-origin' });
+          const j = await r.json();
+          items = Array.isArray(j.data) ? j.data : [];
+        } catch (_) {}
+        if (!items.length) {
+          list.innerHTML = '<div class="tw-movers-empty" style="padding:24px 0;">No fresh India news yet. Check the Newsroom for the full feed.</div>';
+          return;
+        }
+        function timeAgo(iso) {
+          if (!iso) return '';
+          const t = (typeof iso === 'number') ? (iso < 1e12 ? iso * 1000 : iso) : Date.parse(iso);
+          if (!t || isNaN(t)) return '';
+          const m = (Date.now() - t) / 60000;
+          if (m < 1) return 'just now';
+          if (m < 60) return Math.floor(m) + 'm ago';
+          const h = m / 60;
+          if (h < 24) return Math.floor(h) + 'h ago';
+          return Math.floor(h / 24) + 'd ago';
+        }
+        function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function normalizeCompanies(c) {
+          if (!c) return [];
+          if (Array.isArray(c)) return c.filter(Boolean);
+          if (typeof c === 'string') {
+            try { const p = JSON.parse(c); if (Array.isArray(p)) return p.filter(Boolean); } catch(_){}
+            return c.split(',').map(s => s.trim()).filter(Boolean);
+          }
+          return [];
+        }
+
+        list.innerHTML = items.slice(0, 15).map(it => {
+          const sent = (it.sentiment || '').toLowerCase();
+          const sentCls = sent === 'bullish' ? 'bull' : sent === 'bearish' ? 'bear' : '';
+          const sentLabel = sent === 'bullish' ? 'Bull' : sent === 'bearish' ? 'Bear' : '';
+          const src = esc((it.source || '').replace(/_/g, ' '));
+          const ago = timeAgo(it.published_at || it.created_at);
+          const title = esc(it.title || 'Untitled');
+          const link = it.link || '#';
+          const tier = (it.impact_tier || '').toLowerCase();
+          const showTier = tier === 'high' || tier === 'critical';
+          // Compact impact number on the right — only if meaningful
+          const impact = Math.round(Number(it.impact_score || it.quality_score || 0));
+          const impactCls = tier === 'critical' ? 'crt' : tier === 'high' ? 'hi' : '';
+          // Primary ticker (optional — first company tag if present)
+          const companies = normalizeCompanies(it.companies);
+          const primary = (it.ticker || companies[0] || '').toString().toUpperCase();
+          // `data-analyze-ticker` opt-in: the page-wide click delegate
+          // intercepts and opens the Analyze modal for ANY stock.
+          const tickerChip = primary
+            ? `<a href="stock.html?ticker=${encodeURIComponent(primary)}" class="ticker" data-no-card data-analyze-ticker="${esc(primary)}">${esc(primary)}</a>`
+            : '';
+
+          return `<a href="${esc(link)}" target="_blank" rel="noopener" class="tw-home-news-row">
+            <div class="tw-home-news-dot ${sentCls}"></div>
+            <div class="tw-home-news-body">
+              <div class="tw-home-news-meta">
+                ${ago ? `<span>${ago}</span>` : ''}
+                ${src ? `<span class="src">${src}</span>` : ''}
+                ${sentLabel ? `<span class="sentiment ${sentCls}">${sentLabel}</span>` : ''}
+                ${showTier ? `<span class="tier">${esc(tier)}</span>` : ''}
+                ${tickerChip}
+              </div>
+              <div class="tw-home-news-title">${title}</div>
+            </div>
+            <div class="tw-home-news-impact ${impactCls}">${impact > 0 ? 'α ' + impact : ''}</div>
+          </a>`;
+        }).join('');
+
+        // Ticker chips bypass the parent link.
+        list.querySelectorAll('.ticker[data-no-card]').forEach(a => {
+          a.addEventListener('click', e => e.stopPropagation());
+        });
+      }
+
+      function bootHomeWidgets() {
+        loadHomeMovers();
+        loadHomeNews();
+        setInterval(loadHomeMovers, 90 * 1000);
+        setInterval(loadHomeNews, 60 * 1000);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootHomeWidgets);
+      } else {
+        bootHomeWidgets();
+      }
+    })();
+    </script>
+
+    <style>
+        @media (min-width: 1024px) {
+            #aeTodayGrid { grid-template-columns: 1.6fr 1fr; }
+            #aeTodayGrid > ae-card:nth-child(3) { grid-column: 1 / 2; }
+            #aeTodayGrid > ae-card:nth-child(4) { grid-column: 2 / 3; grid-row: 2 / 4; }
+        }
+    </style>
+
+    <script>
+    // Today panel — self-contained. Reuses existing /api/signals, /api/events,
+    // /api/watchlist, /api/market endpoints. Each section is wrapped in its
+    // own <ae-error-boundary> so a failure in one doesn't blank the others.
+    (function () {
+        function hourGreeting() {
+            const h = new Date().getHours();
+            if (h < 5)  return 'Good night.';
+            if (h < 12) return 'Good morning.';
+            if (h < 17) return 'Good afternoon.';
+            return 'Good evening.';
+        }
+        document.getElementById('aeTodayGreeting').textContent = hourGreeting();
+
+        // KPIs — best-effort, no error boundary needed (single line each)
+        fetch('/api/market').then(r => r.ok ? r.json() : null).then(j => {
+            const m = (j && j.data) || j || {};
+            const vix = m.vix || m.india_vix || m.IndiaVIX;
+            if (vix != null) document.getElementById('aeKpiVix').textContent = Number(vix).toFixed(2);
+            if (m.regime) document.getElementById('aeKpiRegime').textContent = String(m.regime).slice(0, 14);
+            const tag = (m.summary || m.market_summary || '').slice(0, 160);
+            if (tag) document.getElementById('aeTodayTagline').textContent = tag;
+        }).catch(() => {});
+
+        const auth = localStorage.getItem('tw_token') || localStorage.getItem('auth_token') || '';
+        const authHeader = auth ? { 'Authorization': 'Bearer ' + auth } : {};
+
+        fetch('/api/watchlist', { headers: authHeader }).then(r => r.ok ? r.json() : null).then(j => {
+            const items = (j && (j.data || j.items)) || [];
+            document.getElementById('aeKpiWatch').textContent = String(items.length || 0);
+        }).catch(() => {});
+
+        // ae-error-boundary mount() handlers retired — the boundaries
+        // depended on ae-components.js which isn't loaded on this page,
+        // so they silently failed. Top signals / Watchlist movers are now
+        // rendered by the vanilla widgets defined right after the grid;
+        // Events / Forensic flags moved to the unified "Latest news"
+        // section further down.
+    })();
+    </script>
+
+    <!-- DRAMATIC HERO -->
+    <header class="rf-hero">
+        <div class="flex items-start justify-between gap-6 flex-wrap">
+            <div style="flex:1; min-width:280px;">
+                <div class="rf-hero-eyebrow" id="heroEyebrow">Alpha Terminal · Live</div>
+                <h1 class="rf-hero-title">
+                    <span id="heroGreeting">Good morning.</span><br>
+                    <span class="rf-grad-text" id="heroSubhead">Here's the tape.</span>
+                </h1>
+                <p class="rf-hero-sub" id="summaryText">
+                    <span class="rf-skel" style="display:inline-block;height:14px;width:280px;border-radius:4px;"></span>
+                </p>
+
+                <!-- Global search — auto-mounted by shared/js/search-bar.js -->
+                <div data-tw-search style="margin-top:28px;"></div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="statusBanner"></div>
+                <button onclick="const on = SoundFX.toggle(); this.querySelector('span').textContent = on ? 'volume_up' : 'volume_off'" class="rf-btn" title="Toggle alert sounds" type="button">
+                    <span class="material-symbols-outlined" style="font-size:16px;">volume_up</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bento KPI grid -->
+        <div class="rf-bento" style="margin-top: 32px;">
+            <div class="rf-kpi rf-fade-in rf-bento-2x rf-kpi-bull">
+                <div class="rf-kpi-label">
+                    <span>Sentiment</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">psychology</span></span>
+                </div>
+                <div class="rf-kpi-value" id="sentimentDelta">—</div>
+                <div class="rf-kpi-delta" id="sentimentIcon">today's bias</div>
+            </div>
+            <div class="rf-kpi rf-fade-in rf-kpi-accent">
+                <div class="rf-kpi-label">
+                    <span>Regime</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">tune</span></span>
+                </div>
+                <div class="rf-kpi-value" id="regimeLabel" style="font-size: 22px; line-height: 1.2;">—</div>
+                <div class="rf-kpi-delta">market state</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">
+                    <span>Active Signals</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">bolt</span></span>
+                </div>
+                <div class="rf-kpi-value rf-grad" id="signalCount">—</div>
+                <div class="rf-kpi-delta">on the book</div>
+            </div>
+            <div class="rf-kpi rf-fade-in rf-kpi-warn">
+                <div class="rf-kpi-label">
+                    <span>India VIX</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">speed</span></span>
+                </div>
+                <div class="rf-kpi-value" id="metricVIX">—</div>
+                <div class="rf-kpi-delta" id="metricVIXLabel">fear gauge</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">
+                    <span>Avg Confidence</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">verified</span></span>
+                </div>
+                <div class="rf-kpi-value" id="metricConfidence">—</div>
+                <div class="rf-kpi-delta">NLP score</div>
+            </div>
+            <div class="rf-kpi rf-fade-in">
+                <div class="rf-kpi-label">
+                    <span>Events 24h</span>
+                    <span class="rf-kpi-icon"><span class="material-symbols-outlined" style="font-size:16px;">timeline</span></span>
+                </div>
+                <div class="rf-kpi-value" id="metricEvents">—</div>
+                <div class="rf-kpi-delta">scraped &amp; classified</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hidden duplicate IDs for legacy bindings (some scripts target #metricSignals, etc.) -->
+    <span id="metricSignals" style="display:none;"></span>
+    <span id="marketSummaryCard" style="display:none;"></span>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         HOME · MARKET PULSE FEEDS (positioned right under the hero)
+           1. Top movers strip — gainers / losers / volume / volatile
+           2. Latest news (India-only, finance + geopolitics focus)
+         User-requested layout: keep the visual hierarchy clean — section
+         titles + a single right-aligned "open full page" link per section.
+       ════════════════════════════════════════════════════════════════ -->
+    <style>
+        /* Stack vertically full-width so the 5-card movers strip and the
+           news list both get the room they need. The 2-column variant
+           squeezed 5 mover cards into ~45% of the viewport which was
+           unreadable. */
+        .tw-hero-feed-wrap { display: flex; flex-direction: column; gap: 18px; margin: 0 0 32px; }
+        .tw-hero-feed-card {
+            background: var(--surface-1, #0d1118);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 18px 18px 6px;
+        }
+        .tw-hero-feed-card.no-pad { padding: 18px 18px 18px; }
+        .tw-feed-head {
+            display: flex; align-items: center; gap: 10px;
+            margin: 0 0 14px 0; padding: 0 2px;
+        }
+        .tw-feed-head h2 {
+            font-size: 14px; font-weight: 800; color: #dde3ef;
+            margin: 0; letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .tw-feed-head .pulse {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #2dd4aa;
+            box-shadow: 0 0 0 0 rgba(45,212,170,0.5);
+            animation: tw-pulse 1.6s infinite;
+        }
+        @keyframes tw-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(45,212,170,0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(45,212,170,0); }
+            100% { box-shadow: 0 0 0 0 rgba(45,212,170,0); }
+        }
+        .tw-feed-head .meta-flex { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+        .tw-feed-head a {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: #8eb4e0; text-decoration: none;
+        }
+        .tw-feed-head a:hover { color: #a8c5e8; }
+        /* Within the news card, the list sits flush with no extra borders */
+        .tw-hero-feed-card .tw-home-news-list { border-top: 0; margin-bottom: 0; }
+        .tw-hero-feed-card .tw-home-news-row { padding-left: 4px; padding-right: 4px; }
+        .tw-hero-feed-card .tw-home-news-row:last-child { border-bottom: 0; }
+        /* Within the movers card, drop the outer-grid gap since cards live inside one wrapper now */
+        .tw-hero-feed-card .tw-home-movers { gap: 12px; margin: 0; }
+    </style>
+
+    <div class="tw-hero-feed-wrap">
+      <!-- ── LATEST NEWS (the wider column on desktop) ── -->
+      <div class="tw-hero-feed-card">
+        <div class="tw-feed-head">
+          <span class="pulse"></span>
+          <h2>Latest News · India</h2>
+          <div class="meta-flex"></div>
+          <a href="events.html">Open Newsroom →</a>
+        </div>
+        <div class="tw-home-news-list" id="twHomeNews"></div>
+      </div>
+
+      <!-- ── TOP MOVERS ── -->
+      <div class="tw-hero-feed-card no-pad">
+        <div class="tw-feed-head">
+          <span class="pulse"></span>
+          <h2>Top movers · NSE</h2>
+          <div class="meta-flex"></div>
+          <a href="explore.html">See all →</a>
+        </div>
+        <div class="tw-home-movers" id="twHomeMovers"></div>
+      </div>
+    </div>
+
+    <!-- Live Market Pulse Panel -->
+    <div class="mb-8" id="marketPulsePanel">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+            <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+            <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Live Market Pulse</h3>
+            <div class="h-[1px] flex-1 bg-outline-variant/20 min-w-[20px]"></div>
+            <span id="fiiDiiChip" class="text-[9px] font-mono px-2 py-0.5 rounded hidden" style="background:rgba(141,180,224,0.1);color:#8eb4e0;border:1px solid rgba(141,180,224,0.25);" title="FII/DII flow today"></span>
+            <button id="indexesAllBtn" class="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded transition-colors" style="color:#8eb4e0;border:1px solid rgba(141,180,224,0.3);background:rgba(141,180,224,0.05);">All indexes</button>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="pulseUpdated">fetching...</span>
+        </div>
+        <div id="pulseIndices" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <!-- skeleton -->
+            <div class="skeleton rounded-xl" style="height:120px;"></div>
+            <div class="skeleton rounded-xl" style="height:120px;"></div>
+            <div class="skeleton rounded-xl" style="height:120px;"></div>
+            <div class="skeleton rounded-xl" style="height:120px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:120px;"></div>
+            <div class="skeleton rounded-xl hidden lg:block" style="height:120px;"></div>
+        </div>
+        <!-- Derived market trend bar -->
+        <div id="pulseTrendBar" class="mt-4 rounded-lg border border-outline-variant/10 px-4 py-3 text-xs" style="background:rgba(28,32,38,0.6); display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; row-gap:6px;">
+            <span class="skeleton" style="width:200px;height:14px;border-radius:4px;display:inline-block;"></span>
+            <span class="skeleton" style="width:80px;height:14px;border-radius:4px;display:inline-block;"></span>
+        </div>
+    </div>
+
+    <!-- ============ INDIA PULSE — retired on homepage =====================
+         Was the second news block on home, duplicating the unified "Latest
+         news" section below. The policy items now surface inside that single
+         section, tagged with the same bull/bear + impact metadata as everything
+         else. Use events.html?category=policy for the dedicated policy view.
+         Node kept hidden so the JS block that targets #indiaPulseList won't
+         throw on bind. -->
+    <div class="mb-8" id="indiaPulseSection" style="display:none !important;">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#ff9933;">flag</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">India Pulse</h2>
+            <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                  style="background:rgba(255,153,51,0.15);color:#ff9933;border:1px solid rgba(255,153,51,0.3);">
+                Policy · Govt · RBI
+            </span>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono" id="indiaPulseUpdated">loading…</span>
+            <a href="events.html#policy" class="text-[10px] text-primary font-bold hover:underline uppercase tracking-widest">All policy →</a>
+        </div>
+        <div id="indiaPulseList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:104px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:104px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:104px;"></div>
+        </div>
+    </div>
+    <script>
+    (async function(){
+      const sec = document.getElementById('indiaPulseSection');
+      const list = document.getElementById('indiaPulseList');
+      const upd = document.getElementById('indiaPulseUpdated');
+      if (!sec || !list) return;
+
+      // PM / cabinet / RBI / budget — anything that signals a national-level
+      // catalyst. Matches title or summary case-insensitively.
+      const MACRO_PAT = /\b(pm\s*modi|prime\s*minister|modi['’]?s?\s+speech|pmo|cabinet|parliament|lok\s*sabha|rajya\s*sabha|finance\s*minister|sitharaman|union\s*budget|interim\s*budget|gst\s*council|niti\s*aayog|mpc(\s+meeting|\s+decision)?|repo\s*rate|rbi\b|sebi\b|pib\b|address\s+to\s+the?\s*nation|ordinance|gazette|pli\s*scheme|cci\s*approval)\b/i;
+
+      function esc(s) {
+        return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+      function timeAgo(iso) {
+        if (!iso) return '';
+        const t = new Date(iso).getTime();
+        if (!t) return '';
+        const d = Math.max(0, Date.now() - t);
+        const m = Math.floor(d/60000);
+        if (m < 60) return m + 'm ago';
+        const h = Math.floor(m/60);
+        if (h < 24) return h + 'h ago';
+        return Math.floor(h/24) + 'd ago';
+      }
+
+      // Pull policy events first; fall back to scanning recent events for
+      // macro keywords if the policy bucket is empty (legacy untagged data).
+      let items = [];
+      try {
+        // /api/events?type=policy is empty — use the unified feed.
+        const polRes = await fetch('/api/feed?category=policy&limit=20').then(r => r.json()).catch(() => null);
+        items = (polRes && polRes.data) || [];
+      } catch (_) {}
+
+      if (items.length < 3) {
+        try {
+          const allRes = await fetch('/api/feed?limit=120').then(r => r.json()).catch(() => null);
+          const all = (allRes && allRes.data) || [];
+          const seen = new Set(items.map(i => i.id || i.title));
+          for (const e of all) {
+            const blob = (e.title || '') + ' ' + (e.summary || '');
+            if (MACRO_PAT.test(blob) && !seen.has(e.id || e.title)) {
+              items.push(e);
+              seen.add(e.id || e.title);
+            }
+            if (items.length >= 12) break;
+          }
+        } catch (_) {}
+      }
+
+      // Sort newest first; cap at 6.
+      items.sort((a, b) => {
+        const ta = new Date(a.published_at || a.created_at || 0).getTime();
+        const tb = new Date(b.published_at || b.created_at || 0).getTime();
+        return tb - ta;
+      });
+      items = items.slice(0, 6);
+
+      if (!items.length) {
+        upd && (upd.textContent = '');
+        return; // stay hidden
+      }
+      sec.style.display = '';
+
+      list.innerHTML = items.map(e => {
+        const title = esc(e.title || 'Untitled');
+        const summary = esc((e.summary || '').slice(0, 140));
+        const ts = timeAgo(e.published_at || e.created_at);
+        const impact = Math.round(Number(e.impact_score || 0));
+        const impactColor = impact >= 65 ? '#f26b6b' : impact >= 40 ? '#e6b84a' : '#8eb4e0';
+        const blob = (e.title || '') + ' ' + (e.summary || '');
+        let tag = 'Policy';
+        if (/pm\s*modi|prime\s*minister|pmo|address\s+to\s+the?\s*nation/i.test(blob)) tag = 'PM';
+        else if (/finance\s*minister|sitharaman|budget|gst\s*council/i.test(blob)) tag = 'Finance Min';
+        else if (/\brbi\b|mpc|repo\s*rate/i.test(blob)) tag = 'RBI';
+        else if (/sebi/i.test(blob)) tag = 'SEBI';
+        else if (/cabinet|parliament|lok\s*sabha|rajya\s*sabha/i.test(blob)) tag = 'Cabinet';
+        return `
+          <a href="events.html#policy" class="block p-4 rounded-lg border transition-colors hover:border-primary/40"
+             style="background:linear-gradient(135deg,rgba(255,153,51,0.05),rgba(19,136,8,0.04));border-color:rgba(255,153,51,0.18);">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    style="background:rgba(255,153,51,0.18);color:#ff9933;">${tag}</span>
+              <span class="text-[10px] font-mono" style="color:${impactColor};">α ${impact || '—'}</span>
+            </div>
+            <div class="font-headline font-bold text-sm text-on-surface mb-1" style="line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${title}</div>
+            <div class="text-[11px] text-on-surface-variant/80" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">${summary}</div>
+            <div class="text-[10px] text-on-surface-variant/50 font-mono mt-2">${ts}</div>
+          </a>`;
+      }).join('');
+      upd && (upd.textContent = items.length + ' updates · live');
+    })();
+    </script>
+
+    <!-- Sector Concentration Warning -->
+    <div id="concentrationWarning" class="hidden mb-6 px-4 py-3 rounded-xl border flex items-center gap-3" style="background:rgba(255,178,183,0.06);border-color:rgba(255,178,183,0.2);">
+        <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#ffb2b7;">warning</span>
+        <div class="flex-1">
+            <span class="text-xs font-bold" style="color:#ffb2b7;">Sector Concentration Risk</span>
+            <span id="concentrationText" class="text-xs text-on-surface-variant ml-2"></span>
+        </div>
+        <a href="analytics.html" class="text-[9px] px-2 py-1 rounded font-bold hover:opacity-80 transition-opacity flex-shrink-0" style="background:rgba(255,178,183,0.12);color:#ffb2b7;border:1px solid rgba(255,178,183,0.2);">View Analytics →</a>
+    </div>
+
+    <!-- Compare Stocks CTA (Quant Portfolio CTA removed during simplification pass) -->
+    <div class="mb-6 px-2">
+        <a href="compare.html" class="flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:scale-[1.01]"
+           style="background:linear-gradient(135deg,rgba(249,212,35,0.08),rgba(249,212,35,0.03));border:1px solid rgba(249,212,35,0.25);">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(249,212,35,0.15);">
+                    <span class="material-symbols-outlined" style="color:#f9d423;font-size:22px;">compare_arrows</span>
+                </div>
+                <div>
+                    <div class="font-headline font-black text-sm" style="color:#f9d423;">COMPARE STOCKS</div>
+                    <div class="text-[10px] text-on-surface-variant/60 mt-0.5">Stack up to 3 stocks side-by-side with verdict</div>
+                </div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant/30 group-hover:text-on-surface-variant transition-colors">arrow_forward</span>
+        </a>
+    </div>
+
+    <!-- Prediction Accuracy -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="accuracySection" style="display:none;">
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">1D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-secondary" id="accuracy1D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy1DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">3D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-primary" id="accuracy3D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy3DCount">0 predictions</p>
+        </div>
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-6 text-center">
+            <p class="text-on-surface-variant text-[10px] uppercase tracking-widest font-bold mb-2">20D Hit Rate</p>
+            <div class="text-3xl font-black font-headline text-on-surface" id="accuracy20D">--</div>
+            <p class="text-[10px] text-on-surface-variant mt-2" id="accuracy20DCount">0 predictions</p>
+        </div>
+    </div>
+
+    <!-- ============ ANALYZE ANY STOCK (fundamental deep-dive on demand) ============ -->
+    <div class="mb-6" id="analyzerSection">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#8eb4e0;">analytics</span>
+            <h3 class="text-[10px] font-black tracking-[0.25em] uppercase text-on-surface-variant">Analyze any stock</h3>
+            <div class="h-[1px] flex-1 bg-outline-variant/20 min-w-[20px]"></div>
+            <span class="text-[9px] text-on-surface-variant/40 font-mono">fundamentals · F-score · reasoning</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <input id="analyzerInput" type="text" placeholder="Enter ticker (e.g. TCS, RELIANCE, INFY)"
+                   class="flex-1 min-w-[200px] px-4 py-2 rounded-lg font-mono text-sm"
+                   style="background:rgba(13,17,24,0.6);border:1px solid rgba(141,148,168,0.2);color:#dde3ef;outline:none;"
+                   onkeydown="if(event.key==='Enter')document.getElementById('analyzerBtn').click()">
+            <button id="analyzerBtn" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-colors"
+                    style="background:rgba(45,212,170,0.12);color:#2dd4aa;border:1px solid rgba(45,212,170,0.35);">
+                Analyze
+            </button>
+            <div id="analyzerQuickPicks" class="flex gap-1 flex-wrap">
+                <button class="anq-pill" data-tk="TCS">TCS</button>
+                <button class="anq-pill" data-tk="RELIANCE">RELIANCE</button>
+                <button class="anq-pill" data-tk="INFY">INFY</button>
+                <button class="anq-pill" data-tk="HDFCBANK">HDFCBANK</button>
+                <button class="anq-pill" data-tk="ADANIENT">ADANIENT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ UNIFIED RECOMMENDATIONS (replaces Suggested + Picks of the Day) ============ -->
+    <div class="mb-8" id="recoSection">
+        <div class="flex items-center gap-2 mb-4 flex-wrap">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#2dd4aa;">stars</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Today's recommendations</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20 min-w-[40px]"></div>
+            <span id="picksUpdated" class="text-[9px] text-on-surface-variant/40 font-mono">loading…</span>
+            <span id="groqChip" class="text-[9px] font-mono px-2 py-0.5 rounded" style="background:rgba(141,148,168,0.1);color:#5a6373;border:1px solid rgba(141,148,168,0.25);" title="Groq token budget"></span>
+        </div>
+
+        <!-- Source tabs — single unified hub for AI / Pre-movers / News -->
+        <div id="recoTabs" class="flex items-center gap-2 mb-4 flex-wrap">
+            <button data-reco-tab="ai"        class="reco-tab on">
+                <span class="material-symbols-outlined" style="font-size:14px;">auto_awesome</span>
+                AI Top Picks
+            </button>
+            <button data-reco-tab="premover" class="reco-tab">
+                <span class="material-symbols-outlined" style="font-size:14px;">trending_up</span>
+                Pre-movers
+            </button>
+            <button data-reco-tab="news"     class="reco-tab">
+                <span class="material-symbols-outlined" style="font-size:14px;">newspaper</span>
+                News catalyst
+            </button>
+            <span class="ml-2 text-[10px] text-on-surface-variant/50 font-mono" id="recoTabHint">curated · deduped · diversified · article-subject verified</span>
+            <button id="edgeBtn" class="ml-auto text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded transition-colors"
+                    style="color:#8eb4e0;border:1px solid rgba(141,180,224,0.3);background:rgba(141,180,224,0.05);"
+                    onclick="document.getElementById('edgePanel').classList.toggle('hidden')">
+                Why trust this?
+            </button>
+        </div>
+
+        <!-- Edge explainer (collapsed by default) -->
+        <div id="edgePanel" class="hidden mb-4 rounded-lg p-4"
+             style="background:linear-gradient(135deg,rgba(141,180,224,0.06),rgba(45,212,170,0.04));border:1px solid rgba(141,180,224,0.18);">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-black uppercase tracking-widest" style="color:#8eb4e0;">Our edge — the honest version</h3>
+                <span class="text-[9px] text-on-surface-variant/40 font-mono">5 things we do that retail tools don't</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] text-on-surface-variant" style="line-height:1.55;">
+                <div><span class="font-bold" style="color:#2dd4aa;">1. Subject-verified events.</span> Nuvama doesn't get alpha for rating Tata Steel. TCS doesn't get credit for Tata Consumer news. We require the ticker (or its short-name) to appear in the article body — eliminates the #1 false-signal source.</div>
+                <div><span class="font-bold" style="color:#2dd4aa;">2. Volume confirmation gate.</span> OBV divergence detected → 0.75× penalty even on great news. Real accumulation + volume surge → 1.35× boost. We trust the tape over the tweet.</div>
+                <div><span class="font-bold" style="color:#2dd4aa;">3. Forensic skepticism.</span> Coordinated article campaigns, insider sell streaks, promoter pledge jumps, unexplained pre-news volume — each one down-weights the signal. We try hard NOT to recommend a pump.</div>
+                <div><span class="font-bold" style="color:#2dd4aa;">4. Fundamental gating.</span> A high-alpha event on a stock with negative cashflow + 30% promoter pledge + declining revenue gets dropped, not promoted. Look for the F-score chip on each card.</div>
+                <div><span class="font-bold" style="color:#2dd4aa;">5. Curation discipline.</span> Sector cap (max 2/sector), mega-cap cap (max 2 in any slate). No "5 IT stocks today" slop.</div>
+                <div><span class="font-bold" style="color:#e6b84a;">What we're NOT.</span> We don't have Bloomberg-grade data, tick-level feeds, or proprietary models. We win against picking off Twitter/CNBC, not against a quant fund. Position size accordingly.</div>
+            </div>
+        </div>
+
+        <!-- Cards land here — populated by loadReco() per active tab -->
+        <div id="recoCards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>
+        </div>
+
+        <!-- Hidden legacy hosts kept so existing init code that targets them
+             doesn't error. The new flow writes into #recoCards. -->
+        <div id="suggestedSection" style="display:none;"><div id="suggestedStocks"></div></div>
+        <div id="picksSection" style="display:none;"><div id="picksGrid"></div></div>
+    </div>
+
+    <style>
+      .reco-tab {
+          display: inline-flex; align-items: center; gap: 6px;
+          font: 600 11.5px 'DM Sans', sans-serif;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          padding: 6px 14px; border-radius: 999px;
+          background: transparent; color: #8a94a8;
+          border: 1px solid rgba(141,148,168,0.18);
+          cursor: pointer; transition: all 120ms;
+      }
+      .reco-tab:hover { color: #dde3ef; border-color: rgba(141,180,224,0.4); }
+      .reco-tab.on   { color: #2dd4aa; border-color: rgba(45,212,170,0.4);
+                        background: rgba(45,212,170,0.10); }
+    </style>
+
+    <!-- ============ "Latest Events" — retired ====================
+         Was the second news block on home. The cutting-edge "Latest news"
+         section above (id=twHomeNews) is now the single canonical news
+         surface, with impact-score / bull-bear / recommended ticker /
+         affected-companies enrichment.
+         Stub node kept hidden so any existing JS reference to #latestEvents
+         doesn't throw on bind. -->
+    <div id="latestEvents" style="display:none !important;"></div>
+
+    <!-- ============ MARKET CALENDAR (TABBED) ============ -->
+    <div class="mb-8" id="marketCalendar">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#8eb4e0;">event_available</span>
+            <h2 class="font-headline font-bold text-lg text-on-surface">Market Calendar</h2>
+            <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+            <a href="events.html" class="text-[10px] text-primary font-bold hover:underline uppercase tracking-widest">View all events →</a>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex items-center gap-1 p-1 bg-surface-container-lowest rounded-lg border border-outline-variant/15 mb-4 overflow-x-auto" id="calTabs">
+            <button data-tab="earnings" class="cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-black rounded bg-primary text-on-primary-container whitespace-nowrap">
+                <span class="material-symbols-outlined" style="font-size:14px;">calendar_month</span>
+                Earnings <span class="cal-count opacity-70 font-mono">--</span>
+            </button>
+            <button data-tab="policy" class="cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors whitespace-nowrap">
+                <span class="material-symbols-outlined" style="font-size:14px;">gavel</span>
+                Policy <span class="cal-count opacity-70 font-mono">--</span>
+            </button>
+            <button data-tab="corporate" class="cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors whitespace-nowrap">
+                <span class="material-symbols-outlined" style="font-size:14px;">business</span>
+                Corporate <span class="cal-count opacity-70 font-mono">--</span>
+            </button>
+            <button data-tab="ipo" class="cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors whitespace-nowrap">
+                <span class="material-symbols-outlined" style="font-size:14px;">rocket_launch</span>
+                IPOs <span class="cal-count opacity-70 font-mono">--</span>
+            </button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-4 min-h-[260px]">
+            <!-- Earnings Panel -->
+            <div class="cal-panel" data-panel="earnings">
+                <div id="earningsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:60px;"></div>
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:60px;"></div>
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:60px;"></div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="earnings.html" class="text-[10px] text-primary font-bold hover:underline">Full earnings calendar →</a>
+                </div>
+            </div>
+            <!-- Policy Panel -->
+            <div class="cal-panel hidden" data-panel="policy">
+                <div id="policyList" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:90px;"></div>
+                    <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:90px;"></div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="events.html#policy" class="text-[10px] text-primary font-bold hover:underline">All policy events →</a>
+                </div>
+            </div>
+            <!-- Corporate Panel -->
+            <div class="cal-panel hidden" data-panel="corporate">
+                <div id="corporateList" class="space-y-2">
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+                    <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:50px;"></div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="events.html#corporate" class="text-[10px] text-primary font-bold hover:underline">All corporate actions →</a>
+                </div>
+            </div>
+            <!-- IPO Panel -->
+            <div class="cal-panel hidden" data-panel="ipo">
+                <div id="ipoList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+                    <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+                    <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:120px;"></div>
+                </div>
+                <div class="mt-3 text-right">
+                    <a href="events.html#ipo" class="text-[10px] text-primary font-bold hover:underline">IPO history →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signal velocity (last 24h) -->
+    <section class="rf-section" style="border-top: 1px solid var(--rf-line); margin-top: 24px;">
+        <div class="rf-section-head">
+            <h2>Signal velocity</h2>
+            <span class="rf-section-head-meta" id="velocityMeta">last 24h</span>
+        </div>
+        <div class="rf-card rf-card-pad-lg">
+            <div class="flex items-baseline justify-between flex-wrap gap-4 mb-5">
+                <div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--rf-text);" id="velocityTotal">—</div>
+                    <div style="font-size: 13px; color: var(--rf-text-mute); margin-top: 6px;">total signals · <span id="velocityAvg">—</span> avg/hour</div>
+                </div>
+                <div style="display: flex; gap: 24px; font-size: 12px;">
+                    <div>
+                        <div style="color: var(--rf-text-dim); margin-bottom: 4px;">Peak hour</div>
+                        <div style="color: var(--rf-text); font-weight: 500;" id="velocityPeak">—</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--rf-text-dim); margin-bottom: 4px;">Latest</div>
+                        <div style="color: var(--rf-text); font-weight: 500;" id="velocityLatest">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="rf-histogram" id="velocityHistogram" style="height: 100px;">
+                <div class="rf-skel" style="height: 100%; flex: 1; border-radius: 0; border: none;"></div>
+            </div>
+            <div class="flex items-center justify-between mt-2" style="font-size: 10px; color: var(--rf-text-dim); font-variant-numeric: tabular-nums;">
+                <span id="velocityStartLabel">—</span>
+                <span>now</span>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    (function () {
+        async function loadVelocity() {
+            try {
+                const res = await fetch('/api/news/fast?limit=300');
+                const data = await res.json();
+                if (!data || !data.success) return;
+                const items = data.data || [];
+                renderVelocity(items);
+            } catch (e) {
+                console.error('velocity fetch failed', e);
+            }
+        }
+
+        function renderVelocity(items) {
+            const now = new Date();
+            const buckets = new Array(24).fill(0);
+            const hourMs = 60 * 60 * 1000;
+
+            items.forEach(it => {
+                const ts = it.created_at || it.published_at || it.ts;
+                if (!ts) return;
+                const t = new Date(ts);
+                if (isNaN(t.getTime())) return;
+                const ageMin = (now - t) / (60 * 1000);
+                const hour = Math.floor(ageMin / 60);
+                if (hour >= 0 && hour < 24) {
+                    buckets[23 - hour]++;
+                }
+            });
+
+            const total = buckets.reduce((a, b) => a + b, 0);
+            const max = Math.max(...buckets, 1);
+            const peakIdx = buckets.indexOf(max);
+            const peakHoursAgo = 23 - peakIdx;
+
+            document.getElementById('velocityTotal').textContent = total.toLocaleString('en-IN');
+            document.getElementById('velocityAvg').textContent = (total / 24).toFixed(1);
+            document.getElementById('velocityPeak').textContent =
+                max === 0 ? '—' : (peakHoursAgo === 0 ? 'now' : peakHoursAgo + 'h ago') + ' · ' + max;
+            document.getElementById('velocityLatest').textContent = buckets[23] + ' / hour';
+
+            const start = new Date(now.getTime() - 24 * hourMs);
+            document.getElementById('velocityStartLabel').textContent =
+                start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+            const hist = document.getElementById('velocityHistogram');
+            hist.innerHTML = buckets.map((v, i) => {
+                const h = max > 0 ? (v / max * 100).toFixed(1) : 0;
+                const isPeak = v === max && v > 0;
+                const isEmpty = v === 0;
+                const hoursAgo = 23 - i;
+                const tip = `${hoursAgo === 0 ? 'now' : hoursAgo + 'h ago'} · ${v} signals`;
+                return `<div class="bar ${isPeak ? 'peak' : ''} ${isEmpty ? 'empty' : ''}" style="height: ${Math.max(2, h)}%;" title="${tip}"></div>`;
+            }).join('');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadVelocity);
+        } else {
+            loadVelocity();
+        }
+        // Refresh every 60s
+        setInterval(loadVelocity, 60 * 1000);
+    })();
+    </script>
+
+    <!-- ============ INSIGHTS STUDIO (moved to bottom of homepage) ============ -->
+    <div id="insightsRoot" class="mb-8 mt-10"></div>
+
+</main>
+
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/news-time.js"></script>
+<script src="./shared/js/company-logo.js"></script>
+<script src="./shared/js/curated-signals.js"></script>
+<script src="./shared/js/stock-popup.js"></script>
+<script src="./shared/js/bootstrap.js"></script>
+<script src="./shared/js/theme.js"></script>
+<script src="./shared/js/realtime.js"></script>
+<script src="./shared/js/search-bar.js" defer></script>
+<script>
+// ── Personalized hero greeting (rotating pools, Claude-style) ──────────
+function deriveFirstName() {
+    try {
+        // Allow user override stored locally
+        const override = localStorage.getItem('tickwave_display_name');
+        if (override) return override;
+        const u = (window.Auth && Auth.getUser) ? Auth.getUser() : null;
+        if (u) {
+            const name = u.name || u.full_name || u.display_name || u.first_name;
+            if (name && typeof name === 'string') return name.split(/\s+/)[0];
+            if (u.email && typeof u.email === 'string') {
+                const local = u.email.split('@')[0].split(/[._-]/)[0];
+                return local.charAt(0).toUpperCase() + local.slice(1).toLowerCase();
+            }
+        }
+    } catch (e) {}
+    return null;
+}
+
+// Greeting pools — each entry uses {name} placeholder; resolved later.
+// Phrases without {name} also work for anonymous visitors.
+const GREETING_POOLS = {
+    early:   ["Good morning, {name}", "Up early, {name}", "Morning, {name}", "Beating the bell, {name}", "Early bird, {name}"],
+    morning: ["Good morning, {name}", "Welcome back, {name}", "Hey {name}", "Hi, {name}", "Ready when you are, {name}"],
+    midday:  ["Hi, {name}", "Welcome back, {name}", "Good afternoon, {name}", "Hey {name}, what's moving?", "Back at it, {name}"],
+    afternoon: ["Good afternoon, {name}", "Hey {name}", "Welcome back, {name}", "Hi, {name}", "Afternoon, {name}"],
+    evening: ["Good evening, {name}", "Evening, {name}", "Welcome back, {name}", "Hi, {name}", "Hey {name}, how'd it go?"],
+    late:    ["Working late, {name}?", "Still here, {name}?", "Burning the midnight oil, {name}?", "Late one, {name}?", "Hi, {name}"],
+    overnight: ["Up late, {name}?", "Burning the midnight oil, {name}", "Couldn't sleep, {name}?", "Asia hours, {name}", "Hi, {name}"],
+    monday:  ["Monday, {name}. Let's go.", "New week, {name}", "Fresh week, {name}", "Good morning, {name}"],
+    friday:  ["Friday, {name}", "Almost there, {name}", "Last lap, {name}", "Good afternoon, {name}"],
+    weekend: ["Weekend, {name}", "Hi, {name}", "Quiet markets, {name}", "Welcome back, {name}", "Plan time, {name}"],
+    welcome_back_short: ["Back already, {name}?", "Welcome back, {name}", "Quick return, {name}"],
+    first_visit: ["Welcome to Tickwave, {name}", "Hi {name}, glad you're here", "Welcome aboard, {name}"],
+};
+
+const SUBHEAD_POOLS = {
+    pre_market: ["Pre-market scan.", "Setting up the day.", "First look at futures.", "Calm before the bell."],
+    open:       ["Here's the tape.", "Markets are live.", "Tape is rolling.", "Watch the flow.", "Today in motion."],
+    closing:    ["Closing prints.", "Last hour of trade.", "Wrapping the day."],
+    post:       ["Today's debrief.", "Reading the close.", "Markets settled.", "Look back, plan forward."],
+    overnight:  ["While the markets sleep.", "Quiet hours.", "Asia takes the baton.", "Overnight watch."],
+    weekend:    ["Markets are closed. Time to plan.", "Weekend reset.", "Plan the week ahead.", "Step back, zoom out."],
+};
+
+const EYEBROW_POOLS = {
+    market_live: ["Alpha Terminal · Market Live", "Alpha Terminal · Live · Bell ringing", "Alpha Terminal · Tape rolling"],
+    live:        ["Alpha Terminal · Live", "Alpha Terminal · Always on"],
+    weekend:     ["Alpha Terminal · Weekend", "Alpha Terminal · Off-hours"],
+};
+
+// Stable hash → deterministic pick from a pool. Hash combines a seed
+// (e.g. yyyymmdd + bucket) so the same user gets a consistent line all day,
+// but it changes naturally tomorrow.
+function _hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return Math.abs(h);
+}
+function _pick(pool, seed) {
+    if (!pool || !pool.length) return '';
+    return pool[_hashStr(String(seed)) % pool.length];
+}
+
+function _bucket(h) {
+    if (h >= 4 && h < 8)   return 'early';
+    if (h >= 8 && h < 11)  return 'morning';
+    if (h >= 11 && h < 14) return 'midday';
+    if (h >= 14 && h < 17) return 'afternoon';
+    if (h >= 17 && h < 21) return 'evening';
+    if (h >= 21 && h < 24) return 'late';
+    return 'overnight';   // 0–4
+}
+
+function paintHeroGreeting() {
+    const now = new Date();
+    const h = now.getHours();
+    const day = now.getDay();
+    const isWeekend = (day === 0 || day === 6);
+    const isMonday = (day === 1);
+    const isFriday = (day === 5);
+
+    const name = deriveFirstName();
+    const seedDay = `${now.getFullYear()}${now.getMonth()}${now.getDate()}`;
+
+    // Pick the pool — special days override the time bucket
+    let poolKey = _bucket(h);
+    if (isWeekend)                 poolKey = 'weekend';
+    else if (isMonday && h < 12)   poolKey = 'monday';
+    else if (isFriday && h >= 14)  poolKey = 'friday';
+
+    // Returning-visitor flavor: stored timestamp of last paint
+    try {
+        const last = parseInt(localStorage.getItem('tickwave_last_visit') || '0', 10);
+        const minsSince = (Date.now() - last) / 60000;
+        if (last && minsSince > 1 && minsSince < 60) poolKey = 'welcome_back_short';
+        else if (!last && name)                      poolKey = 'first_visit';
+        localStorage.setItem('tickwave_last_visit', String(Date.now()));
+    } catch (e) {}
+
+    let template = _pick(GREETING_POOLS[poolKey] || GREETING_POOLS.morning, seedDay + poolKey + (name || 'anon'));
+
+    // Anonymous users: strip ", {name}" suffix and clean trailing punctuation
+    let greetLine;
+    if (name) {
+        greetLine = template.replace(/\{name\}/g, name);
+    } else {
+        greetLine = template
+            .replace(/,\s*\{name\}\??/g, '')
+            .replace(/\s*\{name\}\??/g, '')
+            .replace(/^Hey\s*$/, 'Hey there')
+            .replace(/^Hi\s*$/, 'Hi there')
+            .replace(/^Welcome back\s*$/, 'Welcome back');
+    }
+    if (!/[.?!]$/.test(greetLine)) greetLine += '.';
+
+    // Subhead pool by session phase
+    let subKey;
+    if (isWeekend)              subKey = 'weekend';
+    else if (h >= 4 && h < 9)   subKey = 'pre_market';
+    else if (h >= 9 && h < 15)  subKey = 'open';
+    else if (h === 15)          subKey = 'closing';
+    else if (h >= 16 && h < 21) subKey = 'post';
+    else                         subKey = 'overnight';
+    const subhead = _pick(SUBHEAD_POOLS[subKey], seedDay + 'sub' + subKey);
+
+    // Eyebrow pool
+    let eyeKey;
+    if (isWeekend)             eyeKey = 'weekend';
+    else if (h >= 9 && h < 16) eyeKey = 'market_live';
+    else                       eyeKey = 'live';
+    const eyebrow = _pick(EYEBROW_POOLS[eyeKey], seedDay + 'eye' + eyeKey);
+
+    const elG = document.getElementById('heroGreeting');
+    const elS = document.getElementById('heroSubhead');
+    const elE = document.getElementById('heroEyebrow');
+    if (elG) elG.textContent = greetLine;
+    if (elS) elS.textContent = subhead;
+    if (elE) elE.textContent = eyebrow;
+}
+
+// Mount the always-on status banner (last-updated chip + live count) ASAP.
+document.addEventListener('DOMContentLoaded', () => {
+    paintHeroGreeting();
+    // Re-paint every minute so the greeting transitions across boundaries
+    // (e.g. 11:59 "Good morning" → 12:00 "Good afternoon") without a reload.
+    setInterval(paintHeroGreeting, 60000);
+
+    if (window.Realtime) Realtime.mountStatusBanner('statusBanner', 30);
+
+    // Load additional sections
+    loadIPOs();
+    loadEarnings();
+    loadPolicy();
+    loadCorporateActions();
+    loadDailyPicks();
+    loadGroqStatus();
+
+    // Market Calendar refresh — was static after first load, so the same
+    // names showed for days. Now re-runs every 5 min; the backend filters
+    // out past dates so the list rotates as earnings get reported.
+    setInterval(() => {
+        loadIPOs();
+        loadEarnings();
+        loadPolicy();
+        loadCorporateActions();
+    }, 5 * 60 * 1000);
+
+    // Wire up Market Calendar tabs
+    document.querySelectorAll('.cal-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.cal-tab').forEach(b => {
+                if (b.dataset.tab === tab) {
+                    b.className = 'cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-black rounded bg-primary text-on-primary-container whitespace-nowrap';
+                } else {
+                    b.className = 'cal-tab flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-widest font-bold rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors whitespace-nowrap';
+                }
+            });
+            document.querySelectorAll('.cal-panel').forEach(p => {
+                p.classList.toggle('hidden', p.dataset.panel !== tab);
+            });
+        });
+    });
+});
+
+// Update count badges on tab buttons
+function setCalCount(tab, n) {
+    const btn = document.querySelector(`.cal-tab[data-tab="${tab}"] .cal-count`);
+    if (btn) btn.textContent = n;
+}
+
+// Load upcoming IPOs
+async function loadIPOs() {
+    try {
+        const res = await fetch('/api/ipos?limit=8');
+        const data = await res.json();
+        const list = document.getElementById('ipoList');
+        if (!list) return;
+
+        const items = data.data || [];
+        setCalCount('ipo', items.length);
+
+        if (!items.length) {
+            list.innerHTML = `<div class="col-span-full p-6 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">No upcoming IPOs detected. New listings will appear here as they're announced.</div>`;
+            return;
+        }
+
+        // Status badge styling
+        const statusStyle = {
+            upcoming:  { bg: 'rgba(141,180,224,0.15)', fg: '#8eb4e0', label: 'UPCOMING' },
+            open:      { bg: 'rgba(45,212,170,0.18)',  fg: '#2dd4aa', label: 'LIVE' },
+            closed:    { bg: 'rgba(140,144,159,0.15)', fg: '#8a94a8', label: 'CLOSED' },
+            allotment: { bg: 'rgba(230,184,74,0.15)',  fg: '#e6b84a', label: 'ALLOTMENT' },
+            listed:    { bg: 'rgba(167,139,250,0.18)', fg: '#a78bfa', label: 'LISTED' },
+        };
+
+        list.innerHTML = items.slice(0, 8).map(ipo => {
+            const company = ipo.company_name || ipo.company || ipo.symbol || 'Company';
+            const symbol  = ipo.symbol || '';
+            const sector  = ipo.sector || ipo.exchange || '';
+            const status  = (ipo.status || 'upcoming').toLowerCase();
+            const sty     = statusStyle[status] || statusStyle.upcoming;
+
+            // Date range / countdown
+            const open  = ipo.open_date  ? new Date(ipo.open_date)  : null;
+            const close = ipo.close_date ? new Date(ipo.close_date) : null;
+            const list_ = ipo.listing_date ? new Date(ipo.listing_date) : null;
+            const today = new Date(); today.setHours(0,0,0,0);
+            let dateStr = 'TBD';
+            if (status === 'open' && close) {
+                const daysLeft = Math.ceil((close - today) / 86400000);
+                dateStr = daysLeft > 0 ? `${daysLeft}d to close` : 'Closes today';
+            } else if (status === 'upcoming' && open) {
+                const daysTo = Math.ceil((open - today) / 86400000);
+                dateStr = daysTo > 0 ? `Opens in ${daysTo}d` : 'Opens today';
+            } else if (status === 'allotment' && list_) {
+                const daysTo = Math.ceil((list_ - today) / 86400000);
+                dateStr = daysTo > 0 ? `Lists in ${daysTo}d` : 'Listing today';
+            } else if (list_) {
+                dateStr = list_.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+            }
+
+            // Price band — fall back gracefully
+            const lo = ipo.issue_price_low,  hi = ipo.issue_price_high;
+            const priceRange = (lo && hi)
+                ? (lo === hi ? `₹${lo}` : `₹${lo}-${hi}`)
+                : 'Price TBD';
+            const lot = ipo.lot_size ? `${ipo.lot_size} sh/lot` : '';
+            const size = (ipo.issue_size_cr && ipo.issue_size_cr > 0)
+                ? `₹${Number(ipo.issue_size_cr).toFixed(0)} Cr` : '';
+
+            // Alpha score chip
+            const alphaScore = ipo.ipo_alpha_score;
+            const alphaColor = (alphaScore >= 60) ? '#2dd4aa' : (alphaScore >= 40) ? '#e6b84a' : '#8a94a8';
+            const alphaTag = (typeof alphaScore === 'number')
+                ? `<span class="text-[8.5px] font-mono font-bold px-1.5 py-0.5 rounded" style="background:${alphaColor}1f;color:${alphaColor};border:1px solid ${alphaColor}55;">α ${alphaScore.toFixed(0)}</span>` : '';
+
+            return `
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 cursor-pointer transition-colors">
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-[13px] text-on-surface truncate">${company}</div>
+                            <div class="text-[9px] text-on-surface-variant/70 mt-0.5">${symbol}${sector ? ' · ' + sector : ''}</div>
+                        </div>
+                        <div class="text-[8.5px] font-black px-2 py-0.5 rounded flex-shrink-0" style="background:${sty.bg};color:${sty.fg};">${sty.label}</div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-on-surface-variant mb-1.5">
+                        <span class="font-mono font-bold text-on-surface">${priceRange}</span>
+                        <span class="text-[9px] opacity-70">${dateStr}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-[9px] text-on-surface-variant/50 truncate">${[lot, size].filter(Boolean).join(' · ') || ''}</div>
+                        ${alphaTag}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('IPO load error:', e);
+        setCalCount('ipo', 0);
+    }
+}
+
+// Load earnings calendar
+async function loadEarnings() {
+    try {
+        const res = await fetch('/api/earnings?limit=12');
+        const data = await res.json();
+        const list = document.getElementById('earningsList');
+        if (!list) return;
+
+        const items = data.data || [];
+        setCalCount('earnings', items.length);
+
+        if (!items.length) {
+            list.innerHTML = `<div class="col-span-full p-6 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">No upcoming earnings on calendar.</div>`;
+            return;
+        }
+
+        list.innerHTML = items.slice(0, 12).map(earning => {
+            const d = new Date(earning.earnings_date || earning.date);
+            const dateStr = d.toLocaleString('en-IN', {month:'short', day:'numeric'});
+            const ticker = earning.ticker || '';
+            const sector = earning.sector || '';
+
+            return `
+                <div class="p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-colors">
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                        <div class="font-bold text-[12px] text-on-surface truncate flex-1">${ticker || (earning.company || '').slice(0, 15)}</div>
+                        <div class="text-[10px] font-bold text-primary font-mono whitespace-nowrap">${dateStr}</div>
+                    </div>
+                    <div class="text-[9px] text-on-surface-variant/60 truncate">${(earning.company || '').slice(0, 30)}</div>
+                    ${sector ? `<div class="text-[8px] text-on-surface-variant/40 mt-1 uppercase tracking-wider">${sector}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Earnings load error:', e);
+        setCalCount('earnings', 0);
+    }
+}
+
+// Load policy updates
+// ============ UNIFIED RECOMMENDATIONS HUB ============
+// One section, three sources: AI top picks / Pre-movers / News catalyst.
+// Clean tabbed switcher — replaces the old Suggested Stocks + Picks of the Day duo.
+async function initUnifiedRecoTabs() {
+    const host = document.getElementById('recoCards');
+    const hint = document.getElementById('recoTabHint');
+    const upd  = document.getElementById('picksUpdated');
+    if (!host) return;
+
+    const HINTS = {
+        ai:       'curated · deduped · diversified · article-subject verified',
+        premover: 'unusual volume + strong news catalyst, scored before the move',
+        news:     'fresh high-impact event signals from the live news pipeline',
+    };
+
+    async function fetchAI() {
+        if (!window.CuratedSignals) return [];
+        try { return await CuratedSignals.fetch(6); } catch (_) { return []; }
+    }
+
+    // Pre-movers: combine volume σ + strong-catalyst filter so we surface
+    // names where the buy interest is showing up BEFORE the obvious news.
+    async function fetchPremovers() {
+        try {
+            const r = await fetch('/api/premover?limit=12');
+            const j = await r.json();
+            const rows = (j && j.data) || [];
+            const enriched = rows
+                .filter(x => x && x.ticker)
+                .map(x => ({
+                    ticker:        x.ticker,
+                    headline:      x.headline || x.title || x.reason || (x.ticker + ' showing unusual activity'),
+                    alpha_score:   x.alpha_score || x.unexplained_score || 50,
+                    sentiment:     x.sentiment   || 'bullish',
+                    event_type:    x.event_type  || 'volume_surge',
+                    company:       x.company,
+                    sector:        x.sector,
+                    entry_price:   x.last_price  || x.entry_price,
+                    predictions:   x.predictions || {},
+                    created_at:    x.created_at  || new Date().toISOString(),
+                    event_id:      x.event_id    || ('pm_' + x.ticker),
+                }))
+                .slice(0, 6);
+            return enriched;
+        } catch (_) { return []; }
+    }
+
+    // News catalyst: filter the feed for high-impact event signals and surface
+    // the ones where the subject ticker actually appears in the headline.
+    async function fetchNewsCatalyst() {
+        try {
+            const r = await fetch('/api/feed?limit=40&min_impact=70');
+            const j = await r.json();
+            const items = (j && j.data) || [];
+            // Reshape feed items into signal-card-friendly objects
+            return items
+                .filter(e => (e.companies && e.companies.length) || e.ticker)
+                .filter(e => e.event_type && e.event_type !== 'news') // need a real event tag
+                .map(e => ({
+                    ticker:      e.ticker || (e.companies && e.companies[0]) || '',
+                    headline:    e.title || e.headline || e.summary || '',
+                    alpha_score: e.impact_score || (e.magnitude ? e.magnitude * 10 : 60),
+                    sentiment:   e.sentiment || 'bullish',
+                    event_type:  e.event_type,
+                    company:     e.company,
+                    sector:      e.sector,
+                    entry_price: e.entry_price || null,
+                    predictions: e.predictions || {},
+                    created_at:  e.created_at || e.published_at || new Date().toISOString(),
+                    event_id:    e.event_id || e.id || '',
+                }))
+                // Same client-side dedupe + headline-subject filter as curated
+                .filter((s, i, arr) => {
+                    if (!s.ticker) return false;
+                    if (arr.findIndex(x => x.ticker === s.ticker) !== i) return false;
+                    if (!window.CuratedSignals) return true;
+                    return CuratedSignals.headlineMatchesTicker(s.headline, s.ticker);
+                })
+                .slice(0, 6);
+        } catch (_) { return []; }
+    }
+
+    async function loadTab(tab) {
+        host.innerHTML = `
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>
+            <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 skeleton" style="height:300px;"></div>`;
+        if (hint) hint.textContent = HINTS[tab] || '';
+        let picks = [];
+        if (tab === 'ai')        picks = await fetchAI();
+        else if (tab === 'premover') picks = await fetchPremovers();
+        else if (tab === 'news')     picks = await fetchNewsCatalyst();
+        if (!picks.length) {
+            host.innerHTML = `<div class="col-span-full p-8 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">
+                No high-quality picks in this lane right now.
+                <div class="text-[10px] mt-2 text-on-surface-variant/40">Try another tab or come back in a few minutes.</div>
+            </div>`;
+            if (upd) upd.textContent = '0 picks';
+            return;
+        }
+        if (upd) upd.textContent = picks.length + ' picks · ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+        // Render each pick using the unified curated-card template (chart tabs,
+        // crosshair, prediction badges, multi-timeframe strip, alpha-vs-trend).
+        if (!window.CuratedSignals) return;
+        host.innerHTML = picks.map((sig) => {
+            const reasoningSlot = `rsn_${sig.event_id || sig.ticker}_${tab}`;
+            const cardHtml = CuratedSignals.buildCard(sig, { dense: false });
+            return `<div class="reco-card-wrap">${cardHtml}
+                <div class="reco-reasoning" style="margin-top:10px;padding:12px 14px;
+                     background:rgba(10,14,20,0.55);border:1px solid rgba(141,148,168,0.10);
+                     border-radius:8px;">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;color:#8eb4e0;">psychology</span>
+                    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#8eb4e0;">Why this stock</span>
+                  </div>
+                  <div id="${reasoningSlot}" style="font-size:12px;color:#c2c6d6;line-height:1.55;">
+                    <span style="opacity:0.5;">loading reasoning…</span>
+                  </div>
+                </div>
+            </div>`;
+        }).join('');
+        // Hydrate charts + reasoning
+        CuratedSignals.hydrate(host, picks);
+        picks.forEach((sig) => {
+            const slot = document.getElementById(`rsn_${sig.event_id || sig.ticker}_${tab}`);
+            if (!slot) return;
+            if (!sig.event_id) {
+                slot.innerHTML = `<span style="opacity:0.8;">${sig.headline || 'Strong technical setup with rising volume.'}</span>`;
+                return;
+            }
+            API.get(`/signal/${encodeURIComponent(sig.event_id)}/reasoning`)
+                .then((res) => {
+                    const r = res?.data || res;
+                    if (!r || !r.primary_driver) throw new Error('empty');
+                    const facts = (r.headline_facts || []).length
+                        ? `<div style="margin-top:6px;font-size:10px;color:#8a94a8;">Figures: ${r.headline_facts.join(' · ')}</div>` : '';
+                    const risks = (r.risk_factors || []).slice(0, 2).map(x => `<li>${x}</li>`).join('');
+                    slot.innerHTML = `
+                        <div style="font-weight:600;color:#dde3ef;margin-bottom:4px;">${r.primary_driver}</div>
+                        <div style="opacity:0.8;margin-bottom:4px;">${r.why_direction || ''}</div>
+                        <div style="opacity:0.65;font-size:11px;">${r.why_magnitude || ''}</div>
+                        ${facts}
+                        ${risks ? `<ul style="margin-top:6px;font-size:10.5px;color:#ffb4ab;opacity:0.85;padding-left:18px;">${risks}</ul>` : ''}`;
+                })
+                .catch(() => {
+                    slot.innerHTML = `<span style="opacity:0.8;">${sig.headline || 'Signal driven by news + alpha engine.'}</span>`;
+                });
+        });
+    }
+
+    // Wire the tab buttons
+    document.querySelectorAll('#recoTabs .reco-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#recoTabs .reco-tab').forEach(b => b.classList.toggle('on', b === btn));
+            loadTab(btn.dataset.recoTab);
+        });
+    });
+
+    // Default load
+    await loadTab('ai');
+}
+
+async function loadPolicy() {
+    try {
+        // /api/events?type=policy returns empty — the unified /api/feed
+        // pipeline carries policy items under category=policy. Use that.
+        const res = await fetch('/api/feed?category=policy&limit=6');
+        const data = await res.json();
+        const list = document.getElementById('policyList');
+        if (!list) return;
+
+        const items = data.data || [];
+        setCalCount('policy', items.length);
+
+        if (!items.length) {
+            list.innerHTML = `<div class="col-span-full p-6 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">No policy events yet.</div>`;
+            return;
+        }
+
+        list.innerHTML = items.slice(0, 6).map(policy => {
+            const color = policy.impact_score > 70 ? '#ff7a8a' : policy.impact_score > 40 ? '#e6b84a' : '#6ba3d6';
+            const summary = (policy.summary || '').replace(/<[^>]*>/g, '').slice(0, 200);
+            const cleanTitle = (policy.title || 'Policy').replace(/<[^>]*>/g, '');
+
+            return `
+                <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-colors">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-sm text-on-surface flex-1">${cleanTitle}</div>
+                        <div class="text-[9px] font-bold ml-2 flex-shrink-0" style="color:${color};">${(policy.impact_score || 50).toFixed(0)}%</div>
+                    </div>
+                    <p class="text-[9px] text-on-surface-variant/70 line-clamp-2">${summary}</p>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Policy load error:', e);
+        setCalCount('policy', 0);
+    }
+}
+
+// Load corporate actions (buybacks, dividends, splits)
+async function loadCorporateActions() {
+    try {
+        const res = await fetch('/api/corporate-actions?limit=10');
+        const data = await res.json();
+        const list = document.getElementById('corporateList');
+        if (!list) return;
+
+        const items = data.data || [];
+        setCalCount('corporate', items.length);
+
+        if (!items.length) {
+            list.innerHTML = `<div class="p-6 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">No corporate actions detected.</div>`;
+            return;
+        }
+
+        list.innerHTML = items.slice(0, 10).map(action => {
+            const typeLabel = action.event_type === 'buyback' ? 'BUYBACK' : action.event_type === 'dividend' ? 'DIVIDEND' : action.event_type === 'split' ? 'SPLIT' : (action.event_type || 'ACTION').toUpperCase();
+            const typeColor = action.event_type === 'buyback' ? '#8eb4e0' : action.event_type === 'dividend' ? '#2dd4aa' : action.event_type === 'split' ? '#e6b84a' : '#8a94a8';
+            const cleanTitle = (action.title || 'Action').replace(/<[^>]*>/g, '').slice(0, 80);
+
+            return `
+                <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-colors">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-sm text-on-surface truncate">${cleanTitle}</div>
+                        <div class="text-[9px] text-on-surface-variant/60 truncate">${(action.companies || 'Companies').slice(0, 50)}</div>
+                    </div>
+                    <div class="text-[9px] font-bold px-2 py-1 rounded ml-2 flex-shrink-0" style="background:${typeColor}26;color:${typeColor};">${typeLabel}</div>
+                </div>
+            `;
+        }).join('');
+    } catch(e) {
+        console.warn('Corporate load error:', e);
+        setCalCount('corporate', 0);
+    }
+}
+
+// Load Picks of the Day — daily-rotating, AI-reasoned high-conviction names
+async function loadDailyPicks() {
+    const grid = document.getElementById('picksGrid');
+    const updEl = document.getElementById('picksUpdated');
+    if (!grid) return;
+    try {
+        const r = await fetch('/api/picks/daily');
+        const j = await r.json();
+        const items = (j && j.data) || [];
+        if (!items.length) {
+            grid.innerHTML = `<div class="col-span-full p-6 bg-surface-container rounded-lg border border-outline-variant/10 text-center text-on-surface-variant/60 text-sm">No high-conviction picks yet today. Check back as new signals come in.</div>`;
+            if (updEl) updEl.textContent = 'no picks';
+            return;
+        }
+        if (updEl) updEl.textContent = `${items.length} picks · ${j.as_of || 'today'}`;
+        grid.innerHTML = items.map(p => {
+            const sent = (p.sentiment || 'neutral').toLowerCase();
+            const sentColor = sent === 'bullish' ? '#2dd4aa' : sent === 'bearish' ? '#f26b6b' : '#8a94a8';
+            const alpha = (p.alpha_score || 0).toFixed(0);
+            const alphaColor = (p.alpha_score >= 70) ? '#2dd4aa' : (p.alpha_score >= 55) ? '#e6b84a' : '#8a94a8';
+            const evType = (p.event_type || 'news').replace(/_/g, ' ');
+            const company = (p.company && p.company !== 'None') ? p.company : (p.ticker || '');
+            const reasoning = (p.reasoning || '').replace(/^["']|["']$/g, '');
+            return `
+                <div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-colors cursor-pointer"
+                     style="border-left:3px solid ${sentColor};" data-ticker="${p.ticker}">
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="min-w-0">
+                            <div class="font-mono font-black text-base text-on-surface leading-none">${p.ticker || '—'}</div>
+                            <div class="text-[10px] text-on-surface-variant/70 mt-1 truncate">${company}</div>
+                            <div class="text-[8.5px] uppercase tracking-widest font-bold mt-1.5" style="color:${sentColor};">${evType} · ${sent}</div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="font-mono font-black text-2xl leading-none" style="color:${alphaColor};">${alpha}</div>
+                            <div class="text-[8px] uppercase tracking-widest text-on-surface-variant/40 mt-0.5">Alpha</div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant/85 line-clamp-3 leading-relaxed">${reasoning}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.warn('picks load error:', e);
+        if (updEl) updEl.textContent = 'load failed';
+    }
+}
+
+// Load Groq token-budget status for the small chip
+async function loadGroqStatus() {
+    const chip = document.getElementById('groqChip');
+    if (!chip) return;
+    try {
+        const r = await fetch('/api/groq/status');
+        const j = await r.json();
+        if (!j || j.success === false) { chip.style.display = 'none'; return; }
+        const used = j.spent_today || 0;
+        const tpd  = j.tpd || 100000;
+        const pct  = j.pct_used || 0;
+        const remaining = (j.remaining || 0);
+        const remaining_k = (remaining / 1000).toFixed(0) + 'k';
+        const tpd_k = (tpd / 1000).toFixed(0) + 'k';
+        let color = '#5a6373';
+        if (j.cb_open)        color = '#f26b6b';
+        else if (pct >= 90)   color = '#f26b6b';
+        else if (pct >= 70)   color = '#e6b84a';
+        else                   color = '#2dd4aa';
+        chip.innerHTML = `
+            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};margin-right:5px;vertical-align:1px;"></span>
+            Groq ${remaining_k}/${tpd_k} left
+        `;
+        chip.title = `Groq token budget today\n  Used: ${used.toLocaleString()}\n  Remaining: ${remaining.toLocaleString()} of ${tpd.toLocaleString()} TPD\n  ${j.cb_open ? 'Circuit breaker OPEN — calls paused.' : 'Healthy.'}\n  Resets at UTC midnight.`;
+        chip.style.color = color;
+        chip.style.borderColor = color + '55';
+    } catch (e) {
+        chip.style.display = 'none';
+    }
+}
+
+// ============ RICH SIGNAL REASONING ============
+function buildSignalReasoning(sig, pulse) {
+    const evType  = (sig.event_type || 'news').replace(/_/g, ' ');
+    const rawType = (sig.event_type || 'news');
+    const sent    = sig.sentiment || 'neutral';
+    const alpha   = sig.alpha_score || 0;
+    const conf    = ((sig.confidence || 0) <= 1 ? (sig.confidence || 0) * 100 : (sig.confidence || 0));
+    const sector  = (sig.sector || '').replace(/_/g, ' ');
+    const regime  = (sig.regime || '').replace(/_/g, ' ');
+    const headline = sig.headline || '';
+    const pred1d  = sig.predictions?.['1D']?.return_pct;
+    const pred3d  = sig.predictions?.['3D']?.return_pct;
+
+    // 1. News trigger line
+    let triggerLine = '';
+    if (headline && headline.length > 12) {
+        const hl = headline.length > 90 ? headline.substring(0, 90) + '…' : headline;
+        triggerLine = `<span style="font-style:italic;opacity:0.75;">"${hl}"</span><br>`;
+    }
+
+    // 2. Event-type specific core narrative
+    const eventNarrative = {
+        earnings:  `Strong quarterly results signal fundamental momentum. Market typically re-prices ${sent === 'bullish' ? 'earnings beats' : 'earnings misses'} over 3-5 trading sessions as institutions adjust positions.`,
+        merger:    `M&A activity signals strategic value unlock. ${sent === 'bullish' ? 'Target premium or acquirer synergies expected to drive re-rating.' : 'Deal uncertainty or dilution risk may weigh on stock.'}`,
+        order_win: `New order win directly adds revenue visibility for the next 12-18 months, reducing analyst forecast risk and improving book-to-bill ratio.`,
+        dividend:  `Dividend announcement indicates strong free cash flow and management confidence in sustained earnings power.`,
+        policy:    `Regulatory/policy shift creates sector-wide impact. ${sig.ticker} is ${sent === 'bullish' ? 'positioned to benefit' : 'exposed to regulatory headwinds'} from this development.`,
+        supply:    `Supply chain event affects operating margins and production cadence. ${sent === 'bullish' ? 'Improved supply = cost advantage.' : 'Supply disruption = margin pressure.'}`,
+        insider:   `Insider ${sent === 'bullish' ? 'buying' : 'selling'} is a high-conviction signal — management has material non-public context. Insider ${sent === 'bullish' ? 'accumulation at current levels' : 'distribution'} is a strong directional cue.`,
+        news:      `Market catalyst identified with ${sent} implications. NLP confidence: ${conf.toFixed(0)}%.`,
+    };
+    const core = eventNarrative[rawType] || eventNarrative.news;
+
+    // 3. Sector context
+    let sectorLine = '';
+    if (sector) {
+        sectorLine = ` Operating in the <strong>${sector}</strong> sector${regime ? ` under a <strong>${regime}</strong> market regime` : ''}.`;
+    }
+
+    // 4. Market condition context from live indices
+    const mktLine = pulse ? MarketPulse.forSignal(pulse, sent) : '';
+
+    // 5. Prediction line
+    let predLine = '';
+    if (pred1d != null || pred3d != null) {
+        const p1 = pred1d != null ? `1D: <strong>${pred1d >= 0 ? '+' : ''}${pred1d.toFixed(1)}%</strong>` : '';
+        const p3 = pred3d != null ? `3D: <strong>${pred3d >= 0 ? '+' : ''}${pred3d.toFixed(1)}%</strong>` : '';
+        predLine = ` Model forecasts: ${[p1, p3].filter(Boolean).join(', ')}.`;
+    }
+
+    // 6. Alpha strength label
+    let alphaLine = '';
+    if      (alpha >= 80) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — top-tier signal, all scoring factors aligned.`;
+    else if (alpha >= 65) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — high-conviction, ${conf.toFixed(0)}% NLP confidence.`;
+    else if (alpha >= 50) alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — moderate conviction, worth monitoring.`;
+    else                  alphaLine = `Alpha <strong>${alpha.toFixed(0)}</strong> — speculative; size positions conservatively.`;
+
+    return `${triggerLine}${core}${sectorLine}${predLine} ${mktLine ? mktLine + ' ' : ''}${alphaLine}`;
+}
+
+// ============ MARKET PULSE RENDERER ============
+function renderMarketPulse(indices) {
+    const pulse = MarketPulse.analyze(indices);
+    if (!pulse) return;
+
+    // Update VIX metric card
+    const vixEl = document.getElementById('metricVIX');
+    if (vixEl) {
+        vixEl.innerHTML = `<span style="color:${pulse.fearColor}">${pulse.vixVal}</span>`;
+    }
+    const vixLbl = document.getElementById('metricVIXLabel');
+    if (vixLbl) {
+        vixLbl.textContent = pulse.fearLabel;
+        vixLbl.style.color = pulse.fearColor;
+    }
+
+    // Render index mini-cards (with inline sparkline anchored to prev_close → live price)
+    const grid = document.getElementById('pulseIndices');
+    if (grid) {
+        const items = [
+            { label: 'NIFTY 50',    price: pulse.niftyPrice,  chg: pulse.niftyChg  },
+            { label: 'SENSEX',      price: pulse.sensexPrice, chg: pulse.sensexChg },
+            { label: 'BANK NIFTY',  price: pulse.bankPrice,   chg: pulse.bankChg   },
+            { label: 'NIFTY IT',    price: pulse.itPrice,     chg: pulse.itChg     },
+            { label: 'INDIA VIX',   price: pulse.vixVal,      chg: pulse.vixChg,   isVIX: true },
+            { label: 'USD / INR',   price: (indices.find(i=>i.short==='USD/INR')?.price||0), chg: pulse.usdChg, isRupee: true },
+        ];
+        // Build a smooth synthetic intraday walk between prev_close and current
+        function buildSpark(start, end, up) {
+            const N = 28;
+            const pts = [];
+            const range = Math.abs(end - start) || (Math.abs(end) * 0.001);
+            for (let i = 0; i < N; i++) {
+                const t = i / (N - 1);
+                const ease = t * t * (3 - 2 * t);
+                const noise = (Math.sin(i * 1.7) * 0.6 + Math.cos(i * 2.9) * 0.4) * range * 0.35;
+                pts.push(start + (end - start) * ease + noise);
+            }
+            pts[N - 1] = end;
+            pts[0] = start;
+            const min = Math.min(...pts), max = Math.max(...pts);
+            const span = (max - min) || 1;
+            const W = 120, H = 28, pad = 3;
+            const x = i => (i / (N - 1)) * W;
+            const y = v => H - pad - ((v - min) / span) * (H - 2 * pad);
+            let d = '';
+            pts.forEach((v, i) => { d += (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; });
+            const area = d + `L ${W} ${H} L 0 ${H} Z`;
+            const stroke = up ? '#4edea3' : '#ffb4ab';
+            const fill = up ? 'rgba(78,222,163,0.18)' : 'rgba(255,180,171,0.18)';
+            return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:28px;display:block;">
+                <path d="${area.trim()}" fill="${fill}" stroke="none"></path>
+                <path d="${d.trim()}" fill="none" stroke="${stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle cx="${x(N-1).toFixed(1)}" cy="${y(pts[N-1]).toFixed(1)}" r="2" fill="${stroke}"></circle>
+            </svg>`;
+        }
+        grid.innerHTML = items.map(item => {
+            const up   = item.isVIX ? item.chg < 0 : (item.isRupee ? item.chg < 0 : item.chg >= 0);
+            const color = up ? '#4edea3' : '#ffb4ab';
+            const arrow = item.chg >= 0 ? '▲' : '▼';
+            const priceFmt = item.price > 1000
+                ? item.price.toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                : item.price.toFixed(2);
+            const prevClose = item.price - (item.price * (item.chg / 100));
+            const spark = buildSpark(prevClose, item.price, item.chg >= 0);
+            return `<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-3 hover:border-outline-variant/30 transition-all" style="min-height:120px;display:flex;flex-direction:column;gap:4px;">
+                <p class="text-[9px] text-on-surface-variant font-bold uppercase tracking-widest" style="margin:0;line-height:1.2;">${item.label}</p>
+                <p class="font-black font-mono" style="color:${color};font-size:1.125rem;line-height:1.15;margin:0;">${item.isRupee ? '₹' : ''}${priceFmt}</p>
+                <div style="flex:1;min-height:28px;">${spark}</div>
+                <p class="font-bold" style="color:${color};font-size:10px;line-height:1.2;margin:0;">${arrow} ${Math.abs(item.chg).toFixed(2)}%</p>
+            </div>`;
+        }).join('');
+    }
+
+    // Render trend bar
+    const trendBar = document.getElementById('pulseTrendBar');
+    if (trendBar) {
+        const breadthLabel = pulse.greenCount === 4 ? 'All indices advancing' :
+                             pulse.greenCount === 3 ? '3/4 indices advancing' :
+                             pulse.greenCount === 2 ? 'Mixed — split market' :
+                             pulse.greenCount === 1 ? 'Broad selling pressure' :
+                             'All indices declining';
+        const fiiNote = pulse.fiiSell ? ' • Possible FII outflows detected' : '';
+        trendBar.style.borderColor = pulse.trendColor + '44';
+        // Flat list of inline spans inside a wrapping flex container.
+        // Each chip is its own flex item so they wrap independently on narrow widths
+        // instead of one giant text node that overlaps the cards above.
+        trendBar.innerHTML = `
+            <span class="font-black font-headline" style="color:${pulse.trendColor};font-size:13px;letter-spacing:0.04em;">${pulse.trendEmoji} ${pulse.trendLabel}</span>
+            <span style="font-size:10px;color:#5a5d6a;">·</span>
+            <span style="font-size:10px;color:#9aa0c8;line-height:1.4;">${breadthLabel}${fiiNote}</span>
+            <span style="font-size:10px;color:#5a5d6a;">·</span>
+            <span style="font-size:10px;color:${pulse.fearColor};line-height:1.4;">VIX ${pulse.vixVal} — ${pulse.fearLabel}</span>
+            <span style="margin-left:auto;font-size:10px;color:#5a5d6a;font-family:'Geist Mono',monospace;">Rupee ${pulse.rupeeDir}</span>`;
+    }
+
+    const updEl = document.getElementById('pulseUpdated');
+    if (updEl) updEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+
+    return pulse;
+}
+
+// ============ INSIGHTS STUDIO RENDERERS ============
+// Pure-render functions that consume already-loaded dashboard / signals / indices
+// data and populate the Insights Studio widgets. No new API calls.
+
+function renderInsightsStudio(dashboard, signals, indices) {
+    renderSectorRings(signals);
+    renderSignalDonut(dashboard);
+    renderActivityHeatmap(signals);
+    renderTopMoverSpark(indices);
+    renderActivityFeed(signals);
+}
+
+function renderSectorRings(signals) {
+    const stage = document.getElementById('ringsStage');
+    const totalPill = document.getElementById('ringsTotalPill');
+    if (!stage) return;
+
+    if (!signals || !signals.length) {
+        stage.innerHTML = '<span style="font-size:11px;color:var(--t3);">No signals yet</span>';
+        if (totalPill) totalPill.textContent = '0 signals';
+        return;
+    }
+
+    // Group by sector
+    const buckets = {};
+    for (const s of signals) {
+        const sec = (s.sector || 'OTHER').replace(/_/g, ' ');
+        buckets[sec] = (buckets[sec] || 0) + 1;
+    }
+    const top = Object.entries(buckets)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4);
+
+    if (totalPill) totalPill.textContent = `${signals.length} signals`;
+
+    // Render 4 nested rings, biggest = largest sector, innermost = top
+    // Reverse so largest sits on the outside.
+    const ordered = [...top].reverse();
+    stage.innerHTML = ordered.map((entry, i) => {
+        const [sector, count] = entry;
+        const ringIdx = i + 1; // 1..4 maps to ring--1..ring--4
+        if (ringIdx === 4) {
+            return `<div class="ring ring--${ringIdx}">
+                <div class="ring__value">${count}</div>
+                <div class="ring__label">${sector.slice(0,8)}</div>
+            </div>`;
+        }
+        return `<div class="ring ring--${ringIdx}">${sector} · ${count}</div>`;
+    }).join('');
+}
+
+function renderSignalDonut(dashboard) {
+    const fillEl = document.getElementById('donutFill');
+    const pctEl  = document.getElementById('donutPct');
+    if (!fillEl || !pctEl || !dashboard) return;
+
+    const bull = dashboard.bullish_count || 0;
+    const bear = dashboard.bearish_count || 0;
+    const neut = dashboard.neutral_count || 0;
+    const total = bull + bear + neut;
+    const pct = total ? Math.round((bull / total) * 100) : 0;
+
+    pctEl.textContent = pct + '%';
+
+    // Circumference = 2 * π * r, r=42 → 263.89
+    const C = 2 * Math.PI * 42;
+    const offset = C * (1 - pct / 100);
+    fillEl.setAttribute('stroke-dasharray', C.toFixed(2));
+    fillEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
+}
+
+function renderActivityHeatmap(signals) {
+    const grid = document.getElementById('heatmapGrid');
+    const bigDays = document.getElementById('heatmapBigDays');
+    const bigSignals = document.getElementById('heatmapBigSignals');
+    if (!grid) return;
+
+    // 30-day window ending today
+    const days = 30;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const buckets = new Array(days).fill(0);
+
+    if (signals) {
+        for (const s of signals) {
+            const ts = s.created_at || s.timestamp || s.ts;
+            if (!ts) continue;
+            const d = new Date(ts);
+            if (isNaN(d)) continue;
+            d.setHours(0, 0, 0, 0);
+            const diff = Math.floor((today - d) / 86400000);
+            if (diff >= 0 && diff < days) {
+                buckets[days - 1 - diff]++;  // oldest leftmost, today rightmost
+            }
+        }
+    }
+
+    const max = Math.max(1, ...buckets);
+    const dots = buckets.map((count, i) => {
+        let level = 0;
+        if (count > 0) {
+            const ratio = count / max;
+            level = ratio > 0.75 ? 4 : ratio > 0.5 ? 3 : ratio > 0.25 ? 2 : 1;
+        }
+        const daysAgo = days - 1 - i;
+        return `<div class="heatmap-dot" data-level="${level}" title="${count} signal${count!==1?'s':''} · ${daysAgo}d ago"></div>`;
+    }).join('');
+    grid.innerHTML = dots;
+
+    const activeDays = buckets.filter(c => c > 0).length;
+    const totalSignals = buckets.reduce((a, b) => a + b, 0);
+    if (bigDays) bigDays.textContent = activeDays;
+    if (bigSignals) bigSignals.textContent = totalSignals;
+}
+
+function renderTopMoverSpark(indices) {
+    const lineEl  = document.getElementById('sparkLine');
+    const areaEl  = document.getElementById('sparkArea');
+    const labelEl = document.getElementById('sparkLabel');
+    const subEl   = document.getElementById('sparkSub');
+    const valEl   = document.getElementById('sparkValue');
+    const pctEl   = document.getElementById('sparkPct');
+    if (!lineEl || !indices || !indices.length) return;
+
+    // Pick the index with the largest |% change| (biggest mover) — exclude USD/INR
+    const candidates = indices.filter(i => i.short !== 'USD/INR' && i.short !== 'INDIA VIX');
+    if (!candidates.length) return;
+    const top = candidates.reduce((best, cur) =>
+        Math.abs(cur.change_pct || 0) > Math.abs(best.change_pct || 0) ? cur : best
+    );
+
+    const up = (top.change_pct || 0) >= 0;
+    const color = up ? '#4ee6b8' : '#ff7a8a';
+
+    // Build a synthetic intraday-style spark that ENDS at the live close.
+    // We don't have intra-day data on this endpoint, so we draw a smooth
+    // walk between previous close and current price (real anchors).
+    const start = (top.price || 0) - (top.change || 0);
+    const end   = top.price || 0;
+    const N = 22;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+        const t = i / (N - 1);
+        // ease-in-out + small jitter for visual rhythm
+        const ease = t * t * (3 - 2 * t);
+        const noise = (Math.sin(i * 1.3) + Math.cos(i * 2.1)) * Math.abs(end - start) * 0.04;
+        pts.push(start + (end - start) * ease + noise);
+    }
+    pts[N - 1] = end; // anchor exact close
+
+    const min = Math.min(...pts), max = Math.max(...pts);
+    const range = (max - min) || 1;
+    const W = 200, H = 90, pad = 6;
+    const x = i => (i / (N - 1)) * W;
+    const y = v => H - pad - ((v - min) / range) * (H - 2 * pad);
+
+    let dLine = '';
+    pts.forEach((v, i) => { dLine += (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; });
+    const dArea = dLine + `L ${W} ${H} L 0 ${H} Z`;
+
+    lineEl.setAttribute('d', dLine.trim());
+    lineEl.setAttribute('stroke', color);
+    areaEl.setAttribute('d', dArea.trim());
+    areaEl.setAttribute('fill', up ? 'url(#sparkGradientUp)' : 'url(#sparkGradientDown)');
+
+    if (labelEl) labelEl.textContent = top.short;
+    if (subEl)   subEl.textContent   = 'live close';
+    if (valEl)   valEl.textContent   = (top.price || 0).toLocaleString('en-IN', {maximumFractionDigits: 2});
+    if (pctEl) {
+        pctEl.textContent = (up ? '▲ +' : '▼ ') + (top.change_pct || 0).toFixed(2) + '%';
+        pctEl.className = 'spark-pct ' + (up ? 'up' : 'down');
+    }
+}
+
+function renderActivityFeed(signals) {
+    const feed   = document.getElementById('activityFeed');
+    const pills  = document.getElementById('activityPills');
+    const count  = document.getElementById('activityCount');
+    if (!feed) return;
+
+    const list = (signals || []).slice(0, 30);
+    if (count) count.textContent = list.length + ' events';
+
+    const renderRows = (filter) => {
+        let rows = list;
+        if (filter === 'bullish') rows = rows.filter(s => s.sentiment === 'bullish');
+        else if (filter === 'bearish') rows = rows.filter(s => s.sentiment === 'bearish');
+        else if (filter === 'high')    rows = rows.filter(s => (s.alpha_score || 0) >= 70);
+
+        if (!rows.length) {
+            feed.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:20px;text-align:center;">No matching activity</div>';
+            return;
+        }
+
+        feed.innerHTML = rows.slice(0, 12).map(s => {
+            const alpha = s.alpha_score || 0;
+            const tier  = alpha >= 70 ? 'high' : alpha >= 50 ? 'mid' : 'low';
+            const ticker = (s.ticker || '?').slice(0, 4).toUpperCase();
+            const company = s.company || s.ticker || '—';
+            const sector  = (s.sector || '').replace(/_/g, ' ').toLowerCase();
+            const evType  = (s.event_type || 'signal').replace(/_/g, ' ');
+            const t       = s.created_at ? UIHelper.formatTime(s.created_at) : '';
+            return `<div class="activity-row" data-ticker="${s.ticker}">
+                <div class="activity-row__avatar">${ticker.slice(0,2)}</div>
+                <div class="activity-row__main">
+                    <div class="activity-row__title">${s.ticker} · ${company}</div>
+                    <div class="activity-row__sub">${evType}${sector ? ' · ' + sector : ''}${t ? ' · ' + t : ''}</div>
+                </div>
+                <div class="activity-row__alpha ${tier}">${alpha.toFixed(0)}</div>
+            </div>`;
+        }).join('');
+    };
+
+    renderRows('all');
+
+    if (pills && !pills.dataset.bound) {
+        pills.dataset.bound = '1';
+        pills.addEventListener('click', (e) => {
+            const pill = e.target.closest('.activity-pill');
+            if (!pill) return;
+            pills.querySelectorAll('.activity-pill').forEach(p => p.classList.remove('is-active'));
+            pill.classList.add('is-active');
+            renderRows(pill.dataset.filter);
+        });
+    }
+}
+
+async function loadHomePage() {
+    // Load market indices + dashboard in parallel
+    const [dashboard, indices] = await Promise.all([
+        LiveData.getDashboard(),
+        LiveData.getMarketIndices()
+    ]);
+
+    // Render live market pulse panel first
+    const activePulse = indices && indices.length ? renderMarketPulse(indices) : null;
+
+    if (dashboard) {
+        document.getElementById('metricSignals').textContent = dashboard.active_signals || 0;
+        document.getElementById('metricConfidence').textContent = (dashboard.avg_confidence || 0) + '%';
+        document.getElementById('metricEvents').textContent = dashboard.events_today || 0;
+
+        const bullish = dashboard.bullish_count || 0;
+        const bearish = dashboard.bearish_count || 0;
+        const neutral = dashboard.neutral_count || 0;
+        const total   = bullish + bearish + neutral || 1;
+        const delta   = ((bullish - bearish) / total * 100).toFixed(1);
+        const signals = dashboard.active_signals || 0;
+
+        // Regime label — prefer index-derived trend over DB regime
+        const regime = activePulse ? activePulse.trendLabel : (dashboard.current_regime || 'unknown').replace(/_/g, ' ');
+        const regimeColor = activePulse ? activePulse.trendColor : '#adc6ff';
+
+        // Sentiment delta display
+        const deltaEl = document.getElementById('sentimentDelta');
+        const iconEl  = document.getElementById('sentimentIcon');
+        deltaEl.textContent = (delta > 0 ? '+' : '') + delta + '%';
+        if (delta > 10) {
+            deltaEl.style.color = '#4edea3';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#4edea3;">trending_up</span>';
+        } else if (delta < -10) {
+            deltaEl.style.color = '#ffb4ab';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#ffb4ab;">trending_down</span>';
+        } else {
+            deltaEl.style.color = '#adc6ff';
+            iconEl.innerHTML = '<span class="material-symbols-outlined text-lg" style="color:#adc6ff;">trending_flat</span>';
+        }
+
+        // Regime + signal count — use live index trend
+        const regimeLabelEl = document.getElementById('regimeLabel');
+        regimeLabelEl.textContent = regime;
+        regimeLabelEl.style.color  = regimeColor;
+        document.getElementById('signalCount').textContent = signals;
+
+        // Build dynamic summary sentence incorporating live index data
+        const sentimentWord = delta > 20 ? 'strongly bullish' : delta > 5 ? 'bullish' : delta < -20 ? 'strongly bearish' : delta < -5 ? 'bearish' : 'mixed';
+        const sentColor = delta > 5 ? '#4edea3' : delta < -5 ? '#ffb4ab' : '#adc6ff';
+        const regimeDesc = activePulse ? MarketPulse.headline(activePulse) : (
+            regime.includes('bull') ? 'Uptrend in progress.' :
+            regime.includes('bear') ? 'Downtrend pressure.' :
+            regime.includes('spike') ? 'High volatility detected.' :
+            regime.includes('crisis') ? 'Crisis mode — extreme caution.' : 'Sideways consolidation.'
+        );
+        const highAlpha = signals > 0 ? `${signals} active signals detected` : 'No strong signals right now';
+        const summaryHtml = `Signal sentiment is <span style="color:${sentColor};font-weight:700;">${sentimentWord}</span> — ${bullish} bullish vs ${bearish} bearish. <span style="opacity:0.7;">${regimeDesc} ${highAlpha}. ${dashboard.events_today || 0} events processed today.</span>`;
+        document.getElementById('summaryText').innerHTML = summaryHtml;
+    }
+
+    // Load signals for cross-referencing (used by the recommendations hub).
+    // The previous "Latest Events" rendering is gone — the unified Latest
+    // news section at the top of the page owns the news surface now.
+    const signals = await LiveData.getTopSignals(50);
+
+    // Build signal lookup: ticker -> best signal
+    const sigByTicker = {};
+    if (signals) {
+        for (const s of signals) {
+            if (!sigByTicker[s.ticker] || (s.alpha_score || 0) > (sigByTicker[s.ticker].alpha_score || 0)) {
+                sigByTicker[s.ticker] = s;
+            }
+        }
+    }
+
+    // Legacy #latestEvents block deleted from the DOM. Skip the populator.
+    const eventsDiv = null;
+    if (false) {
+        const events = [];
+        eventsDiv.innerHTML = events.slice(0, 5).map(event => {
+            const sent = event.sentiment || 'neutral';
+            const isBull = sent === 'bullish';
+            const color = isBull ? 'secondary' : sent === 'bearish' ? 'error' : 'on-surface-variant';
+            const title = event.title || event.company || event.ticker || 'Event';
+            const summary = event.summary || event.insights || '';
+            const score = event.impact_score || 50;
+            const evType = (event.event_type || 'news').replace(/_/g, ' ');
+
+            // Find matching signals for this event's companies
+            const companies = typeof event.companies === 'string' ? event.companies.split(',').filter(Boolean) : [];
+            const matchedSignals = companies.map(t => sigByTicker[t.trim()]).filter(Boolean);
+            const bestAlpha = matchedSignals.length > 0 ? Math.max(...matchedSignals.map(s => s.alpha_score || 0)) : null;
+
+            // Build suggested stocks chips
+            let stockChips = '';
+            if (matchedSignals.length > 0) {
+                stockChips = `
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    ${matchedSignals.sort((a,b) => (b.alpha_score||0) - (a.alpha_score||0)).slice(0, 4).map(sig => {
+                        const sc = sig.sentiment === 'bullish' ? 'secondary' : sig.sentiment === 'bearish' ? 'error' : 'primary';
+                        return `<span class="inline-flex items-center gap-1 px-2 py-1 bg-${sc}/10 border border-${sc}/20 rounded text-[9px] font-bold text-${sc}">
+                            <span data-ticker="${sig.ticker}" class="cursor-pointer hover:underline">${sig.ticker}</span>
+                            <span class="text-[7px] opacity-50">${(sig.company || '').split(' ')[0]}</span>
+                            <span class="text-[8px] opacity-70">${(sig.alpha_score||0).toFixed(0)}</span>
+                        </span>`;
+                    }).join('')}
+                </div>`;
+            } else if (companies.length > 0) {
+                stockChips = `
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    ${companies.slice(0, 4).map(t => `<span class="px-2 py-1 bg-surface-container-highest rounded text-[9px] font-bold text-on-surface-variant">${t.trim()}</span>`).join('')}
+                </div>`;
+            }
+
+            return `
+            <div class="bg-surface-container rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all p-4 flex gap-4">
+                <div class="flex-shrink-0 flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 rounded-lg bg-${color}/10 flex items-center justify-center border border-${color}/20">
+                        <span class="material-symbols-outlined text-${color}">${isBull ? 'trending_up' : 'trending_down'}</span>
+                    </div>
+                    ${bestAlpha !== null ? `<div class="text-center">
+                        <div class="text-xs font-black font-mono" style="color:${UIHelper.alphaColor(bestAlpha)}">${bestAlpha.toFixed(0)}</div>
+                        <div class="text-[7px] text-on-surface-variant/50 uppercase">alpha</div>
+                    </div>` : ''}
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-start justify-between mb-1">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-${color} uppercase">${evType}</span>
+                                <span class="text-[9px] text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5 rounded">${score}/100</span>
+                            </div>
+                            <h3 class="font-headline font-bold text-on-background text-sm">${title}</h3>
+                        </div>
+                        <span class="text-[10px] text-${color} font-black uppercase">${sent}</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant mb-1 line-clamp-2">${summary}</p>
+                    ${stockChips}
+                    <div class="evt-tldr-out hidden mt-2 p-2 rounded text-[11px] leading-relaxed" style="background:rgba(141,180,224,0.06);border:1px solid rgba(141,180,224,0.2);color:#dde3ef;"></div>
+                    <div class="flex items-center justify-between gap-2 text-[9px] mt-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${(window.NewsTime ? NewsTime.renderPill(event.published_at || event.created_at || event.timestamp, {showAge: true}) : '')}
+                            <span class="text-on-surface-variant/50">${(event.source || '').replace(/_/g, ' ')}</span>
+                        </div>
+                        ${event.event_id ? `<button class="evt-tldr-btn inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors" data-tldr-event="${event.event_id}" data-tldr-title="${(title || '').replace(/"/g,'&quot;').slice(0, 200)}" data-tldr-body="${(summary || '').replace(/"/g,'&quot;').slice(0, 600)}" style="background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.35);color:#a78bfa;">
+                            <span class="material-symbols-outlined" style="font-size:11px;">auto_awesome</span>TL;DR
+                        </button>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Wire TL;DR buttons (delegated)
+        eventsDiv.querySelectorAll('.evt-tldr-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const card = btn.closest('.bg-surface-container');
+                const out = card && card.querySelector('.evt-tldr-out');
+                if (!out) return;
+                if (out.dataset.loaded === '1') {
+                    out.classList.toggle('hidden');
+                    return;
+                }
+                btn.disabled = true;
+                const prev = btn.innerHTML;
+                btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:11px;">hourglass_empty</span>…`;
+                out.classList.remove('hidden');
+                out.innerHTML = `<span style="opacity:0.6;">Generating summary…</span>`;
+                try {
+                    const evId = btn.dataset.tldrEvent;
+                    const params = new URLSearchParams({ event_id: evId });
+                    if (btn.dataset.tldrTitle) params.set('title', btn.dataset.tldrTitle);
+                    if (btn.dataset.tldrBody)  params.set('body',  btn.dataset.tldrBody);
+                    const r = await fetch('/api/news/summarize?' + params.toString());
+                    const j = await r.json();
+                    const data = (j && j.data) || {};
+                    const tag = data.source === 'groq' ? 'AI · Groq' : 'TL;DR';
+                    out.innerHTML = `<strong style="color:#a78bfa;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;font-weight:800;margin-right:6px;">${tag}</strong>${data.summary || 'No summary available.'}`;
+                    out.dataset.loaded = '1';
+                } catch (err) {
+                    out.innerHTML = `<span style="color:#f26b6b;">Couldn't summarize.</span>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = prev;
+                }
+            });
+        });
+    }
+
+    // Top Signals sidebar was removed — its content is covered by the
+    // unified "Today's recommendations" hub directly above.
+
+    // ============ Unified recommendations hub ============
+    // One container, three sources — AI / Pre-movers / News catalyst —
+    // toggled via tabs. Replaces the old Suggested + Picks of the Day duo.
+    await initUnifiedRecoTabs();
+
+    // Load prediction accuracy
+    const accuracy = await LiveData.getAccuracy();
+    if (accuracy && Object.keys(accuracy).length > 0) {
+        document.getElementById('accuracySection').style.display = 'grid';
+        for (const [horizon, stats] of Object.entries(accuracy)) {
+            const el = document.getElementById(`accuracy${horizon}`);
+            if (el) el.textContent = `${(stats.hit_rate * 100).toFixed(1)}%`;
+            const countEl = document.getElementById(`accuracy${horizon}Count`);
+            if (countEl) countEl.textContent = `${stats.total} predictions`;
+        }
+    }
+
+    // ============ INSIGHTS STUDIO renderers (shared module) ============
+    try { await InsightsStudio.mount('insightsRoot', { dashboard, signals, indices }); }
+    catch(e) { console.warn('insights studio:', e); }
+
+    // Sector concentration warning — fetch analytics and warn if top sector >40%
+    try {
+        const analyticsRes = await API.get('/analytics');
+        const conc = analyticsRes?.data?.concentration;
+        const risk = analyticsRes?.data?.summary?.concentration_risk;
+        if (conc && conc.length && conc[0].pct >= 40) {
+            const warn = document.getElementById('concentrationWarning');
+            const txt  = document.getElementById('concentrationText');
+            if (warn && txt) {
+                txt.textContent = `${conc[0].pct}% of active signals are in ${conc[0].sector} — consider diversifying across sectors.`;
+                warn.classList.remove('hidden');
+            }
+        }
+    } catch(e) { /* non-critical */ }
+}
+
+// "Today's 5 things you'd regret missing" — strictly curated from /api/news/fast.
+// ONLY shows: fresh (<2h), high-alpha (≥50), verified sources, NO social/noise.
+// NO random stuff, only substantial catalysts.
+async function renderTodaysFive() {
+    const host = document.getElementById('todaysFive');
+    if (!host) return;
+    let items = [];
+    try {
+        // Fetch with strict filters: exclude_social=1, min_alpha=50, and recency window
+        const r = await fetch('/api/news/fast?limit=100&exclude_social=1&min_alpha=50');
+        const j = await r.json();
+        items = (j && j.data) || [];
+    } catch (e) {
+        console.error('renderTodaysFive fetch:', e);
+        return;
+    }
+
+    if (!items.length) {
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">Waiting for breaking news…</div>';
+        return;
+    }
+
+    // STRICT FILTERING: Only events that meet ALL criteria
+    // 1. Fresh data only (≤ 2 hours old)
+    // 2. High-conviction sources (Tier 1-2: filings, press releases)
+    // 3. Not forensically dirty/manipulated
+    // 4. Bullish sentiment OR high magnitude OR high tier
+    // 5. NO social/unverified noise
+    const filtered = items
+        .filter(it => {
+            const age = Number(it.age_hours || 999);
+            const tier = Number(it.tier || 4);
+            const magnitude = Number(it.magnitude || 0);
+            const sent = (it.sentiment || '').toLowerCase();
+            const fb = it.forensic_band;
+            const isSocial = (it.event_type || '').toLowerCase() === 'social'
+                || (it.feed || '').toLowerCase().includes('reddit')
+                || (it.feed || '').toLowerCase().includes('telegram');
+
+            // Hard cutoffs: if ANY of these fail, reject
+            if (age > 2) return false;              // Too old (> 2h)
+            if (tier > 2) return false;             // Not a verified source
+            if (fb === 'likely_manipulated') return false;  // Forensically dirty
+            if (isSocial) return false;             // Social noise
+            if (magnitude < 2 && sent !== 'bullish') return false;  // Must be impactful or bullish
+
+            return true;
+        });
+
+    // If strict filter is empty, use medium filter (age ≤ 4h, tier ≤ 3, just not manipulated)
+    let topItems = filtered;
+    if (topItems.length === 0) {
+        topItems = items
+            .filter(it => {
+                const age = Number(it.age_hours || 999);
+                const tier = Number(it.tier || 4);
+                const magnitude = Number(it.magnitude || 0);
+                const fb = it.forensic_band;
+                return age <= 4 && tier <= 3 && fb !== 'likely_manipulated' && magnitude >= 2;
+            });
+    }
+
+    // Dedup by primary ticker
+    const seen = new Set();
+    const top = [];
+    topItems.sort((a, b) => {
+        const alphaScore = (b.alpha_score || 0) - (a.alpha_score || 0);
+        if (alphaScore !== 0) return alphaScore;
+        return (a.age_hours || 999) - (b.age_hours || 999);  // Fresher second
+    });
+
+    for (const it of topItems) {
+        const key = (it.tickers && it.tickers[0]) || it.ticker || it.event_id;
+        if (key && seen.has(key)) continue;
+        if (key) seen.add(key);
+        top.push(it);
+        if (top.length >= 5) break;
+    }
+
+    if (!top.length) {
+        host.innerHTML = '<div class="text-on-surface-variant/40 text-sm text-center py-6">No substantive events right now. Check back when market moves.</div>';
+        return;
+    }
+
+    host.innerHTML = top.map((it, i) => {
+        const ticker = (it.tickers && it.tickers[0]) || it.ticker || '';
+        const sent = it.sentiment || 'neutral';
+        const sentColor = sent === 'bullish' ? '#4ee6b8' : sent === 'bearish' ? '#ff7a8a' : '#9aa0c8';
+        // Use alpha_score if available from signal join, otherwise compute from impact/magnitude
+        const alpha = Number(it.alpha_score || 0) > 0
+            ? Number(it.alpha_score)
+            : Math.round((Number(it.impact_score || 30) + Number(it.magnitude || 0) * 10) / 2);
+        const ageHrs = Number(it.age_hours || 0);
+        const freshLabel = ageHrs < 0.25 ? '🔴 NOW' : ageHrs < 1 ? '🟠 <1h' : ageHrs < 2 ? '🟡 <2h' : '🟢 <4h';
+        const tier = Number(it.tier || 4);
+        const tierLabel = tier === 1 ? '✓ FILINGS' : tier === 2 ? '✓ PRESS' : tier === 3 ? '⚠ RSS' : '❌ UNVERIFIED';
+        const evType = (it.event_type || 'news').replace(/_/g, ' ').toUpperCase();
+
+        // Action based on alpha + sentiment combo
+        let action = 'Monitor';
+        let actionColor = '#9aa0c8';
+        if (sent === 'bullish' && alpha >= 65) { action = 'High-conviction long'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bearish' && alpha >= 65) { action = 'Short / hedge'; actionColor = '#ff9466'; }
+        else if (sent === 'bullish' && alpha >= 50) { action = 'Consider long'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bullish') { action = 'Watch'; actionColor = '#4ee6b8'; }
+        else if (sent === 'bearish') { action = 'Watch downside'; actionColor = '#ff9466'; }
+
+        return `
+        <div onclick="window.location='${ticker ? 'compare.html?t=' + ticker : 'events.html'}'"
+             style="cursor:pointer;background:var(--surface-1);border:1px solid ${sentColor}33;border-left:4px solid ${sentColor};border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:start;transition:all 0.2s;"
+             onmouseover="this.style.background='var(--surface-3)';this.style.borderColor='${sentColor}55';" onmouseout="this.style.background='var(--surface-1)';this.style.borderColor='${sentColor}33';">
+            <div style="font-size:24px;font-weight:900;color:${sentColor};font-family:'Geist Mono',monospace;min-width:36px;">${i+1}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center;">
+                    ${ticker ? `<span style="font-family:'Geist Mono',monospace;font-weight:900;color:#dde3ef;font-size:14px;">${ticker}</span>` : ''}
+                    <span style="font-size:11px;font-weight:800;background:${sent==='bullish'?'rgba(78,222,163,0.2)':sent==='bearish'?'rgba(255,122,138,0.2)':'rgba(155,164,255,0.2)'};color:${sentColor};padding:2px 8px;border-radius:4px;text-transform:uppercase;">${sent}</span>
+                    <span style="font-size:10px;font-weight:700;background:rgba(107,163,214,0.15);color:#6ba3d6;padding:2px 6px;border-radius:3px;">α${alpha.toFixed(0)}</span>
+                    <span style="font-size:9px;font-weight:700;color:#9aa0c8;">${freshLabel}</span>
+                </div>
+                <div style="font-size:13px;color:#dde3ef;font-weight:600;line-height:1.4;margin-bottom:4px;">${(it.title || '').slice(0, 140)}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:10px;color:${actionColor};font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">→ ${action}</div>
+                    <span style="font-size:8px;color:#9aa0c8;opacity:0.6;">${tierLabel}</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    SoundFX.init();
+    // Inject "Today's 5" panel right after the market summary card
+    const msc = document.getElementById('marketSummaryCard');
+    if (msc) {
+        const panel = document.createElement('section');
+        panel.className = 'mb-8';
+        panel.innerHTML = `
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-[10px] font-black tracking-widest uppercase" style="color:#f9d423;">TODAY'S 5</span>
+                <span class="text-[10px] text-on-surface-variant/50 font-mono">things you'd regret missing — curated by alpha + freshness + source trust</span>
+                <div class="h-[1px] flex-1 bg-primary/10"></div>
+                <span id="slaChip" class="text-[10px] font-mono" style="color:#4ee6b8;">SLA · breaking ≤60s</span>
+            </div>
+            <div id="todaysFive" class="space-y-2"></div>`;
+        msc.parentNode.insertBefore(panel, msc.nextSibling);
+    }
+    DataRefresher.start(async () => {
+        await loadHomePage();
+        await renderTodaysFive();
+        // Check for new signals and play sound
+        const dashboard = await LiveData.getDashboard();
+        if (dashboard) SoundFX.checkForNewSignals(dashboard.active_signals || 0);
+    }, 60000);
+    Auth.updateAuthUI();
+});
+</script>
+
+<!-- ============ EDGE FEATURE MODALS (analyzer + indexes) ============
+     The inline display was `flex` (always visible) on a div that also had
+     the Tailwind `hidden` class — inline wins, so the modal rendered as a
+     blocking overlay with title "—" + × every page load. Flipped to
+     `display:none` so it stays hidden until JS explicitly opens it; the
+     open() function below now toggles display to make it visible when
+     used by an actual analyze() call. -->
+<div id="edgeModalBackdrop" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;">
+    <div id="edgeModalCard" style="background:var(--surface-1);border:1px solid var(--border-strong);border-radius:16px;max-width:900px;width:100%;padding:24px;box-shadow:var(--shadow-lg);">
+        <div class="flex items-center justify-between mb-4" style="gap:12px;">
+            <h3 id="edgeModalTitle" class="font-headline font-bold text-lg text-on-surface" style="flex:1;min-width:0;">—</h3>
+            <!-- "Open full page" button — uses the data-ticker that analyze() sets
+                 on the body when it loads. Always visible at the TOP of the
+                 popup so users have a direct route to the dedicated stock page. -->
+            <a id="edgeModalFullPage" href="#" style="display:none;align-items:center;gap:6px;padding:6px 12px;background:rgba(45,212,170,0.10);border:1px solid rgba(45,212,170,0.35);color:#2dd4aa;border-radius:6px;font:700 11px/1 'Inter',sans-serif;letter-spacing:0.05em;text-transform:uppercase;text-decoration:none;white-space:nowrap;">
+                <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>
+                Full page
+            </a>
+            <button id="edgeModalClose" class="text-on-surface-variant hover:text-on-surface" style="background:none;border:none;cursor:pointer;font-size:22px;line-height:1;">×</button>
+        </div>
+        <div id="edgeModalBody"></div>
+    </div>
+</div>
+
+<style>
+.anq-pill { font:600 10px 'Geist Mono',monospace; padding:5px 10px; border-radius:999px;
+    background:rgba(141,148,168,0.08); color:#8a94a8; border:1px solid rgba(141,148,168,0.18);
+    cursor:pointer; transition:all 120ms; letter-spacing:0.04em; }
+.anq-pill:hover { color:#2dd4aa; border-color:rgba(45,212,170,0.4); background:rgba(45,212,170,0.06); }
+.edge-component-row { display:flex; justify-content:space-between; align-items:center;
+    padding:8px 12px; border-radius:8px; background:rgba(13,17,24,0.6);
+    border:1px solid rgba(141,148,168,0.08); margin-bottom:6px; }
+.edge-pos-pill { font:600 10px 'Inter',sans-serif; padding:3px 8px; border-radius:4px;
+    background:rgba(45,212,170,0.10); color:#7ee0c0; border:1px solid rgba(45,212,170,0.22);
+    margin:2px; display:inline-block; }
+.edge-neg-pill { font:600 10px 'Inter',sans-serif; padding:3px 8px; border-radius:4px;
+    background:rgba(242,107,107,0.10); color:#ff9a9a; border:1px solid rgba(242,107,107,0.22);
+    margin:2px; display:inline-block; }
+.edge-index-card { background:rgba(13,17,24,0.6); border:1px solid rgba(141,148,168,0.12);
+    border-radius:10px; padding:12px; cursor:pointer; transition:all 120ms; }
+.edge-index-card:hover { border-color:rgba(141,180,224,0.5); transform:translateY(-1px); }
+.edge-mini-spark { width:100%; height:36px; display:block; margin-top:6px; }
+.edge-section-title { font:800 10px 'Inter',sans-serif; letter-spacing:0.16em;
+    text-transform:uppercase; color:#8a94a8; margin:14px 0 8px 0; }
+
+/* ── Neome-style analyzer page ── */
+.an-page { font-family: 'DM Sans', 'Inter', system-ui, sans-serif; color: #dde3ef; }
+.an-section { margin: 22px 0 6px; }
+.an-section h3 {
+    font: 800 13px 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.005em; color: #f0f4fb;
+    margin: 0 0 10px; padding: 0;
+}
+.an-bullets { display: flex; flex-direction: column; gap: 10px; padding-left: 8px; }
+.an-bullet {
+    position: relative; padding-left: 18px;
+    font: 400 13.5px/1.55 'DM Sans', system-ui, sans-serif; color: #c5cee0;
+}
+.an-bullet::before {
+    content: ""; position: absolute; left: 2px; top: 10px;
+    width: 4px; height: 4px; border-radius: 50%; background: #8a94a8;
+}
+.an-bullet strong {
+    color: #f0f4fb; font-weight: 700;
+}
+
+/* Quarterly bar chart */
+.an-chart-wrap {
+    position: relative; padding: 14px 14px 6px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; margin-bottom: 18px;
+}
+.an-chart-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.an-tab {
+    font: 600 11px 'Inter', sans-serif;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #8a94a8;
+}
+.an-tab.on, .an-tab:hover {
+    background: rgba(91,180,240,0.08); color: #5bb4f0; border-color: rgba(91,180,240,0.35);
+}
+.an-chart {
+    position: relative; height: 160px; padding: 0 36px 14px 36px;
+}
+.an-bars {
+    display: flex; gap: 6px; align-items: flex-end; height: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.an-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.an-bar { width: 100%; max-width: 56px; border-radius: 3px 3px 0 0; }
+.an-bar-lbl { font: 500 10px 'Geist Mono', monospace; color: #8a94a8; margin-top: 6px; }
+.an-bars-yaxis {
+    position: absolute; left: 4px; top: 0; bottom: 22px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    font: 500 9px 'Geist Mono', monospace; color: #6a7484;
+}
+.an-chart-legend {
+    display: flex; align-items: center; gap: 6px;
+    font: 600 11px 'Inter', sans-serif; color: #6ddec0;
+    padding: 6px 0 2px;
+}
+.an-chart-legend .dot { width: 8px; height: 8px; border-radius: 50%; background: #5bb4f0; }
+
+/* Chat input */
+.an-chat-wrap { margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.06); }
+.an-chat-log { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; max-height: 220px; overflow-y: auto; }
+.an-chat-log:empty { display: none; }
+.an-msg {
+    padding: 8px 12px; border-radius: 12px; max-width: 80%;
+    font: 400 13px/1.45 'DM Sans', sans-serif;
+}
+.an-msg.user { align-self: flex-end; background: rgba(91,180,240,0.10); color: #c5e0f7; }
+.an-msg.bot  { align-self: flex-start; background: rgba(255,255,255,0.04); color: #c5cee0; }
+.an-chat-form {
+    display: flex; gap: 8px; align-items: center;
+    background: rgba(255,255,255,0.02);
+    border: 1.5px solid rgba(231,170,200,0.4);
+    border-radius: 999px; padding: 4px 4px 4px 16px;
+}
+.an-chat-form input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: #dde3ef; font: 400 13px 'DM Sans', sans-serif;
+    padding: 8px 0;
+}
+.an-chat-form input::placeholder { color: #8a94a8; }
+.an-chat-form button {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: none; cursor: pointer;
+    color: #dde3ef; font-size: 16px; line-height: 1;
+}
+.an-chat-form button:hover { background: rgba(255,255,255,0.12); }
+.an-disclaimer { font: 400 11px 'Inter', sans-serif; color: #6a7484; text-align: center; margin-top: 10px; }
+
+/* Make the modal card wider for the analysis page */
+#edgeModalCard { max-width: 760px; }
+</style>
+
+<script>
+(function(){
+  const backdrop = document.getElementById('edgeModalBackdrop');
+  const title    = document.getElementById('edgeModalTitle');
+  const body     = document.getElementById('edgeModalBody');
+  const closeBtn = document.getElementById('edgeModalClose');
+
+  function open(t, html) {
+    title.textContent = t;
+    body.innerHTML = html;
+    backdrop.classList.remove('hidden');
+    // Hide the "Full page" CTA by default — analyze() re-enables it for the
+    // stock-analysis flow. Non-stock callers (all-indexes popup, etc.) keep
+    // it hidden because there's no useful full-page target for them.
+    const fullBtn = document.getElementById('edgeModalFullPage');
+    if (fullBtn) fullBtn.style.display = 'none';
+    // The head-level !important rule keeps this hidden unless data-open=1.
+    // Setting the attribute is the only way to actually show the modal.
+    backdrop.setAttribute('data-open', '1');
+  }
+  function close() {
+    backdrop.classList.add('hidden');
+    backdrop.removeAttribute('data-open');
+    const fullBtn = document.getElementById('edgeModalFullPage');
+    if (fullBtn) fullBtn.style.display = 'none';
+  }
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmt(v, d=2){ if(v==null||isNaN(v))return '—'; return Number(v).toFixed(d); }
+
+  // ─── Analyzer (neome-style narrative deep dive) ─────────────────────────
+  // Produces structured, readable bullets across Snapshot · Fundamentals ·
+  // Technicals · Valuation · Research, plus a quarterly bar chart and a
+  // chat input at the bottom. Replaces the old number-heavy component grid.
+  function fmtCrore(v){
+    if (v == null || isNaN(v)) return '—';
+    const n = Number(v);
+    if (Math.abs(n) >= 1e5) return '₹' + (n/1e5).toFixed(2) + ' lakh crore';
+    return '₹' + n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' crore';
+  }
+  function fmtRupee(v){ if (v == null) return '—'; return '₹' + Number(v).toFixed(2); }
+  function fmtPct(v, d=2){ if (v == null || isNaN(v)) return '—'; const n = Number(v); return (n>=0?'+':'') + n.toFixed(d) + '%'; }
+  function trendCopy(t){
+    return ({
+      strong_up: 'strong uptrend with positive momentum',
+      mildly_up: 'mildly positive trend, still constructive',
+      range_bound: 'mildly weak to range-bound',
+      mildly_down: 'mildly weak, trending lower',
+      down: 'downtrend with weak momentum',
+    })[t] || 'range-bound';
+  }
+  function describeRSI(rsi){
+    if (rsi == null) return 'not available';
+    const v = Number(rsi).toFixed(2);
+    if (rsi >= 70) return `${v}, in overbought territory — short-term cool-off possible`;
+    if (rsi >= 55) return `${v}, above the mid-point — momentum is constructive`;
+    if (rsi >= 45) return `${v}, near the mid-point — momentum is balanced`;
+    if (rsi >= 30) return `${v}, below the mid-point and suggests momentum is not strong right now`;
+    return `${v}, in oversold territory — could see a bounce`;
+  }
+  function describeMA(t){
+    const last = t.last_price, m50 = t.ma_50, m200 = t.ma_200;
+    if (!last) return 'price data unavailable';
+    const a50 = m50 ? (last > m50 ? 'above the 50-day' : 'below the 50-day') : null;
+    const a200 = m200 ? (last > m200 ? 'above the 200-day' : 'below the 200-day') : null;
+    if (a50 && a200) {
+      const both = (last > m50 && last > m200) ? 'above both **50-day** and **200-day** averages, which usually signals a constructive setup'
+                : (last < m50 && last < m200) ? 'below both **50-day** and **200-day** averages, which usually signals a cautious short-term setup'
+                : 'mixed against its key moving averages — short-term and long-term trends diverge';
+      return both;
+    }
+    return [a50, a200].filter(Boolean).join(' and ');
+  }
+  function describeValuation(pe, sectorPE){
+    if (pe == null) return null;
+    if (sectorPE != null) {
+      const diff = pe / sectorPE;
+      if (diff > 1.5) return 'premium to sector';
+      if (diff > 1.1) return 'modest premium to sector';
+      if (diff < 0.7) return 'discount to sector';
+      if (diff < 0.9) return 'modest discount to sector';
+      return 'broadly in line with the sector';
+    }
+    if (pe > 50) return 'rich on absolute PE';
+    if (pe > 30) return 'priced for growth';
+    if (pe < 12) return 'inexpensive on absolute PE';
+    return 'reasonable on absolute PE';
+  }
+  // Sector-level PE benchmarks (rough — used when industry_pe isn't available)
+  const SECTOR_PE = {
+    'Energy': 12, 'Oil & Gas': 12,
+    'Financial Services': 18, 'Banking': 14,
+    'Information Technology': 24, 'Technology': 28,
+    'Consumer Cyclical': 30, 'Consumer Defensive': 38,
+    'Healthcare': 30, 'Industrials': 25, 'Basic Materials': 14,
+    'Utilities': 14, 'Communication Services': 22, 'Real Estate': 24,
+  };
+
+  async function analyze(tk){
+    tk = (tk||'').toUpperCase().trim();
+    if (!tk) return;
+    open(`Analyzing ${tk}…`, '<div style="padding:40px;text-align:center;color:#8a94a8;">Loading analysis for ' + tk + '…</div>');
+    // Show + wire the "Full page" button to this specific ticker.
+    const fullBtn = document.getElementById('edgeModalFullPage');
+    if (fullBtn) {
+      fullBtn.style.display = 'inline-flex';
+      fullBtn.setAttribute('href', `stock.html?ticker=${encodeURIComponent(tk)}`);
+    }
+    try {
+      return await _analyzeBody(tk);
+    } catch (e) {
+      console.error('analyze() body threw:', e);
+      body.innerHTML = `<div style="padding:30px;color:#ff9a9a;">Analysis failed for ${esc(tk)}. ${esc((e && e.message) || String(e))}</div>`;
+    }
+  }
+  async function _analyzeBody(tk){
+
+    // Parallel-load everything the report needs.
+    const [fundJ, finJ, profJ, techJ] = await Promise.all([
+      fetch(`/api/fundamentals/score/${tk}`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/stock/${tk}/financials`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/stock/${tk}/profile`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/stock/${tk}/technicals`).then(r=>r.json()).catch(()=>null),
+    ]);
+    const fund = (fundJ && fundJ.data) || {};
+    const fin  = (finJ  && finJ.data)  || {};
+    const prof = (profJ && profJ.data) || {};
+    const tech = (techJ && techJ.data) || {};
+    if (fund.error || !fund.components) {
+      body.innerHTML = `<div style="padding:30px;color:#ff9a9a;">Couldn't analyze ${esc(tk)}. ${esc(fund.error||'')}</div>`;
+      return;
+    }
+
+    const company = prof.company || tk;
+    title.textContent = `${company} (${tk})`;
+
+    const comp = fund.components || {};
+    const pe   = comp.valuation?.pe;
+    const sectorPE = SECTOR_PE[prof.sector] || SECTOR_PE[prof.industry];
+    const valView = describeValuation(pe, sectorPE);
+
+    // Quarterly series — newest first in API, we reverse for chart display.
+    const incQ = (fin.income_statement_q || []).slice().reverse();
+    const series = {
+      rev:    incQ.map(r => ({ p: r.period, v: r['Total Revenue']    ?? r['Operating Revenue'] ?? null })),
+      ebitda: incQ.map(r => ({ p: r.period, v: r['EBITDA']           ?? null })),
+      pat:    incQ.map(r => ({ p: r.period, v: r['Net Income']       ?? null })),
+    };
+
+    // Helper for narrative trend on a quarterly series.
+    function qoqTrend(arr){
+      const valid = arr.filter(x => x.v != null);
+      if (valid.length < 2) return null;
+      const last = valid[valid.length-1].v;
+      const prev = valid[valid.length-2].v;
+      if (!prev) return null;
+      const delta = ((last - prev) / Math.abs(prev)) * 100;
+      return { last, prev, delta };
+    }
+    const revT = qoqTrend(series.rev);
+    const ebT  = qoqTrend(series.ebitda);
+    const patT = qoqTrend(series.pat);
+    function trendCopyQ(t, label){
+      if (!t) return `${label} data not available`;
+      const dir = t.delta >= 4 ? 'improved' : t.delta <= -4 ? 'softer than the previous quarter' : 'broadly flat sequentially';
+      return `${dir}, with the latest quarter at ${fmtCrore(t.last)}`;
+    }
+
+    // 1D move from technicals (preferred) or — if missing — null
+    const pct1d = tech.pct_change_1d;
+    const px    = tech.last_price;
+
+    // Build the narrative bullets — same shape as the neome screenshot.
+    function bullet(label, html){
+      return `<div class="an-bullet"><strong>${label}:</strong> ${html}</div>`;
+    }
+    function section(title, bullets){
+      return `<div class="an-section">
+        <h3>${title}</h3>
+        <div class="an-bullets">${bullets.join('')}</div>
+      </div>`;
+    }
+
+    // Helper: never drop a bullet entirely — fall back to "data not available"
+    // so the section never renders with just a header. Users were seeing
+    // empty Fundamentals/Snapshot/Valuation sections when one or two fields
+    // were missing from the upstream API; better to be explicit.
+    function bulletOr(label, value, fallback){
+      return value
+        ? bullet(label, value)
+        : bullet(label, `<span style="color:#6a7484;">${fallback || 'data not available'}</span>`);
+    }
+
+    const snapshot = section('Snapshot', [
+      bulletOr('Market price', px ? fmtRupee(px) : null, 'price feed offline'),
+      bulletOr('1D move', pct1d != null
+          ? `<span style="color:${pct1d>=0?'#2dd4aa':'#f26b6b'};font-weight:700;">${fmtPct(pct1d)}</span>`
+          : null, 'unchanged or market closed'),
+      bulletOr('Market cap', prof.market_cap ? fmtCrore(prof.market_cap / 1e7) : null, null),
+      bulletOr('PE ratio', pe != null
+          ? (sectorPE ? `${pe.toFixed(2)} versus sector PE of ${sectorPE.toFixed(2)}` : `${pe.toFixed(2)}`)
+          : null, 'PE not reported'),
+      bulletOr('Sector', prof.sector ? `${esc(prof.sector)}${prof.industry ? ' · ' + esc(prof.industry) : ''}` : null, null),
+    ]);
+
+    const fundamentalsBullets = [
+      bulletOr('Revenue', revT ? trendCopyQ(revT, 'Revenue') : null, 'quarterly revenue not reported yet'),
+      bulletOr('EBITDA', ebT
+        ? (ebT.delta >= 4  ? `improved sequentially to ${fmtCrore(ebT.last)}`
+         : ebT.delta <= -4 ? `softer than the previous quarter at ${fmtCrore(ebT.last)} — watch margins`
+         : `healthy in absolute terms at ${fmtCrore(ebT.last)}, broadly flat sequentially`)
+        : null, 'EBITDA not reported'),
+      bulletOr('PAT', patT
+        ? (patT.delta >= 4  ? `improved to ${fmtCrore(patT.last)} — earnings momentum positive`
+         : patT.delta <= -4 ? `eased sequentially to ${fmtCrore(patT.last)}, suggesting some near-term earnings pressure`
+         : `tracked at ${fmtCrore(patT.last)}, broadly flat sequentially`)
+        : null, 'net profit not reported'),
+      bulletOr('Revenue growth (YoY)', comp.growth?.revenue_growth_pct != null ? fmtPct(comp.growth.revenue_growth_pct, 1) : null, null),
+      bulletOr('ROE', comp.profitability?.roe_pct != null
+        ? `${comp.profitability.roe_pct.toFixed(1)}%${comp.profitability.roe_pct>15?' — healthy capital efficiency':comp.profitability.roe_pct<8?' — weak capital efficiency':''}`
+        : null, null),
+      bulletOr('Debt / equity', comp.leverage?.debt_to_equity != null
+        ? `${comp.leverage.debt_to_equity.toFixed(2)}${comp.leverage.debt_to_equity>1?' — leverage on the higher side':' — balance sheet is comfortable'}`
+        : null, null),
+    ];
+
+    const technicalsBullets = (!tech || tech.error) ? [
+      bullet('Status', `<span style="color:#6a7484;">price history unavailable for technicals</span>`),
+    ] : [
+      bullet('Trend', trendCopy(tech.trend)),
+      bulletOr('RSI 14', tech.rsi_14 != null ? describeRSI(tech.rsi_14) : null, null),
+      bullet('Price versus moving averages', describeMA(tech).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')),
+      bullet('52-week range',
+          `${fmtRupee(tech.week_52_low)} – ${fmtRupee(tech.week_52_high)}` +
+          (tech.last_price && tech.week_52_high ? ` (currently ${(100 - tech.last_price / tech.week_52_high * 100).toFixed(1)}% off the 52w high)` : '')),
+    ];
+
+    const valuationBullets = [
+      bulletOr('View', valView, 'PE not reported'),
+      bulletOr('PE ratio', pe != null
+        ? (sectorPE ? `${pe.toFixed(2)} versus sector PE of ${sectorPE.toFixed(2)}` : `${pe.toFixed(2)}`)
+        : null, null),
+      bulletOr('PB ratio', comp.valuation?.pb != null ? comp.valuation.pb.toFixed(2) : null, null),
+      (pe != null && sectorPE && pe / sectorPE > 1.4) ? bullet('Read-through', 'priced at a premium — execution and growth need to keep delivering to justify the multiple') :
+      (pe != null && sectorPE && pe / sectorPE < 0.8) ? bullet('Read-through', 'priced at a discount — re-rating possible if earnings normalize') :
+      (pe != null && sectorPE) ? bullet('Read-through', 'fairly priced versus sector — neither stretched nor obviously cheap') : '',
+    ].filter(Boolean);
+
+    const positives = fund.positives || [];
+    const flags     = fund.red_flags || [];
+    const researchBullets = [
+      bullet('Call type', `${esc(fund.label || fund.tier || '—')} (fundamentals score ${fund.score || '—'}/100)`),
+      bulletOr('What stands out', positives.length ? positives.slice(0, 3).join('; ') : null, 'no standout positives yet'),
+      bulletOr('Watch-outs', flags.length ? `<span style="color:#ff9a9a;">${flags.slice(0, 3).join('; ')}</span>` : null, 'no red flags flagged'),
+    ];
+
+    // ── Build the page ──
+    body.innerHTML = `
+      <div class="an-page">
+        <!-- Quarterly bar chart with tab switcher -->
+        <div class="an-chart-wrap" id="anChartWrap">
+          <div class="an-chart-tabs">
+            <button class="an-tab on" data-series="rev">Total Revenue (Cr)</button>
+            <button class="an-tab"    data-series="ebitda">EBITDA (Cr)</button>
+            <button class="an-tab"    data-series="pat">Profit After Tax (Cr)</button>
+          </div>
+          <div class="an-chart" id="anChart"></div>
+          <div class="an-chart-legend"><span class="dot"></span>${esc(tk)}</div>
+        </div>
+
+        ${snapshot}
+        ${section('Fundamentals', fundamentalsBullets)}
+        ${technicalsBullets.length ? section('Technicals', technicalsBullets) : ''}
+        ${section('Valuation', valuationBullets)}
+        ${section('Research', researchBullets)}
+        <div class="an-extras" id="anExtras"></div>
+
+        <!-- Chat input wired to /api/chat for follow-ups -->
+        <div class="an-chat-wrap">
+          <div class="an-chat-log" id="anChatLog"></div>
+          <form class="an-chat-form" id="anChatForm" autocomplete="off">
+            <input id="anChatIn" type="text" placeholder="Ask me anything about ${esc(tk)}…" />
+            <button type="submit" aria-label="Send">↑</button>
+          </form>
+          <div class="an-disclaimer">AI-generated · Please consult your financial advisor for investments.</div>
+        </div>
+      </div>
+    `;
+
+    // ── Bar chart rendering ──
+    const chartEl = document.getElementById('anChart');
+    let currentSeries = 'rev';
+    function renderChart(seriesKey){
+      const data = series[seriesKey] || [];
+      const valid = data.filter(d => d.v != null);
+      if (!valid.length) { chartEl.innerHTML = `<div style="padding:30px;color:#8a94a8;text-align:center;font-size:12px;">No quarterly data available.</div>`; return; }
+      const maxV = Math.max(...valid.map(d => d.v));
+      const barColor = '#5bb4f0';
+      const bars = data.map(d => {
+        const h = d.v == null ? 0 : Math.max(4, (d.v / maxV) * 100);
+        const label = d.v == null ? '—' : (d.v / 1).toLocaleString('en-IN', {maximumFractionDigits: 0});
+        return `<div class="an-bar-col" title="${esc(d.p)} · ${label}">
+          <div class="an-bar" style="height:${h}%;background:${barColor};"></div>
+          <div class="an-bar-lbl">${esc((d.p||'').replace(/ \d{4}/, ', '+(d.p||'').match(/\d{4}/)?.[0].slice(2)||''))}</div>
+        </div>`;
+      }).join('');
+      chartEl.innerHTML = `<div class="an-bars">${bars}</div>
+        <div class="an-bars-yaxis"><span>${(maxV/1).toLocaleString('en-IN',{maximumFractionDigits:0})}</span><span>0</span></div>`;
+    }
+    renderChart('rev');
+    document.querySelectorAll('#anChartWrap .an-tab').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('#anChartWrap .an-tab').forEach(x => x.classList.toggle('on', x === b));
+      currentSeries = b.dataset.series;
+      renderChart(currentSeries);
+    }));
+
+    // ── Edge extras (earnings whisper / insider / bulk deals) ──
+    const extrasDiv = document.getElementById('anExtras');
+    Promise.all([
+      fetch(`/api/edge/earnings/whisper/${tk}`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/edge/insider-buys/${tk}`).then(r=>r.json()).catch(()=>null),
+    ]).then(([whJ, inJ]) => {
+      const blocks = [];
+      const w = whJ && whJ.data;
+      if (w && w.streak_label) blocks.push(bullet('Earnings track record', esc(w.streak_label)));
+      const i = inJ && inJ.data;
+      if (i && i.label) blocks.push(bullet('Insider activity', esc(i.label)));
+      if (blocks.length) extrasDiv.innerHTML = section('Recent activity', blocks);
+    });
+
+    // ── Wire the chat input ──
+    const chatForm = document.getElementById('anChatForm');
+    const chatLog  = document.getElementById('anChatLog');
+    const chatIn   = document.getElementById('anChatIn');
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = chatIn.value.trim();
+      if (!q) return;
+      chatIn.value = '';
+      chatLog.insertAdjacentHTML('beforeend', `<div class="an-msg user">${esc(q)}</div>`);
+      const replyEl = document.createElement('div');
+      replyEl.className = 'an-msg bot';
+      replyEl.textContent = '…';
+      chatLog.appendChild(replyEl);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      try {
+        const r = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ message: q, ticker: tk, stream: false }),
+        });
+        const j = await r.json().catch(()=>null);
+        const text = (j && (j.reply || j.answer || j.data?.reply || j.data?.answer)) || 'Sorry, I couldn\'t answer that right now.';
+        replyEl.textContent = text;
+      } catch (err) {
+        replyEl.textContent = 'Network error — try again.';
+      }
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
+  }
+
+  document.getElementById('analyzerBtn').addEventListener('click', () => {
+    const inp = document.getElementById('analyzerInput');
+    const val = (inp && inp.value || '').trim();
+    if (!val) {
+      // Was silently no-op'ing on empty input — felt like the button was
+      // dead. Now we focus the input and briefly highlight it so the user
+      // knows what's expected.
+      if (inp) {
+        inp.focus();
+        inp.style.transition = 'border-color 200ms';
+        inp.style.borderColor = '#f26b6b';
+        setTimeout(() => { inp.style.borderColor = 'rgba(141,148,168,0.2)'; }, 800);
+        inp.placeholder = 'Type a ticker (e.g. TCS, RELIANCE) and hit Analyze';
+      }
+      return;
+    }
+    try {
+      analyze(val);
+    } catch (e) {
+      console.error('analyze() threw:', e);
+      // Surface the error so the user sees feedback instead of silence.
+      open('Analyze failed', `<div style="padding:24px;color:#ff9a9a;">Couldn't analyze ${val}. ${(e && e.message) || ''}</div>`);
+    }
+  });
+  document.querySelectorAll('.anq-pill').forEach(b => {
+    b.addEventListener('click', () => {
+      const inp = document.getElementById('analyzerInput');
+      if (inp) inp.value = b.dataset.tk;
+      try { analyze(b.dataset.tk); }
+      catch (e) { console.error('analyze() threw:', e); open('Analyze failed', `<div style="padding:24px;color:#ff9a9a;">Couldn't analyze ${b.dataset.tk}.</div>`); }
+    });
+  });
+
+  // Expose globally so any widget (movers, news ticker chips, watchlist
+  // rows, etc.) can pop the rich Analyze modal for ANY stock — not just
+  // the quick-pick pills. Triggers the same neome-style narrative output
+  // regardless of where the ticker came from.
+  window.openAnalyzer = function(tk) {
+    if (!tk) return;
+    analyze(String(tk).trim().toUpperCase());
+  };
+
+  // Page-wide click delegate: any element carrying [data-analyze-ticker]
+  // opens the Analyze modal. Lets widgets opt in declaratively without
+  // each one needing to wire openAnalyzer manually.
+  document.addEventListener('click', (e) => {
+    const el = e.target && e.target.closest && e.target.closest('[data-analyze-ticker]');
+    if (!el) return;
+    const tk = el.getAttribute('data-analyze-ticker');
+    if (!tk) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.openAnalyzer(tk);
+  });
+
+  // (Global [data-edge-analyze] handler lives in shared/js/edge-analyzer.js
+  //  — loaded site-wide by bootstrap.js. No need to duplicate here.)
+
+  // ─── All-Indexes popup ──────────────────────────────────────────────────
+  async function openAllIndexes() {
+    open('All market indexes', '<div style="padding:30px;text-align:center;color:#8a94a8;">Loading indexes…</div>');
+    let indices = [];
+    try {
+      const r = await fetch('/api/market-indices');
+      const j = await r.json();
+      indices = (j && j.data) || [];
+    } catch(_) {}
+    if (!indices.length) { body.innerHTML = '<div style="padding:30px;color:#ff9a9a;">No index data available.</div>'; return; }
+
+    function buildSpark(start, end, up) {
+      const N = 24, pts = [];
+      const range = Math.abs(end - start) || (Math.abs(end) * 0.001);
+      for (let i = 0; i < N; i++) {
+        const t = i / (N - 1); const ease = t * t * (3 - 2 * t);
+        const noise = (Math.sin(i*1.7)*0.5 + Math.cos(i*2.9)*0.4) * range * 0.3;
+        pts.push(start + (end-start)*ease + noise);
+      }
+      pts[N-1] = end; pts[0] = start;
+      const min = Math.min(...pts), max = Math.max(...pts), span = (max-min)||1;
+      const W = 200, H = 36, pad = 3;
+      const x = i => (i/(N-1))*W;
+      const y = v => H-pad-((v-min)/span)*(H-2*pad);
+      let d = '';
+      pts.forEach((v,i) => { d += (i===0?'M':'L')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' '; });
+      const stroke = up?'#2dd4aa':'#f26b6b';
+      const fill = up?'rgba(45,212,170,0.15)':'rgba(242,107,107,0.15)';
+      return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="edge-mini-spark">
+        <path d="${d}L ${W} ${H}L 0 ${H}Z" fill="${fill}" stroke="none"/>
+        <path d="${d}" fill="none" stroke="${stroke}" stroke-width="1.5"/>
+      </svg>`;
+    }
+
+    const groups = { broad:[], sector:[], macro:[] };
+    indices.forEach(i => { (groups[i.group]||groups.sector).push(i); });
+
+    const renderGrp = (arr) => arr.map(i => {
+      const up = (i.group==='macro' && i.short==='INDIA VIX') ? i.change_pct < 0
+              : (i.group==='macro' && i.short==='USD/INR')   ? i.change_pct < 0
+              : i.change_pct >= 0;
+      const col = up?'#2dd4aa':'#f26b6b';
+      const arrow = i.change_pct >= 0 ? '▲' : '▼';
+      const prev = i.price - (i.price * (i.change_pct / 100));
+      return `<div class="edge-index-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="font:700 10px Inter,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#8a94a8;">${esc(i.short)}</div>
+          <div style="font:700 10px Geist Mono;color:${col};">${arrow} ${Math.abs(i.change_pct||0).toFixed(2)}%</div>
+        </div>
+        <div style="font:800 16px Geist Mono;color:${col};margin-top:4px;">${(i.price||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
+        ${buildSpark(prev, i.price, i.change_pct>=0)}
+      </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      ${groups.broad.length?`<div class="edge-section-title">Broad market</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">${renderGrp(groups.broad)}</div>`:''}
+      ${groups.sector.length?`<div class="edge-section-title">Sector indexes</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">${renderGrp(groups.sector)}</div>`:''}
+      ${groups.macro.length?`<div class="edge-section-title">Macro</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">${renderGrp(groups.macro)}</div>`:''}`;
+  }
+  document.getElementById('indexesAllBtn').addEventListener('click', openAllIndexes);
+
+  // ─── FII/DII chip on the pulse panel ────────────────────────────────────
+  (async () => {
+    try {
+      const r = await fetch('/api/edge/fii-dii/today');
+      const j = await r.json();
+      const d = j && j.data;
+      if (!d) return;
+      const chip = document.getElementById('fiiDiiChip');
+      if (!chip) return;
+      // Prefer cash market (MC); fallback to derivatives net
+      let fii = d.fii_net_cr, dii = d.dii_net_cr;
+      let label;
+      if (fii != null && dii != null) {
+        const fc = fii>=0?'#2dd4aa':'#f26b6b';
+        const dc = dii>=0?'#2dd4aa':'#f26b6b';
+        chip.innerHTML = `FII <span style="color:${fc};">${fii>=0?'+':''}${fii.toFixed(0)}cr</span> · DII <span style="color:${dc};">${dii>=0?'+':''}${dii.toFixed(0)}cr</span>`;
+      } else if (d.fii_index_fut_net != null) {
+        chip.textContent = `FII fut net ${d.fii_index_fut_net}`;
+      } else { return; }
+      chip.classList.remove('hidden');
+    } catch(_) {}
+  })();
+
+  // ─── Pulse-card click → index detail popup ─────────────────────────────
+  async function openIndexDetail(symbol, label) {
+    open(label || symbol, '<div style="padding:30px;text-align:center;color:#8a94a8;">Loading…</div>');
+    try {
+      const r = await fetch('/api/market/index/' + encodeURIComponent(symbol));
+      const j = await r.json();
+      const d = j && j.data;
+      if (!d) { body.innerHTML = '<div style="padding:30px;color:#ff9a9a;">No data.</div>'; return; }
+      const up = (d.price - d.prev_close) >= 0;
+      const chgPct = d.prev_close ? ((d.price - d.prev_close) / d.prev_close * 100) : 0;
+      const c = up ? '#2dd4aa' : '#f26b6b';
+      let sparkSvg = '';
+      if (d.sparkline && d.sparkline.length >= 2) {
+        const closes = d.sparkline.map(p => Number(p.close)).filter(Number.isFinite);
+        const min = Math.min(...closes), max = Math.max(...closes), range = (max - min) || 1;
+        const W = 720, H = 160, pad = 8;
+        const x = i => pad + (i / (closes.length - 1)) * (W - 2*pad);
+        const y = v => pad + (1 - (v - min) / range) * (H - 2*pad);
+        let dpath = '';
+        closes.forEach((v, i) => { dpath += (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' '; });
+        sparkSvg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:160px;display:block;margin:8px 0 12px 0;">
+          <path d="${dpath}L ${W-pad} ${H-pad}L ${pad} ${H-pad}Z" fill="${up ? 'rgba(45,212,170,0.18)' : 'rgba(242,107,107,0.18)'}"/>
+          <path d="${dpath}" fill="none" stroke="${c}" stroke-width="1.6"/>
+        </svg>`;
+      }
+      const fmt = v => v == null ? '—' : Number(v).toLocaleString('en-IN', {maximumFractionDigits: 2});
+      body.innerHTML = `
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+          <div style="font:900 32px 'Geist Mono',monospace;color:${c};">${fmt(d.price)}</div>
+          <div style="font:700 14px 'Geist Mono',monospace;color:${c};">${up ? '▲ +' : '▼ '}${Math.abs(chgPct).toFixed(2)}%</div>
+        </div>
+        ${sparkSvg}
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px 22px;font-size:12px;margin-top:8px;">
+          <div><span style="color:#5a6373;">Open</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.open)}</span></div>
+          <div><span style="color:#5a6373;">Prev close</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.prev_close)}</span></div>
+          <div><span style="color:#5a6373;">Day high</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.day_high)}</span></div>
+          <div><span style="color:#5a6373;">Day low</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.day_low)}</span></div>
+          <div><span style="color:#5a6373;">52w high</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.high_52w)}</span></div>
+          <div><span style="color:#5a6373;">52w low</span> <span style="color:#dde3ef;float:right;font-family:'Geist Mono',monospace;">${fmt(d.low_52w)}</span></div>
+        </div>`;
+    } catch (e) {
+      body.innerHTML = '<div style="padding:30px;color:#ff9a9a;">'+esc(e.message||e)+'</div>';
+    }
+  }
+
+  // Wire pulse-panel cards + the All-Indexes modal cards to open detail.
+  function wirePulseClicks() {
+    const grid = document.getElementById('pulseIndices');
+    if (!grid || grid.dataset.detailBound === '1') return;
+    grid.dataset.detailBound = '1';
+    // Cache symbol list once
+    fetch('/api/market-indices').then(r=>r.json()).then(j => {
+      window.__edgeIndices = (j && j.data) || [];
+    }).catch(()=>{});
+    grid.addEventListener('click', (e) => {
+      const card = e.target.closest('div.bg-surface-container-low');
+      if (!card) return;
+      const lbl = (card.querySelector('p') || {}).textContent || '';
+      const match = (window.__edgeIndices || []).find(x => x.short === lbl);
+      if (match) openIndexDetail(match.symbol, lbl);
+    });
+    // Modal-cards (rendered by openAllIndexes) — delegate inside body too
+    body.addEventListener('click', (e) => {
+      const c = e.target.closest('.edge-index-card');
+      if (!c) return;
+      const lbl = (c.querySelector('div') || {}).textContent || '';
+      const match = (window.__edgeIndices || []).find(x => x.short === lbl);
+      if (match) openIndexDetail(match.symbol, lbl);
+    });
+  }
+  setTimeout(wirePulseClicks, 400);
+  setTimeout(wirePulseClicks, 2000);
+
+  // ─── Curated-card enrichment: leak + sector + insider + smart-money chips ─
+  async function enrichCuratedCards() {
+    const cards = document.querySelectorAll('.curated-card[data-ticker]:not([data-edge-done])');
+    if (!cards.length) return;
+    let regime = null;
+    try {
+      const r = await fetch('/api/edge/sector-regime').then(r=>r.json());
+      regime = (r && r.data) || null;
+    } catch(_) {}
+    cards.forEach(c => { c.dataset.edgeDone = '1'; });
+    await Promise.all(Array.from(cards).map(async card => {
+      const ticker = (card.dataset.ticker || '').replace(/&amp;/g, '&');
+      if (!ticker) return;
+      const chips = [];
+      const add = (color, label, title) => chips.push(
+        `<span class="edge-mini-chip" title="${esc(title||label)}" style="font:700 9px Inter,sans-serif;padding:2px 7px;border-radius:4px;background:${color}14;color:${color};border:1px solid ${color}40;letter-spacing:0.04em;">${esc(label)}</span>`
+      );
+      try {
+        const ib = await fetch('/api/edge/insider-buys/' + encodeURIComponent(ticker)).then(r=>r.json());
+        if (ib && ib.data && ib.data.tag) add('#2dd4aa', ib.data.label, 'SEBI insider/promoter buys (30d)');
+      } catch(_) {}
+      try {
+        const bd = await fetch('/api/edge/bulk-deal-crossref/' + encodeURIComponent(ticker)).then(r=>r.json());
+        const d = bd && bd.data;
+        if (d && d.tag && d.label) {
+          const c = d.smart_buys >= 1 ? '#2dd4aa' : d.smart_sells >= 1 ? '#f26b6b' : '#8eb4e0';
+          add(c, d.label, 'Bulk-deal cross-reference');
+        }
+      } catch(_) {}
+      try {
+        const wh = await fetch('/api/edge/earnings/whisper/' + encodeURIComponent(ticker)).then(r=>r.json());
+        const d = wh && wh.data;
+        if (d && d.streak_label) {
+          add(d.beat_count_4q >= 3 ? '#2dd4aa' : '#e6b84a', d.streak_label, 'Recent earnings vs consensus');
+        }
+      } catch(_) {}
+      // Sector regime — best-effort, only if /api/stock/<t> exposes sector
+      try {
+        const stk = await fetch('/api/stock/' + encodeURIComponent(ticker)).then(r=>r.json());
+        const sec = ((stk && (stk.data || stk)) || {}).sector;
+        if (sec && regime) {
+          const k = String(sec).toUpperCase().replace(/[^A-Z]/g,'').slice(0,6);
+          let m = null;
+          for (const key of Object.keys(regime)) {
+            const norm = key.replace(/_/g,'');
+            if (k.startsWith(norm.slice(0,4)) || norm.startsWith(k.slice(0,4))) { m = regime[key]; break; }
+          }
+          if (m) {
+            const c = m.regime.includes('tailwind') ? '#2dd4aa' : m.regime.includes('headwind') ? '#f26b6b' : '#8a94a8';
+            add(c, `${m.label.split(' ')[0]} ${m.change_pct>=0?'+':''}${m.change_pct}%`, m.label);
+          }
+        }
+      } catch(_) {}
+      if (!chips.length) return;
+      const row = document.createElement('div');
+      row.className = 'curated-edge-chips';
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;';
+      row.innerHTML = chips.join('');
+      const fundRow = card.querySelector('.curated-fund-row');
+      (fundRow || card).appendChild(row);
+    }));
+  }
+  function watchReco() {
+    const host = document.getElementById('recoCards');
+    if (!host) return;
+    new MutationObserver(() => enrichCuratedCards()).observe(host, {childList:true, subtree:true});
+    setTimeout(enrichCuratedCards, 1200);
+    setTimeout(enrichCuratedCards, 3500);
+  }
+  watchReco();
+
+  // ─── Expose analyzer for stock.html / other pages ──────────────────────
+  window.EdgeFeatures = {
+    analyzeStock: analyze,
+    openIndex: openIndexDetail,
+    enrichCards: enrichCuratedCards,
+  };
+})();
+</script>
+</body>
+</html>

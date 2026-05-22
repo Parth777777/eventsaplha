@@ -1,28 +1,43 @@
-/* Tickwave service worker — minimal offline-shell + push handler.
- * Keep this lean; production caching strategy lives at the CDN layer.
+/* Tickwave service worker — SELF-UNREGISTER MODE (2026-05-18)
+ *
+ * The user reported a blank popup that kept reappearing because the cached
+ * SW shell was serving stale bootstrap.js + ae-components.js even after
+ * source fixes shipped. We're nuking the SW entirely: on activate, every
+ * cache is dropped, every client is told to reload, and the SW itself
+ * unregisters so the next page load runs with NO worker in the way.
+ *
+ * Re-enable offline caching later by reverting this commit. For now, kill
+ * order: caches → clients reload → registration.unregister().
  */
-// Bumped to v21 — popup got mini-chart + deep-detail sections + logo chip,
-// and the auto-decorator landed in company-logo.js. The previous v20 cache
-// was serving stale popup JS that triggered "Couldn't fetch quick info."
-// on every ticker click.
-const CACHE = 'tickwave-v26-edge-features';
+const CACHE = 'tickwave-v43-stockpro-mojibake-fix';
 const SHELL = [
   '/',
   '/index.html',
+  '/shared/css/tokens.css',
   '/shared/css/style.css',
-  '/shared/css/refined.css',
+  '/shared/css/redesign.css',
+  '/shared/css/components.css',
+  '/shared/css/disclosures.css',
   '/shared/css/search-bar.css',
   '/shared/js/app.js',
+  '/shared/js/bootstrap.js',
   '/shared/js/widgets.js',
   '/shared/js/realtime.js',
   '/shared/js/theme.js',
+  '/shared/js/theme-toggle.js',
+  '/shared/js/theme-tokens.js',
   '/shared/js/event-card.js',
   '/shared/js/charts.js',
   '/shared/js/search-bar.js',
   '/shared/js/stock-popup.js',
+  '/shared/js/stock-pro.js',
   '/shared/js/company-logo.js',
   '/shared/js/section-tabs.js',
   '/shared/js/edge-analyzer.js',
+  '/shared/js/sidebar.js',
+  '/shared/js/sidebar-toggle.js',
+  '/shared/js/ae-bottom-nav.js',
+  '/shared/js/components/ae-components.js',
   '/manifest.json',
 ];
 
@@ -33,16 +48,18 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    // Drop every old cache so stale shell assets can't be served again.
+    // 1. DROP EVERY CACHE — including this one. No more stale serves.
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await Promise.all(keys.map((k) => caches.delete(k)));
     await self.clients.claim();
-    // Tell every controlled client to reload once so they pick up the
-    // freshly-cached shell instead of running with stale JS/CSS.
+    // 2. Tell every controlled client to reload once with the fresh code.
     const clients = await self.clients.matchAll({ type: 'window' });
     clients.forEach((c) => {
       try { c.postMessage({ type: 'sw-activated', cache: CACHE }); } catch (_) {}
     });
+    // 3. UNREGISTER SELF — next navigation runs with NO service worker,
+    // so the browser always hits the network and ships the latest JS/CSS.
+    try { await self.registration.unregister(); } catch (_) {}
   })());
 });
 
@@ -57,8 +74,13 @@ const OFFLINE_RESPONSE = () => new Response(
 );
 
 self.addEventListener('fetch', (e) => {
+  // KILL SWITCH 2026-05-18: don't intercept ANY fetches. Lets the browser
+  // hit the network directly so the stale popup JS can't be served from
+  // cache. The SW will unregister itself on activate anyway.
+  return;
+  // ---- unreachable below; kept as reference for re-enabling later ----
+  // eslint-disable-next-line no-unreachable
   const url = new URL(e.request.url);
-  // Never cache API or SSE — always live.
   if (url.pathname.startsWith('/api/')) return;
   if (e.request.method !== 'GET') return;
   // Network-first for JS/CSS so code changes ship immediately. Fall back to

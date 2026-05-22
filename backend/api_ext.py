@@ -854,17 +854,21 @@ def register_jobs(scheduler, get_db: Callable) -> None:
     def _forensic_daily():
         try:
             from forensics.bse_filing_fetcher import BSEFilingFetcher
+            from forensics.nse_filing_fetcher import NSEFilingFetcher
             from forensics.ir_pdf_fetcher import IRPageFetcher
             from forensics.sebi_disclosures import SEBIDisclosuresFetcher
             from forensics.llm_intent import SourceCredibility
             from config import MONITORED_STOCKS
 
             db = get_db()
-            BSEFilingFetcher(db, MONITORED_STOCKS).refresh_all()
+            bse_result = BSEFilingFetcher(db, MONITORED_STOCKS).refresh_all()
+            nse_result = NSEFilingFetcher(db, MONITORED_STOCKS).refresh_all()
             IRPageFetcher(db, MONITORED_STOCKS).refresh_all()
             SEBIDisclosuresFetcher(db, MONITORED_STOCKS).refresh_all()
             SourceCredibility(db).recompute()
-            logger.info("forensic daily cycle complete")
+            bse_n = sum(bse_result.values()) if isinstance(bse_result, dict) else 0
+            nse_n = sum(nse_result.values()) if isinstance(nse_result, dict) else 0
+            logger.info("forensic daily cycle complete: bse_filings=%d nse_filings=%d", bse_n, nse_n)
         except Exception as exc:
             logger.error("forensic daily job failed: %s", exc)
 

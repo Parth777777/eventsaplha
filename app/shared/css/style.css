@@ -5,6 +5,8 @@
 
 /* Professional fintech typography — Inter + Manrope (loaded once) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap');
+/* Token contract — MUST load before component layers so cascade resolves */
+@import url('./tokens.css');
 @import url('./macos.css');
 @import url('./premium.css');
 
@@ -1144,7 +1146,6 @@ body {
   height: 5px;
   border-radius: 50%;
   background: var(--bull);
-  animation: _pulse 1.5s ease-in-out infinite;
 }
 
 /* Scrolling track */
@@ -1222,8 +1223,9 @@ body {
 }
 
 /* ── ANIMATIONS (MINIMAL) ───────────────────────────────── */
-.pulse { animation: _pulse 2s ease-in-out infinite; }
-@keyframes _pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* Pulse animation removed — designer feedback (looks vibe-coded).
+   Skeleton loaders keep their own animation; status dots are now static. */
+.pulse { /* no-op; class kept for backwards compatibility */ }
 
 /* Skeleton loader */
 .skeleton {
@@ -2258,12 +2260,13 @@ header.sticky.top-0 {
 /* ── LIGHT THEME ─────────────────────────────────────────── */
 /* Lavender/periwinkle + black accent (banking dashboard reference). */
 :root[data-theme='light'] {
-  /* Soft off-white main + pure white cards */
-  --bg:   #f6f7fb;
+  /* Warmer off-white (was #f6f7fb) — fixes "dirty design" trader feedback.
+     Cards stay pure white for max contrast on data tables. */
+  --bg:   #fbfbfd;
   --s0:   #ffffff;
   --s1:   #ffffff;
   --s2:   #ffffff;
-  --s3:   #f0f2f8;
+  --s3:   #f3f4f9;
   --s4:   #e6e9f3;
 
   --b0: rgba(15, 18, 36, 0.04);

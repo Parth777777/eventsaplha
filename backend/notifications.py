@@ -212,15 +212,44 @@ def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = '
     if not discord_url and not tg_token:
         return
 
+    # SLA recorder — lazy import to avoid circular deps. Returns a no-op
+    # callable if api_public hasn't loaded yet (e.g., during test runs).
+    try:
+        from api_public import get_sla_recorder
+        _sla = get_sla_recorder()
+    except Exception:
+        _sla = lambda *a, **kw: None
+
+    def _ms_since(ts):
+        """Convert a signal's created_at/timestamp to ms-since-now."""
+        if not ts:
+            return None
+        try:
+            from datetime import datetime as _dt
+            if isinstance(ts, str):
+                # Strip trailing 'Z' / fractional secs for fromisoformat compat
+                clean = ts.replace('Z', '').split('.')[0]
+                t = _dt.fromisoformat(clean)
+            else:
+                t = ts
+            return max(0.0, (_dt.utcnow() - t).total_seconds() * 1000.0)
+        except Exception:
+            return None
+
     sent_count = 0
     for signal in signals:
         if not should_notify(signal, config):
             continue
 
         ticker = signal.get('ticker', '')
+        # Compute end-to-end latency from the signal's created_at to NOW.
+        # This is the headline number the /api/v1/sla endpoint exposes.
+        end_to_end_ms = _ms_since(signal.get('created_at') or signal.get('timestamp'))
 
         # Discord — try first attempt, on failure enqueue for backoff retry
         if discord_url and check_cooldown(db, ticker, 'discord', cooldown):
+            import time as _t
+            _t0 = _t.time()
             try:
                 from notification_retry import try_send as _retry_try_send
                 success, _err = _retry_try_send('discord', discord_url, signal)
@@ -237,9 +266,17 @@ def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = '
             )
             if success:
                 sent_count += 1
+                # Record latency: HTTP round-trip to Discord webhook + end-to-end
+                # from signal creation to delivery. Both populate /api/v1/sla.
+                send_ms = (_t.time() - _t0) * 1000.0
+                _sla('discord_http', ticker, send_ms)
+                if end_to_end_ms is not None:
+                    _sla('event_to_delivery', ticker, end_to_end_ms)
 
         # Telegram — try-then-retry-queue, same as Discord above
         if tg_token and tg_chat and check_cooldown(db, ticker, 'telegram', cooldown):
+            import time as _t
+            _t0 = _t.time()
             try:
                 from notification_retry import try_send as _retry_try_send
                 # Telegram recipient is "bot_token::chat_id"
@@ -257,6 +294,10 @@ def process_signal_notifications(signals: list, db: TickwaveDB, app_url: str = '
             )
             if success:
                 sent_count += 1
+                send_ms = (_t.time() - _t0) * 1000.0
+                _sla('telegram_http', ticker, send_ms)
+                if end_to_end_ms is not None:
+                    _sla('event_to_delivery', ticker, end_to_end_ms)
 
     if sent_count > 0:
         logger.info(f"Sent {sent_count} notifications")

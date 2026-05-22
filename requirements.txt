@@ -5,6 +5,10 @@
 Flask==2.3.3
 Flask-CORS==4.0.0
 gunicorn==21.2.0
+# WebSocket support for /ws/stream — used by the live event terminal.
+# Pairs with sync gunicorn workers (each open WS holds one worker thread, so
+# tune --workers / --threads if expected concurrent listeners > workers*threads).
+flask-sock==0.7.0
 
 # Auth
 PyJWT==2.8.0
@@ -61,6 +65,23 @@ cachetools==5.5.0
 # redis is optional — falls back to in-proc cache if not installed
 redis==5.0.8
 prometheus-client==0.20.0
+# Phase D — production error tracking (no-op when SENTRY_DSN env unset)
+sentry-sdk[flask]==2.18.0
+# Phase D — per-IP rate limiting (in-memory storage by default; redis if avail)
+Flask-Limiter==3.8.0
+
+# ============================================================
+# Phase 2B — AI integration (RAG + summarization + briefings)
+# ============================================================
+
+# Local embedding model for RAG (~90 MB, runs on ARM CPU, no rate limit).
+# Without this, backend/rag.py falls back to a hash-based pseudo-embedding
+# that is NOT semantically meaningful — production must install this.
+sentence-transformers==2.7.0
+
+# pgvector client adapter — only needed when DATABASE_URL points at Postgres
+# with the `vector` extension enabled. Optional for local SQLite dev.
+pgvector==0.3.6
 
 # Tests
 pytest==8.3.3

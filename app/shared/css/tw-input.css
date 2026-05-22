@@ -1,0 +1,7 @@
+/* tw-input.css — entry point for the Tailwind CLI build.
+ * Compiled to app/shared/css/dist/tw.min.css by tailwindcss CLI.
+ * See tailwind.config.js for the full build instructions.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,0 +1,88 @@
+# AlphaEvent / Tickwave — Caddy reverse proxy + static file server.
+#
+# Caddy handles:
+#   - Automatic HTTPS via Let's Encrypt (production)
+#   - HTTP/2 + HTTP/3 (QUIC) on 443
+#   - zstd + gzip compression
+#   - Reverse-proxy /api/*, /healthz, /metrics to the web container
+#   - Serve /app/* static files directly (HTML, CSS, JS, images)
+#
+# Before deploying:
+#   1. Replace `alphaevent.in` with your actual domain.
+#   2. Point your DNS A record to the VM's public IP.
+#   3. If using Cloudflare in front, set SSL/TLS mode to Full (strict).
+#   4. Ensure ports 80 and 443 are open in the Oracle VCN security list
+#      AND `iptables` (Oracle Ubuntu images block 443 by default).
+
+{
+    # Global options
+    email aditya.j.thakker@gmail.com
+    # auto_https off    # uncomment for local dev with self-signed cert
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+alphaevent.in, www.alphaevent.in {
+    encode zstd gzip
+
+    # API + health + metrics → web container
+    # /ws/* is included so the WebSocket upgrade for the event terminal
+    # reaches Flask. Caddy 2's reverse_proxy auto-handles the Upgrade
+    # handshake; we just need to match the path. Long read_timeout because
+    # WS frames are bursty (gaps > 60s common between filings off-hours).
+    @api {
+        path /api/* /ws/* /healthz /metrics
+    }
+    handle @api {
+        reverse_proxy web:5000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            transport http {
+                read_timeout 24h
+                write_timeout 24h
+            }
+        }
+    }
+
+    # Static frontend — served from the bind-mounted ./app directory
+    handle /app/* {
+        root * /srv
+        file_server
+        header Cache-Control "public, max-age=3600"
+    }
+
+    # Manifest / service worker — short cache so updates roll out fast
+    handle /sw.js {
+        root * /srv/app
+        file_server
+        header Cache-Control "public, max-age=60"
+    }
+    handle /manifest.json {
+        root * /srv/app
+        file_server
+    }
+
+    # Root redirect → the app
+    handle / {
+        redir /app/index.html 302
+    }
+
+    # Anything else → the SPA shell (so client-side routing works)
+    handle {
+        root * /srv/app
+        try_files {path} /index.html
+        file_server
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}
+
+# Optional dev/local block — uncomment to serve over plain HTTP for testing
+# :80 {
+#     handle /api/* { reverse_proxy web:5000 }
+#     handle { root * /srv/app; file_server }
+# }

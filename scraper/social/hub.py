@@ -64,9 +64,13 @@ SERIOUS_TELEGRAM_CHANNELS = [
     "livemintoff",
 ]
 
-# Reddit minimum upvote threshold to qualify as "serious"
-REDDIT_MIN_SCORE = 50
-
+# Quality bar — strict. Reddit/Telegram only surface "serious + high quality"
+# buzz, never tipsy / promo / multibagger crap.
+REDDIT_MIN_SCORE     = 150   # was 50 — needs real upvote weight to count
+REDDIT_MIN_SERIOUS   = 50    # was 20 — must look substantively serious
+REDDIT_BYPASS_SERIOUS = 75   # was 50 — only the strongest seriousness
+                              #         can override the upvote threshold
+TELEGRAM_MIN_SERIOUS = 45    # was implicit ~20; same idea — substantive only
 # How recent posts must be (hours) to surface in the feed
 DEFAULT_FRESHNESS_HOURS = 12
 
@@ -95,35 +99,54 @@ SERIOUS_KEYWORDS = [
     "supply chain", "shortage",
 ]
 
-# Words that strongly suggest pump/dump-style content. Items matching these
-# without serious-keyword balance get filtered out.
+# Words that strongly suggest pump/dump/promo content. Single hit kills the
+# post in our serious-buzz pipeline — we err on the side of dropping a
+# borderline-legit post rather than letting one tipsy one through.
 PUMP_DUMP_FLAGS = [
-    "multibagger", "10x", "100x", "1000%", "guaranteed return", "sure shot",
-    "tips", "telegram tips", "premium call", "join my channel", "intraday tip",
-    "operator buying", "circuit lock", "lock upper", "bumper",
-    "join group", "paid call", "subscribe channel", "%-target",
+    # Promised-return language
+    "multibagger", "multi-bagger", "10x", "100x", "1000%", "10 bagger",
+    "guaranteed return", "guaranteed profit", "guaranteed call", "sure shot",
+    "sureshot", "no loss", "100% safe", "risk free", "zero risk",
+    # Tip-channel telltales
+    "tips", "telegram tips", "premium call", "premium tip", "vip call",
+    "vip tip", "join my channel", "join my group", "intraday tip",
+    "join group", "paid call", "paid group", "paid channel", "subscribe channel",
+    "subscribe now", "dm for tip", "dm for call", "whatsapp group",
+    "operator call", "operator buying", "operator stock", "operator activity",
+    # Pump phrasing
+    "circuit lock", "lock upper", "upper circuit lock", "bumper", "bumper return",
+    "skyrocket", "rocket stock", "rocket call", "blast call", "blast stock",
+    "next adani", "next reliance", "hidden gem", "next multibagger",
+    # Promo / aggregator hashtags
+    "%-target", "buy call", "sell call", "trading call",
 ]
 
 
 def serious_score(text: str) -> int:
-    """0..100 score of how 'serious-news-y' a post looks."""
+    """0..100 score of how 'serious-news-y' a post looks.
+
+    Higher pump weight (was -25, now -40) so even one promo flag tanks the
+    score below the new floors. Longer length bonus capped at +12 total so
+    a wall-of-text tip post can't fake substance.
+    """
     if not text:
         return 0
     t = text.lower()
     serious_hits = sum(1 for kw in SERIOUS_KEYWORDS if kw in t)
     pump_hits = sum(1 for kw in PUMP_DUMP_FLAGS if kw in t)
-    raw = serious_hits * 12 - pump_hits * 25
-    # Length bonus — long posts more likely to be substantive
-    if len(text) > 200: raw += 10
-    if len(text) > 500: raw += 5
+    raw = serious_hits * 12 - pump_hits * 40
+    # Length bonus — substantive posts tend to be longer, but cap it
+    if len(text) > 200: raw += 8
+    if len(text) > 500: raw += 4
     return max(0, min(100, raw))
 
 
 def is_pump_dump_risk(text: str) -> bool:
+    """One pump/dump phrase is enough to disqualify a post."""
     if not text:
         return False
     t = text.lower()
-    return sum(1 for kw in PUMP_DUMP_FLAGS if kw in t) >= 1
+    return any(kw in t for kw in PUMP_DUMP_FLAGS)
 
 
 # ============ DB SCHEMA =====================================================
@@ -299,15 +322,18 @@ def collect_reddit_serious(db, known_tickers: Iterable[str],
     n = 0
     for p in posts:
         text = (p.get("text") or "") + " " + (p.get("title") or "")
-        # Reddit posts often carry score in extra/score field
         engagement = int(p.get("score") or p.get("upvotes") or 0)
-        if engagement < REDDIT_MIN_SCORE:
-            # Allow through if seriousness keywords are very strong
-            if serious_score(text) < 50:
-                continue
+        score = serious_score(text)
+        # 1. Hard pump/dump reject — any tip-channel-style phrasing kills it.
         if is_pump_dump_risk(text):
             continue
-        if serious_score(text) < 20:
+        # 2. Engagement OR very-high seriousness — one of these must hold.
+        #    Low-upvote posts without strong seriousness keywords don't pass.
+        if engagement < REDDIT_MIN_SCORE and score < REDDIT_BYPASS_SERIOUS:
+            continue
+        # 3. Absolute seriousness floor — even high-upvote rants without
+        #    substantive financial vocabulary get dropped.
+        if score < REDDIT_MIN_SERIOUS:
             continue
         n += _persist_post(db, p, platform="reddit", severity="serious",
                            verified=False, engagement=engagement)
@@ -338,7 +364,8 @@ def collect_telegram_serious(db, known_tickers: Iterable[str],
         text = (p.get("text") or "") + " " + (p.get("title") or "")
         if is_pump_dump_risk(text):
             continue
-        if serious_score(text) < 20:
+        # Stricter floor (was 20) — only substantive items pass.
+        if serious_score(text) < TELEGRAM_MIN_SERIOUS:
             continue
         n += _persist_post(db, p, platform="telegram", severity="serious",
                            verified=False)

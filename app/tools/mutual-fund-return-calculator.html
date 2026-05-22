@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mutual Fund Return Calculator — Absolute & CAGR | Tickwave</title>
+<meta name="description" content="Calculate mutual fund returns. Enter invested amount, current value, holding period — get absolute return %, CAGR, and tax estimate. India-specific.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/mutual-fund-return-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Mutual Fund Returns</div>
+<h1>What did your <span class="accent">mutual fund</span> actually return?</h1>
+<p class="lead">Plug in what you invested, what it's worth now, and how long you held it. We compute absolute return, CAGR, and an estimate of LTCG / STCG tax you'll owe at redemption.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="40" width="160" height="120" rx="12" fill="#161d28" stroke="#253040"/><rect x="40" y="70" width="120" height="22" rx="4" fill="#1c2435"/><text x="50" y="86" font-family="Geist Mono" font-size="12" fill="#8a94a8">Invested</text><text x="138" y="86" font-family="Geist Mono" font-size="12" fill="#8eb4e0">₹10L</text><rect x="40" y="100" width="120" height="22" rx="4" fill="#1c2435"/><text x="50" y="116" font-family="Geist Mono" font-size="12" fill="#8a94a8">Current</text><text x="135" y="116" font-family="Geist Mono" font-size="12" fill="#2dd4aa">₹16L</text><rect x="40" y="130" width="120" height="22" rx="4" fill="#1c2435"/><text x="50" y="146" font-family="Geist Mono" font-size="12" fill="#8a94a8">Return</text><text x="133" y="146" font-family="Geist Mono" font-size="12" fill="#2dd4aa">+60%</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your investment</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Invested amount <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="iIn" value="100000" min="1000" step="1000"></span></div><input type="range" id="i" class="tk-slider" min="1000" max="50000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹5 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current value <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="cIn" value="160000" min="0" step="1000"></span></div><input type="range" id="c" class="tk-slider" min="0" max="100000000" step="1000" value="160000"><div class="tk-slider-bounds"><span>₹0</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Holding period <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="3" min="0.1" max="40" step="0.1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.1" max="40" step="0.1" value="3"><div class="tk-slider-bounds"><span>0.1 yr</span><span>40 yr</span></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Fund type</label>
+<div class="tk-tabs" id="kind"><button data-k="equity" aria-pressed="true">Equity</button><button data-k="debt" aria-pressed="false">Debt</button><button data-k="hybrid" aria-pressed="false">Hybrid</button></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">Absolute return</div>
+<div class="tk-result-value" id="abs">—</div>
+<div class="tk-result-sub">CAGR: <span id="cagrSub">—</span></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Profit</div><div class="val bull" id="profit">—</div></div>
+<div class="tk-stat"><div class="lbl">CAGR</div><div class="val bull" id="cagr">—</div></div>
+<div class="tk-stat"><div class="lbl">Tax estimate</div><div class="val bear" id="tax">—</div></div>
+<div class="tk-stat"><div class="lbl">After-tax CAGR</div><div class="val" id="postTax">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Mutual fund tax in India (FY 2025-26)</h2>
+<ul>
+<li><strong>Equity-oriented MF:</strong> STCG (held &lt; 12 months) taxed at 20%. LTCG over ₹1.25 lakh / year taxed at 12.5%.</li>
+<li><strong>Debt MF (post Apr 2023 purchase):</strong> all gains taxed at investor's slab rate (treated as STCG, no LTCG benefit).</li>
+<li><strong>Hybrid MF (≥ 65% equity):</strong> treated as equity for tax purposes.</li>
+</ul>
+<p>This calculator estimates tax assuming the entire gain is realised at sale. For an accurate slab-based debt-fund tax, use the <a href="capital-gains-tax-calculator.html">Capital Gains Tax Calculator</a>.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Why is my actual return different from this?</summary><p>This is a buy-and-sell calculator. If you did SIPs across multiple dates, use XIRR (each AMC's statement shows XIRR).</p></details>
+<details><summary>Is the LTCG exemption per year or per fund?</summary><p>Per financial year, total across all equity LTCG. Plan redemptions across years to use the ₹1.25 lakh exemption multiple times.</p></details>
+<details><summary>How are SIP investments taxed?</summary><p>Each SIP instalment is treated as a separate buy. FIFO accounting determines which units are sold and how long each was held.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="capital-gains-tax-calculator.html">Capital Gains Tax<span class="sub">Detailed STCG/LTCG breakdown</span></a>
+<a href="cagr-calculator.html">CAGR Calculator<span class="sub">Pure annualised growth</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Forward planning</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var kind='equity';
+function compute(){
+  var I=+document.getElementById('i').value, C=+document.getElementById('c').value, n=+document.getElementById('y').value;
+  if(I<=0){return;}
+  var profit=C-I, absR=(profit/I)*100, cagr=Math.pow(C/I,1/n)-1;
+  var tax=0;
+  if(kind==='equity'||kind==='hybrid'){
+    if(n>=1){var taxable=Math.max(0,profit-125000); tax=taxable*0.125;}
+    else { tax=Math.max(0,profit)*0.20;}
+  } else {
+    // Debt — slab; assume 30% slab for top-rate estimate
+    tax=Math.max(0,profit)*0.30;
+  }
+  var afterTaxC=C-tax, postCagr=afterTaxC>0&&I>0?Math.pow(afterTaxC/I,1/n)-1:cagr;
+  T.animateNumber(document.getElementById('abs'),absR,{format:function(v){return T.formatPct(v);}});
+  document.getElementById('cagrSub').textContent=T.formatPct(cagr*100);
+  T.animateNumber(document.getElementById('profit'),profit);
+  document.getElementById('cagr').textContent=T.formatPct(cagr*100);
+  T.animateNumber(document.getElementById('tax'),tax);
+  document.getElementById('postTax').textContent=T.formatPct(postCagr*100);
+}
+document.querySelectorAll('#kind button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#kind button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');kind=b.dataset.k;compute();});});
+T.bindSlider({slider:document.getElementById('i'),input:document.getElementById('iIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('c'),input:document.getElementById('cIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Why is my actual return different?',a:'This is single buy-sell. For SIPs across dates use XIRR (AMC statements show this).'},{q:'Is LTCG exemption per year or per fund?',a:'Per financial year, total across all equity LTCG. Spread redemptions across years to use it multiple times.'},{q:'How are SIP units taxed?',a:'Each instalment is a separate buy. FIFO determines which units are sold and how long held.'}]);
+T.mountSoftwareSchema({name:'Mutual Fund Return Calculator',description:'Absolute return, CAGR and after-tax return for Indian mutual funds.'});
+})();
+</script>
+</body></html>

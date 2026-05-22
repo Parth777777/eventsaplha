@@ -1,0 +1,15 @@
+{
+  "name": "alphaevent-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AlphaEvent / Tickwave frontend build (Tailwind CLI replaces the CDN runtime).",
+  "scripts": {
+    "build:css": "tailwindcss -i ./app/shared/css/tw-input.css -o ./app/shared/css/dist/tw.min.css --minify",
+    "watch:css": "tailwindcss -i ./app/shared/css/tw-input.css -o ./app/shared/css/dist/tw.min.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.10",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/container-queries": "^0.1.1"
+  }
+}

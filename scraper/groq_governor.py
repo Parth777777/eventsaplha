@@ -37,12 +37,21 @@ logger = logging.getLogger(__name__)
 DEFAULT_TPD = int(os.getenv("GROQ_TPD", "100000"))
 
 # Per-module budget weights (sum should be <= 1.0). Tunable via env.
+# Rebalanced 2026-05-18 to fit four new AI features:
+#   chat        — RAG-grounded stock Q&A (rate-limited per user, but hot)
+#   summarize   — per-event 1-line summaries written once, cheap each
+#   explain     — per-signal "why this matters" written once, cheap each
+#   briefing    — once-per-pro-user/day, ~1.1k tokens each
 DEFAULT_BUDGETS = {
-    "verification": float(os.getenv("GROQ_BUDGET_VERIFICATION", "0.55")),
-    "intent":       float(os.getenv("GROQ_BUDGET_INTENT", "0.20")),
-    "reasoning":    float(os.getenv("GROQ_BUDGET_REASONING", "0.15")),
-    "jargon":       float(os.getenv("GROQ_BUDGET_JARGON", "0.05")),
-    "forensics":    float(os.getenv("GROQ_BUDGET_FORENSICS", "0.05")),
+    "verification": float(os.getenv("GROQ_BUDGET_VERIFICATION", "0.35")),
+    "intent":       float(os.getenv("GROQ_BUDGET_INTENT",       "0.12")),
+    "reasoning":    float(os.getenv("GROQ_BUDGET_REASONING",    "0.08")),
+    "jargon":       float(os.getenv("GROQ_BUDGET_JARGON",       "0.04")),
+    "forensics":    float(os.getenv("GROQ_BUDGET_FORENSICS",    "0.04")),
+    "chat":         float(os.getenv("GROQ_BUDGET_CHAT",         "0.15")),
+    "summarize":    float(os.getenv("GROQ_BUDGET_SUMMARIZE",    "0.12")),
+    "explain":      float(os.getenv("GROQ_BUDGET_EXPLAIN",      "0.06")),
+    "briefing":     float(os.getenv("GROQ_BUDGET_BRIEFING",     "0.04")),
 }
 
 # Hard-stop margin — refuse new calls when within this fraction of the TPD.
@@ -113,7 +122,8 @@ class _Governor:
 
     # Modules considered ESSENTIAL — they keep flowing even in save mode.
     # Anything not in this set is paused once we cross 80% TPD.
-    _SAVE_MODE_PROTECTED = {"verification", "reasoning"}
+    # chat is user-facing — protect it so live Q&A doesn't degrade.
+    _SAVE_MODE_PROTECTED = {"verification", "reasoning", "chat"}
     _SAVE_MODE_THRESHOLD = 0.80   # at 80% TPD, refuse non-essential calls
 
     def can_spend(self, module: str, est_tokens: int = 600) -> bool:

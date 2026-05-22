@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gratuity Calculator — Eligibility & Tax-Free Payout | Tickwave</title>
+<meta name="description" content="Free gratuity calculator India. (Basic + DA) × 15/26 × years of service. Eligible after 5 years. Tax-free up to ₹20 lakh.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/gratuity-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Gratuity Calculator</div>
+<h1>Your <span class="accent">gratuity payout</span> on resignation</h1>
+<p class="lead">Eligible after 5 continuous years with the same employer. Formula: (Basic + DA) × 15/26 × years of service. First ₹20 lakh is tax-free under the Payment of Gratuity Act.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="70" fill="#161d28" stroke="#e6b84a" stroke-width="2"/><text x="100" y="92" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8" letter-spacing="2">GRATUITY</text><text x="100" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="18" font-weight="700" fill="#e6b84a">15/26</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your service</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Last drawn (Basic + DA) <span class="hint">(₹/month)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="bIn" value="60000" min="1000" step="500"></span></div><input type="range" id="b" class="tk-slider" min="1000" max="500000" step="500" value="60000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Years of service <span class="hint">(min 5)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="10" min="0" max="40" step="0.5"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0" max="40" step="0.5" value="10"><div class="tk-slider-bounds"><span>0 yr</span><span>40 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Payout</h2>
+<div class="tk-result-headline">Gratuity amount</div>
+<div class="tk-result-value" id="g">—</div>
+<div class="tk-result-sub" id="elig">—</div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Tax-free (up to ₹20L)</div><div class="val bull" id="exempt">—</div></div>
+<div class="tk-stat"><div class="lbl">Taxable</div><div class="val bear" id="taxable">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Gratuity formula</h2>
+<div class="tk-formula">Gratuity = (Basic + DA) × 15 / 26 × Years of service</div>
+<p>26 represents the number of working days in a month (excluding weekly off). 15 represents half-a-month of salary per completed year of service. Partial years above 6 months count as full year.</p>
+</section>
+<section><h2>Eligibility & tax</h2>
+<ul>
+<li><strong>Minimum tenure:</strong> 5 continuous years with the same employer (waived if employee dies / becomes disabled)</li>
+<li><strong>Tax-free cap:</strong> ₹20 lakh lifetime (across all employers) for private-sector. Govt employees: fully tax-free.</li>
+<li><strong>Payable on:</strong> Resignation, retirement, termination, death, disablement</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>What if I leave at 4.5 years?</summary><p>No gratuity. The 5-year rule is strict (one judgement held 4 years 240 days = eligible, but rare).</p></details>
+<details><summary>Is gratuity part of CTC?</summary><p>Yes, but it doesn't reach your bank monthly. Treat it as deferred payout.</p></details>
+<details><summary>Tax on amount over ₹20 lakh?</summary><p>Taxable at your slab rate in the year of receipt.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="salary-calculator.html">Salary Calculator<span class="sub">CTC to in-hand</span></a>
+<a href="epf-calculator.html">EPF Calculator<span class="sub">Other retirement benefit</span></a>
+<a href="income-tax-calculator.html">Income Tax<span class="sub">Tax on excess gratuity</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var b=+document.getElementById('b').value, y=+document.getElementById('y').value;
+  var eligible=y>=5;
+  var yrs=Math.round(y);  // round to nearest year (above 6 mo rounds up)
+  var g=eligible?(b*15/26*yrs):0;
+  var exempt=Math.min(g,2000000), taxable=Math.max(0,g-2000000);
+  T.animateNumber(document.getElementById('g'),g);
+  document.getElementById('elig').textContent=eligible?'Eligible (≥ 5 yrs service)':'Not eligible — need 5+ yrs service';
+  T.animateNumber(document.getElementById('exempt'),exempt);
+  T.animateNumber(document.getElementById('taxable'),taxable);
+}
+T.bindSlider({slider:document.getElementById('b'),input:document.getElementById('bIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'What if I leave at 4.5 years?',a:'No gratuity. 5-year rule is strict.'},{q:'Is gratuity part of CTC?',a:'Yes, but does not reach your bank monthly. Deferred payout.'},{q:'Tax on amount over Rs 20 lakh?',a:'Taxable at slab rate in year of receipt.'}]);
+T.mountSoftwareSchema({name:'Gratuity Calculator',description:'Gratuity payout India — Payment of Gratuity Act formula with tax exemption.'});
+})();
+</script>
+</body></html>

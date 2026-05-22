@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +23,10 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <style>
         .skeleton { animation: pulse 2s infinite; }
@@ -137,27 +140,27 @@
         <h3 class="text-xs font-black uppercase text-on-surface-variant mb-4 mt-8">Understanding Pre-Mover Factors</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">📊 Accumulation</div>
+                <div class="font-bold text-sm mb-2">?? Accumulation</div>
                 <p class="text-xs text-on-surface-variant/70">Net BUY value from bulk deals over 5 trading days. Large accumulation signals insider/institutional buying.</p>
             </div>
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">🔑 Insider Activity</div>
+                <div class="font-bold text-sm mb-2">?? Insider Activity</div>
                 <p class="text-xs text-on-surface-variant/70">Promoter SAST/PIT transactions and pledge changes. Buying accumulation or release signals are bullish.</p>
             </div>
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">📈 F&O Buildup</div>
+                <div class="font-bold text-sm mb-2">?? F&O Buildup</div>
                 <p class="text-xs text-on-surface-variant/70">OTM-call OI increase in options. Signals bullish positioning before expected move.</p>
             </div>
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">🎯 Catalyst</div>
+                <div class="font-bold text-sm mb-2">?? Catalyst</div>
                 <p class="text-xs text-on-surface-variant/70">Tier-1 policy events or earnings announcements matching the ticker's sector.</p>
             </div>
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">🔊 Volume Anomaly</div>
-                <p class="text-xs text-on-surface-variant/70">Unusual volume spikes (z≥2.0) without a matching high-α signal — hidden accumulation.</p>
+                <div class="font-bold text-sm mb-2">?? Volume Anomaly</div>
+                <p class="text-xs text-on-surface-variant/70">Unusual volume spikes (z=2.0) without a matching high-a signal � hidden accumulation.</p>
             </div>
             <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/10">
-                <div class="font-bold text-sm mb-2">💡 News Catalyst</div>
+                <div class="font-bold text-sm mb-2">?? News Catalyst</div>
                 <p class="text-xs text-on-surface-variant/70">Multiple moderate-to-high alpha signals in 7 days. Density + quality = momentum building.</p>
             </div>
         </div>
@@ -254,10 +257,10 @@ function renderPremoverGrid(items) {
             <div class="flex gap-2 mt-4">
                 <button class="action-btn view" onclick="window.location.href='stock.html?ticker=${ticker}'">View Details</button>
                 <button class="action-btn watch ${isWatched ? 'active' : ''}" data-ticker="${ticker}" onclick="toggleWatch(this, '${ticker}')">
-                    ${isWatched ? '★ Watched' : '☆ Watch'}
+                    ${isWatched ? '? Watched' : '? Watch'}
                 </button>
                 <button class="action-btn" style="background: rgba(230,184,74,0.15); color:#e6b84a; flex:1; text-align:center;" onclick="toggleExpand(${idx})">
-                    <span id="expand-btn-${idx}">⌄ Details</span>
+                    <span id="expand-btn-${idx}">? Details</span>
                 </button>
             </div>
         </div>`;
@@ -268,7 +271,7 @@ function toggleExpand(idx) {
     const section = document.getElementById(`expand-${idx}`);
     const btn = document.getElementById(`expand-btn-${idx}`);
     section.classList.toggle('open');
-    btn.textContent = section.classList.contains('open') ? '⌃ Details' : '⌄ Details';
+    btn.textContent = section.classList.contains('open') ? '^ Details' : '? Details';
 }
 
 function toggleWatch(btn, ticker) {
@@ -276,11 +279,11 @@ function toggleWatch(btn, ticker) {
     if (idx > -1) {
         watchlist.splice(idx, 1);
         btn.classList.remove('active');
-        btn.textContent = '☆ Watch';
+        btn.textContent = '? Watch';
     } else {
         watchlist.push(ticker);
         btn.classList.add('active');
-        btn.textContent = '★ Watched';
+        btn.textContent = '? Watched';
     }
     localStorage.setItem('watchlist', JSON.stringify(watchlist));
 }
@@ -310,5 +313,6 @@ document.addEventListener('DOMContentLoaded', () => loadPremoverAnalysis());
 </script>
 <script src="./shared/js/company-logo.js" defer></script>
 <script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

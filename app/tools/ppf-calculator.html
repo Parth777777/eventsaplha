@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPF Calculator — 15-Year Public Provident Fund Maturity | Tickwave</title>
+<meta name="description" content="PPF calculator for Indian investors. Annual deposit, current rate (7.1%), 15-year horizon → maturity amount + tax-free interest. EEE tax status.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/ppf-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">PPF Calculator</div>
+<h1>Public Provident Fund — <span class="accent">15 years, tax-free</span></h1>
+<p class="lead">PPF is one of the few EEE (Exempt-Exempt-Exempt) instruments in India — contribution qualifies for 80C, interest is tax-free, and maturity is tax-free. Current rate 7.1% p.a., compounded annually.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g transform="translate(100 100)"><circle r="65" fill="#161d28" stroke="#b794ff" stroke-width="2"/><path d="M-40 0 L40 0" stroke="#b794ff" opacity="0.4"/><path d="M0 -40 L0 40" stroke="#b794ff" opacity="0.4"/><text text-anchor="middle" y="-20" font-family="Geist Mono" font-size="10" fill="#8a94a8" letter-spacing="1">EEE</text><text text-anchor="middle" y="8" font-family="Plus Jakarta Sans" font-size="22" font-weight="800" fill="#b794ff">PPF</text><text text-anchor="middle" y="30" font-family="Geist Mono" font-size="10" fill="#8a94a8">15 yr</text></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your PPF</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual deposit <span class="hint">(₹, max ₹1.5L)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="aIn" value="150000" min="500" max="150000" step="500"></span></div><input type="range" id="a" class="tk-slider" min="500" max="150000" step="500" value="150000"><div class="tk-slider-bounds"><span>₹500</span><span>₹1.5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate <span class="hint">(current 7.1%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="7.1" min="5" max="12" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="5" max="12" step="0.05" value="7.1"><div class="tk-slider-bounds"><span>5%</span><span>12%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(15-yr lock + extensions)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="15" min="15" max="50" step="5"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="15" max="50" step="5" value="15"><div class="tk-slider-bounds"><span>15 yr</span><span>50 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Maturity</h2>
+<div class="tk-result-headline">Maturity amount (tax-free)</div>
+<div class="tk-result-value" id="m">—</div>
+<div class="tk-result-sub">After <span id="subY">15</span> years at <span id="subR">7.1</span>% p.a.</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Deposited<strong id="lgD">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total deposited</div><div class="val" id="dep">—</div></div><div class="tk-stat"><div class="lbl">Tax-free interest</div><div class="val bull" id="i">—</div></div></div>
+</div></section>
+
+<section class="tk-content">
+<section><h2>PPF rules quick reference</h2>
+<ul>
+<li><strong>Tenure:</strong> 15 years lock-in. Extendable in 5-year blocks indefinitely.</li>
+<li><strong>Deposit limit:</strong> Min ₹500/year, max ₹1.5 lakh/year (counts toward 80C).</li>
+<li><strong>Compounding:</strong> Annual. Interest credited 31 March every year on minimum balance between 5th and end of each month.</li>
+<li><strong>Tax:</strong> EEE — contribution 80C deductible, interest tax-free, maturity tax-free.</li>
+<li><strong>Partial withdrawal:</strong> From 7th year. Loan from 3rd year.</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>PPF or ELSS — which is better for 80C?</summary><p>Risk-averse: PPF (guaranteed 7.1% tax-free). Risk-tolerant + 15-yr horizon: ELSS (12% long-term but volatile, only 3-yr lock). Most balanced portfolios have both.</p></details>
+<details><summary>Can NRIs open PPF?</summary><p>No new accounts. Existing accounts can continue until original 15-yr maturity, no extensions.</p></details>
+<details><summary>What if I deposit late in the financial year?</summary><p>Interest is credited on the 5th-end-of-month minimum balance. Deposit before the 5th to maximize that month's interest.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="nps-calculator.html">NPS Calculator<span class="sub">Retirement scheme</span></a>
+<a href="sukanya-samriddhi-calculator.html">Sukanya Samriddhi<span class="sub">Girl child scheme</span></a>
+<a href="income-tax-calculator.html">Income Tax<span class="sub">80C deduction</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var A=+document.getElementById('a').value, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  // Annual contributions, end of year (close enough). M = A * [((1+r)^n - 1)/r] * (1+r)
+  var m=r===0?A*n:A*((Math.pow(1+r,n)-1)/r)*(1+r);
+  var dep=A*n, interest=m-dep;
+  T.animateNumber(document.getElementById('m'),m);
+  T.animateNumber(document.getElementById('dep'),dep);
+  T.animateNumber(document.getElementById('i'),interest);
+  document.getElementById('subY').textContent=n;
+  document.getElementById('subR').textContent=(r*100).toFixed(2);
+  document.getElementById('lgD').textContent=T.formatINRShort(dep);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  T.drawDonut(document.getElementById('donut'),[{value:dep,color:'#8eb4e0'},{value:interest,color:'#b794ff'}],{centerLabel:'Maturity',centerValue:T.formatINRShort(m)});
+}
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'PPF or ELSS for 80C?',a:'Risk-averse: PPF (7.1% tax-free). Risk-tolerant + 15-yr horizon: ELSS (12% volatile, 3-yr lock).'},{q:'Can NRIs open PPF?',a:'No new accounts. Existing can continue till original maturity, no extensions.'},{q:'When to deposit for max interest?',a:'Interest computed on 5th-end-of-month min balance. Deposit before the 5th.'}]);
+T.mountSoftwareSchema({name:'PPF Calculator',description:'Public Provident Fund maturity over 15+ years with annual compounding.'});
+})();
+</script>
+</body></html>

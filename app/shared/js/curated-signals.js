@@ -27,6 +27,11 @@
   const MAX_AGE_HOURS  = 168;
   const MIN_ALPHA      = 35;
   const MAX_PER_SECTOR = 2;
+  // Cap any single event_type in the slate so during earnings season the
+  // picks aren't 8 deep on "earnings" — surface order wins, M&A, capacity
+  // expansion, insider activity, policy reactions etc. so the slate
+  // reflects the full multi-signal pipeline, not just one trigger type.
+  const MAX_PER_EVENT_TYPE = 3;
   const MEGA_CAPS = new Set([
     'TCS','RELIANCE','INFY','HDFCBANK','ICICIBANK','HINDUNILVR','SBIN','BHARTIARTL',
     'KOTAKBANK','LT','ITC','AXISBANK','BAJFINANCE','MARUTI','NESTLEIND','ASIANPAINT',
@@ -178,10 +183,40 @@
     if (a >= 50)                         return '5-10d';
     return '10-20d';
   }
+  // Addendum 2026-05-18 — render the "N sources" credibility chip + a
+  // collapsible dropdown of source names. cluster_size==1 gets a yellow
+  // "single source" tag (still shown, but lower visual weight). 2-4 gets
+  // a neutral chip; 5+ gets the green "confirmed" chip.
+  function renderSourceChip(sig) {
+    const n = Math.max(1, Number(sig.cluster_size || (sig.sources || []).length || 1));
+    const sources = Array.isArray(sig.sources) ? sig.sources.filter(Boolean) : [];
+    let bg, fg, border, label;
+    if (n >= 5)      { bg = 'var(--bull-dim)';    fg = 'var(--bull)';    border = 'var(--bull-border)';    label = `Confirmed by ${n} sources`; }
+    else if (n >= 2) { bg = 'var(--accent-dim)';  fg = 'var(--accent)';  border = 'var(--border-strong)';  label = `${n} sources`; }
+    else             { bg = 'var(--caution-dim)'; fg = 'var(--caution)'; border = 'var(--caution-border)'; label = 'Single source'; }
+
+    const detailsId = 'srcs-' + Math.random().toString(36).slice(2, 9);
+    const sourceList = sources.length
+      ? sources.slice(0, 8).map(s => `<span class="curated-src-pill">${escapeHtml(s)}</span>`).join('')
+      : '';
+    const moreLabel = sources.length > 8 ? ` <span style="color:var(--text-tertiary);font-size:10px;">+${sources.length - 8} more</span>` : '';
+
+    return `<details class="curated-src-details" id="${detailsId}">
+      <summary class="curated-src-chip" style="background:${bg};color:${fg};border:1px solid ${border};">
+        <span class="curated-src-dot" style="background:${fg};"></span>
+        ${label}
+      </summary>
+      ${sources.length ? `<div class="curated-src-list">${sourceList}${moreLabel}</div>` : ''}
+    </details>`;
+  }
+
   function convictionLabel(alpha) {
-    if (alpha >= 80) return { label: 'High',     color: '#2dd4aa' };
-    if (alpha >= 65) return { label: 'Moderate', color: '#e6b84a' };
-    return                  { label: 'Watch',    color: '#8eb4e0' };
+    /* Labels softened from "High / Moderate / Watch" → analytics framing
+       per SEBI compliance (no broker-recommendation language). Colors read
+       semantic tokens so chips remain legible in both themes. */
+    if (alpha >= 80) return { label: 'Strong signal',   color: 'var(--bull)' };
+    if (alpha >= 65) return { label: 'Moderate signal', color: 'var(--caution)' };
+    return                  { label: 'Watchlist',       color: 'var(--info)' };
   }
   function fmtPrice(n) {
     if (n == null || isNaN(n)) return '—';
@@ -224,6 +259,14 @@
       if ((s.alpha_score || 0) < MIN_ALPHA)       continue;
       if (ageHours(s.created_at) > MAX_AGE_HOURS) continue;
       if (s.sentiment === 'bearish')              continue;
+      // Defense-in-depth: never surface a social-derived signal as a
+      // recommendation. The DB query already filters these but a stale
+      // row could slip through after schema migrations.
+      const nt = String(s.news_type || '').toLowerCase();
+      if (nt === 'social_buzz' || nt === 'social' || nt === 'reddit'
+          || nt === 'twitter' || nt === 'telegram') continue;
+      const src = String(s.source || '').toLowerCase();
+      if (/\b(reddit|\/r\/|twitter|nitter|stocktwits)\b|t\.me\/|^telegram/.test(src)) continue;
       // Subject-mismatch gate: the article must actually name this stock.
       // Check BOTH headline AND summary so we see ~5× more text.
       if (!headlineMatchesTicker(s.headline || s.title || '', tk, s.summary || '')) continue;
@@ -238,19 +281,27 @@
     let pool = Array.from(byTicker.values());
     pool.sort((a, b) => (b.alpha_score || 0) - (a.alpha_score || 0));
     const sectorCount = new Map();
+    const eventTypeCount = new Map();
     let megaCapUsed = 0;
     const picked = [];
     for (const s of pool) {
       const sec = (s.sector || 'OTHER').toUpperCase();
       const sc  = sectorCount.get(sec) || 0;
+      const evt = (s.event_type || 'news').toLowerCase();
+      const ec  = eventTypeCount.get(evt) || 0;
       const isMega = MEGA_CAPS.has((s.ticker || '').toUpperCase());
       if (sc >= MAX_PER_SECTOR) continue;
+      if (ec >= MAX_PER_EVENT_TYPE) continue;  // diversify across triggers
       if (isMega && megaCapUsed >= MAX_MEGA_CAP_IN_SLATE) continue;
       picked.push(s);
       sectorCount.set(sec, sc + 1);
+      eventTypeCount.set(evt, ec + 1);
       if (isMega) megaCapUsed += 1;
       if (picked.length >= n) break;
     }
+    // Backfill if quota left us short. Relax the event_type cap last so a
+    // genuinely earnings-heavy week can still surface 4+ earnings picks,
+    // but only after we've exhausted the other-trigger pool.
     if (picked.length < n) {
       const seen = new Set(picked.map(p => (p.ticker || '').toUpperCase()));
       for (const s of pool) {
@@ -327,7 +378,7 @@
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     if (!series.length) {
-      ctx.fillStyle = '#5a6373';
+      ctx.fillStyle = 'var(--text-tertiary)';
       ctx.font = '11px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('no chart data', W / 2, H / 2);
@@ -384,7 +435,7 @@
       ctx.setLineDash([]);
       ctx.beginPath(); ctx.arc(hp.x, hp.y, 3.5, 0, Math.PI*2);
       ctx.fillStyle = line; ctx.fill();
-      ctx.strokeStyle = '#0a0e14'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = 'var(--surface-0)'; ctx.lineWidth = 2; ctx.stroke();
       const txt = `${hp.date} · ₹${hp.close.toFixed(2)}`;
       ctx.font = '10px Inter, sans-serif';
       const tw = ctx.measureText(txt).width + 12;
@@ -393,7 +444,7 @@
       ctx.fillRect(tx, 2, tw, 16);
       ctx.strokeStyle = 'rgba(141,148,168,0.3)'; ctx.lineWidth = 1;
       ctx.strokeRect(tx + 0.5, 2.5, tw - 1, 15);
-      ctx.fillStyle = '#dde3ef';
+      ctx.fillStyle = 'var(--text-primary)';
       ctx.textAlign = 'left';
       ctx.fillText(txt, tx + 6, 13);
     }
@@ -465,9 +516,10 @@
     let fundChip = '';
     let fundRow = '';
     if (fund && fund.tier) {
-      const c = FUND_COLOR[fund.tier] || '#8a94a8';
-      fundChip = `<span class="curated-fund-chip" title="Fundamentals: ${escapeHtml(fund.label || '')} (${fund.score}/100)"
-        style="background:${c}1f;color:${c};border:1px solid ${c}55;">F&nbsp;${fund.score}</span>`;
+      const c = FUND_COLOR[fund.tier] || 'var(--text-secondary)';
+      fundChip = `<span class="curated-fund-chip" data-edge-analyze="${escapeHtml(sig.ticker)}"
+        title="Click for full fundamental analysis · ${escapeHtml(fund.label || '')} (${fund.score}/100)"
+        style="background:${c}1f;color:${c};border:1px solid ${c}55;cursor:pointer;">F&nbsp;${fund.score}</span>`;
 
       const positives = (fund.positives || []).slice(0, 3)
         .map(p => `<span class="curated-fund-pos">${escapeHtml(p)}</span>`).join('');
@@ -495,19 +547,73 @@
       </div>`;
     }).filter(Boolean).join('');
 
+    // Sector chip (always visible — on every card)
+    const sectorRaw = (sig.sector || '').toString().trim();
+    const sectorLabel = sectorRaw ? sectorRaw.replace(/_/g, ' ').toUpperCase() : 'SECTOR —';
+    const sectorChip = `<span class="curated-sector-chip" title="Sector: ${escapeHtml(sectorLabel)}">${escapeHtml(sectorLabel)}</span>`;
+
+    // ── Multi-signal evidence chips ─────────────────────────────────────────
+    // Surface WHY this pick is good beyond just alpha_score — these chips
+    // make the multi-signal pipeline visible on the card:
+    //   • Forensic quality (manipulation_score → clean/unverified/suspicious)
+    //   • Volume confirmation (price move backed by elevated volume?)
+    //   • Regime alignment (already-trending vs counter-trend)
+    // Only shown when there's something signal-worthy to say so the card
+    // stays scannable.
+    const evidenceChips = [];
+    const mScore = Number(sig.manipulation_score);
+    if (!Number.isNaN(mScore)) {
+      let lbl, col, tip;
+      if      (mScore <  20) { lbl = '✓ CLEAN';     col = '#2dd4aa'; tip = 'Forensic checks clean'; }
+      else if (mScore <  50) { lbl = 'UNVERIFIED';  col = '#e6b84a'; tip = 'Forensic checks unverified'; }
+      else if (mScore <  70) { lbl = '⚠ SUSPICIOUS';col = '#f29090'; tip = 'Forensic flags raised'; }
+      else                   { lbl = '⚠ MANIP';     col = '#f26b6b'; tip = 'Forensic: likely manipulated'; }
+      evidenceChips.push(
+        `<span class="curated-evidence-chip" title="${escapeHtml(tip)} (score ${Math.round(mScore)}/100)"
+               style="color:${col};border-color:${col}55;background:${col}1a;">${lbl}</span>`
+      );
+    }
+    const vMult = Number(sig.volume_multiplier);
+    if (!Number.isNaN(vMult) && vMult >= 1.3) {
+      const isHigh = vMult >= 2.0;
+      const col = isHigh ? '#2dd4aa' : '#8eb4e0';
+      const lbl = isHigh ? `VOL ${vMult.toFixed(1)}×` : `VOL ↑`;
+      evidenceChips.push(
+        `<span class="curated-evidence-chip" title="Volume ${vMult.toFixed(2)}× the 20-day avg"
+               style="color:${col};border-color:${col}55;background:${col}1a;">${lbl}</span>`
+      );
+    }
+    const regime = (sig.regime || '').toString().toLowerCase();
+    if (regime === 'spike_up' || regime === 'spike_down') {
+      const isUp = regime === 'spike_up';
+      const col = isUp ? '#2dd4aa' : '#f26b6b';
+      evidenceChips.push(
+        `<span class="curated-evidence-chip" title="Price regime: ${escapeHtml(regime)} (strength ${(Number(sig.regime_strength) || 0).toFixed(2)})"
+               style="color:${col};border-color:${col}55;background:${col}1a;">${isUp ? 'TRENDING ↑' : 'TRENDING ↓'}</span>`
+      );
+    }
+    const evidenceHtml = evidenceChips.join('');
+
     // Multi-timeframe price change strip — values hydrated after render
     return `
     <div class="curated-card" data-ticker="${escapeHtml(sig.ticker)}">
       <div class="curated-head">
         <div class="curated-head-l">
           <div class="curated-tk-row">
-            <span class="curated-tk-big">${escapeHtml(sig.ticker || '—')}</span>
+            <span class="curated-tk-big" data-edge-analyze="${escapeHtml(sig.ticker)}" title="Click for full fundamental analysis" style="cursor:pointer;">${escapeHtml(sig.ticker || '—')}</span>
             <span class="curated-conv-chip" style="background:${conv.color}22;color:${conv.color};border:1px solid ${conv.color}55;">${conv.label}</span>
             ${fundChip}
+            ${sectorChip}
             <span class="curated-evtype">${escapeHtml(evType)}</span>
+            ${evidenceHtml}
             <span class="curated-day-chg" data-role="day-chg">—</span>
           </div>
-          <div class="curated-headline">${escapeHtml((sig.headline || '').slice(0, 140))}</div>
+          <!-- Addendum 2026-05-18: prefer our canonical_headline (computed
+               from cluster) over the publisher's headline. The synthesized
+               summary line that follows is our paraphrase, NOT the RSS blurb. -->
+          <div class="curated-headline">${escapeHtml((sig.synthesized_headline || sig.canonical_headline || sig.headline || '').slice(0, 140))}</div>
+          ${sig.synthesized_summary ? `<div class="curated-synth-summary">${escapeHtml(sig.synthesized_summary)}</div>` : ''}
+          ${renderSourceChip(sig)}
         </div>
         <div class="curated-alpha-block" style="--c:${conv.color}">
           <div class="curated-alpha-num">${alpha}</div>
@@ -516,7 +622,16 @@
       </div>
 
       <div class="curated-chart-tabs" data-target="${canvasId}">${tabsHtml}</div>
-      <canvas id="${canvasId}" width="640" height="100" class="curated-mini-chart" data-ticker="${escapeHtml(sig.ticker)}"></canvas>
+      <div id="${canvasId}" class="curated-mini-chart curated-mini-chart--adv" data-ticker="${escapeHtml(sig.ticker)}" style="width:100%;height:100px;"></div>
+
+      <!-- OHLCV strip — open / high / low / close / volume — hydrated after fetch -->
+      <div class="curated-ohlcv" data-role="ohlcv">
+        <div class="curated-ohlcv-cell"><div class="lbl">Open</div><div class="val" data-ohlcv="open">—</div></div>
+        <div class="curated-ohlcv-cell"><div class="lbl">High</div><div class="val" data-ohlcv="high">—</div></div>
+        <div class="curated-ohlcv-cell"><div class="lbl">Low</div><div class="val" data-ohlcv="low">—</div></div>
+        <div class="curated-ohlcv-cell"><div class="lbl">Close</div><div class="val" data-ohlcv="close">—</div></div>
+        <div class="curated-ohlcv-cell"><div class="lbl">Volume</div><div class="val" data-ohlcv="volume">—</div></div>
+      </div>
 
       <!-- Multi-timeframe price change strip — hydrated after chart loads -->
       <div class="curated-change-strip" data-role="change-strip">
@@ -525,18 +640,23 @@
         <div class="curated-change"><div class="lbl">1-month</div><div class="val" data-tf="1mo">—</div></div>
       </div>
 
-      <!-- Trade plan -->
+      <!-- Statistical reference levels — phrased as analytics, not a trade
+           recommendation. "Indicative" badges visually demote these from
+           "broker pick" to "analyst worksheet" framing (SEBI safer). -->
+      <div class="curated-metrics-header">
+        Statistical reference — not a trade recommendation
+      </div>
       <div class="curated-metrics">
         <div class="curated-metric">
-          <div class="curated-metric-lbl">Entry</div>
+          <div class="curated-metric-lbl">Reference entry <span class="curated-ind">indicative</span></div>
           <div class="curated-metric-val">${fmtPrice(sig.entry_price)}</div>
         </div>
         <div class="curated-metric">
-          <div class="curated-metric-lbl">Target (${sig.target_horizon || '3D'})</div>
+          <div class="curated-metric-lbl">Indicative level (${sig.target_horizon || '3D'}) <span class="curated-ind">indicative</span></div>
           <div class="curated-metric-val">${fmtPrice(sig.target_price)} <span class="curated-target-pct ${tgtClass}">${tgtPctTxt}</span></div>
         </div>
         <div class="curated-metric">
-          <div class="curated-metric-lbl">Holding</div>
+          <div class="curated-metric-lbl">Indicative horizon</div>
           <div class="curated-metric-val">${sig.holding_period || '5-10d'}</div>
         </div>
         <div class="curated-metric">
@@ -553,21 +673,44 @@
 
       <!-- Alpha-vs-trend note — hydrated when 5d trend is computed and conflicts with alpha -->
       <div class="curated-trend-note" data-role="trend-note" hidden></div>
+
+      <!-- Methodology disclosure — expandable explainer per card. Falls back
+           to a static label on browsers without <details> support. -->
+      <details class="curated-method">
+        <summary>How this signal was computed</summary>
+        <div class="curated-method__body">
+          Derived from a public ${escapeHtml(sig.event_type || 'corporate event')} signal
+          sourced from <strong>${escapeHtml(sig.first_seen_source || sig.source || 'exchange/news feed')}</strong>.
+          Alpha score (${(sig.alpha_score || 0).toFixed(0)}/100) reflects historical
+          event-outcome hit rate in this category, adjusted for current market regime.
+          Reference levels above are statistical extrapolations from prior similar
+          events — not analyst price targets. Full methodology:
+          <a href="methodology.html">/methodology</a>.
+        </div>
+      </details>
+
+      <!-- Per-card SEBI disclaimer -->
+      <div class="curated-disclaimer">
+        Informational only — not investment advice.
+        <a href="disclosures.html">Why</a>
+      </div>
     </div>`;
   }
 
   // ── Hydration: wire chart tabs + load all periods to fill change strip ────
+  // Tabs use the period IDs `1d / 5d / 1mo / 3mo` which map directly to
+  // yfinance periods — same identifiers AdvancedChart uses internally.
   function bindTabs(card) {
     const tabBars = card.querySelectorAll('.curated-chart-tabs');
     tabBars.forEach((bar) => {
-      const ticker = (card.dataset.ticker || '').replace(/&amp;/g, '&');
-      const cvs = document.getElementById(bar.dataset.target);
-      if (!cvs) return;
+      const host = document.getElementById(bar.dataset.target);
+      if (!host) return;
       bar.addEventListener('click', async (e) => {
         const btn = e.target.closest('button[data-period]');
         if (!btn) return;
         bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === btn));
-        await drawMiniChart(cvs, ticker, { period: btn.dataset.period });
+        const inst = host.__advChart;
+        if (inst && inst.setPeriod) inst.setPeriod(btn.dataset.period);
       });
     });
   }
@@ -605,8 +748,16 @@
 
   async function hydrateOne(card, sig) {
     const ticker = sig.ticker;
-    const canvas = card.querySelector('canvas');
-    if (canvas) await drawMiniChart(canvas, ticker, { period: '1mo' });
+    // Mount AdvancedChart in compact mode — same visual language as the big
+    // chart on stock.html. Drag-to-zoom enabled out of the box.
+    const chartHost = card.querySelector('.curated-mini-chart--adv');
+    if (chartHost && window.AdvancedChart) {
+      const inst = await AdvancedChart.mount(chartHost, ticker, { period: '1mo', compact: true });
+      chartHost.__advChart = inst;
+    } else {
+      const legacy = card.querySelector('canvas');
+      if (legacy) await drawMiniChart(legacy, ticker, { period: '1mo' });
+    }
 
     // Multi-timeframe change strip — fire all three periods in parallel
     const strip = card.querySelector('[data-role="change-strip"]');
@@ -642,24 +793,53 @@
       }
     }
 
-    // Day-change pill in head (Today's move)
+    // Day-change pill in head + OHLCV strip (one fetch, two destinations)
     const todayPill = card.querySelector('[data-role="day-chg"]');
-    if (todayPill) {
+    const ohlcvRow  = card.querySelector('[data-role="ohlcv"]');
+    if (todayPill || ohlcvRow) {
       try {
         const r = await fetch(`/api/stock/${encodeURIComponent(ticker)}`);
         const j = await r.json();
         const data = (j && (j.data || j)) || {};
-        const chg = data.change_pct ?? data.day_change_pct ?? data.signal?.change_pct;
-        if (chg != null && !isNaN(chg)) {
-          const c = colorPct(chg);
-          todayPill.textContent = (chg >= 0 ? '+' : '') + Number(chg).toFixed(2) + '% today';
-          todayPill.style.color = c;
-          todayPill.style.background = `color-mix(in srgb, ${c} 14%, transparent)`;
-          todayPill.style.borderColor = `color-mix(in srgb, ${c} 30%, transparent)`;
-        } else {
-          todayPill.textContent = '— today';
+        const price = data.price || {};
+        const chg = price.change_pct ?? data.change_pct ?? data.signal?.change_pct;
+        if (todayPill) {
+          if (chg != null && !isNaN(chg)) {
+            const c = colorPct(chg);
+            todayPill.textContent = (chg >= 0 ? '+' : '') + Number(chg).toFixed(2) + '% today';
+            todayPill.style.color = c;
+            todayPill.style.background = `color-mix(in srgb, ${c} 14%, transparent)`;
+            todayPill.style.borderColor = `color-mix(in srgb, ${c} 30%, transparent)`;
+          } else {
+            todayPill.textContent = '— today';
+          }
         }
-      } catch (_) { todayPill.textContent = '— today'; }
+        if (ohlcvRow) {
+          const fmtN = (v) => (v == null || !isFinite(v) || v === 0)
+            ? '—' : Number(v).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+          const fmtVol = (v) => {
+            if (!v || !isFinite(v)) return '—';
+            if (v >= 1e7) return (v / 1e7).toFixed(2) + 'Cr';
+            if (v >= 1e5) return (v / 1e5).toFixed(2) + 'L';
+            if (v >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+            return String(v);
+          };
+          const set = (k, val) => {
+            const el = ohlcvRow.querySelector(`[data-ohlcv="${k}"]`);
+            if (el) el.textContent = val;
+          };
+          set('open',  fmtN(price.day_open));
+          set('high',  fmtN(price.day_high));
+          set('low',   fmtN(price.day_low));
+          set('close', fmtN(price.price));
+          set('volume', fmtVol(price.volume));
+          // Tint close cell by direction
+          const closeCell = ohlcvRow.querySelector('[data-ohlcv="close"]');
+          if (closeCell && chg != null) closeCell.style.color = colorPct(chg);
+        }
+      } catch (_) {
+        if (todayPill) todayPill.textContent = '— today';
+      }
     }
 
     bindTabs(card);
@@ -683,7 +863,7 @@
         const r = regimes[sk];
         const isTail = r.regime.includes('tailwind');
         const isHead = r.regime.includes('headwind');
-        const c = isTail ? '#2dd4aa' : isHead ? '#f26b6b' : '#8a94a8';
+        const c = isTail ? '#2dd4aa' : isHead ? '#f26b6b' : 'var(--text-secondary)';
         const icon = isTail ? '↗' : isHead ? '↘' : '→';
         chips.push(`<span class="curated-edge-chip" style="background:${c}14;color:${c};border-color:${c}40;"
           title="${escapeHtml(r.label)}">${icon} ${sk} ${r.change_pct>=0?'+':''}${r.change_pct}%</span>`);
@@ -778,16 +958,16 @@
     const s = document.createElement('style');
     s.id = 'curated-signals-css';
     s.textContent = `
-      .curated-card { background:#10141a; border:1px solid rgba(141,148,168,0.14);
+      .curated-card { background:var(--surface-0); border:1px solid rgba(141,148,168,0.14);
         border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;
         transition: border-color 160ms, transform 160ms; cursor:pointer; }
       .curated-card:hover { border-color:rgba(141,180,224,0.5); transform:translateY(-2px); }
       .curated-card--dense { padding:10px 12px; gap:6px; }
 
       .curated-row { display:flex; align-items:center; gap:8px; }
-      .curated-row--meta { font-family:'Geist Mono',monospace; font-size:10px; color:#8a94a8; }
-      .curated-rank { font-family:'Geist Mono',monospace; font-size:9px; color:#5a6373; font-weight:800; }
-      .curated-tk { font-family:'Geist Mono',monospace; font-size:13px; font-weight:800; color:#f4f6fb; flex:1; }
+      .curated-row--meta { font-family:'Geist Mono',monospace; font-size:10px; color:var(--text-secondary); }
+      .curated-rank { font-family:'Geist Mono',monospace; font-size:9px; color:var(--text-tertiary); font-weight:800; }
+      .curated-tk { font-family:'Geist Mono',monospace; font-size:13px; font-weight:800; color:var(--text-primary); flex:1; }
       .curated-alpha-pill { font-family:'Geist Mono',monospace; font-size:11px; font-weight:800;
         padding:2px 8px; border-radius:999px; color:var(--c);
         background:color-mix(in srgb, var(--c) 12%, transparent); }
@@ -799,10 +979,10 @@
       .curated-chart-tabs { display:flex; gap:4px; padding:4px 0; }
       .curated-chart-tabs button {
         font:600 9.5px 'Inter',sans-serif; padding:3px 8px; border-radius:999px;
-        border:1px solid rgba(141,148,168,0.16); background:transparent; color:#8a94a8;
+        border:1px solid rgba(141,148,168,0.16); background:transparent; color:var(--text-secondary);
         cursor:pointer; transition:all 100ms; letter-spacing:0.06em;
       }
-      .curated-chart-tabs button:hover { color:#dde3ef; border-color:rgba(141,180,224,0.4); }
+      .curated-chart-tabs button:hover { color:var(--text-primary); border-color:rgba(141,180,224,0.4); }
       .curated-chart-tabs button.on { color:#2dd4aa; border-color:rgba(45,212,170,0.4);
         background:rgba(45,212,170,0.08); }
       .curated-chart-tabs--dense button { font-size:9px; padding:2px 6px; }
@@ -810,46 +990,88 @@
       .curated-conv { font-weight:700; }
       .curated-pct.bull { color:#2dd4aa; }
       .curated-pct.bear { color:#f26b6b; }
-      .curated-hold { color:#5a6373; margin-left:auto; }
+      .curated-hold { color:var(--text-tertiary); margin-left:auto; }
 
       .curated-head { display:flex; gap:12px; align-items:flex-start; }
       .curated-head-l { flex:1; min-width:0; }
       .curated-tk-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
-      .curated-tk-big { font-family:'Geist Mono',monospace; font-size:17px; font-weight:800; color:#f4f6fb; }
+      .curated-tk-big { font-family:'Geist Mono',monospace; font-size:17px; font-weight:800; color:var(--text-primary); }
       .curated-conv-chip { font-size:9px; font-weight:700; letter-spacing:0.08em;
         text-transform:uppercase; padding:2px 8px; border-radius:4px; }
-      .curated-evtype { font-size:9px; color:#8a94a8; text-transform:uppercase;
+      .curated-evtype { font-size:9px; color:var(--text-secondary); text-transform:uppercase;
         letter-spacing:0.1em; font-weight:700; }
       .curated-day-chg { font:700 10px 'Geist Mono',monospace; padding:2px 8px;
-        border-radius:999px; color:#8a94a8;
+        border-radius:999px; color:var(--text-secondary);
         background:rgba(141,148,168,0.12);
         border:1px solid rgba(141,148,168,0.2);
         letter-spacing:0.04em; }
-      .curated-headline { font-size:12px; color:#c2c6d6; line-height:1.4;
+      .curated-headline { font-size:12px; color:var(--text-primary); line-height:1.4;
         display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      /* Addendum 2026-05-18 — synthesized 1-line fact + N-sources chip */
+      .curated-synth-summary { font-size:11px; color:var(--text-secondary);
+        line-height:1.4; margin-top:3px; font-style:italic;
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      .curated-src-details { margin-top:5px; }
+      .curated-src-details > summary {
+        list-style:none; display:inline-flex; align-items:center; gap:5px;
+        cursor:pointer; user-select:none; font:600 10px 'Inter',sans-serif;
+        letter-spacing:0.04em; padding:3px 9px; border-radius:999px;
+        transition:filter 100ms ease;
+      }
+      .curated-src-details > summary::-webkit-details-marker { display:none; }
+      .curated-src-details > summary::after {
+        content:'▾'; margin-left:2px; font-size:9px; opacity:0.7;
+        transition:transform 120ms ease;
+      }
+      .curated-src-details[open] > summary::after { transform:rotate(180deg); }
+      .curated-src-details > summary:hover { filter:brightness(1.1); }
+      .curated-src-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+      .curated-src-list { margin-top:6px; display:flex; flex-wrap:wrap; gap:5px;
+        padding:6px 8px; background:var(--surface-2); border:1px solid var(--border-subtle);
+        border-radius:8px; }
+      .curated-src-pill { font:600 10px 'Inter',sans-serif; padding:2px 7px;
+        background:var(--surface-1); border:1px solid var(--border-subtle);
+        border-radius:4px; color:var(--text-secondary); }
 
       .curated-alpha-block { text-align:right; flex-shrink:0; }
       .curated-alpha-num { font-family:'Geist Mono',monospace; font-size:26px;
         font-weight:800; color:var(--c); line-height:1; }
-      .curated-alpha-lbl { font-size:9px; color:#5a6373; font-weight:700;
+      .curated-alpha-lbl { font-size:9px; color:var(--text-tertiary); font-weight:700;
         letter-spacing:0.16em; margin-top:2px; }
 
       .curated-change-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
         background:rgba(37,48,64,0.4); border-radius:6px; overflow:hidden; }
       .curated-change { background:rgba(13,17,24,0.92); padding:6px 10px; display:flex;
         flex-direction:column; gap:1px; }
-      .curated-change .lbl { font-size:8.5px; color:#5a6373; text-transform:uppercase;
+      .curated-change .lbl { font-size:8.5px; color:var(--text-tertiary); text-transform:uppercase;
         letter-spacing:0.1em; font-weight:700; }
       .curated-change .val { font:700 12px 'Geist Mono',monospace;
-        font-variant-numeric:tabular-nums; color:#8a94a8; }
+        font-variant-numeric:tabular-nums; color:var(--text-secondary); }
+
+      /* OHLCV strip (Open / High / Low / Close / Volume) */
+      .curated-ohlcv { display:grid; grid-template-columns:repeat(5,1fr); gap:1px;
+        background:rgba(37,48,64,0.4); border-radius:6px; overflow:hidden; }
+      .curated-ohlcv-cell { background:rgba(13,17,24,0.92); padding:6px 8px;
+        display:flex; flex-direction:column; gap:2px; min-width:0; }
+      .curated-ohlcv-cell .lbl { font-size:8.5px; color:var(--text-tertiary); text-transform:uppercase;
+        letter-spacing:0.1em; font-weight:700; }
+      .curated-ohlcv-cell .val { font:700 11px 'Geist Mono',monospace;
+        font-variant-numeric:tabular-nums; color:var(--text-primary);
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+      /* Sector chip (always on card head row) */
+      .curated-sector-chip { font:700 9px 'Inter',sans-serif; letter-spacing:0.08em;
+        text-transform:uppercase; padding:2px 8px; border-radius:4px;
+        background:rgba(141,148,168,0.10); color:#a8b1c7;
+        border:1px solid rgba(141,148,168,0.22); white-space:nowrap; }
 
       .curated-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
         background:rgba(37,48,64,0.4); border-radius:8px; overflow:hidden; }
       .curated-metric { padding:8px 10px; background:rgba(13,17,24,0.92); display:flex;
         flex-direction:column; gap:2px; }
-      .curated-metric-lbl { font-size:8.5px; color:#5a6373; text-transform:uppercase;
+      .curated-metric-lbl { font-size:8.5px; color:var(--text-tertiary); text-transform:uppercase;
         letter-spacing:0.1em; font-weight:700; }
-      .curated-metric-val { font:700 12px 'Geist Mono',monospace; color:#dde3ef; }
+      .curated-metric-val { font:700 12px 'Geist Mono',monospace; color:var(--text-primary); }
       .curated-target-pct { font-size:10px; margin-left:4px; }
       .curated-target-pct.bull { color:#2dd4aa; }
       .curated-target-pct.bear { color:#f26b6b; }
@@ -857,13 +1079,13 @@
       .curated-preds { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
       .curated-pred { background:rgba(13,17,24,0.6); border:1px solid rgba(141,148,168,0.1);
         border-radius:6px; padding:7px 10px; text-align:center; }
-      .curated-pred-h { font-size:9px; color:#5a6373; font-weight:700;
+      .curated-pred-h { font-size:9px; color:var(--text-tertiary); font-weight:700;
         letter-spacing:0.12em; text-transform:uppercase; }
       .curated-pred-v { font:700 13px 'Geist Mono',monospace; margin-top:2px;
         font-variant-numeric:tabular-nums; }
 
       .curated-trend-note { display:flex; align-items:flex-start; gap:8px;
-        font-size:11px; color:#c2c6d6; line-height:1.5;
+        font-size:11px; color:var(--text-primary); line-height:1.5;
         background:rgba(230,184,74,0.07); border:1px solid rgba(230,184,74,0.22);
         border-radius:8px; padding:8px 10px; }
       .curated-trend-note strong { color:#e6b84a; }
@@ -894,6 +1116,19 @@
       @media (max-width: 600px) {
         .curated-metrics { grid-template-columns: repeat(2, 1fr); }
         .curated-change-strip { grid-template-columns: repeat(3, 1fr); }
+        .curated-ohlcv { grid-template-columns: repeat(5, 1fr); }
+        .curated-ohlcv-cell { padding:5px 6px; }
+        .curated-ohlcv-cell .val { font-size:10px; }
+      }
+      /* Very narrow phones — collapse OHLCV from 5 → 3 (drops Open/High off
+         the strip; Volume + Low + Close are the three a trader needs at a
+         glance). Card padding tightens, sector chip wraps below ticker. */
+      @media (max-width: 380px) {
+        .curated-card { padding: 12px; gap: 8px; }
+        .curated-ohlcv { grid-template-columns: repeat(3, 1fr); }
+        .curated-ohlcv-cell:nth-child(1),
+        .curated-ohlcv-cell:nth-child(2) { display: none; }
+        .curated-alpha-num { font-size: 22px; }
       }
     `;
     document.head.appendChild(s);

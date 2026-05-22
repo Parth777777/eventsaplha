@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FD Calculator — Fixed Deposit Maturity (Quarterly Compounding) | Tickwave</title>
+<meta name="description" content="Free FD calculator for Indian banks. Quarterly, monthly or yearly compounding. See maturity amount, interest earned, after-tax (TDS) value. Senior citizen rates.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/fd-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">FD Calculator</div>
+<h1>Bank fixed deposit — <span class="accent">exact maturity</span></h1>
+<p class="lead">Indian banks compound FDs quarterly. Plug in your principal, rate and tenure to see exact maturity, interest earned, and how much TDS (10% on interest above ₹40k / ₹50k senior) the bank will deduct.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="50" width="120" height="120" rx="14" fill="#161d28" stroke="#b794ff" stroke-width="2"/><path d="M40 90 L160 90" stroke="#b794ff" opacity="0.4"/><text x="100" y="80" text-anchor="middle" font-family="Geist Mono" font-size="11" fill="#b794ff" letter-spacing="2">FD</text><text x="100" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="18" font-weight="700" fill="#dde3ef">₹X</text><text x="100" y="142" text-anchor="middle" font-family="Geist Mono" font-size="11" fill="#8a94a8">@ 7.5%</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your FD</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Principal <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="pIn" value="100000" min="1000" step="1000"></span></div><input type="range" id="p" class="tk-slider" min="1000" max="10000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹1 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate <span class="hint">(% p.a.)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="7.5" min="1" max="15" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="15" step="0.05" value="7.5"><div class="tk-slider-bounds"><span>1%</span><span>15%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="5" min="0.25" max="10" step="0.25"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.25" max="10" step="0.25" value="5"><div class="tk-slider-bounds"><span>3 mo</span><span>10 yr</span></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Compounding</label>
+<div class="tk-tabs" id="freq"><button data-k="4" aria-pressed="true">Quarterly</button><button data-k="12" aria-pressed="false">Monthly</button><button data-k="1" aria-pressed="false">Yearly</button></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Citizen type</label>
+<div class="tk-tabs" id="cit"><button data-k="reg" aria-pressed="true">Regular</button><button data-k="sen" aria-pressed="false">Senior (+0.50%)</button></div></div>
+</div>
+<div class="tk-card"><h2>Maturity</h2>
+<div class="tk-result-headline">Maturity amount</div>
+<div class="tk-result-value" id="m">—</div>
+<div class="tk-result-sub">Interest earned: <span id="iSub">—</span></div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Principal<strong id="lgP">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Interest</div><div class="val bull" id="i">—</div></div>
+<div class="tk-stat"><div class="lbl">After-TDS (slab 30%)</div><div class="val" id="afterTax">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>FD interest taxation</h2>
+<p>FD interest is fully taxable at your slab rate. Banks deduct <strong>10% TDS</strong> if interest in a year exceeds ₹40,000 (₹50,000 for seniors). You still owe the full slab rate at filing — TDS is just upfront withholding.</p>
+<p>For tax-efficient debt allocation, compare FD with debt mutual funds — both are taxed at slab post-April-2023, but MFs let you control realisation timing.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Quarterly vs monthly compounding — does it matter?</summary><p>Marginal. At 7.5% over 5 years on ₹1 lakh: quarterly ₹1.45 L, monthly ₹1.45 L (difference ~₹400). Pick whichever your bank offers.</p></details>
+<details><summary>What's the TDS impact?</summary><p>10% TDS deducted by bank if interest > ₹40k/yr (₹50k senior). You owe the full slab on filing; TDS is upfront credit.</p></details>
+<details><summary>Are tax-saving FDs (5-year ELSS) worth it?</summary><p>Section 80C deduction (₹1.5L) only available in old tax regime, AND interest is taxable. Compare with ELSS mutual fund — generally better post-tax for 5+ year horizon.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="rd-calculator.html">RD Calculator<span class="sub">Monthly recurring deposit</span></a>
+<a href="ppf-calculator.html">PPF Calculator<span class="sub">Tax-free 15-year scheme</span></a>
+<a href="compound-interest-calculator.html">Compound Interest<span class="sub">Any frequency</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var k=4, cit='reg';
+function compute(){
+  var P=+document.getElementById('p').value, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  if(cit==='sen') r+=0.005;
+  var m=P*Math.pow(1+r/k,k*n), interest=m-P;
+  var afterTax=P + interest*(1-0.30);
+  T.animateNumber(document.getElementById('m'),m);
+  document.getElementById('iSub').textContent=T.formatINRShort(interest);
+  T.animateNumber(document.getElementById('i'),interest);
+  T.animateNumber(document.getElementById('afterTax'),afterTax);
+  document.getElementById('lgP').textContent=T.formatINRShort(P);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  T.drawDonut(document.getElementById('donut'),[{value:P,color:'#8eb4e0'},{value:interest,color:'#b794ff'}],{centerLabel:'Maturity',centerValue:T.formatINRShort(m)});
+}
+document.querySelectorAll('#freq button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#freq button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');k=+b.dataset.k;compute();});});
+document.querySelectorAll('#cit button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#cit button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');cit=b.dataset.k;compute();});});
+T.bindSlider({slider:document.getElementById('p'),input:document.getElementById('pIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Quarterly vs monthly FD compounding?',a:'Marginal difference. Pick whichever your bank offers.'},{q:"What's the TDS impact on FD?",a:'10% TDS if interest > Rs 40k/yr (50k senior). Full slab rate due on filing; TDS is upfront credit.'},{q:'Are tax-saving FDs worth it?',a:'80C only in old regime, interest taxable. ELSS MF usually better post-tax for 5+ yrs.'}]);
+T.mountSoftwareSchema({name:'FD Calculator',description:'Fixed deposit maturity with quarterly/monthly/yearly compounding.'});
+})();
+</script>
+</body></html>

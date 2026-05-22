@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Loan EMI Calculator — With Amortisation Schedule | Tickwave</title>
+<meta name="description" content="Free home loan EMI calculator for India. Enter loan amount, rate, tenure — see EMI, total interest, year-wise principal vs interest breakdown.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/home-loan-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Home Loan EMI</div>
+<h1>Your home loan, <span class="accent">fully laid out</span></h1>
+<p class="lead">For a 20-year home loan, you pay roughly the loan amount AGAIN in interest. This calculator shows your EMI, the total interest burden, and the year-by-year split so you can see when interest stops dominating principal.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 100 L100 40 L170 100" stroke="#8eb4e0" stroke-width="2" fill="none"/><rect x="40" y="100" width="120" height="70" fill="#161d28" stroke="#8eb4e0"/><rect x="60" y="120" width="30" height="40" fill="#1c2435"/><rect x="110" y="120" width="30" height="40" fill="#1c2435"/><rect x="92" y="120" width="16" height="50" fill="#2dd4aa"/></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your loan</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Loan amount <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="pIn" value="5000000" min="100000" step="100000"></span></div><input type="range" id="p" class="tk-slider" min="100000" max="100000000" step="100000" value="5000000"><div class="tk-slider-bounds"><span>₹1 L</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate p.a. <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="8.5" min="5" max="15" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="5" max="15" step="0.05" value="8.5"><div class="tk-slider-bounds"><span>5%</span><span>15%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="20" min="1" max="30" step="1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="1" max="30" step="1" value="20"><div class="tk-slider-bounds"><span>1 yr</span><span>30 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>EMI breakdown</h2>
+<div class="tk-result-headline">Monthly EMI</div>
+<div class="tk-result-value" id="emi">—</div>
+<div class="tk-result-sub"><span id="subY">20</span>-year loan at <span id="subR">8.5</span>% interest</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Principal<strong id="lgP">—</strong></span><span><span class="dot" style="background:#f29090"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Total interest</div><div class="val bear" id="ti">—</div></div>
+<div class="tk-stat"><div class="lbl">Total amount</div><div class="val" id="tp">—</div></div>
+</div></div></section>
+
+<section class="tk-chart" style="margin-bottom:40px"><h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif">Year-wise principal vs interest paid</h2><svg id="area"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#3a6ea8"></span>Cumulative principal</span><span><span class="dot" style="background:#f29090"></span>Cumulative interest</span></div></section>
+
+<section class="tk-content">
+<section><h2>Tax benefits on home loan</h2>
+<ul>
+<li><strong>Section 80C:</strong> Principal repayment up to ₹1.5 lakh / year (old regime only)</li>
+<li><strong>Section 24(b):</strong> Interest paid up to ₹2 lakh / year on self-occupied property (old regime only)</li>
+<li><strong>Section 80EEA:</strong> Additional ₹1.5 lakh interest deduction for affordable housing (eligibility conditions apply)</li>
+</ul>
+<p>The new tax regime (default from FY 2024-25) does <strong>not</strong> allow home loan interest or principal deductions for self-occupied. Compare both regimes with the <a href="income-tax-calculator.html">Income Tax Calculator</a> before deciding.</p>
+</section>
+<section><h2>Why interest dominates early payments</h2>
+<p>In the first year of a 20-year loan, only ~16% of each EMI goes to principal — the rest is interest on the still-large outstanding balance. By year 15, more than 60% of each EMI is principal. Prepaying in the first 5-7 years has the biggest impact — see <a href="loan-prepayment-calculator.html">Loan Prepayment Calculator</a>.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Floating or fixed rate?</summary><p>Floating tracks the repo rate — falls when RBI cuts, rises when it hikes. Fixed locks the rate for a period (usually 2-5 yrs, then converts to floating). Floating is the default 95% of the time.</p></details>
+<details><summary>How much loan can I qualify for?</summary><p>Banks typically allow EMI ≤ 50% of monthly take-home, and loan-to-value ≤ 80%. Use the <a href="salary-calculator.html">Salary Calculator</a> to confirm take-home.</p></details>
+<details><summary>Should I take a longer or shorter tenure?</summary><p>Longer = lower EMI but higher total interest. Shorter = higher EMI but huge interest saving. A balanced choice: 20 years with intent to prepay aggressively in years 5-10.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="emi-calculator.html">EMI Calculator<span class="sub">For any loan type</span></a>
+<a href="loan-prepayment-calculator.html">Loan Prepayment<span class="sub">Interest saved by prepaying</span></a>
+<a href="income-tax-calculator.html">Income Tax<span class="sub">Home loan tax benefit</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var P=+document.getElementById('p').value, R=+document.getElementById('r').value/100/12, Y=+document.getElementById('y').value, n=Math.round(Y*12);
+  var emi=R===0?P/n:P*R*Math.pow(1+R,n)/(Math.pow(1+R,n)-1);
+  var tp=emi*n, ti=tp-P;
+  T.animateNumber(document.getElementById('emi'),emi);
+  T.animateNumber(document.getElementById('ti'),ti);
+  T.animateNumber(document.getElementById('tp'),tp);
+  document.getElementById('subY').textContent=Y;
+  document.getElementById('subR').textContent=(R*12*100).toFixed(2);
+  document.getElementById('lgP').textContent=T.formatINRShort(P);
+  document.getElementById('lgI').textContent=T.formatINRShort(ti);
+  T.drawDonut(document.getElementById('donut'),[{value:P,color:'#8eb4e0'},{value:ti,color:'#f29090'}],{centerLabel:'Total',centerValue:T.formatINRShort(tp)});
+  var bal=P, paidP=0, paidI=0, sP=[], sI=[], lb=[];
+  for(var m=1;m<=n;m++){var iM=bal*R, pM=emi-iM; bal-=pM; paidP+=pM; paidI+=iM; if(m%12===0||m===n){sP.push(paidP);sI.push(paidI);lb.push('Y'+Math.ceil(m/12));}}
+  T.drawStackedArea(document.getElementById('area'),[{label:'Principal',color:'#3a6ea8',values:sP},{label:'Interest',color:'#f29090',values:sI}],{xLabels:lb});
+}
+T.bindSlider({slider:document.getElementById('p'),input:document.getElementById('pIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Floating or fixed rate home loan?',a:'Floating tracks repo rate. Fixed locks for a period (2-5 yrs). Floating is the default choice.'},{q:'How much home loan can I qualify for?',a:'EMI <= 50% of take-home and loan-to-value <= 80% are typical rules.'},{q:'Longer or shorter tenure?',a:'Longer = lower EMI + much higher interest. Take 20 yrs with intent to prepay early.'}]);
+T.mountSoftwareSchema({name:'Home Loan EMI Calculator',description:'Home loan EMI with year-wise amortisation for Indian buyers.'});
+})();
+</script>
+</body></html>

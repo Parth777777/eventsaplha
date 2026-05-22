@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +28,10 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
@@ -345,19 +348,13 @@
         </div>
     </div>
 
-    <!-- ============ COMMODITIES INSIGHT STUDIO (page-unique) ============ -->
+    <!-- ============ COMMODITIES INSIGHT STUDIO ============ -->
     <section class="mb-6 mx-2" id="commStudio">
-      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;">
-        <div class="widget" style="min-height:240px;">
-          <div class="widget__head">
-            <div>
-              <div class="widget__title">Commodity movers</div>
-              <div class="widget__meta">Live MCX & global · sparks</div>
-            </div>
-          </div>
-          <div id="commMoversGrid" style="margin-top:8px;"></div>
-        </div>
-        <div class="widget" style="min-height:240px;">
+      <!-- Row 1: Two compact stats panels (breadth + magnitude). The full
+           commodity grid lives in its own full-width row below so every card
+           gets real width to breathe. -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="widget" style="min-height:200px;">
           <div class="widget__head">
             <div>
               <div class="widget__title">Up vs down</div>
@@ -366,7 +363,7 @@
           </div>
           <div id="commBreadthDonut" style="flex:1;"></div>
         </div>
-        <div class="widget" style="min-height:240px;">
+        <div class="widget" style="min-height:200px;">
           <div class="widget__head">
             <div>
               <div class="widget__title">Move magnitude</div>
@@ -376,51 +373,103 @@
           <div id="commMagHist" style="margin-top:10px;flex:1;"></div>
         </div>
       </div>
+
+      <!-- Row 2: Full-width commodity grid — every tracked MCX/NCDEX
+           commodity gets its own card with INR price, unit, % change, and
+           sparkline. Sorted Bullion → Energy → Base Metals → Agri. -->
+      <div class="widget" style="min-height:auto;">
+        <div class="widget__head">
+          <div>
+            <div class="widget__title">All commodities — Indian markets</div>
+            <div class="widget__meta">Live MCX & NCDEX · INR · sparks</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="commUsdinrChip" style="font:600 10px var(--font-mono);color:var(--t3);padding:3px 8px;border-radius:999px;background:rgba(141,148,168,0.10);border:1px solid rgba(141,148,168,0.18);"></span>
+          </div>
+        </div>
+        <div id="commMoversGrid" style="margin-top:12px;"></div>
+      </div>
     </section>
     <script>
     (async function(){
       try {
-        const res = await Widgets.fetchJSON('/commodities');
+        const res = await Widgets.fetchJSON('/commodities/all');
         const list = (res && res.data) || [];
         if (!list.length) return;
+        window.__commUsdinr = res.usdinr || null;
+        window.__commAsOf = res.as_of || null;
 
-        // Movers — top 6 by |% change|
-        const movers = [...list].sort((a,b) => Math.abs(b.change_pct||0) - Math.abs(a.change_pct||0)).slice(0, 6);
-        Widgets.miniSparkGrid(document.getElementById('commMoversGrid'),
-          movers.map(c => ({
-            label: c.name || c.symbol,
-            value: '₹' + (c.price || 0).toLocaleString('en-IN'),
+        // Tradable = everything except FX context rows, AND must have a real
+        // price (drop "empty chart" cards that the user complained about).
+        const tradable = list.filter(c =>
+          (c.category || '') !== 'FX' && c.price != null && isFinite(c.price));
+
+        // Sort: bullion first (gold/silver), then energy, then base metals,
+        // then agri. Within each group, by absolute % change desc — the most
+        // active card surfaces first so the eye lands on movement.
+        const CATEGORY_ORDER = ['Bullion', 'Energy', 'Base Metals', 'Agri'];
+        const sorted = [...tradable].sort((a, b) => {
+          const ai = CATEGORY_ORDER.indexOf(a.category);
+          const bi = CATEGORY_ORDER.indexOf(b.category);
+          if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+          return Math.abs(b.change_pct || 0) - Math.abs(a.change_pct || 0);
+        });
+
+        // Build item descriptors. `value` is PLAIN TEXT, `unit` is rendered
+        // separately by miniSparkGrid (avoids the HTML-escape bug that was
+        // showing literal `<span>` strings on the cards).
+        const items = sorted.map(c => {
+          const cleanName = (c.name || c.symbol).replace(/\s*\((MCX|NCDEX)\)/, '');
+          const unit = (c.unit || '').replace('₹/', '/');
+          return {
+            label: cleanName,
+            value: c.price != null ? '₹' + Number(c.price).toLocaleString('en-IN', {maximumFractionDigits: 2}) : '—',
+            unit: unit && unit !== c.unit ? unit : '',
+            sub: c.category,
             deltaPct: c.change_pct || 0,
-            // Generate 8-point spark from prev → current with smooth ease
             points: (() => {
               const start = (c.price || 0) - (c.change || 0);
               const end = c.price || 0;
-              return Array.from({length: 8}, (_, i) => {
-                const t = i / 7; const e = t*t*(3-2*t);
+              return Array.from({length: 12}, (_, i) => {
+                const t = i / 11; const e = t * t * (3 - 2 * t);
                 return start + (end - start) * e;
               });
             })()
-          })),
-          {cols: 'repeat(auto-fill, minmax(170px, 1fr))'}
+          };
+        });
+
+        Widgets.miniSparkGrid(document.getElementById('commMoversGrid'), items,
+          {cols: 'repeat(auto-fill, minmax(200px, 1fr))'}
         );
 
-        // Breadth donut
-        const up = list.filter(c => (c.change_pct || 0) > 0).length;
-        const upPct = list.length ? Math.round(up / list.length * 100) : 0;
+        // Breadth donut — based on tradable commodities only
+        const up = tradable.filter(c => (c.change_pct || 0) > 0).length;
+        const upPct = tradable.length ? Math.round(up / tradable.length * 100) : 0;
         Widgets.donut(document.getElementById('commBreadthDonut'), upPct,
-          {label: up + ' / ' + list.length, sublabel: 'rising commodities',
+          {label: up + ' / ' + tradable.length, sublabel: 'rising commodities',
            color: upPct >= 50 ? '#4ee6b8' : '#ff7a8a',
            color2: upPct >= 50 ? '#4ec5e6' : '#ff9466'});
 
-        // Magnitude histogram — bucket by 1% bins
+        // Magnitude histogram
         const buckets = [
-          {label: '<0.5%', value: list.filter(c => Math.abs(c.change_pct||0) < 0.5).length, color: '#5b6cff'},
-          {label: '0.5-1%', value: list.filter(c => Math.abs(c.change_pct||0) >= 0.5 && Math.abs(c.change_pct||0) < 1).length, color: '#4ee6b8'},
-          {label: '1-2%', value: list.filter(c => Math.abs(c.change_pct||0) >= 1 && Math.abs(c.change_pct||0) < 2).length, color: '#ffc266'},
-          {label: '2-3%', value: list.filter(c => Math.abs(c.change_pct||0) >= 2 && Math.abs(c.change_pct||0) < 3).length, color: '#ff9466'},
-          {label: '3%+',  value: list.filter(c => Math.abs(c.change_pct||0) >= 3).length, color: '#ff7a8a'},
+          {label: '<0.5%', value: tradable.filter(c => Math.abs(c.change_pct||0) < 0.5).length, color: '#5b6cff'},
+          {label: '0.5-1%', value: tradable.filter(c => Math.abs(c.change_pct||0) >= 0.5 && Math.abs(c.change_pct||0) < 1).length, color: '#4ee6b8'},
+          {label: '1-2%', value: tradable.filter(c => Math.abs(c.change_pct||0) >= 1 && Math.abs(c.change_pct||0) < 2).length, color: '#ffc266'},
+          {label: '2-3%', value: tradable.filter(c => Math.abs(c.change_pct||0) >= 2 && Math.abs(c.change_pct||0) < 3).length, color: '#ff9466'},
+          {label: '3%+',  value: tradable.filter(c => Math.abs(c.change_pct||0) >= 3).length, color: '#ff7a8a'},
         ];
         Widgets.histogram(document.getElementById('commMagHist'), buckets, {height: 110});
+
+        // Update KPI header cells if present
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        set('commTracked', String(tradable.length));
+        set('commRising',  String(up));
+        set('commFalling', String(tradable.filter(c => (c.change_pct||0) < 0).length));
+        set('commBreadth', upPct + '%');
+        set('risingTopValue', String(up));
+        set('risingTotal', 'of ' + tradable.length + ' tracked commodities');
+        const elFx = document.getElementById('commUsdinrChip');
+        if (elFx && res.usdinr) elFx.textContent = '₹' + Number(res.usdinr).toFixed(2) + '/USD';
       } catch(e) { console.warn('commodities studio:', e); }
     })();
     </script>
@@ -1758,5 +1807,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="./shared/js/stock-popup.js" defer></script>
 <script src="./shared/js/market-visuals.js"></script>
 <script src="./shared/js/news-time.js"></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

@@ -110,12 +110,6 @@ img { display: block; max-width: 100%; }
 .lp-eyebrow-gold { color: var(--gold); }
 .lp-dot {
   width: 6px; height: 6px; border-radius: 50%; background: var(--bull);
-  box-shadow: 0 0 10px var(--bull);
-  animation: lp-pulse 1.6s infinite;
-}
-@keyframes lp-pulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50%     { opacity: 0.4; transform: scale(0.85); }
 }
 
 .lp-h1 {

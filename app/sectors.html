@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +28,10 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
@@ -90,7 +93,7 @@
               <div class="widget__title">Top sectors by signal flow</div>
               <div class="widget__meta">Click a ring to drill in</div>
             </div>
-            <span class="widget__year-pill" id="sectorsTotal">— sectors</span>
+            <span class="widget__year-pill" id="sectorsTotal">� sectors</span>
           </div>
           <div id="sectorsRingsStage" style="flex:1;"></div>
         </div>
@@ -99,7 +102,7 @@
           <div class="widget__head">
             <div>
               <div class="widget__title">Net sentiment</div>
-              <div class="widget__meta">Bull − bear / total</div>
+              <div class="widget__meta">Bull - bear / total</div>
             </div>
           </div>
           <div id="sectorsNetDonut" style="flex:1;"></div>
@@ -119,7 +122,7 @@
       <div class="widget" style="margin-top:14px;min-height:auto;">
         <div class="widget__head">
           <div>
-            <div class="widget__title">Sector composition · stacked share</div>
+            <div class="widget__title">Sector composition � stacked share</div>
             <div class="widget__meta">Click a segment to filter the heatmap below</div>
           </div>
         </div>
@@ -280,7 +283,7 @@ async function loadHeatmap() {
                     <span style="color:#4edea3;">${sec.bullish} bullish</span>
                     <span style="color:#ffb4ab;">${sec.bearish} bearish</span>
                 </div>
-                <span class="text-[10px] font-mono" style="color:${UIHelper.alphaColor(sec.avg_alpha)};">avg α ${sec.avg_alpha}</span>
+                <span class="text-[10px] font-mono" style="color:${UIHelper.alphaColor(sec.avg_alpha)};">avg a ${sec.avg_alpha}</span>
             </div>
 
             ${topStock ? `
@@ -289,7 +292,7 @@ async function loadHeatmap() {
                     <span data-ticker="${topStock.ticker}" class="text-xs font-mono font-bold text-primary cursor-pointer hover:underline">${topStock.ticker}</span>
                     <span class="text-[9px] text-on-surface-variant ml-1">${(topStock.company || '').split(' ')[0]}</span>
                 </div>
-                <span class="text-xs font-bold font-mono" style="color:${UIHelper.alphaColor(topStock.alpha)};">α ${topStock.alpha}</span>
+                <span class="text-xs font-bold font-mono" style="color:${UIHelper.alphaColor(topStock.alpha)};">a ${topStock.alpha}</span>
             </div>` : ''}
         </div>`;
     }).join('');
@@ -331,7 +334,7 @@ async function openSectorDetail(sector) {
                 <div>
                     <span data-ticker="${sig.ticker}" class="font-mono font-bold text-sm text-primary cursor-pointer hover:underline">${sig.ticker}</span>
                     <span class="text-[10px] text-on-surface-variant ml-1">${(sig.company || '').split(/\s+/).slice(0, 2).join(' ')}</span>
-                    <div class="text-[9px] text-on-surface-variant/50">${(sig.event_type || '').replace(/_/g, ' ')} • ${UIHelper.formatPrice(sig.entry_price)}</div>
+                    <div class="text-[9px] text-on-surface-variant/50">${(sig.event_type || '').replace(/_/g, ' ')} � ${UIHelper.formatPrice(sig.entry_price)}</div>
                 </div>
             </div>
             <div class="text-right">
@@ -346,7 +349,7 @@ function closeSectorDetail() {
     document.getElementById('sectorDetail').classList.add('hidden');
 }
 
-// ── Sector rotation panel: 1W / 1M / 3M relative strength + money-flow proxy ──
+// -- Sector rotation panel: 1W / 1M / 3M relative strength + money-flow proxy --
 async function renderRotationPanel() {
     let host = document.getElementById('rotationPanel');
     if (!host) {
@@ -356,13 +359,13 @@ async function renderRotationPanel() {
         const main = document.querySelector('main') || document.body;
         main.appendChild(host);
     }
-    host.innerHTML = '<div style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Sector rotation · 1W / 1M / 3M relative strength</div><div style="color:#5a5d6a;font-size:11px;">Loading…</div>';
+    host.innerHTML = '<div style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Sector rotation � 1W / 1M / 3M relative strength</div><div style="color:#5a5d6a;font-size:11px;">Loading�</div>';
     const r = await fetch('/api/sectors/rotation');
     const j = await r.json();
     if (!j || !j.success) { host.querySelector('div:last-child').textContent = 'Unavailable.'; return; }
     const data = j.data || {};
     const periods = ['1W', '1M', '3M'];
-    host.innerHTML = '<div style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Sector rotation · 1W / 1M / 3M relative strength</div>' +
+    host.innerHTML = '<div style="font-size:11px;color:#9aa0c8;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Sector rotation � 1W / 1M / 3M relative strength</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">' +
       periods.map(p => {
         const rows = (data[p] || []).slice(0, 8);
@@ -394,5 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     Auth.updateAuthUI();
 });
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

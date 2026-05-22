@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retirement Calculator — Corpus & Monthly SIP Needed | Tickwave</title>
+<meta name="description" content="How much retirement corpus do you need + what monthly SIP gets you there? Inflation-adjusted, India-specific. Plug in expenses, age, retirement age.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/retirement-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Retirement Calculator</div>
+<h1>How much do you need to <span class="accent">retire well?</span></h1>
+<p class="lead">Tell us your current age, when you want to retire, monthly expenses today, and how long you'll live post-retirement. We compute the corpus you'll need (inflation-adjusted) and the monthly SIP that gets you there.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g transform="translate(100 100)"><circle r="70" fill="none" stroke="#f29090" opacity="0.4" stroke-width="2"/><path d="M0 -70 A70 70 0 0 1 70 0" stroke="#f29090" stroke-width="6" fill="none" stroke-linecap="round"/><text text-anchor="middle" y="-10" font-family="Geist Mono" font-size="10" fill="#8a94a8" letter-spacing="1">RETIRE AT</text><text text-anchor="middle" y="14" font-family="Plus Jakarta Sans" font-size="22" font-weight="800" fill="#f29090">60</text></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your situation</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current age <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="aIn" value="30" min="18" max="58" step="1"><span class="suffix">yr</span></span></div><input type="range" id="a" class="tk-slider" min="18" max="58" step="1" value="30"><div class="tk-slider-bounds"><span>18</span><span>58</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Retirement age</label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="60" min="40" max="70" step="1"><span class="suffix">yr</span></span></div><input type="range" id="r" class="tk-slider" min="40" max="70" step="1" value="60"><div class="tk-slider-bounds"><span>40</span><span>70</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Current monthly expenses <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="eIn" value="50000" min="5000" step="1000"></span></div><input type="range" id="e" class="tk-slider" min="5000" max="500000" step="1000" value="50000"><div class="tk-slider-bounds"><span>₹5,000</span><span>₹5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Inflation <span class="hint">(% p.a.)</span></label><span class="tk-field-value-wrap"><input type="number" id="iIn" value="6" min="2" max="12" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="i" class="tk-slider" min="2" max="12" step="0.25" value="6"><div class="tk-slider-bounds"><span>2%</span><span>12%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Pre-retirement return <span class="hint">(equity-heavy)</span></label><span class="tk-field-value-wrap"><input type="number" id="prIn" value="12" min="5" max="20" step="0.5"><span class="suffix">%</span></span></div><input type="range" id="pr" class="tk-slider" min="5" max="20" step="0.5" value="12"><div class="tk-slider-bounds"><span>5%</span><span>20%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Post-retirement return <span class="hint">(safer mix)</span></label><span class="tk-field-value-wrap"><input type="number" id="poIn" value="7" min="3" max="15" step="0.5"><span class="suffix">%</span></span></div><input type="range" id="po" class="tk-slider" min="3" max="15" step="0.5" value="7"><div class="tk-slider-bounds"><span>3%</span><span>15%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Life expectancy <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="lIn" value="85" min="60" max="100" step="1"><span class="suffix">yr</span></span></div><input type="range" id="l" class="tk-slider" min="60" max="100" step="1" value="85"><div class="tk-slider-bounds"><span>60</span><span>100</span></div></div>
+</div>
+<div class="tk-card"><h2>What you need</h2>
+<div class="tk-result-headline">Required retirement corpus</div>
+<div class="tk-result-value" id="corp">—</div>
+<div class="tk-result-sub">Required monthly SIP from today: <span id="sipSub">—</span></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Future monthly expense</div><div class="val" id="fme">—</div></div>
+<div class="tk-stat"><div class="lbl">Years in retirement</div><div class="val" id="yrsR">—</div></div>
+<div class="tk-stat"><div class="lbl">Monthly SIP needed</div><div class="val bull" id="sip">—</div></div>
+<div class="tk-stat"><div class="lbl">Total invested over career</div><div class="val" id="totInv">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>How retirement math works</h2>
+<ol>
+<li>Inflate today's monthly expense to retirement-time expense at your inflation rate.</li>
+<li>Compute corpus required to fund N years of inflated expenses, with the corpus itself growing at a safer post-retirement rate.</li>
+<li>Reverse-engineer the monthly SIP needed in your accumulation years at pre-retirement equity returns.</li>
+</ol>
+<div class="tk-formula">Future monthly expense = current × (1 + inflation)<sup>yrs to retire</sup><br>Corpus ≈ FME × 12 × [1 − (1 + real_r)<sup>−N</sup>] / real_r &nbsp; (annuity present value)</div>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Should I include EPF / NPS / PPF in the corpus?</summary><p>Yes. Compute their expected maturity value at retirement and subtract from the required corpus before computing the gap-funding SIP.</p></details>
+<details><summary>Is 25× rule reliable?</summary><p>25× annual expense is the "Trinity study" American thumb-rule. For India with higher inflation, 30-33× is safer.</p></details>
+<details><summary>What return should I assume post-retirement?</summary><p>6-8% — corpus shifts to a debt-heavy mix (60% debt / 40% equity glide path). Don't assume 12% throughout retirement.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="nps-calculator.html">NPS Calculator<span class="sub">Mandatory annuity 40%</span></a>
+<a href="epf-calculator.html">EPF Calculator<span class="sub">Career provident fund</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">The vehicle</span></a>
+<a href="inflation-calculator.html">Inflation Calculator<span class="sub">Why future expenses balloon</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var a=+document.getElementById('a').value, r=+document.getElementById('r').value, e=+document.getElementById('e').value;
+  var i=+document.getElementById('i').value/100, pr=+document.getElementById('pr').value/100, po=+document.getElementById('po').value/100, life=+document.getElementById('l').value;
+  var yrsToRetire=Math.max(0,r-a), yrsRetirement=Math.max(1,life-r);
+  var fme=e*Math.pow(1+i,yrsToRetire);                          // future monthly expense
+  // Present value (at retirement) of N years of annual expenses growing with inflation,
+  // discounted at post-retirement rate. Use real rate.
+  var realR=(1+po)/(1+i)-1;
+  var annualExp=fme*12;
+  var corpus=realR===0?annualExp*yrsRetirement:annualExp*(1-Math.pow(1+realR,-yrsRetirement))/realR;
+  // Monthly SIP to reach corpus given pre-retirement monthly rate
+  var months=yrsToRetire*12, mR=pr/12;
+  var sip=mR===0?corpus/months:corpus*mR/((Math.pow(1+mR,months)-1)*(1+mR));
+  var totInv=sip*months;
+  T.animateNumber(document.getElementById('corp'),corpus);
+  T.animateNumber(document.getElementById('fme'),fme);
+  document.getElementById('yrsR').textContent=yrsRetirement+' yrs';
+  T.animateNumber(document.getElementById('sip'),sip);
+  T.animateNumber(document.getElementById('totInv'),totInv);
+  document.getElementById('sipSub').textContent=T.formatINRShort(sip);
+}
+['a','r','e','i','pr','po','l'].forEach(function(id){T.bindSlider({slider:document.getElementById(id),input:document.getElementById(id+'In'),onChange:compute});});
+compute();
+T.mountFAQ([{q:'Should I include EPF/NPS in the corpus?',a:'Yes — compute their maturity value at retirement and subtract from required corpus before gap-funding SIP.'},{q:'Is 25x rule reliable?',a:'25x annual expense is American thumb-rule. For India with higher inflation, 30-33x is safer.'},{q:'Post-retirement return assumption?',a:'6-8% — corpus shifts to debt-heavy mix. Do not assume 12% throughout retirement.'}]);
+T.mountSoftwareSchema({name:'Retirement Calculator',description:'Inflation-adjusted retirement corpus + required monthly SIP for India.'});
+})();
+</script>
+</body></html>

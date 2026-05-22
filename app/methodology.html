@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodology · AlphaEvent / Tickwave</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg">
+<link rel="manifest" href="./manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<style>
+  .meth-main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    font-family: var(--font-ui);
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+  .meth-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .meth-header .material-symbols-outlined {
+    color: var(--accent);
+    font-size: 28px;
+  }
+  .meth-title {
+    font-size: var(--fs-28);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .meth-stamp {
+    font-size: var(--fs-11);
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .meth-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .meth-section:first-of-type { border-top: 0; padding-top: 0; }
+  .meth-section h2 {
+    font-size: var(--fs-18);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+  .meth-section p, .meth-section li {
+    font-size: var(--fs-13);
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .meth-section ul { padding-left: 22px; }
+  .meth-section strong { color: var(--text-primary); }
+  .meth-section a { color: var(--accent); text-underline-offset: 3px; }
+
+  /* ── Live hit-rate widgets ────────────────────────────────────────── */
+  .meth-period-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 4px;
+    margin: 16px 0;
+    width: fit-content;
+  }
+  .meth-period-btn {
+    padding: 6px 14px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--dur-fast, 120ms) var(--ease-out, ease);
+    font-family: var(--font-ui);
+  }
+  .meth-period-btn:hover { color: var(--text-primary); }
+  .meth-period-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .meth-overall {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .meth-stat {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .meth-stat-lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .meth-stat-val {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .meth-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 12px;
+  }
+  .meth-table th, .meth-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .meth-table th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    font-weight: 600;
+  }
+  .meth-table td { color: var(--text-secondary); }
+  .meth-table td.num { font-family: var(--font-mono); color: var(--text-primary); }
+  .meth-table tr:hover td { background: var(--surface-2); }
+
+  .meth-tier-strong   { color: var(--bull); font-weight: 700; }
+  .meth-tier-moderate { color: var(--caution); font-weight: 700; }
+  .meth-tier-watchlist { color: var(--info); font-weight: 700; }
+
+  .meth-loading {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 12px;
+    padding: 16px 0;
+  }
+
+  .meth-callout {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: var(--caution-dim, rgba(230, 184, 74, 0.08));
+    border: 1px solid var(--caution-border, rgba(230, 184, 74, 0.22));
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: var(--fs-12);
+  }
+  .meth-callout strong { color: var(--caution); }
+
+  .meth-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    font-size: var(--fs-12);
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .meth-back:hover { color: var(--accent); }
+  .meth-back .material-symbols-outlined { font-size: 16px; }
+</style>
+</head>
+<body>
+<main class="meth-main">
+  <a href="index.html" class="meth-back">
+    <span class="material-symbols-outlined">arrow_back</span> Back to AlphaEvent
+  </a>
+
+  <div class="meth-header">
+    <span class="material-symbols-outlined">science</span>
+    <div class="meth-title">Methodology &amp; Live Hit Rates</div>
+  </div>
+  <div class="meth-stamp" id="methStamp">Version 1.0 · Live</div>
+
+  <!-- ─── Live hit rates ────────────────────────────── -->
+  <section class="meth-section">
+    <h2>Live hit rates</h2>
+    <p>
+      We publish actual prediction-outcome accuracy from our signals over a
+      rolling window. Updated continuously as predictions resolve.
+    </p>
+
+    <div class="meth-period-bar" role="tablist" aria-label="Hit-rate period">
+      <button class="meth-period-btn" data-days="7">7d</button>
+      <button class="meth-period-btn active" data-days="30">30d</button>
+      <button class="meth-period-btn" data-days="90">90d</button>
+      <button class="meth-period-btn" data-days="365">1y</button>
+    </div>
+
+    <div class="meth-overall" id="methOverall">
+      <div class="meth-loading">Loading live stats…</div>
+    </div>
+
+    <h3 style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:18px;margin-bottom:6px;">By conviction tier</h3>
+    <table class="meth-table" id="methTierTable">
+      <thead>
+        <tr><th>Tier</th><th>Signals</th><th>Hit rate</th><th>Avg return</th><th>Avg α</th></tr>
+      </thead>
+      <tbody><tr><td colspan="5" class="meth-loading">Loading…</td></tr></tbody>
+    </table>
+
+    <h3 style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:18px;margin-bottom:6px;">Top sources by hit rate</h3>
+    <table class="meth-table" id="methSourceTable">
+      <thead>
+        <tr><th>Source</th><th>Horizon</th><th>Signals</th><th>Hit rate</th><th>Avg α</th></tr>
+      </thead>
+      <tbody><tr><td colspan="5" class="meth-loading">Loading…</td></tr></tbody>
+    </table>
+
+    <h3 style="font-size:13px;font-weight:700;color:var(--text-primary);margin-top:18px;margin-bottom:6px;">By event type</h3>
+    <table class="meth-table" id="methEventTable">
+      <thead>
+        <tr><th>Event type</th><th>Horizon</th><th>Signals</th><th>Hit rate</th><th>Avg return</th></tr>
+      </thead>
+      <tbody><tr><td colspan="5" class="meth-loading">Loading…</td></tr></tbody>
+    </table>
+
+    <div class="meth-callout">
+      <strong>Note:</strong> Hit rates are historical. They are statistics —
+      not predictions. Past performance does not guarantee future returns.
+    </div>
+  </section>
+
+  <!-- ─── Alpha score explainer ─────────────────────── -->
+  <section class="meth-section">
+    <h2>Alpha score (0–100)</h2>
+    <p>
+      The alpha score is a regime-aware composite that combines historical
+      event-outcome hit rate, current market regime, magnitude calibration,
+      and source credibility. It is computed at signal-publication time and
+      does not change after the fact.
+    </p>
+    <ul>
+      <li><strong>Event hit rate</strong> — base rate of similar prior events resolving in the predicted direction.</li>
+      <li><strong>Source credibility</strong> — the source's own historical hit rate (lower-tail sources are dampened).</li>
+      <li><strong>Magnitude calibration</strong> — predicted return scaled by recent realised volatility of the underlying ticker.</li>
+      <li><strong>Market regime</strong> — bull / bear / sideways / crisis adjustment to suppress contra-trend signals.</li>
+    </ul>
+  </section>
+
+  <!-- ─── Conviction tiers ──────────────────────────── -->
+  <section class="meth-section">
+    <h2>Conviction tiers</h2>
+    <ul>
+      <li><span class="meth-tier-strong">Strong signal</span> · alpha ≥ 80 — high historical hit rate + favourable regime</li>
+      <li><span class="meth-tier-moderate">Moderate signal</span> · 60 ≤ alpha &lt; 80 — meaningful base rate</li>
+      <li><span class="meth-tier-watchlist">Watchlist</span> · alpha &lt; 60 — informational only</li>
+    </ul>
+    <p>
+      Tier labels were softened (from <em>High / Moderate / Watch</em>) in
+      v1.0 to reflect their analytic, non-recommendation nature.
+    </p>
+  </section>
+
+  <!-- ─── Reference levels ──────────────────────────── -->
+  <section class="meth-section">
+    <h2>Reference levels (entry / target / horizon)</h2>
+    <p>
+      "Reference entry" and "indicative level" values on signal cards are
+      <strong>statistical extrapolations</strong> from prior similar events
+      — not analyst price targets, not trade recommendations. They exist so
+      you can compare current price against the historical event response,
+      not as instructions to transact.
+    </p>
+  </section>
+
+  <!-- ─── Limitations ───────────────────────────────── -->
+  <section class="meth-section">
+    <h2>Known limitations</h2>
+    <ul>
+      <li>Hit rates with n &lt; 3 are suppressed (insufficient sample).</li>
+      <li>Earnings whisper relies on consensus EPS — missing for many mid/small caps.</li>
+      <li>Concall sentiment is best-effort on PDFs &gt; 72 hours old.</li>
+      <li>BSE-only stocks may have sparser fundamental coverage than dual-listed peers.</li>
+      <li>Backtests do not adjust for slippage, taxes (STT/STCG), or brokerage.</li>
+    </ul>
+  </section>
+
+  <section class="meth-section">
+    <h2>Full disclosures</h2>
+    <p>
+      See our <a href="disclosures.html">disclosures page</a> for our SEBI
+      compliance posture, data sources, risk factors, and grievance escalation.
+    </p>
+  </section>
+</main>
+
+<script src="./shared/js/theme.js"></script>
+<script>
+(function () {
+  'use strict';
+  const fmtPct  = (v) => (v == null) ? '—' : (Number(v) * 100).toFixed(1) + '%';
+  const fmtRet  = (v) => (v == null) ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+  const tierClass = { strong: 'meth-tier-strong', moderate: 'meth-tier-moderate', watchlist: 'meth-tier-watchlist' };
+  const tierLabel = { strong: 'Strong', moderate: 'Moderate', watchlist: 'Watchlist' };
+
+  function setLoading(id) {
+    const el = document.querySelector('#' + id + ' tbody');
+    if (el) el.innerHTML = '<tr><td colspan="5" class="meth-loading">Loading…</td></tr>';
+  }
+  function setEmpty(id, msg) {
+    const el = document.querySelector('#' + id + ' tbody');
+    if (el) el.innerHTML = '<tr><td colspan="5" class="meth-loading">' + msg + '</td></tr>';
+  }
+
+  async function load(days) {
+    setLoading('methTierTable');
+    setLoading('methSourceTable');
+    setLoading('methEventTable');
+    document.getElementById('methOverall').innerHTML =
+      '<div class="meth-loading">Loading live stats…</div>';
+
+    let payload = null;
+    try {
+      const r = await fetch('/api/methodology/hit-rates?days=' + days);
+      const j = await r.json();
+      payload = j && j.data;
+    } catch (_) {}
+
+    if (!payload) {
+      document.getElementById('methOverall').innerHTML =
+        '<div class="meth-loading">Hit-rate API unavailable.</div>';
+      return;
+    }
+
+    /* Overall stats */
+    const o = payload.overall;
+    if (o && o.n > 0) {
+      document.getElementById('methOverall').innerHTML = `
+        <div class="meth-stat">
+          <div class="meth-stat-lbl">Resolved signals</div>
+          <div class="meth-stat-val">${o.n.toLocaleString()}</div>
+        </div>
+        <div class="meth-stat">
+          <div class="meth-stat-lbl">Overall hit rate</div>
+          <div class="meth-stat-val">${fmtPct(o.hit_rate)}</div>
+        </div>
+        <div class="meth-stat">
+          <div class="meth-stat-lbl">Avg realised return</div>
+          <div class="meth-stat-val">${fmtRet(o.avg_return_pct)}</div>
+        </div>`;
+    } else {
+      document.getElementById('methOverall').innerHTML =
+        '<div class="meth-loading">No resolved signals in the last ' + days + ' days.</div>';
+    }
+
+    /* By tier */
+    const tb1 = document.querySelector('#methTierTable tbody');
+    if ((payload.by_tier || []).length) {
+      tb1.innerHTML = payload.by_tier.map(r => `
+        <tr>
+          <td><span class="${tierClass[r.tier] || ''}">${tierLabel[r.tier] || r.tier}</span></td>
+          <td class="num">${r.n}</td>
+          <td class="num">${fmtPct(r.hit_rate)}</td>
+          <td class="num">${fmtRet(r.avg_return_pct)}</td>
+          <td class="num">${r.avg_alpha.toFixed(1)}</td>
+        </tr>`).join('');
+    } else { setEmpty('methTierTable', 'No tiered data in this window.'); }
+
+    /* By source — cap at 12 to keep the page focused */
+    const tb2 = document.querySelector('#methSourceTable tbody');
+    const src = (payload.by_source || []).slice(0, 12);
+    if (src.length) {
+      tb2.innerHTML = src.map(r => `
+        <tr>
+          <td>${(r.source || '').slice(0, 40)}</td>
+          <td class="num">${(r.horizon || '').toUpperCase()}</td>
+          <td class="num">${r.n}</td>
+          <td class="num">${fmtPct(r.hit_rate)}</td>
+          <td class="num">${r.avg_alpha.toFixed(1)}</td>
+        </tr>`).join('');
+    } else { setEmpty('methSourceTable', 'No source data with n ≥ 3 in this window.'); }
+
+    /* By event type */
+    const tb3 = document.querySelector('#methEventTable tbody');
+    const ev = (payload.by_event || []).slice(0, 12);
+    if (ev.length) {
+      tb3.innerHTML = ev.map(r => `
+        <tr>
+          <td>${(r.event_type || '').replace(/_/g, ' ')}</td>
+          <td class="num">${(r.horizon || '').toUpperCase()}</td>
+          <td class="num">${r.n}</td>
+          <td class="num">${fmtPct(r.hit_rate)}</td>
+          <td class="num">${fmtRet(r.avg_return_pct)}</td>
+        </tr>`).join('');
+    } else { setEmpty('methEventTable', 'No event-type data with n ≥ 3 in this window.'); }
+  }
+
+  /* Period toggle */
+  document.querySelectorAll('.meth-period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.meth-period-btn').forEach(b => b.classList.toggle('active', b === btn));
+      load(parseInt(btn.dataset.days, 10));
+    });
+  });
+
+  /* Initial load */
+  load(30);
+})();
+</script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

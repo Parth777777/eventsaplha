@@ -35,12 +35,64 @@ logger = logging.getLogger(__name__)
 
 # ============ FLASK APP ============
 
+# Phase D — Sentry (error tracking + performance). No-op when SENTRY_DSN
+# env var is absent, so dev/CI envs don't need anything new. Must initialise
+# BEFORE Flask() so the SDK can patch the framework on import.
+try:
+    _sentry_dsn = os.getenv('SENTRY_DSN', '').strip()
+    if _sentry_dsn:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.05')),
+            profiles_sample_rate=float(os.getenv('SENTRY_PROFILES_SAMPLE_RATE', '0.0')),
+            environment=os.getenv('SENTRY_ENVIRONMENT', 'production'),
+            release=os.getenv('SENTRY_RELEASE') or None,
+            # Strip query strings + scrub PII automatically
+            send_default_pii=False,
+        )
+        logger.info("Sentry initialised (env=%s)", os.getenv('SENTRY_ENVIRONMENT', 'production'))
+except Exception as _sentry_err:
+    # Never let observability tooling break the app boot
+    logger.warning("Sentry init skipped: %s", _sentry_err)
+
 # Serve frontend static files from ../app
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'app')
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret')
+
+# Phase D — Flask-Limiter for per-IP rate limiting. Storage backend is
+# in-memory by default; if a REDIS_URL is set it auto-uses Redis (shared
+# across gunicorn workers). Endpoints opt in via @limiter.limit("N/period").
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    _redis_url = os.getenv('REDIS_URL', '').strip()
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        storage_uri=(_redis_url or 'memory://'),
+        # Conservative defaults across the API — endpoints can override.
+        default_limits=['1000 per hour'],
+        headers_enabled=True,  # send X-RateLimit-* response headers
+    )
+    logger.info(
+        "Flask-Limiter initialised (storage=%s)",
+        'redis' if _redis_url else 'memory',
+    )
+except Exception as _limiter_err:
+    # Make limiter a no-op shim so @limiter.limit decorators still parse
+    logger.warning("Flask-Limiter init skipped: %s", _limiter_err)
+    class _NoopLimiter:
+        def limit(self, *a, **k):
+            def deco(fn): return fn
+            return deco
+        def exempt(self, fn): return fn
+    limiter = _NoopLimiter()
 
 # ── NaN-safe JSON ─────────────────────────────────────────────────────────
 # Python's default json.dumps emits literal NaN / Infinity which the browser
@@ -221,6 +273,132 @@ def admin_data_status():
             overall = 'warn'
     return jsonify({'success': True, 'overall': overall,
                     'data': probes, 'served_at': datetime.utcnow().isoformat() + 'Z'})
+
+
+# ============ SCRAPE RUNNER ADMIN ENDPOINTS ============
+# Wraps backend/scrape_runner.py. Lets ops trigger backfills + see job_runs
+# log via API instead of grepping server logs. Both require ADMIN_TOKEN.
+
+@app.route('/api/admin/jobs', methods=['GET'])
+def admin_jobs_status():
+    """Return last-run status per registered job + recent run history.
+
+    Query params:
+      limit: how many history rows to include (default 50, max 500)
+      job:   filter to one job_name
+      status: filter to 'ok' | 'partial' | 'error'
+    """
+    # require_admin is defined later in the file; bind lazily
+    auth = request.headers.get('X-Admin-Token') or request.headers.get('X-Admin-Secret') or ''
+    if not _ADMIN_TOKEN or _ADMIN_TOKEN in _ADMIN_TOKEN_INSECURE_DEFAULTS:
+        return jsonify({'success': False, 'error': 'admin endpoints disabled (set ADMIN_TOKEN)'}), 503
+    import hmac as _hmac
+    if not _hmac.compare_digest(auth, _ADMIN_TOKEN):
+        return jsonify({'success': False, 'error': 'invalid admin token'}), 401
+
+    try:
+        import scrape_runner
+        db = get_db()
+        limit = max(1, min(500, int(request.args.get('limit', 50))))
+        job = (request.args.get('job') or '').strip() or None
+        status = (request.args.get('status') or '').strip() or None
+        return jsonify({
+            'success': True,
+            'health': scrape_runner.job_health(db),
+            'recent': scrape_runner.recent_runs(db, limit=limit, job_name=job, status=status),
+            'known_jobs': sorted(scrape_runner.JOBS.keys()),
+        })
+    except Exception as exc:
+        logger.error('admin/jobs failed: %s', exc, exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+@app.route('/api/admin/health', methods=['GET'])
+def admin_health():
+    """Consolidated observability snapshot for the admin dashboard.
+
+    Returns Groq budget per bucket, job_queue depth, RAG index stats,
+    and last-N scraper run summaries. Same auth as /api/admin/jobs.
+    """
+    auth = request.headers.get('X-Admin-Token') or request.headers.get('X-Admin-Secret') or ''
+    if not _ADMIN_TOKEN or _ADMIN_TOKEN in _ADMIN_TOKEN_INSECURE_DEFAULTS:
+        return jsonify({'success': False, 'error': 'admin endpoints disabled (set ADMIN_TOKEN)'}), 503
+    import hmac as _hmac
+    if not _hmac.compare_digest(auth, _ADMIN_TOKEN):
+        return jsonify({'success': False, 'error': 'invalid admin token'}), 401
+
+    db = get_db()
+    out = {'success': True}
+
+    # Groq budget
+    try:
+        from groq_governor import governor
+        out['groq'] = governor.status()
+    except Exception as e:
+        out['groq'] = {'error': str(e)}
+
+    # Job queue
+    try:
+        import scrape_runner
+        out['queue'] = scrape_runner.queue_depth(db)
+    except Exception as e:
+        out['queue'] = {'error': str(e)}
+
+    # RAG / kb_chunks
+    try:
+        from backend.rag import stats as _rag_stats
+        out['rag'] = _rag_stats(db)
+    except Exception as e:
+        out['rag'] = {'error': str(e)}
+
+    # Scraper job health (last-run per job)
+    try:
+        import scrape_runner
+        out['jobs'] = scrape_runner.job_health(db)
+    except Exception as e:
+        out['jobs'] = {'error': str(e)}
+
+    return jsonify(out)
+
+
+@app.route('/api/admin/scrape-now', methods=['POST'])
+def admin_scrape_now():
+    """Trigger a single scraper job (or 'all') on demand.
+
+    Body: {"job": "<job_name>"}  or  {"job": "all"}
+    Use sparingly — long-running jobs block the request. For 'all', expect
+    30-120s. Each run writes a job_runs row regardless of outcome.
+    """
+    auth = request.headers.get('X-Admin-Token') or request.headers.get('X-Admin-Secret') or ''
+    if not _ADMIN_TOKEN or _ADMIN_TOKEN in _ADMIN_TOKEN_INSECURE_DEFAULTS:
+        return jsonify({'success': False, 'error': 'admin endpoints disabled (set ADMIN_TOKEN)'}), 503
+    import hmac as _hmac
+    if not _hmac.compare_digest(auth, _ADMIN_TOKEN):
+        return jsonify({'success': False, 'error': 'invalid admin token'}), 401
+
+    payload = request.get_json(silent=True) or {}
+    job = (payload.get('job') or request.args.get('job') or '').strip()
+    if not job:
+        return jsonify({'success': False, 'error': "missing 'job' (use 'all' to run every scraper)"}), 400
+
+    try:
+        import scrape_runner
+        db = get_db()
+        if job == 'all':
+            results = scrape_runner.run_all(db, triggered_by='admin')
+            ok = all(r.get('ok') for r in results)
+            return jsonify({'success': ok, 'job': 'all', 'results': results})
+        if job not in scrape_runner.JOBS:
+            return jsonify({'success': False,
+                            'error': f'unknown job: {job}',
+                            'known': sorted(scrape_runner.JOBS.keys())}), 400
+        result = scrape_runner.run(job, db, triggered_by='admin')
+        status_code = 200 if result.get('ok') else 500
+        return jsonify({'success': result.get('ok', False), **result}), status_code
+    except Exception as exc:
+        logger.error('admin/scrape-now failed: %s', exc, exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
 
 # ============ TRUST: per-event-type hit-rate ============
 # Lets the trust page show "earnings 64% (n=87) · policy 51% (n=42) · merger 71% (n=12)" etc.
@@ -466,7 +644,12 @@ from collections import defaultdict, deque
 _RL_LOCK = threading.Lock()
 _RL_HITS = defaultdict(deque)  # ip -> deque[float]
 RL_WINDOW_SECS = int(os.getenv('RL_WINDOW_SECS', '60'))
-RL_MAX_HITS = int(os.getenv('RL_MAX_HITS', '90'))  # 90 req/min/ip — generous for retail UI
+# Each reco card fans out to ~6 edge-feature enrichment endpoints (sector,
+# leak, whisper, insider, smart-money, hit-rate) on top of the base stock data
+# fetch. With 5 cards × 6 calls + base loads + SSE handshakes the per-minute
+# budget needs ~300+ for a normal home-page render. 500/min keeps local dev
+# usable; remote deployments can override via env var.
+RL_MAX_HITS = int(os.getenv('RL_MAX_HITS', '500'))
 
 
 def _client_ip():
@@ -537,6 +720,9 @@ def _rate_limit():
     if request.path == '/api/health':
         return None
     ip = _client_ip()
+    # Loopback bypass — local dev should never hit the limiter
+    if ip in ('127.0.0.1', '::1', 'localhost') or ip.startswith('192.168.') or ip.startswith('10.'):
+        return None
     now = _time.time()
     cutoff = now - RL_WINDOW_SECS
     with _RL_LOCK:
@@ -980,8 +1166,45 @@ def start_scheduler():
                           # Skip if previous run still going
                           coalesce=True)
 
-        # Social hub: X (verified) every 5 min, Reddit/Telegram serious every 15 min
+        # Volume anomalies: daily after market close (10:30 UTC = 4 PM IST).
+        # Powers the `vol_divergence` factor in scraper/premover.py — without
+        # this the premover top-50 board has a dead factor.
+        def _volume_anomalies_daily():
+            try:
+                import scrape_runner
+                scrape_runner.run('volume_anomalies', get_db(), triggered_by='scheduler')
+            except Exception as e:
+                logger.warning(f"volume_anomalies job failed: {e}")
+        scheduler.add_job(_volume_anomalies_daily, 'cron',
+                          day_of_week='mon-fri', hour=10, minute=45,
+                          id='volume_anomalies_daily', max_instances=1, coalesce=True)
+
+        # FII/DII derivatives: nightly at 1 AM UTC (NSE publishes T+1).
+        def _fo_fii_dii_nightly():
+            try:
+                import scrape_runner
+                scrape_runner.run('fo_fii_dii', get_db(), triggered_by='scheduler')
+            except Exception as e:
+                logger.warning(f"fo_fii_dii job failed: {e}")
+        scheduler.add_job(_fo_fii_dii_nightly, 'cron',
+                          day_of_week='tue-sat', hour=1, minute=0,
+                          id='fo_fii_dii_nightly', max_instances=1, coalesce=True)
+
+        # Social hub.
+        #
+        # All three sources (X, Reddit, Telegram) ingest — but Reddit + Telegram
+        # only surface SERIOUS, HIGH-QUALITY buzz. The hub-level quality gate
+        # (seriousness keywords + min upvote / engagement + pump-dump
+        # rejection) does the filtering; signals from these still never enter
+        # the curated recommendations (get_active_signals filters them out at
+        # SQL level). The point is to surface them in a dedicated social tab.
+        SOCIAL_ENABLE_REDDIT   = os.getenv('SOCIAL_ENABLE_REDDIT',   '1') == '1'
+        SOCIAL_ENABLE_TELEGRAM = os.getenv('SOCIAL_ENABLE_TELEGRAM', '1') == '1'
+        SOCIAL_ENABLE_X        = os.getenv('SOCIAL_ENABLE_X',        '1') == '1'
+
         def _social_quick():
+            if not SOCIAL_ENABLE_X:
+                return
             try:
                 from social.hub import collect_x, seed_default_sources
                 from stock_universe import UNIVERSE_TICKERS
@@ -989,26 +1212,35 @@ def start_scheduler():
                 seed_default_sources(db_)
                 n = collect_x(db_, UNIVERSE_TICKERS)
                 if n:
-                    logger.info(f"social X: {n} new posts")
+                    logger.info(f"social X (verified): {n} new posts")
             except Exception as e:
                 logger.warning(f"social X failed: {e}")
 
         def _social_serious():
+            if not (SOCIAL_ENABLE_REDDIT or SOCIAL_ENABLE_TELEGRAM):
+                return
             try:
-                from social.hub import collect_reddit_serious, collect_telegram_serious
                 from stock_universe import UNIVERSE_TICKERS
                 db_ = get_db()
-                a = collect_reddit_serious(db_, UNIVERSE_TICKERS)
-                b = collect_telegram_serious(db_, UNIVERSE_TICKERS)
+                a = b = 0
+                if SOCIAL_ENABLE_REDDIT:
+                    from social.hub import collect_reddit_serious
+                    a = collect_reddit_serious(db_, UNIVERSE_TICKERS)
+                if SOCIAL_ENABLE_TELEGRAM:
+                    from social.hub import collect_telegram_serious
+                    b = collect_telegram_serious(db_, UNIVERSE_TICKERS)
                 if a or b:
                     logger.info(f"social serious: reddit={a} telegram={b}")
             except Exception as e:
                 logger.warning(f"social serious failed: {e}")
 
-        scheduler.add_job(_social_quick, 'interval', minutes=5,
-                          id='social_quick', max_instances=1, coalesce=True)
-        scheduler.add_job(_social_serious, 'interval', minutes=15,
-                          id='social_serious', max_instances=1, coalesce=True)
+        if SOCIAL_ENABLE_X:
+            scheduler.add_job(_social_quick, 'interval', minutes=5,
+                              id='social_quick', max_instances=1, coalesce=True)
+        if SOCIAL_ENABLE_REDDIT or SOCIAL_ENABLE_TELEGRAM:
+            scheduler.add_job(_social_serious, 'interval', minutes=15,
+                              id='social_serious', max_instances=1, coalesce=True)
+        logger.info(f"social pipeline: X={SOCIAL_ENABLE_X} reddit={SOCIAL_ENABLE_REDDIT} telegram={SOCIAL_ENABLE_TELEGRAM}")
 
         # Notification retry drain — every 60s, picks up due-for-retry items
         # from notifications.db and re-attempts Discord/Telegram sends.
@@ -1036,6 +1268,36 @@ def start_scheduler():
         scheduler.add_job(_oc_ingest, 'interval', minutes=5,
                           id='oc_ingest', max_instances=1, coalesce=True)
 
+        # Daily personalized briefing — 08:30 IST (= 03:00 UTC).
+        # Starter + Pro tier. Enqueues one job per eligible user; worker
+        # drains them throughout the morning rate-limited by Groq budget.
+        def _briefing_dispatch():
+            try:
+                from backend.daily_briefing import enqueue_all_pro_users
+                n = enqueue_all_pro_users(get_db())
+                logger.info(f"daily briefing: enqueued {n} starter+pro users")
+            except Exception as e:
+                logger.warning(f"daily briefing dispatch failed: {e}")
+        scheduler.add_job(_briefing_dispatch, 'cron',
+                          day_of_week='mon-fri', hour=3, minute=0,
+                          id='daily_briefing_dispatch',
+                          max_instances=1, coalesce=True)
+
+        # Pre-market briefing — 07:30 IST (= 02:00 UTC). Pro tier only.
+        # Earlier than daily, focused on overnight global moves + ADR
+        # shifts + pre-open positioning ideas.
+        def _premarket_dispatch():
+            try:
+                from backend.daily_briefing import enqueue_pre_market_users
+                n = enqueue_pre_market_users(get_db())
+                logger.info(f"pre-market briefing: enqueued {n} pro users")
+            except Exception as e:
+                logger.warning(f"pre-market briefing dispatch failed: {e}")
+        scheduler.add_job(_premarket_dispatch, 'cron',
+                          day_of_week='mon-fri', hour=2, minute=0,
+                          id='pre_market_briefing_dispatch',
+                          max_instances=1, coalesce=True)
+
         scheduler.start()
         logger.info(f"Scheduler started: scraper every {interval}min, prediction tracker daily 10:30 UTC")
 
@@ -1053,6 +1315,18 @@ def start_scheduler():
 @app.route('/')
 def serve_index():
     return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+# Legacy redirect: forecast.html was merged into earnings.html on 2026-05-19.
+# Preserve old bookmarks / cached links.
+@app.route('/forecast.html')
+def serve_forecast_redirect():
+    from flask import redirect
+    hash_part = request.query_string.decode('utf-8', errors='ignore')
+    target = '/earnings.html'
+    if hash_part:
+        target += '?' + hash_part
+    return redirect(target, code=301)
 
 
 @app.route('/<path:filename>')
@@ -1217,17 +1491,27 @@ def dashboard():
 # ============ SIGNALS ============
 
 @app.route('/api/signals', methods=['GET'])
-@ttl_cache(seconds=30)
+@optional_auth
 def get_signals():
     """Get active trading signals — joined with events.summary so the
     client-side subject-mismatch filter has more text to chew on (not just
     the 80-char title).
+
+    Tier-aware: free + anonymous users see the top FREE_SIGNALS_VISIBLE (5)
+    by alpha_score; starter + pro see the full feed. Locked count is
+    returned in the response meta so the UI can render an upgrade tile.
+
+    Note: the previous @ttl_cache(seconds=30) decorator was removed because
+    the response now varies by tier. The underlying get_active_signals()
+    can still be cached at the DB layer if needed.
     """
     try:
         limit = request.args.get('limit', 50, type=int)
         signals = get_db().get_active_signals(limit)
         if not signals:
-            return jsonify({'success': True, 'count': 0, 'data': []})
+            return jsonify({'success': True, 'count': 0, 'data': [],
+                           'total_available': 0, 'locked_count': 0,
+                           'tier': 'free'})
         # Enrich with the originating event's RSS summary (1-3 sentence preview).
         # Signal event_id = "TICKER_TYPE_HASH"; events.event_id is just "HASH".
         # We strip prefixes and match on the trailing hash component.
@@ -1273,14 +1557,130 @@ def get_signals():
             logger.debug(f"signals summary-join skipped: {e}")
             for s in signals:
                 s.setdefault('summary', '')
+
+        # Enrich each signal with the ticker's sector (from STOCK_UNIVERSE) so
+        # the curated card can render a sector chip + the curation logic can
+        # apply MAX_PER_SECTOR diversity.
+        try:
+            from stock_universe import STOCK_UNIVERSE
+            for s in signals:
+                tk = (s.get('ticker') or '').upper()
+                if tk and not s.get('sector'):
+                    meta = STOCK_UNIVERSE.get(tk) or {}
+                    sec = meta.get('sector') or meta.get('Sector') or ''
+                    if sec: s['sector'] = sec
+        except Exception as e:
+            logger.debug(f"signals sector-enrich skipped: {e}")
+
+        # ── Addendum 2026-05-18 — multi-source enrichment ─────────────────
+        # JOIN to event_clusters so each signal carries:
+        #   cluster_size, sources (list), canonical_headline, first_seen_source
+        # Then run signal_synthesis to produce a copyright-safe one-line
+        # factual summary (replaces the publisher's RSS blurb in the UI).
+        # For signals without a cluster row (the common case until the RSS
+        # persister has run a full cycle) we degrade gracefully: cluster_size
+        # defaults to 1, sources contains the signal's own source, and the
+        # synthesized summary still renders from event_type/ticker fields.
+        try:
+            hashes = [s.get('cluster_hash') for s in signals if s.get('cluster_hash')]
+            cluster_by_hash = {}
+            if hashes:
+                cur = get_db().conn.cursor()
+                placeholders = ','.join(['?'] * len(hashes))
+                cur.execute(
+                    f"""SELECT cluster_hash, canonical_headline, member_count,
+                              sources, first_seen_source, first_seen_at
+                         FROM event_clusters WHERE cluster_hash IN ({placeholders})""",
+                    hashes,
+                )
+                for row in cur.fetchall() or []:
+                    if isinstance(row, dict):
+                        cluster_by_hash[row['cluster_hash']] = row
+                    else:
+                        cluster_by_hash[row[0]] = {
+                            'cluster_hash':       row[0],
+                            'canonical_headline': row[1],
+                            'member_count':       row[2],
+                            'sources':            row[3] or '',
+                            'first_seen_source':  row[4],
+                            'first_seen_at':      row[5],
+                        }
+            for s in signals:
+                cluster = cluster_by_hash.get(s.get('cluster_hash'))
+                if cluster:
+                    s['cluster_size']       = int(cluster.get('member_count') or 1)
+                    s['canonical_headline'] = cluster.get('canonical_headline')
+                    s['first_seen_source']  = (s.get('first_seen_source')
+                                              or cluster.get('first_seen_source'))
+                    # De-dup comma-separated sources list (the upsert can
+                    # double-add an outlet if the same article re-scrapes).
+                    raw_sources = (cluster.get('sources') or '').split(',')
+                    seen, ordered = set(), []
+                    for src in raw_sources:
+                        src = (src or '').strip()
+                        if src and src not in seen:
+                            seen.add(src)
+                            ordered.append(src)
+                    s['sources'] = ordered
+                else:
+                    # Orphan signal — no cluster row yet. Honest defaults.
+                    s['cluster_size'] = int(s.get('cluster_size') or 1)
+                    s.setdefault('canonical_headline', s.get('headline'))
+                    src = s.get('source') or s.get('first_seen_source')
+                    s['sources'] = [src] if src else []
+            # Apply copyright-safe synthesized summary on top of EVERY signal.
+            from signal_synthesis import synthesize_summary, synthesize_headline
+            for s in signals:
+                s['synthesized_summary']  = synthesize_summary(s)
+                s['synthesized_headline'] = synthesize_headline(s)
+        except Exception as e:
+            logger.debug(f"signals cluster-enrich skipped: {e}")
+
+        # Tier-aware slice: free + anon see only top N by alpha_score.
+        # Starter + Pro see the full feed. Always include locked_count
+        # so the client can render an upgrade CTA in the right slot.
+        total_available = len(signals)
+        try:
+            from backend.freemium import get_user_tier, signal_feed_cap
+            user_id = getattr(g, 'user_id', None)
+            tier = get_user_tier(get_db(), user_id) if user_id else 'free'
+        except Exception:
+            tier = 'free'
+        cap = None
+        try:
+            from backend.freemium import signal_feed_cap as _cap
+            cap = _cap(tier)
+        except Exception:
+            pass
+        if cap is not None and total_available > cap:
+            # Sort by alpha_score desc to keep the top-N visible
+            try:
+                signals = sorted(
+                    signals,
+                    key=lambda s: float(s.get('alpha_score') or 0),
+                    reverse=True,
+                )
+            except Exception:
+                pass
+            visible = signals[:cap]
+            locked_count = total_available - len(visible)
+        else:
+            visible = signals
+            locked_count = 0
+
         return jsonify({
             'success': True,
-            'count': len(signals),
-            'data': signals
+            'count': len(visible),
+            'total_available': total_available,
+            'locked_count': locked_count,
+            'tier': tier,
+            'upgrade_url': '/app/pricing.html' if locked_count > 0 else None,
+            'data': visible,
         })
     except Exception as e:
         logger.error(f"Get signals error: {e}")
-        return jsonify({'success': True, 'count': 0, 'data': []})
+        return jsonify({'success': True, 'count': 0, 'data': [],
+                       'total_available': 0, 'locked_count': 0, 'tier': 'free'})
 
 
 @app.route('/api/signals/<signal_id>', methods=['GET'])
@@ -1300,10 +1700,24 @@ def get_signal(signal_id):
 @app.route('/api/events', methods=['GET'])
 @ttl_cache(seconds=30)
 def get_events():
-    """Get events from database with optional type filtering"""
+    """Get events from database with optional type filtering.
+
+    Adds inline news-quality classification:
+        - drops noise items by default (?include_noise=1 to override)
+        - attaches `impact_tier`, `quality_score`, `kinds`,
+          `market_implication` to every row
+        - filters by `?min_quality=` tier name (noise|generic|meaningful|high|critical)
+    Existing field shape preserved, new fields are additive.
+    """
     try:
         limit = request.args.get('limit', 50, type=int)
         event_type = request.args.get('type')
+        include_noise = (request.args.get('include_noise') or '').lower() in ('1', 'true', 'yes')
+        min_quality_param = (request.args.get('min_quality') or '').strip().lower() or None
+
+        # Over-fetch when we know we'll be filtering, so noise removal doesn't
+        # leave the feed thin.
+        raw_limit = limit * 3 if (not include_noise or min_quality_param) else limit
 
         if event_type:
             cur = get_db().conn.cursor()
@@ -1314,13 +1728,13 @@ def get_events():
                        FROM events
                        WHERE event_type IN ('buyback','dividend','split','bonus','rights')
                        ORDER BY published_at DESC LIMIT ?""",
-                    (limit,))
+                    (raw_limit,))
             else:
                 cur.execute(
                     """SELECT id, title, summary, event_type, impact_score, companies, published_at
                        FROM events WHERE event_type = ?
                        ORDER BY published_at DESC LIMIT ?""",
-                    (event_type, limit))
+                    (event_type, raw_limit))
             rows = cur.fetchall()
             events = [{
                 'id': r[0], 'title': r[1], 'summary': r[2], 'event_type': r[3],
@@ -1328,7 +1742,51 @@ def get_events():
                 'companies': r[5], 'published_at': str(r[6]) if r[6] else None
             } for r in rows]
         else:
-            events = get_db().get_recent_events(limit)
+            events = get_db().get_recent_events(raw_limit)
+
+        # ---- News-quality enrichment + noise filtering ----
+        # Cheap rule-based classifier; ~50µs per row.
+        try:
+            from news_quality import classify_dict as _classify_news_dict
+            _TIER_ORDER = {"noise": 0, "generic": 1, "meaningful": 2,
+                           "high": 3, "critical": 4}
+            min_tier_idx = _TIER_ORDER.get(min_quality_param, -1) if min_quality_param else -1
+            try:
+                from causal_map import event_implication as _causal_lookup
+            except Exception:
+                _causal_lookup = None
+            enriched = []
+            for ev in events:
+                q = _classify_news_dict(ev)
+                ev["impact_tier"] = q.impact_tier
+                ev["quality_score"] = q.quality_score
+                if q.kinds:
+                    ev["kinds"] = q.kinds
+                if q.market_implication:
+                    ev["market_implication"] = q.market_implication
+                # Macro causal lookup adds beneficiary/victim sectors when the
+                # event text matches a known macro/policy trigger.
+                if _causal_lookup is not None:
+                    try:
+                        blob = (ev.get("title") or "") + "  " + (ev.get("summary") or "")
+                        impl = _causal_lookup(blob)
+                        if impl:
+                            ev["beneficiary_sectors"] = impl.get("helps") or []
+                            ev["affected_sectors"] = impl.get("hurts") or []
+                            # Causal summary wins over generic kind-hint
+                            ev["market_implication"] = impl.get("summary") or ev.get("market_implication")
+                    except Exception:
+                        pass
+                if not include_noise and q.is_noise:
+                    continue
+                if min_tier_idx >= 0 and _TIER_ORDER.get(q.impact_tier, 0) < min_tier_idx:
+                    continue
+                enriched.append(ev)
+            events = enriched
+        except Exception as _enrich_e:
+            logger.warning(f"events quality enrichment skipped: {_enrich_e}")
+
+        events = events[:limit]
 
         return jsonify({
             'success': True,
@@ -1434,26 +1892,34 @@ def get_stock_detail(ticker):
             price_data = {
                 'price': float(fi.get('lastPrice', 0) or fi.get('regularMarketPrice', 0)),
                 'change_pct': float(fi.get('regularMarketChangePercent', 0) or 0) if hasattr(fi, 'get') else 0,
+                'day_open': float(getattr(fi, 'open', 0) or 0),
                 'day_high': float(getattr(fi, 'dayHigh', 0) or 0),
                 'day_low': float(getattr(fi, 'dayLow', 0) or 0),
+                'prev_close': float(getattr(fi, 'previousClose', 0) or getattr(fi, 'regularMarketPreviousClose', 0) or 0),
+                'volume': int(getattr(fi, 'lastVolume', 0) or getattr(fi, 'regularMarketVolume', 0) or 0),
                 'market_cap': int(getattr(fi, 'marketCap', 0) or 0),
                 'fifty_two_week_high': float(getattr(fi, 'yearHigh', 0) or 0),
                 'fifty_two_week_low': float(getattr(fi, 'yearLow', 0) or 0),
             }
-            # If fast_info missing data, try history
-            if not price_data['price'] or not price_data.get('fifty_two_week_high'):
+            # If fast_info missing data, try history for OHLCV + 52w bounds
+            if (not price_data['price'] or not price_data.get('fifty_two_week_high')
+                    or not price_data['day_open'] or not price_data['volume']):
                 hist = t.history(period='1y')
                 if not hist.empty:
                     if not price_data['price']:
                         price_data['price'] = float(hist['Close'].iloc[-1])
-                    price_data['fifty_two_week_high'] = float(hist['Close'].max())
-                    price_data['fifty_two_week_low'] = float(hist['Close'].min())
-                    if len(hist) >= 2:
+                    price_data['fifty_two_week_high'] = price_data['fifty_two_week_high'] or float(hist['Close'].max())
+                    price_data['fifty_two_week_low']  = price_data['fifty_two_week_low']  or float(hist['Close'].min())
+                    last = hist.iloc[-1]
+                    if not price_data['day_open']:  price_data['day_open']  = float(last['Open'])
+                    if not price_data['day_high']:  price_data['day_high']  = float(last['High'])
+                    if not price_data['day_low']:   price_data['day_low']   = float(last['Low'])
+                    if not price_data['volume']:    price_data['volume']    = int(last['Volume'])
+                    if len(hist) >= 2 and not price_data.get('change_pct'):
                         prev = float(hist['Close'].iloc[-2])
                         curr = float(hist['Close'].iloc[-1])
                         price_data['change_pct'] = round((curr - prev) / prev * 100, 2) if prev else 0
-                        price_data['day_high'] = float(hist['High'].iloc[-1])
-                        price_data['day_low'] = float(hist['Low'].iloc[-1])
+                        if not price_data['prev_close']: price_data['prev_close'] = prev
         except Exception as e:
             logger.warning(f"Price fetch for {ticker}: {e}")
             # Use entry_price from signal as fallback
@@ -1762,54 +2228,115 @@ def simulator_equity_curve():
 # ============ EARNINGS CALENDAR ============
 
 @app.route('/api/earnings', methods=['GET'])
-@ttl_cache(seconds=120)
+@ttl_cache(seconds=600)
 def get_earnings_calendar():
-    """Get upcoming earnings dates for monitored stocks via yfinance"""
+    """Upcoming earnings dates via yfinance.
+
+    Filters:
+      - drops past dates (yfinance returns the *last* call when no next is
+        scheduled; that's why the calendar appeared "stuck" on the same names
+        for days)
+      - drops dates further out than `?days_ahead=` (default 45 days) so the
+        calendar is actionable, not a quarterly forecast
+      - sweeps a broader universe than the old 20-ticker monitored list so
+        new names rotate in as their earnings dates approach
+    """
+    from datetime import date, timedelta
+    try:
+        days_ahead = max(7, min(120, int(request.args.get('days_ahead', '45'))))
+    except (TypeError, ValueError):
+        days_ahead = 45
+    try:
+        limit = max(5, min(60, int(request.args.get('limit', '20'))))
+    except (TypeError, ValueError):
+        limit = 20
+
+    today = date.today()
+    cutoff = today + timedelta(days=days_ahead)
+
     try:
         import yfinance as yf
         from stock_universe import STOCK_UNIVERSE
-        from config import MONITORED_STOCKS
+        try:
+            from config import MONITORED_STOCKS
+            monitored = list(MONITORED_STOCKS)
+        except Exception:
+            monitored = []
 
-        # Use monitored stocks (32) + any watchlist stocks for the calendar
-        tickers_to_check = list(MONITORED_STOCKS)
+        # Broaden the candidate set: monitored stocks first (high signal),
+        # then the rest of STOCK_UNIVERSE. Cap the iteration to keep request
+        # under 5s — yfinance calendar fetch is ~150-300ms per ticker.
+        seen = set()
+        candidates = []
+        for t in monitored:
+            if t and t not in seen:
+                candidates.append(t); seen.add(t)
+        for t in STOCK_UNIVERSE.keys():
+            if t and t not in seen:
+                candidates.append(t); seen.add(t)
+            if len(candidates) >= 120:
+                break
 
-        # Limit to avoid timeout — check top 20
         results = []
-        for ticker in tickers_to_check[:20]:
+        for ticker in candidates:
             try:
                 t = yf.Ticker(f"{ticker}.NS")
                 cal = t.calendar
-                if cal is not None and not (hasattr(cal, 'empty') and cal.empty):
-                    # cal can be a dict or DataFrame
-                    if isinstance(cal, dict):
-                        earn_date = cal.get('Earnings Date', [None])
-                        if isinstance(earn_date, list) and earn_date:
-                            earn_date = str(earn_date[0])
-                        else:
-                            earn_date = str(earn_date) if earn_date else None
-                    else:
-                        # DataFrame
-                        if 'Earnings Date' in cal.columns:
-                            earn_date = str(cal['Earnings Date'].iloc[0]) if len(cal) > 0 else None
-                        elif 'Earnings Date' in cal.index:
-                            val = cal.loc['Earnings Date']
-                            earn_date = str(val.iloc[0]) if hasattr(val, 'iloc') else str(val)
-                        else:
-                            earn_date = None
+                if cal is None:
+                    continue
+                if hasattr(cal, 'empty') and cal.empty:
+                    continue
+                # cal can be a dict or DataFrame
+                earn_date = None
+                if isinstance(cal, dict):
+                    val = cal.get('Earnings Date')
+                    if isinstance(val, list) and val:
+                        earn_date = str(val[0])
+                    elif val:
+                        earn_date = str(val)
+                else:
+                    if 'Earnings Date' in cal.columns:
+                        earn_date = str(cal['Earnings Date'].iloc[0]) if len(cal) > 0 else None
+                    elif 'Earnings Date' in cal.index:
+                        v = cal.loc['Earnings Date']
+                        earn_date = str(v.iloc[0]) if hasattr(v, 'iloc') else str(v)
 
-                    if earn_date and earn_date != 'None' and earn_date != 'NaT':
-                        info = STOCK_UNIVERSE.get(ticker, {})
-                        results.append({
-                            'ticker': ticker,
-                            'company': info.get('name', ticker),
-                            'sector': info.get('sector', ''),
-                            'earnings_date': earn_date[:10],  # YYYY-MM-DD
-                        })
+                if not earn_date or earn_date in ('None', 'NaT'):
+                    continue
+                earn_date = earn_date[:10]  # YYYY-MM-DD
+
+                # Hard filter: must be today-or-later AND inside the window.
+                # This is the fix for the "same list for days" symptom — past
+                # dates were leaking through and pinned to the top of the sort.
+                try:
+                    ed = date.fromisoformat(earn_date)
+                except ValueError:
+                    continue
+                if ed < today or ed > cutoff:
+                    continue
+
+                info = STOCK_UNIVERSE.get(ticker, {})
+                results.append({
+                    'ticker': ticker,
+                    'company': info.get('name', ticker),
+                    'sector': info.get('sector', ''),
+                    'earnings_date': earn_date,
+                    'days_until': (ed - today).days,
+                })
+                if len(results) >= limit * 2:  # over-fetch then trim post-sort
+                    break
             except Exception:
                 continue
 
         results.sort(key=lambda x: x.get('earnings_date', '9999'))
-        return jsonify({'success': True, 'count': len(results), 'data': results})
+        results = results[:limit]
+        return jsonify({
+            'success': True,
+            'count': len(results),
+            'data': results,
+            'as_of': today.isoformat(),
+            'window_days': days_ahead,
+        })
     except Exception as e:
         logger.error(f"Earnings calendar error: {e}")
         return jsonify({'success': True, 'count': 0, 'data': []})
@@ -2032,8 +2559,17 @@ def get_alerts():
 @app.route('/api/alerts', methods=['POST'])
 @optional_auth
 def create_alert():
-    """Create new alert"""
+    """Create new alert. Free tier capped at 10 alerts."""
     try:
+        if g.user_id and g.user_id != 'legacy':
+            try:
+                from backend.freemium import check_alerts_limit
+                err = check_alerts_limit(get_db(), g.user_id)
+                if err:
+                    return jsonify(err), 402
+            except Exception as _gate_exc:
+                logger.debug(f"freemium alert gate skipped: {_gate_exc}")
+
         data = request.get_json()
         success = get_db().create_alert(
             ticker=data.get('ticker'),
@@ -2048,6 +2584,59 @@ def create_alert():
     except Exception as e:
         logger.error(f"Create alert error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 400
+
+
+@app.route('/api/billing/checkout', methods=['POST'])
+@optional_auth
+def billing_checkout():
+    """Razorpay checkout stub. Returns a structured 'coming_soon' so the
+    pricing page can render a polite inline message. Real integration
+    lands once Razorpay KYC (PAN/GST/bank) completes.
+
+    Logs the intent so we can email these prospects when payments go live.
+    """
+    body = request.get_json(silent=True) or {}
+    plan = (body.get('plan') or '').strip().lower()
+    if plan not in ('starter_monthly', 'starter_annual',
+                    'pro_monthly', 'pro_annual'):
+        return jsonify({'success': False, 'error': 'unknown_plan'}), 400
+    try:
+        cur = get_db().conn.cursor()
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS checkout_intents ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "user_id TEXT, plan TEXT, "
+            "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+        )
+        uid = str(g.user_id) if g.user_id and g.user_id != 'legacy' else None
+        cur.execute(
+            "INSERT INTO checkout_intents (user_id, plan) VALUES (?, ?)",
+            (uid, plan),
+        )
+        get_db().conn.commit()
+    except Exception:
+        pass
+    return jsonify({
+        'success': True,
+        'status': 'coming_soon',
+        'message': 'Razorpay launches next week. We logged your interest — email support@alphaevent.in to be notified.',
+    })
+
+
+@app.route('/api/me/tier', methods=['GET'])
+@optional_auth
+def me_tier():
+    """Return the current user's subscription tier + concrete tier limits
+    + feature flags so the frontend can render upgrade prompts and
+    remaining-counts without each page guessing the numbers.
+
+    Tier ladder: free | starter | pro. See backend/freemium.py.
+    """
+    from backend.freemium import get_user_features
+    db = get_db()
+    snapshot = get_user_features(db, g.user_id if g.user_id and g.user_id != 'legacy' else None)
+    snapshot['success'] = True
+    return jsonify(snapshot)
 
 
 # ============ WATCHLIST (per-user) ============
@@ -2068,7 +2657,7 @@ def get_watchlist():
 @app.route('/api/watchlist', methods=['POST'])
 @optional_auth
 def add_to_watchlist():
-    """Add stock to watchlist"""
+    """Add stock to watchlist. Unlimited for all tiers as of 2026-05-18."""
     try:
         data = request.get_json()
         success = get_db().add_to_watchlist(
@@ -2185,6 +2774,118 @@ def trigger_scraper():
 # ============ MARKET INDICES ============
 
 _indices_cache = {'data': None, 'time': 0}
+
+@app.route('/api/sources/credibility', methods=['GET'])
+@ttl_cache(seconds=3600)
+def get_sources_credibility():
+    """Public list of news outlets ranked by historical hit-rate.
+
+    Addendum 2026-05-18: surfaces source_credibility rows so the frontend
+    can show "62%" next to each source pill in the per-card "N sources"
+    dropdown. Cached 1h since the backfill runs nightly.
+    """
+    try:
+        limit = max(5, min(200, int(request.args.get('limit', 50))))
+    except (TypeError, ValueError):
+        limit = 50
+    out = []
+    try:
+        cur = get_db().conn.cursor()
+        cur.execute(
+            "SELECT outlet, hit_rate, sample_size, credibility_score, last_computed_at "
+            "  FROM source_credibility "
+            " WHERE sample_size >= 5 "
+            " ORDER BY credibility_score DESC, sample_size DESC "
+            " LIMIT ?",
+            (limit,),
+        )
+        for row in cur.fetchall() or []:
+            if isinstance(row, dict):
+                out.append({
+                    'outlet':            row.get('outlet'),
+                    'hit_rate':          float(row.get('hit_rate') or 0),
+                    'sample_size':       int(row.get('sample_size') or 0),
+                    'credibility_score': float(row.get('credibility_score') or 0),
+                    'last_computed_at':  str(row.get('last_computed_at') or ''),
+                })
+            else:
+                out.append({
+                    'outlet':            row[0],
+                    'hit_rate':          float(row[1] or 0),
+                    'sample_size':       int(row[2] or 0),
+                    'credibility_score': float(row[3] or 0),
+                    'last_computed_at':  str(row[4] or ''),
+                })
+    except Exception as e:
+        logger.debug(f"sources credibility query: {e}")
+    return jsonify({'success': True, 'count': len(out), 'data': out})
+
+
+@app.route('/api/market', methods=['GET'])
+@ttl_cache(seconds=60)
+def get_market_summary():
+    """Lightweight market snapshot for the homepage hero tagline + KPIs.
+
+    Returns vix, regime, summary, and a few headline metrics in the shape
+    the index.html 'Today' panel consumes. Composed from:
+      - /api/market-indices cache for India VIX
+      - DB stats for fresh-signal count / hit rates
+      - Simple regime heuristic from VIX band
+    """
+    import time as _time
+    out = {'success': True, 'data': {
+        'vix': None, 'regime': None, 'summary': '',
+        'fresh_signals_24h': 0, 'nifty_change_pct': None,
+    }}
+    # 1. VIX + Nifty from the cached market-indices payload
+    try:
+        if _indices_cache.get('data'):
+            for idx in _indices_cache['data'] or []:
+                short = (idx.get('short') or '').upper()
+                if short == 'INDIA VIX':
+                    out['data']['vix'] = idx.get('price') or idx.get('last') or idx.get('value')
+                elif short == 'NIFTY 50':
+                    out['data']['nifty_change_pct'] = idx.get('change_pct') or idx.get('pct_change')
+    except Exception as e:
+        logger.debug(f"market summary indices read failed: {e}")
+
+    # 2. Regime — derive from VIX band so we always have something to show
+    try:
+        vix = out['data']['vix']
+        if vix is None:
+            out['data']['regime'] = 'Unknown'
+        elif vix < 13:    out['data']['regime'] = 'Calm'
+        elif vix < 17:    out['data']['regime'] = 'Normal'
+        elif vix < 22:    out['data']['regime'] = 'Elevated'
+        else:             out['data']['regime'] = 'Stressed'
+    except Exception:
+        out['data']['regime'] = 'Unknown'
+
+    # 3. Fresh-signal count for the summary tagline
+    try:
+        cur = get_db().conn.cursor()
+        is_pg = getattr(get_db(), 'is_postgres', False)
+        cutoff_clause = ("created_at >= NOW() - INTERVAL '24 hours'" if is_pg
+                         else "created_at >= datetime('now', '-24 hours')")
+        cur.execute(f"SELECT COUNT(*) FROM signals WHERE status='active' AND {cutoff_clause}")
+        row = cur.fetchone()
+        fresh = (row[0] if not isinstance(row, dict) else row.get('count(*)') or 0) if row else 0
+        out['data']['fresh_signals_24h'] = int(fresh or 0)
+    except Exception as e:
+        logger.debug(f"market summary fresh-signal count failed: {e}")
+
+    # 4. Build the tagline. Keep it short — fills hero subtitle.
+    bits = []
+    if out['data']['fresh_signals_24h']:
+        bits.append(f"{out['data']['fresh_signals_24h']} fresh signal{'s' if out['data']['fresh_signals_24h'] != 1 else ''} in last 24h")
+    if out['data']['nifty_change_pct'] is not None:
+        sign = '+' if out['data']['nifty_change_pct'] >= 0 else ''
+        bits.append(f"Nifty {sign}{out['data']['nifty_change_pct']:.2f}%")
+    if out['data']['regime'] not in (None, 'Unknown'):
+        bits.append(f"regime: {out['data']['regime'].lower()}")
+    out['data']['summary'] = ' · '.join(bits) if bits else 'Live market data — refresh in a moment.'
+    return jsonify(out)
+
 
 @app.route('/api/market-indices', methods=['GET'])
 @ttl_cache(seconds=60)
@@ -2715,13 +3416,114 @@ except Exception as _v3_exc:
     logger.error(f"api_v3 init failed: {_v3_exc}")
 
 
+# ============ PUBLIC DATA API v1 — externally documented surface ============
+# Establishes the "TickerWave is a data platform" positioning. Thin wrapper
+# over existing endpoints; lives under /api/v1/* with stable contracts.
+# Docs at /api-docs.html.
+try:
+    import api_public
+    api_public.register(app, get_db)
+except Exception as _pub_exc:
+    logger.error(f"api_public init failed: {_pub_exc}")
+
+
 # ============ EDGE FEATURES (outcomes, leak, whisper, sector, insider, FII/DII, bulk-deal, call sentiment) ============
 try:
     import edge_features
     edge_features.init_app(app, get_db)
-    logger.info("edge_features registered: /api/edge/outcomes/* /api/edge/leak-check /api/edge/earnings/* /api/edge/sector-regime /api/edge/insider-buys /api/edge/fii-dii /api/edge/bulk-deal-crossref")
+    logger.info("edge_features registered: /api/edge/outcomes/* /api/edge/leak-check /api/edge/earnings/* /api/edge/sector-regime /api/edge/insider-buys /api/edge/fii-dii /api/edge/bulk-deal-crossref /api/methodology/hit-rates")
 except Exception as _edge_exc:
     logger.error(f"edge_features init failed: {_edge_exc}")
+
+
+# ============ CHAT (RAG + Groq SSE) — /api/chat, /api/chat/quota ============
+try:
+    try:
+        from backend.chat_routes import register as _chat_register
+    except ImportError:
+        # Falls through when running as `python api.py` (no `backend.` package
+        # prefix on sys.path). The plain-module name resolves correctly
+        # because api.py is invoked with its own directory in sys.path.
+        from chat_routes import register as _chat_register  # type: ignore
+    _chat_register(app, get_db, optional_auth, require_auth)
+    logger.info("chat_routes registered: /api/chat (SSE) /api/chat/quota")
+except Exception as _chat_exc:
+    logger.error(f"chat_routes init failed: {_chat_exc}")
+
+
+# ============ FREEMIUM SCHEMA (subscription_tier column on users) ============
+try:
+    from backend.freemium import ensure_schema as _freemium_ensure
+    _freemium_ensure(get_db())
+    logger.info("freemium: subscription_tier column ensured on users")
+except Exception as _fm_exc:
+    logger.error(f"freemium ensure failed: {_fm_exc}")
+
+
+# ============ PHASE 4 — EQUITY RESEARCH + SAVED SCREENERS ============
+try:
+    from backend.research_routes import register as _research_register
+    _research_register(app, get_db, optional_auth, require_auth)
+    logger.info("research_routes registered: /api/research/<ticker> /api/research/<t>/preview")
+except Exception as _rr_exc:
+    logger.error(f"research_routes init failed: {_rr_exc}")
+
+# Phase 4.5 — fundamentals AI: explainer, peer rank, score history
+try:
+    from backend.fundamentals_ai import register as _fai_register
+    _fai_register(app, get_db)
+    logger.info("fundamentals_ai registered: /api/fundamentals/(explain|peer-rank|history)/<ticker>")
+except Exception as _fai_exc:
+    logger.error(f"fundamentals_ai init failed: {_fai_exc}")
+
+# Phase 5 — wire-style corporate news (broker-app parity)
+try:
+    from backend.stock_news_pro import register as _snp_register
+    _snp_register(app, get_db)
+    logger.info("stock_news_pro registered: /api/stock/<ticker>/news-pro")
+except Exception as _snp_exc:
+    logger.error(f"stock_news_pro init failed: {_snp_exc}")
+
+try:
+    from backend.saved_screeners import register as _saved_register
+    _saved_register(app, get_db, require_auth)
+    logger.info("saved_screeners registered: /api/screeners/saved (CRUD)")
+except Exception as _ss_exc:
+    logger.error(f"saved_screeners init failed: {_ss_exc}")
+
+
+# ============ PHASE D — per-endpoint rate limits ============
+# Applied centrally (here, where `limiter` is in scope) instead of via
+# decorators inside the blueprints — keeps blueprint code self-contained
+# and avoids the circular-import problems of cross-module limiter access.
+# Default per-IP cap is 1000/h (set on Limiter init). Tighter caps below.
+try:
+    # IR + documents — moderate cap; these hit DB + sometimes external PDFs
+    _LIMITED_VIEWS = {
+        'api_v3.stock_ir':                   '60 per hour',
+        'api_v3.stock_documents':            '60 per hour',
+        'edge_features.methodology_hit_rates': '120 per hour',
+    }
+    for endpoint, rule in _LIMITED_VIEWS.items():
+        view = app.view_functions.get(endpoint)
+        if view is None:
+            logger.debug("rate-limit skip: endpoint %s not registered", endpoint)
+            continue
+        # Re-decorate in place. limiter.limit returns a decorator that wraps
+        # the view fn and also registers the rule with the Limiter instance.
+        app.view_functions[endpoint] = limiter.limit(rule)(view)
+    logger.info("Phase D rate limits applied: %s", _LIMITED_VIEWS)
+except Exception as _rl_exc:
+    logger.warning("rate-limit wiring skipped: %s", _rl_exc)
+
+
+# ============ GEO MAP (hotspots, flow lanes, region exposure) ============
+try:
+    import geo_map
+    geo_map.init_app(app, get_db)
+    logger.info("geo_map registered: /api/geo/map/hotspots /api/geo/map/flows /api/geo/map/exposure/<id>")
+except Exception as _gm_exc:
+    logger.error(f"geo_map init failed: {_gm_exc}")
 
 
 # ============ SMART ALERTS EVAL HOOK (called from scraper job) ============
@@ -2781,7 +3583,13 @@ if __name__ == '__main__':
     # Initialize database
     get_db()
 
-    # Start background scraper
-    start_scheduler()
+    # Start background scraper only when this process owns it.
+    # Web containers set RUN_SCHEDULER=false; a dedicated worker container
+    # runs the scheduler. Default 'true' preserves single-process dev/Docker
+    # behavior (`python api.py`).
+    if os.getenv('RUN_SCHEDULER', 'true').lower() == 'true':
+        start_scheduler()
+    else:
+        logger.info("RUN_SCHEDULER=false — scheduler skipped (expected in web container)")
 
     app.run(debug=False, host='0.0.0.0', port=port)

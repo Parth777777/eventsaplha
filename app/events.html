@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,8 +28,11 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
     <link rel="stylesheet" href="./shared/css/search-bar.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
@@ -81,8 +84,8 @@
             <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <div style="flex:1;min-width:280px;">
                     <h1 class="text-4xl font-black font-headline text-on-surface mb-2">Newsroom</h1>
-                    <p class="text-on-surface-variant text-sm mb-4">Every news, alert, and event in one place — filings, policy, geopolitical, social, IPO, F&amp;O.</p>
-                    <!-- Global search — auto-mounted by shared/js/search-bar.js -->
+                    <p class="text-on-surface-variant text-sm mb-4">Every news, alert, and event in one place � filings, policy, geopolitical, social, IPO, F&amp;O.</p>
+                    <!-- Global search � auto-mounted by shared/js/search-bar.js -->
                     <div data-tw-search></div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -94,9 +97,9 @@
                     </select>
                     <select id="newsroomMinAlpha" class="rf-select" title="Minimum alpha score">
                         <option value="">Any alpha</option>
-                        <option value="50">α ≥ 50</option>
-                        <option value="65">α ≥ 65</option>
-                        <option value="80">α ≥ 80</option>
+                        <option value="50">a = 50</option>
+                        <option value="65">a = 65</option>
+                        <option value="80">a = 80</option>
                     </select>
                     <label class="flex items-center gap-2 text-xs text-on-surface-variant rf-mono" style="padding:6px 12px;border:1px solid var(--rf-line);border-radius:6px;cursor:pointer">
                         <input type="checkbox" id="newsroomT1" style="margin:0;">T1 only
@@ -104,31 +107,118 @@
                 </div>
             </div>
             <div class="ec-chips" id="newsroomChips">
-                <button class="ec-chip active" data-cat="">All</button>
-                <button class="ec-chip" data-cat="corporate">Corporate</button>
+                <button class="ec-chip active" data-cat="" data-tier="high">Top stories</button>
+                <button class="ec-chip" data-cat="corporate">Stocks</button>
                 <button class="ec-chip" data-cat="earnings">Earnings</button>
                 <button class="ec-chip" data-cat="policy">Policy</button>
                 <button class="ec-chip" data-cat="ipo">IPO</button>
-                <button class="ec-chip" data-cat="geopolitical">Geopolitical</button>
-                <button class="ec-chip" data-cat="social">Social</button>
                 <button class="ec-chip" data-cat="commodity">Commodities</button>
-                <button class="ec-chip" data-cat="forensic">Forensic</button>
+                <button class="ec-chip" data-cat="geopolitical">Economy</button>
+                <button class="ec-chip" data-cat="" data-region="international">Global wires</button>
+                <button class="ec-chip" data-cat="social">Social</button>
                 <button class="ec-chip" data-cat="bulk_deal">Bulk deals</button>
                 <button class="ec-chip" data-cat="fo">F&amp;O</button>
+                <button class="ec-chip" data-cat="forensic">Forensic</button>
             </div>
         </div>
     </header>
-    <!-- ============ INDIA PULSE · Policy & Government (newsroom hero strip) ============ -->
+
+    <!-- ============ NEWSROOM MINIMAL CARD STYLES ============
+         Page-scoped CSS that strips ec-card down to the layout in the user's
+         reference screenshots: source dot + time/date + source name + headline.
+         No impact column, no alpha pill, no summary preview, no ticker chips
+         on the card. Click still opens the article (link) or the stock popup
+         (data-ticker on the card body). Keeps the existing JS contract. -->
+    <style>
+        #eventsFeed .ec-card {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 12px;
+            padding: 14px 8px;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: transparent;
+            min-height: 0;
+        }
+        #eventsFeed .ec-card .ec-rail,
+        #eventsFeed .ec-card .ec-impact,
+        #eventsFeed .ec-card .ec-summary,
+        #eventsFeed .ec-card .ec-tickers,
+        #eventsFeed .ec-card .ec-tldr-btn,
+        #eventsFeed .ec-card .ec-spacer,
+        #eventsFeed .ec-card .ec-badge.ec-tier,
+        #eventsFeed .ec-card .ec-cat { display: none !important; }
+        #eventsFeed .ec-card .ec-meta {
+            margin: 0 0 6px 0;
+            font-size: 11px;
+            color: #8a94a8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        #eventsFeed .ec-card .ec-meta .ec-src {
+            font-weight: 600;
+            color: #b0bccf;
+        }
+        #eventsFeed .ec-card .ec-meta .ec-time {
+            color: #8a94a8;
+        }
+        #eventsFeed .ec-card .ec-title {
+            font-size: 16px;
+            line-height: 1.35;
+            font-weight: 600;
+            color: #e6ecf5;
+            margin: 0;
+        }
+        #eventsFeed .ec-card .ec-title a { color: inherit; }
+        /* Source-dot column: a small circle that picks up sentiment color */
+        #eventsFeed .ec-card::before {
+            content: "";
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            margin-top: 2px;
+            justify-self: start;
+        }
+        #eventsFeed .ec-card.ec-bull::before { background: rgba(45,212,170,0.18); }
+        #eventsFeed .ec-card.ec-bear::before { background: rgba(242,107,107,0.18); }
+        #eventsFeed .ec-list { display: block; padding: 0; }
+
+        /* Top Movers strip */
+        .tw-movers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin: 0 0 24px 0; }
+        @media (min-width: 700px)  { .tw-movers { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+        @media (min-width: 1100px) { .tw-movers { grid-template-columns: repeat(5, minmax(0,1fr)); } }
+        .tw-movers-card { padding: 14px 16px; background: var(--rf-surface, #0d1118); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; }
+        .tw-movers-card h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a94a8; margin: 0 0 10px 0; display: flex; align-items: center; gap: 6px; }
+        .tw-movers-list { display: flex; flex-direction: column; gap: 8px; }
+        .tw-movers-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; padding: 4px 0; }
+        .tw-movers-row:hover { background: rgba(255,255,255,0.03); }
+        .tw-movers-tk { font-weight: 700; font-size: 13px; color: #dde3ef; font-family: var(--rf-mono, 'Geist Mono', monospace); }
+        .tw-movers-px { font-family: var(--rf-mono, 'Geist Mono', monospace); font-size: 12px; color: #a4afc2; }
+        .tw-movers-ch { font-family: var(--rf-mono, 'Geist Mono', monospace); font-size: 12px; font-weight: 700; }
+        .tw-movers-ch.up { color: #2dd4aa; }
+        .tw-movers-ch.dn { color: #f26b6b; }
+        .tw-movers-empty { font-size: 11px; color: #8a94a8; padding: 12px 0; text-align: center; }
+    </style>
+
+    <!-- ============ TOP MOVERS STRIP ============ -->
+    <section class="tw-movers" id="topMoversStrip" aria-label="Market movers"></section>
+
+    <!-- ============ INDIA PULSE — disabled in new newsroom; node kept so legacy
+         deep-links don't break, but populated only when explicitly enabled. -->
     <div class="mb-6" id="indiaPulseSection" style="display:none;">
         <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined" style="font-size:20px;color:#ff9933;">flag</span>
             <h3 class="font-headline font-bold text-base text-on-surface">India Pulse</h3>
             <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
                   style="background:rgba(255,153,51,0.15);color:#ff9933;border:1px solid rgba(255,153,51,0.3);">
-                PM · Cabinet · RBI · Budget
+                PM � Cabinet � RBI � Budget
             </span>
             <div class="h-[1px] flex-1 bg-outline-variant/20"></div>
-            <button onclick="setCategory('policy')" class="text-[10px] text-primary font-bold hover:underline uppercase tracking-widest">Filter feed → Policy</button>
+            <button onclick="setCategory('policy')" class="text-[10px] text-primary font-bold hover:underline uppercase tracking-widest">Filter feed ? Policy</button>
         </div>
         <div id="indiaPulseList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
     </div>
@@ -137,7 +227,7 @@
       const sec = document.getElementById('indiaPulseSection');
       const list = document.getElementById('indiaPulseList');
       if (!sec || !list) return;
-      const MACRO_PAT = /\b(pm\s*modi|prime\s*minister|modi['’]?s?\s+speech|pmo|cabinet|parliament|lok\s*sabha|rajya\s*sabha|finance\s*minister|sitharaman|union\s*budget|interim\s*budget|gst\s*council|niti\s*aayog|mpc(\s+meeting|\s+decision)?|repo\s*rate|rbi\b|sebi\b|pib\b|address\s+to\s+the?\s*nation|ordinance|gazette|pli\s*scheme|cci\s*approval)\b/i;
+      const MACRO_PAT = /\b(pm\s*modi|prime\s*minister|modi['�]?s?\s+speech|pmo|cabinet|parliament|lok\s*sabha|rajya\s*sabha|finance\s*minister|sitharaman|union\s*budget|interim\s*budget|gst\s*council|niti\s*aayog|mpc(\s+meeting|\s+decision)?|repo\s*rate|rbi\b|sebi\b|pib\b|address\s+to\s+the?\s*nation|ordinance|gazette|pli\s*scheme|cci\s*approval)\b/i;
       function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
       function timeAgo(iso){if(!iso)return '';const t=new Date(iso).getTime();if(!t)return '';const d=Math.max(0,Date.now()-t);const m=Math.floor(d/60000);if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
       let items=[];
@@ -167,7 +257,7 @@
         return `<div class="p-4 rounded-lg border" style="background:linear-gradient(135deg,rgba(255,153,51,0.05),rgba(19,136,8,0.04));border-color:rgba(255,153,51,0.18);">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style="background:rgba(255,153,51,0.18);color:#ff9933;">${tag}</span>
-            <span class="text-[10px] font-mono" style="color:${impactColor};">α ${impact||'—'}</span>
+            <span class="text-[10px] font-mono" style="color:${impactColor};">a ${impact||'�'}</span>
           </div>
           <div class="font-headline font-bold text-sm text-on-surface mb-1" style="line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${title}</div>
           <div class="text-[11px] text-on-surface-variant/80" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">${summary}</div>
@@ -177,37 +267,21 @@
     })();
     </script>
 
-    <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Main Event Feed -->
-        <div class="flex-1 space-y-6" id="eventsFeed">
-            <!-- Events will be inserted here -->
-        </div>
-        
-        <!-- Right Sidebar: Alpha Movers & Sentiment -->
-        <aside class="w-full lg:w-80 space-y-6">
-            <!-- Alpha Movers -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
-                <h4 class="font-headline font-black text-on-surface mb-4 text-sm flex items-center justify-between">
-                    Alpha Movers
-                    <span class="material-symbols-outlined text-xs text-primary">auto_graph</span>
-                </h4>
-                <div class="space-y-4" id="alphaMovers">
-                    <!-- Alpha movers will be inserted here -->
-                </div>
-            </div>
-            
-            <!-- Sector Sentiment Heatmap -->
-            <div class="bg-surface-container-low rounded-xl border border-outline-variant/15 p-6">
-                <h4 class="font-headline font-black text-on-surface mb-4 text-sm">Global Sector Sentiment</h4>
-                <div class="grid grid-cols-3 gap-1" id="sectorHeatmap">
-                    <!-- Heatmap cells will be inserted here -->
-                </div>
-            </div>
-        </aside>
+    <!-- Single-column newsroom feed (sidebar widgets retired — Top Movers
+         strip above carries the same signal in less visual weight). -->
+    <div class="space-y-6" id="eventsFeed">
+        <!-- Events will be inserted here -->
     </div>
+    <!-- Legacy nodes kept for any external JS that still references them.
+         They are display:none; nothing writes to them in the new newsroom. -->
+    <div id="alphaMovers" style="display:none;"></div>
+    <div id="sectorHeatmap" style="display:none;"></div>
 
-    <!-- ============ EVENTS INSIGHT STUDIO (page-unique, moved below feed) ============ -->
-    <section class="mb-8 mt-10" id="eventsStudio">
+    <!-- ============ EVENTS INSIGHT STUDIO — retired in newsroom v2 ============
+         The rings/donut/heatmap/histogram block was visually overloaded for
+         the "what's happening" reading task. Kept hidden so any deep-link
+         to #eventsStudio doesn't 404; populate it only on /events.html?debug=1. -->
+    <section class="mb-8 mt-10" id="eventsStudio" style="display:none;">
       <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr;gap:14px;">
         <div class="widget" style="min-height:240px;">
           <div class="widget__head">
@@ -273,7 +347,7 @@
         const total = sigs.length;
         const pct = total ? Math.round(bull / total * 100) : 0;
         Widgets.donut(document.getElementById('evDonut'), pct,
-          {sublabel: bull + ' bull · ' + bear + ' bear'});
+          {sublabel: bull + ' bull � ' + bear + ' bear'});
 
         Widgets.heatmap(document.getElementById('evHeat'), events.map(e => ({ts: e.created_at || e.published_at})));
 
@@ -300,14 +374,10 @@
 
 </main>
 
-<!-- Phase 1.5 news split: articles vs social buzz vs filings -->
-<div data-alpha="news-split" class="jargon-scan" style="padding:16px;margin:16px;border:1px solid #2a3142;border-radius:10px;background:#0f1420"></div>
+<!-- Phase 1.5 news-split + volume-anomaly strips retired from newsroom v2.
+     phase_1_5.js still mounts other things; harmless if the data-alpha hooks
+     are missing. -->
 
-<!-- Phase 1.5 unexplained volume feed -->
-<div style="margin:16px;padding:12px 16px;border:1px solid #2a3142;border-radius:10px;background:#0f1420">
-  <div style="font-size:12px;color:#8c909f;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:8px">Volume anomalies</div>
-  <div data-alpha="unexplained-volume"></div>
-</div>
 
 <script src="./shared/js/app.js"></script>
 <script src="./shared/js/news-time.js"></script>
@@ -320,22 +390,40 @@
 <script src="./shared/js/event-card.js"></script>
 <script src="./shared/js/search-bar.js" defer></script>
 <script>
-// Newsroom — single unified feed for every category. Reads /api/feed (which
-// transparently UNIONs events + signals + bulk_deals + IPO state + F&O).
+// Newsroom v2 — clean categorized news feed. Reads /api/feed (which
+// transparently UNIONs events + signals + bulk_deals + IPO state + F&O)
+// with the news_quality classifier filtering noise by default.
 let currentCategory = '';
 let currentHours = 24;
 let currentMinAlpha = null;
 let currentT1Only = false;
+let currentMinQuality = 'high';      // chip-driven: Top stories default
+let currentForceSourceTier = null;    // chip-driven (legacy; replaced by region)
+let currentRegion = null;             // chip-driven: 'domestic' | 'international' | null
 let sigByTicker = {};
 let sseSub = null;
 
 const VALID_CATS = ['', 'corporate', 'earnings', 'policy', 'ipo', 'geopolitical',
                     'social', 'commodity', 'forensic', 'bulk_deal', 'fo'];
 
-function setCategory(cat) {
+function setCategory(cat, chipEl) {
     currentCategory = cat;
+    // Chip-driven knobs. data-tier on the chip overrides min_quality;
+    // data-source-tier forces a tier ceiling (used for Global wires).
+    if (chipEl) {
+        currentMinQuality = chipEl.dataset.tier || 'meaningful';
+        currentForceSourceTier = chipEl.dataset.sourceTier
+            ? parseInt(chipEl.dataset.sourceTier, 10) : null;
+        currentRegion = chipEl.dataset.region || null;
+    } else {
+        currentMinQuality = 'meaningful';
+        currentForceSourceTier = null;
+        currentRegion = null;
+    }
     document.querySelectorAll('#newsroomChips .ec-chip').forEach(btn => {
-        btn.classList.toggle('active', (btn.dataset.cat || '') === cat);
+        btn.classList.toggle('active',
+            (btn.dataset.cat || '') === cat &&
+            (btn.dataset.tier || '') === (chipEl ? (chipEl.dataset.tier || '') : ''));
     });
     loadFeed();
 }
@@ -378,74 +466,99 @@ async function loadFeed() {
         category: currentCategory || '',
         hours: currentHours,
         limit: 150,
+        min_quality: currentMinQuality || 'meaningful',
     };
     if (currentMinAlpha) params.min_alpha = currentMinAlpha;
-    if (currentT1Only) params.source_tier = 1;
+    if (currentRegion) params.region = currentRegion;
+    // Legacy `source_tier` knob — preferred path is now `region`.
+    if (currentForceSourceTier != null) {
+        params.source_tier = currentForceSourceTier;
+    } else if (currentT1Only) {
+        params.source_tier = 1;
+    }
     let items = await EventCard.fetchFeed(params);
     items = clusterFeed(items);
     feedDiv.innerHTML = EventCard.renderList(items, {
         emptyTitle: 'Nothing here yet',
         emptySub: currentCategory
             ? 'No ' + EventCard.categoryLabel(currentCategory) + ' items in the selected window.'
-            : 'No items in the selected window.',
+            : 'No high-quality items in the selected window. Try widening to "Last 7d" or relax the tier.',
     });
 
-    // Alpha Movers + sector heatmap (right rail) — best effort, doesn't block feed
-    try {
-        const signals = await LiveData.getTopSignals(5);
-        const moversDiv = document.getElementById('alphaMovers');
-        if (moversDiv && signals && signals.length) {
-            moversDiv.innerHTML = signals.slice(0, 4).map(sig => `
-                <div class="p-3 bg-surface-container-high rounded-lg border border-outline-variant/5">
-                    <div class="flex items-center justify-between mb-1">
-                        <div>
-                            <span class="block text-xs font-black text-on-background">${sig.ticker}</span>
-                            <span class="text-[10px] text-on-surface-variant">${(sig.event_type || '').replace(/_/g, ' ')}</span>
-                        </div>
-                        <span class="text-secondary font-mono font-black text-sm">${(sig.alpha_score || 0).toFixed(1)}</span>
-                    </div>
-                    <span class="block mt-1 text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">${sig.sentiment || 'neutral'}</span>
-                </div>
-            `).join('');
-            sigByTicker = {};
-            for (const s of signals) sigByTicker[s.ticker] = s;
-        }
-    } catch (e) { /* sidebar best-effort */ }
+    // Right-sidebar widgets retired — Top Movers strip above carries the
+    // same market-temperature signal. loadFeed() no longer touches DOM
+    // outside #eventsFeed.
+}
 
-    // Sector sentiment heatmap — live from /api/sectors (real bullish/bearish
-    // counts per sector). Falls back to a clean empty state when the API
-    // returns nothing — no hardcoded sectors.
+// ============ TOP MOVERS STRIP ============
+// 4 cards: Gainers, Losers, Highest Volume, Most Volatile.
+// Backed by /api/movers/spike which scans the broad NSE universe and
+// returns ticker / price / pct_change / vol_multiple / alpha_score.
+async function loadTopMovers() {
+    const strip = document.getElementById('topMoversStrip');
+    if (!strip) return;
+    const titles = ['Gainers', 'Losers', 'Highest volume', 'Unusual volume', 'Most volatile'];
+    strip.innerHTML = titles
+        .map(t => `<div class="tw-movers-card"><h4>${t}</h4><div class="tw-movers-empty">Loading…</div></div>`)
+        .join('');
+
+    let rows = [];
     try {
-        const heatDiv = document.getElementById('sectorHeatmap');
-        if (!heatDiv) return;
-        const r = await fetch('/api/sectors').then(x => x.json()).catch(() => null);
-        const rows = (r && r.data) || [];
-        if (!rows.length) {
-            heatDiv.innerHTML = '<div class="col-span-3 text-[10px] text-on-surface-variant/50 text-center py-3">No sector signals yet.</div>';
-            return;
+        const r = await fetch('/api/movers/spike?min_pct=0&limit=200', { credentials: 'same-origin' });
+        const j = await r.json();
+        rows = Array.isArray(j.data) ? j.data : [];
+    } catch (_) { rows = []; }
+
+    function fmtCr(v){ if (v == null) return ''; const n = Number(v); return n >= 1000 ? '₹' + (n/1000).toFixed(2) + 'k cr' : '₹' + n.toFixed(1) + ' cr'; }
+    function rowHtml(r, mode) {
+        const ch = Number(r.pct_change || 0);
+        const cls = ch >= 0 ? 'up' : 'dn';
+        const sign = ch >= 0 ? '+' : '';
+        const pct = (Math.abs(ch) >= 100 ? ch.toFixed(0) : ch.toFixed(2));
+        let right;
+        if (mode === 'volume') {
+            right = `<span class="tw-movers-px">${fmtCr(r.turnover_cr)}</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+        } else if (mode === 'unusual') {
+            right = `<span class="tw-movers-px">${r.vol_multiple != null ? r.vol_multiple.toFixed(1) + '×' : ''} avg vol</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
+        } else {
+            right = `<span class="tw-movers-px">₹${Number(r.price || 0).toFixed(2)}</span>
+                     <span class="tw-movers-ch ${cls}">${sign}${pct}%</span>`;
         }
-        // Compute net bullish share for each sector → drives cell colour.
-        const cells = rows
-            .map(s => {
-                const bull = Number(s.bullish || s.bull || 0);
-                const bear = Number(s.bearish || s.bear || 0);
-                const total = bull + bear || 1;
-                const netBull = bull / total;
-                const sector = (s.sector || s.name || '').slice(0, 5).toUpperCase();
-                const cls = netBull >= 0.6 ? 'secondary'
-                          : netBull <= 0.4 ? 'error'
-                          : 'on-surface-variant';
-                return { sector, cls, score: netBull };
-            })
-            .filter(c => c.sector)
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 9);
-        heatDiv.innerHTML = cells.map(c => `
-            <div class="h-8 bg-${c.cls}/30 rounded-sm flex items-center justify-center text-[10px] font-black text-on-surface border border-${c.cls}/20 hover:border-${c.cls}/40 transition-all" title="${(c.score*100).toFixed(0)}% bullish">
-                ${c.sector}
-            </div>
-        `).join('');
-    } catch (e) { /* sidebar best-effort */ }
+        return `<div class="tw-movers-row" data-tk="${r.ticker}">
+            <span class="tw-movers-tk">${r.ticker}</span>
+            <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;">${right}</div>
+          </div>`;
+    }
+    function block(title, list, mode, emptyMsg) {
+        const body = list.length
+            ? `<div class="tw-movers-list">${list.map(r => rowHtml(r, mode)).join('')}</div>`
+            : `<div class="tw-movers-empty">${emptyMsg}</div>`;
+        return `<div class="tw-movers-card"><h4>${title}</h4>${body}</div>`;
+    }
+    const gainers  = rows.filter(r => r.pct_change > 0).sort((a,b) => b.pct_change - a.pct_change).slice(0, 5);
+    const losers   = rows.filter(r => r.pct_change < 0).sort((a,b) => a.pct_change - b.pct_change).slice(0, 5);
+    const turnover = rows.filter(r => r.turnover_cr != null).sort((a,b) => (b.turnover_cr||0) - (a.turnover_cr||0)).slice(0, 5);
+    const unusual  = rows.filter(r => r.vol_multiple != null && r.vol_multiple >= 1.5)
+                         .sort((a,b) => (b.vol_multiple||0) - (a.vol_multiple||0)).slice(0, 5);
+    const volatile = rows.slice().sort((a,b) => Math.abs(b.pct_change||0) - Math.abs(a.pct_change||0)).slice(0, 5);
+
+    const strip2 = document.getElementById('topMoversStrip');
+    if (!strip2) return;
+    strip2.innerHTML = [
+        block('Gainers',        gainers,  'gainers',  'No qualifying gainers in this window.'),
+        block('Losers',         losers,   'losers',   'No qualifying losers in this window.'),
+        block('Highest volume', turnover, 'volume',   'No turnover data yet.'),
+        block('Unusual volume', unusual,  'unusual',  'No volume outliers yet.'),
+        block('Most volatile',  volatile, 'volatile', 'No volatile names yet.'),
+    ].join('');
+    strip2.querySelectorAll('.tw-movers-row').forEach(r => {
+        r.addEventListener('click', () => {
+            const tk = r.getAttribute('data-tk');
+            if (tk) location.href = `stock.html?ticker=${encodeURIComponent(tk)}`;
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -454,9 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let initial = (url.searchParams.get('category') || location.hash.replace('#', '') || '').toLowerCase();
     if (!VALID_CATS.includes(initial)) initial = '';
     currentCategory = initial;
+    // Mirror Top stories default — high quality, no category, no source tier
+    // override — unless the deep-link picked a specific category.
+    currentMinQuality = initial ? 'meaningful' : 'high';
+    currentForceSourceTier = null;
     document.querySelectorAll('#newsroomChips .ec-chip').forEach(btn => {
-        btn.classList.toggle('active', (btn.dataset.cat || '') === currentCategory);
-        btn.addEventListener('click', () => setCategory(btn.dataset.cat || ''));
+        const isInitial = (btn.dataset.cat || '') === currentCategory &&
+                          (initial ? (btn.dataset.tier || '') !== 'high'
+                                   : (btn.dataset.tier || '') === 'high');
+        btn.classList.toggle('active', isInitial);
+        btn.addEventListener('click', () => setCategory(btn.dataset.cat || '', btn));
     });
 
     document.getElementById('newsroomHours').addEventListener('change', (e) => {
@@ -468,6 +588,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newsroomT1').addEventListener('change', (e) => {
         currentT1Only = !!e.target.checked; loadFeed();
     });
+
+    // Top Movers strip — refresh every 90s; cheap because /api/movers/spike
+    // is cached server-side for 5 min anyway.
+    loadTopMovers();
+    setInterval(loadTopMovers, 90 * 1000);
 
     DataRefresher.start(loadFeed, 60000);
     Auth.updateAuthUI();
@@ -489,5 +614,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('beforeunload', () => { try { sseSub && sseSub.close(); } catch(e){} });
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

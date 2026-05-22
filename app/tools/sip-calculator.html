@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIP Calculator — Monthly Mutual Fund Investment Returns | Tickwave</title>
+  <meta name="description" content="Free SIP calculator for Indian mutual funds. Enter monthly investment, expected return, tenure — see future value, total invested, gains and yearly growth chart. Instant, no signup.">
+  <meta name="keywords" content="SIP calculator, sip return calculator, mutual fund SIP calculator India, monthly SIP, sip investment calculator, sip future value">
+  <meta property="og:title" content="SIP Calculator — See What Your Monthly Mutual Fund SIP Will Be Worth">
+  <meta property="og:description" content="Calculate SIP returns instantly. Premium UI with yearly growth chart, invested vs returns split, and Indian number formatting.">
+  <link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+  <link rel="canonical" href="https://alphaevent.in/app/tools/sip-calculator.html">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools">
+
+  <div class="tk-page">
+
+    <header class="tk-topbar">
+      <a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="./" class="active">Calculators</a>
+        <a href="../events.html">Newsroom</a>
+      </nav>
+    </header>
+
+    <section class="tk-hero">
+      <div>
+        <div class="tk-eyebrow">SIP Calculator</div>
+        <h1>How much will your <span class="accent">monthly SIP</span> be worth?</h1>
+        <p class="lead">Enter the amount you plan to invest every month, the expected annual return, and how long you'll stay invested. We'll compute the future value, the total you put in, and what compounding earned for you.</p>
+      </div>
+      <div class="tk-hero-art">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+          <defs><linearGradient id="g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2dd4aa"/><stop offset="1" stop-color="#8eb4e0"/></linearGradient></defs>
+          <path d="M20 150 Q60 120 80 130 T140 80 T180 30" stroke="url(#g)" stroke-width="3" fill="none"/>
+          <circle cx="20" cy="150" r="4" fill="#2dd4aa"/><circle cx="80" cy="130" r="4" fill="#2dd4aa"/>
+          <circle cx="140" cy="80" r="5" fill="#8eb4e0"/><circle cx="180" cy="30" r="6" fill="#b794ff"/>
+          <text x="20" y="180" font-family="Geist Mono" font-size="10" fill="#8a94a8">Y1</text>
+          <text x="100" y="180" font-family="Geist Mono" font-size="10" fill="#8a94a8">Y10</text>
+          <text x="170" y="180" font-family="Geist Mono" font-size="10" fill="#8a94a8">Y20</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="tk-calc">
+      <div class="tk-card">
+        <h2>Your inputs</h2>
+
+        <div class="tk-field">
+          <div class="tk-field-row">
+            <label class="tk-field-label">Monthly investment <span class="hint">(₹)</span></label>
+            <span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="amtIn" value="10000" min="500" max="1000000" step="500"></span>
+          </div>
+          <input type="range" id="amt" class="tk-slider" min="500" max="200000" step="500" value="10000">
+          <div class="tk-slider-bounds"><span>₹500</span><span>₹2,00,000</span></div>
+        </div>
+
+        <div class="tk-field">
+          <div class="tk-field-row">
+            <label class="tk-field-label">Expected return p.a. <span class="hint">(%)</span></label>
+            <span class="tk-field-value-wrap"><input type="number" id="rateIn" value="12" min="1" max="30" step="0.5"><span class="suffix">%</span></span>
+          </div>
+          <input type="range" id="rate" class="tk-slider" min="1" max="30" step="0.5" value="12">
+          <div class="tk-slider-bounds"><span>1%</span><span>30%</span></div>
+        </div>
+
+        <div class="tk-field">
+          <div class="tk-field-row">
+            <label class="tk-field-label">Tenure <span class="hint">(years)</span></label>
+            <span class="tk-field-value-wrap"><input type="number" id="yrsIn" value="15" min="1" max="40" step="1"><span class="suffix">yr</span></span>
+          </div>
+          <input type="range" id="yrs" class="tk-slider" min="1" max="40" step="1" value="15">
+          <div class="tk-slider-bounds"><span>1 yr</span><span>40 yr</span></div>
+        </div>
+      </div>
+
+      <div class="tk-card">
+        <h2>What you get</h2>
+        <div class="tk-result-headline">Future value</div>
+        <div class="tk-result-value" id="futureValue">₹50.46 L</div>
+        <div class="tk-result-sub">After <span id="subYears">15</span> years at <span id="subRate">12</span>% expected return</div>
+
+        <div class="tk-chart">
+          <svg id="donut" viewBox="0 0 220 220"></svg>
+          <div class="tk-legend">
+            <span><span class="dot" style="background:#8eb4e0"></span>Invested<strong id="lgInvested">—</strong></span>
+            <span><span class="dot" style="background:#2dd4aa"></span>Returns<strong id="lgReturns">—</strong></span>
+          </div>
+        </div>
+
+        <div class="tk-stats">
+          <div class="tk-stat"><div class="lbl">Total invested</div><div class="val" id="invested">—</div></div>
+          <div class="tk-stat"><div class="lbl">Estimated returns</div><div class="val bull" id="returns">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tk-chart" style="margin-bottom:40px;">
+      <h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif;color:#dde3ef;">Year-by-year growth</h2>
+      <svg id="area"></svg>
+      <div class="tk-legend">
+        <span><span class="dot" style="background:#8eb4e0"></span>Cumulative invested</span>
+        <span><span class="dot" style="background:#2dd4aa"></span>Wealth gained</span>
+      </div>
+    </section>
+
+    <section class="tk-content">
+      <section>
+        <h2>What is a SIP?</h2>
+        <p>A <strong>Systematic Investment Plan (SIP)</strong> is the practice of investing a fixed rupee amount in a mutual fund every month (or any chosen interval). Each contribution buys units at the prevailing NAV — so you average your cost across market highs and lows. Over a long enough horizon, SIPs let compounding do the heavy lifting: the returns earned in earlier years themselves earn returns in later years.</p>
+        <p>Equity-oriented mutual funds in India have historically delivered <strong>10-15% CAGR</strong> over 15-20 year periods, though year-to-year returns are volatile. The SIP calculator above assumes a constant return; real returns will fluctuate, but the long-term math is a useful guide for planning.</p>
+      </section>
+
+      <section>
+        <h2>How the SIP formula works</h2>
+        <p>The future value of a monthly SIP compounded monthly is:</p>
+        <div class="tk-formula">FV = P × [ ((1 + r)<sup>n</sup> − 1) / r ] × (1 + r)</div>
+        <p>Where:</p>
+        <ul>
+          <li><strong>P</strong> = monthly investment in rupees</li>
+          <li><strong>r</strong> = monthly rate = annual rate ÷ 12 (e.g. 12% / 12 = 1% = 0.01)</li>
+          <li><strong>n</strong> = total months (years × 12)</li>
+        </ul>
+        <p>Example: ₹10,000 per month for 15 years at 12% per annum =
+        <code>10000 × ((1.01^180 − 1) / 0.01) × 1.01 ≈ ₹50.46 lakh</code>. You invested ₹18 lakh; ₹32.46 lakh came from compounding alone.</p>
+      </section>
+
+      <section>
+        <h2>How to use this calculator</h2>
+        <p>Drag the sliders or type into the number boxes. The future value, total invested, and wealth gained update instantly. The donut shows the invested-vs-returns split; the area chart shows year-by-year growth so you can see when compounding starts dominating contributions (usually after year 8-10).</p>
+        <p><strong>Tip:</strong> Try 10%, 12%, 14% return rates to see how sensitive the final corpus is to small changes in expected return. The difference between 10% and 14% over 20 years is staggering — that's why expense ratio and fund selection matter.</p>
+      </section>
+
+      <section class="tk-faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Are SIP returns guaranteed?</summary><p>No. Mutual fund returns are market-linked. This calculator assumes a constant rate of return — real returns will vary year to year. Use it for planning, not as a promise.</p></details>
+        <details><summary>What return rate should I assume?</summary><p>For equity mutual funds, 11-13% CAGR is a reasonable long-term assumption. For hybrid funds, 9-11%. For debt funds, 6-8%. Conservative planners use 10% across the board.</p></details>
+        <details><summary>Does the SIP calculator account for taxes and exit load?</summary><p>No — this calculator shows gross returns. Equity mutual fund gains over ₹1.25 lakh per year are taxed at 12.5% LTCG (when held over a year). For an accurate after-tax view, use our <a href="capital-gains-tax-calculator.html">Capital Gains Calculator</a>.</p></details>
+        <details><summary>Should I do SIP or lumpsum?</summary><p>If you have a large amount sitting in cash and the market is at fair value, a phased lumpsum (STP over 6-12 months) often beats SIP. If you're saving from monthly income, SIP is the natural fit. Compare both using the <a href="lumpsum-calculator.html">Lumpsum Calculator</a>.</p></details>
+        <details><summary>What about step-up SIP — raising the SIP each year?</summary><p>Stepping up your SIP by 10% each year (mirroring salary growth) can grow the final corpus by 60-80%. See our <a href="step-up-sip-calculator.html">Step-up SIP Calculator</a>.</p></details>
+      </section>
+    </section>
+
+    <section class="tk-related">
+      <h2>Related calculators</h2>
+      <div class="tk-related-grid">
+        <a href="lumpsum-calculator.html">Lumpsum Calculator<span class="sub">One-time investment growth</span></a>
+        <a href="step-up-sip-calculator.html">Step-up SIP Calculator<span class="sub">Raise SIP every year</span></a>
+        <a href="goal-sip-calculator.html">Goal SIP Calculator<span class="sub">Reverse — how much to invest</span></a>
+        <a href="cagr-calculator.html">CAGR Calculator<span class="sub">Compute annualised returns</span></a>
+        <a href="retirement-calculator.html">Retirement Calculator<span class="sub">How much corpus do you need</span></a>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="../shared/js/tools.js"></script>
+  <script>
+    (function () {
+      var T = window.TKTools;
+
+      function compute() {
+        var P = Number(document.getElementById('amt').value);
+        var rAnnual = Number(document.getElementById('rate').value) / 100;
+        var years = Number(document.getElementById('yrs').value);
+        var months = years * 12;
+        var r = rAnnual / 12;
+        var fv = r === 0 ? P * months : P * ((Math.pow(1 + r, months) - 1) / r) * (1 + r);
+        var invested = P * months;
+        var returns = fv - invested;
+
+        document.getElementById('subYears').textContent = years;
+        document.getElementById('subRate').textContent = (rAnnual * 100).toFixed(rAnnual * 100 % 1 === 0 ? 0 : 1);
+        T.animateNumber(document.getElementById('futureValue'), fv);
+        T.animateNumber(document.getElementById('invested'), invested);
+        T.animateNumber(document.getElementById('returns'), returns);
+        document.getElementById('lgInvested').textContent = T.formatINRShort(invested);
+        document.getElementById('lgReturns').textContent  = T.formatINRShort(returns);
+
+        T.drawDonut(document.getElementById('donut'),
+          [{ value: invested, color: '#8eb4e0' }, { value: returns, color: '#2dd4aa' }],
+          { centerLabel: 'Future value', centerValue: T.formatINRShort(fv) });
+
+        // Year-by-year accumulated invested and total value
+        var invSeries = [], gainSeries = [], labels = [];
+        for (var y = 1; y <= years; y++) {
+          var n = y * 12;
+          var fvY = r === 0 ? P * n : P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+          var invY = P * n;
+          invSeries.push(invY);
+          gainSeries.push(Math.max(0, fvY - invY));
+          labels.push('Y' + y);
+        }
+        T.drawStackedArea(document.getElementById('area'), [
+          { label: 'Invested', color: '#3a6ea8', values: invSeries },
+          { label: 'Returns',  color: '#2dd4aa', values: gainSeries },
+        ], { xLabels: labels });
+      }
+
+      T.bindSlider({ slider: document.getElementById('amt'),  input: document.getElementById('amtIn'),  onChange: compute });
+      T.bindSlider({ slider: document.getElementById('rate'), input: document.getElementById('rateIn'), onChange: compute });
+      T.bindSlider({ slider: document.getElementById('yrs'),  input: document.getElementById('yrsIn'),  onChange: compute });
+      compute();
+
+      T.mountFAQ([
+        { q: 'Are SIP returns guaranteed?', a: 'No. Mutual fund returns are market-linked and this calculator assumes a constant rate of return for planning purposes only.' },
+        { q: 'What return rate should I assume for SIP?', a: 'For equity mutual funds, 11-13% CAGR is a reasonable long-term assumption. Hybrid funds 9-11%; debt 6-8%.' },
+        { q: 'Does this SIP calculator include taxes?', a: 'No — it shows gross returns. Equity LTCG over Rs 1.25 lakh/year is taxed at 12.5% when held over a year.' },
+        { q: 'SIP vs lumpsum which is better?', a: 'SIP is natural when investing from monthly income. Lumpsum (or STP) can outperform if you have a large amount and market is at fair value.' },
+      ]);
+      T.mountSoftwareSchema({
+        name: 'Tickwave SIP Calculator',
+        description: 'Free Indian SIP calculator — monthly investment to future value with compounding.',
+      });
+    })();
+  </script>
+</body>
+</html>

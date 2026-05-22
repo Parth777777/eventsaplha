@@ -315,14 +315,66 @@ def news_fast():
     if kinds_set:
         items = [it for it in items if (it.get("event_type") or "").lower() in kinds_set]
 
-    # 7) sort: prefer recent + high-tier. We multiply age in hours by a tier
-    # penalty so a fresh ET/Mint headline beats a fresher reddit post.
+    # 6b) news-quality enrichment + noise suppression. Default-on so the
+    # newsroom-grade Live Wire stays institutional unless caller explicitly
+    # opts back into noise via ?include_noise=1. Default tier "meaningful"
+    # filters move-only / SEO / generic headlines.
+    include_noise = (request.args.get("include_noise") or "").lower() in ("1", "true", "yes")
+    min_quality = (request.args.get("min_quality") or "meaningful").strip().lower() or None
+    try:
+        from news_quality import classify_dict as _classify_news_dict
+        _TIER_ORDER = {"noise": 0, "generic": 1, "meaningful": 2,
+                       "high": 3, "critical": 4}
+        min_tier_idx = _TIER_ORDER.get(min_quality, -1) if min_quality else -1
+        kept: List[Dict] = []
+        for it in items:
+            q = _classify_news_dict({
+                "title": it.get("title"),
+                "summary": it.get("summary"),
+                "source": it.get("feed") or it.get("source"),
+                "source_tier": it.get("tier"),
+            })
+            it["impact_tier"] = q.impact_tier
+            it["quality_score"] = q.quality_score
+            if q.kinds:
+                it["kinds"] = q.kinds
+            if q.market_implication:
+                it["market_implication"] = q.market_implication
+            if not include_noise and q.is_noise:
+                continue
+            if min_tier_idx >= 0 and _TIER_ORDER.get(q.impact_tier, 0) < min_tier_idx:
+                continue
+            kept.append(it)
+        items = kept
+    except Exception as _qe:
+        logger.debug(f"news_fast quality enrichment skipped: {_qe}")
+
+    # 7a) Hard freshness cap — drop items older than `max_age_hours`. Market
+    # has already reacted; stale news clutters the home feed. Default 12h.
+    try:
+        max_age_hours = float(request.args.get("max_age_hours", "12"))
+    except (TypeError, ValueError):
+        max_age_hours = 12.0
+    items = [it for it in items if (it.get("age_hours") or 0) <= max_age_hours]
+
+    # Region filter — same semantics as /api/feed.
+    region = (request.args.get("region") or "").strip().lower() or None
+    if region in ("domestic", "international"):
+        is_intl = _build_is_international()
+        if region == "domestic":
+            items = [it for it in items if not is_intl(it.get("feed") or it.get("source"))]
+        else:
+            items = [it for it in items if is_intl(it.get("feed") or it.get("source"))]
+
+    # 7b) sort: recency-dominant. Quality and tier are MILD modulators so a
+    # fresh decent headline always outranks a stale higher-quality one.
     def _sort_key(x):
-        age = x.get("age_hours") or 999.0
+        age = max(0.05, x.get("age_hours") or 999.0)
         tier = x.get("tier") or 4
-        # Tier 1 (filings) = 1.0×, Tier 2 (press) = 1.4×, Tier 3 = 2.5×, Tier 4 = 5×
-        penalty = {1: 1.0, 2: 1.4, 3: 2.5, 4: 5.0}.get(tier, 5.0)
-        return age * penalty
+        penalty = {1: 0.85, 2: 1.0, 3: 1.25, 4: 1.6}.get(tier, 1.6)
+        qs = x.get("quality_score") or 50
+        quality_mult = max(0.7, 1.2 - qs / 200.0)
+        return age * penalty * quality_mult
     items.sort(key=_sort_key)
 
     return jsonify({
@@ -398,6 +450,38 @@ _COMMODITY_KEYWORDS = (
     "lng", "wheat", "corn", "sugar", "cotton", "palm oil", "coffee",
     "aluminium", "aluminum",
 )
+
+
+# International press-wire source keys (matches scraper/config.py RSS keys
+# and a few canonical Google-News-routed names). When `?region=domestic` is
+# requested, items from these sources are filtered out so the India-focused
+# home feed never gets diluted by US/UK/global wires.
+_INTERNATIONAL_SOURCE_KEYS = frozenset({
+    "reuters_business_global", "bloomberg_markets", "dow_jones_newswires",
+    "globe_newswire", "marketwatch_top", "marketwatch_marketpulse",
+    "cnbc_top_news", "cnbc_economy", "cnbc_finance", "bbc_business",
+    "ft_markets", "wsj_markets", "tradingeconomics_news", "yahoo_finance_top",
+})
+_INTERNATIONAL_DOMAIN_HINTS = (
+    "reuters.com", "bloomberg.com", "globenewswire.com", "marketwatch.com",
+    "wsj.com", "ft.com", "bbc.co.uk", "tradingeconomics.com",
+    "finance.yahoo.com", "dowjones.com", "dpa-afx", "globenewswire",
+)
+
+
+def _build_is_international():
+    """Return a fast `is_international(source)` predicate. source can be the
+    feed name (e.g. 'reuters_business_global') or a URL fragment."""
+    intl_keys = _INTERNATIONAL_SOURCE_KEYS
+    intl_hints = _INTERNATIONAL_DOMAIN_HINTS
+    def _check(src):
+        if not src:
+            return False
+        s = str(src).lower()
+        if s in intl_keys:
+            return True
+        return any(h in s for h in intl_hints)
+    return _check
 
 
 def _classify_category(event_type: str, title: str = "", source: str = "") -> str:
@@ -778,6 +862,57 @@ def feed():
     if max_tier is not None:
         items = [it for it in items if (it.get("source_tier") or 99) <= max_tier]
 
+    # News-quality enrichment + noise suppression. Default-on so the unified
+    # feed stays institutional unless caller opts back into noise.
+    # Default `min_quality` is "meaningful" — we filter generic move-only
+    # SEO content from the newsroom by default. Callers can pass
+    # ?min_quality=generic to relax this, or ?min_quality=high to tighten.
+    include_noise = (request.args.get("include_noise") or "").lower() in ("1", "true", "yes")
+    min_quality = (request.args.get("min_quality") or "meaningful").strip().lower() or None
+    try:
+        from news_quality import classify_dict as _classify_news_dict
+        _TIER_ORDER = {"noise": 0, "generic": 1, "meaningful": 2,
+                       "high": 3, "critical": 4}
+        min_tier_idx = _TIER_ORDER.get(min_quality, -1) if min_quality else -1
+        try:
+            from causal_map import event_implication as _causal_lookup
+        except Exception:
+            _causal_lookup = None
+        kept: List[Dict] = []
+        for it in items:
+            q = _classify_news_dict({
+                "title": it.get("title"),
+                "summary": it.get("summary"),
+                "source": it.get("source") or it.get("feed"),
+                "source_tier": it.get("source_tier"),
+            })
+            it["impact_tier"] = q.impact_tier
+            it["quality_score"] = q.quality_score
+            if q.kinds:
+                it["kinds"] = q.kinds
+            if q.market_implication:
+                it["market_implication"] = q.market_implication
+            # Macro causal lookup: surface beneficiary / affected sectors when
+            # the event text matches a known policy / macro pattern.
+            if _causal_lookup is not None:
+                try:
+                    blob = (it.get("title") or "") + "  " + (it.get("summary") or "")
+                    impl = _causal_lookup(blob)
+                    if impl:
+                        it["beneficiary_sectors"] = impl.get("helps") or []
+                        it["affected_sectors"] = impl.get("hurts") or []
+                        it["market_implication"] = impl.get("summary") or it.get("market_implication")
+                except Exception:
+                    pass
+            if not include_noise and q.is_noise:
+                continue
+            if min_tier_idx >= 0 and _TIER_ORDER.get(q.impact_tier, 0) < min_tier_idx:
+                continue
+            kept.append(it)
+        items = kept
+    except Exception as _qe:
+        logger.debug(f"feed quality enrichment skipped: {_qe}")
+
     # Dedupe by event_id, then content hash
     try:
         from source_tiering import content_hash
@@ -799,13 +934,72 @@ def feed():
     except Exception:
         pass
 
-    # Sort: tier-weighted recency (same scheme as /api/news/fast)
+    # Hard freshness cap. The market has already priced in anything older
+    # than `max_age_hours`, so showing it on a "latest" feed is misleading.
+    # Caller can override with ?max_age_hours=N. Default 12h keeps the feed
+    # actionable on the home tab; the events page widens to 24h via its
+    # own hours selector.
+    try:
+        max_age_hours = float(request.args.get("max_age_hours", "12"))
+    except (TypeError, ValueError):
+        max_age_hours = 12.0
+    items = [it for it in items if (it.get("age_hours") or 0) <= max_age_hours]
+
+    # Region filter — keeps international press wires (Reuters / Bloomberg /
+    # Dow Jones / MarketWatch / BBC / FT / WSJ / GlobeNewswire / CNBC US /
+    # Trading Economics / Yahoo) out of the India-focused home feed. The
+    # Newsroom's "Global wires" tab opts in explicitly.
+    region = (request.args.get("region") or "").strip().lower() or None
+    if region in ("domestic", "international"):
+        is_intl = _build_is_international()
+        if region == "domestic":
+            items = [it for it in items if not is_intl(it.get("source") or it.get("feed"))]
+        else:
+            items = [it for it in items if is_intl(it.get("source") or it.get("feed"))]
+
+    # Sort: recency-dominant with light quality + source-tier modulation.
+    # A 6h-old generic press release no longer beats a 30-min-old earnings
+    # filing, even when the filing's quality_score is lower.
     def _key(x):
-        age = x.get("age_hours") or 999.0
+        age = max(0.05, x.get("age_hours") or 999.0)
         tier = x.get("source_tier") or 4
-        penalty = {1: 1.0, 2: 1.4, 3: 2.5, 4: 5.0}.get(tier, 5.0)
-        return age * penalty
+        penalty = {1: 0.85, 2: 1.0, 3: 1.25, 4: 1.6}.get(tier, 1.6)
+        qs = x.get("quality_score") or 50
+        # quality_score 50 = neutral, 90 = 0.8×, 20 = 1.15×
+        quality_mult = max(0.7, 1.2 - qs / 200.0)
+        return age * penalty * quality_mult
     items.sort(key=_key)
+
+    # ── Event-type diversification ────────────────────────────────────────
+    # During earnings season a pure recency+quality sort gets dominated by
+    # 50% earnings — the user sees "another earnings, another earnings…"
+    # and the rest of the market disappears. The diversify_max_pct param
+    # caps any single event_type at N% of the limit, demoting overflow to
+    # the bottom of the list (so it's still reachable if there's headroom).
+    #
+    # Passed as integer 1..100. When omitted, no diversification applied
+    # (keeps backwards-compat for any caller already happy with the mix).
+    diversify_max_pct = request.args.get("diversify_max_pct")
+    if diversify_max_pct not in (None, ""):
+        try:
+            pct = max(1, min(100, int(diversify_max_pct)))
+        except (TypeError, ValueError):
+            pct = None
+        if pct is not None:
+            cap = max(1, (limit * pct) // 100)
+            kept: List[Dict] = []
+            demoted: List[Dict] = []
+            per_type: Dict[str, int] = {}
+            for it in items:
+                et = (it.get("event_type") or it.get("category") or "unknown")
+                if per_type.get(et, 0) >= cap:
+                    demoted.append(it)
+                else:
+                    kept.append(it)
+                    per_type[et] = per_type.get(et, 0) + 1
+            # Top of the kept list = diversified slice. Overflow goes
+            # underneath, preserving original ranking inside each bucket.
+            items = kept + demoted
 
     return jsonify({
         "success": True,
@@ -1146,68 +1340,174 @@ def global_markets():
     return jsonify({"success": True, "data": out})
 
 
-# Comprehensive commodity catalogue — keyword bag drives event matching.
-# Each row: id (matches frontend), display name, category, yfinance symbol,
-# unit, and search keywords used to count events / score alpha.
+# MCX-priced commodity catalogue — every row is the commodity an Indian
+# trader actually watches, displayed in ₹ at the unit MCX quotes (10g for
+# gold, 1kg for silver, 1bbl for crude, etc).
+#
+# Row shape: (id, display_name, category, yf_symbol, inr_unit_label,
+#             inr_conversion, keywords)
+# `inr_conversion` is a function (usd_price, usdinr) -> inr_price at the
+# Indian unit-of-measure. None means "no conversion, use as-is".
+#
+# Why this approach:
+#   yfinance has no clean MCX/NCDEX feeds, so we use the global futures
+#   (COMEX, NYMEX, ICE) as the reference price and convert via live USDINR.
+#   The result is a within-~1% approximation of the MCX print on any given
+#   trading day — close enough for the breadth/movers cards on this page.
+#   Heavy MCX-specific basis (especially gold premium during Diwali) we
+#   accept as a known limitation; document it in the page footer.
+
+# Helper conversion factors (lambdas keep the catalog declarative)
+# yfinance unit-of-measure quirks (verified live):
+#   GC=F   → USD/troy oz       (gold)
+#   SI=F   → USD/troy oz       (silver)
+#   CL=F,BZ=F → USD/bbl
+#   NG=F   → USD/MMBtu
+#   HG=F   → USD/lb            (copper)
+#   ALI=F  → USD/metric ton    (aluminium — NOT /lb)
+#   ZNC=F,LD=F,NI=F → USD/MT   (LME base metals)
+#   SB=F,CT=F,KC=F → CENTS/lb  (ICE softs)
+#   ZS=F,ZC=F,ZW=F → CENTS/bu  (CBOT grains)
+#   FCPO=F → MYR/MT            (Bursa palm oil)
+#
+# All conversions return ₹ at MCX's standard unit-of-measure for retail
+# Indian traders. USDINR is the multiplier in every leg.
+
+def _conv_oz_to_10g(usd_per_oz, usdinr):
+    return (usd_per_oz / 31.1035) * 10 * usdinr           # ₹/10g
+
+def _conv_oz_to_kg(usd_per_oz, usdinr):
+    return (usd_per_oz * 32.1507) * usdinr                 # ₹/kg
+
+def _conv_lb_to_kg(usd_per_lb, usdinr):
+    return (usd_per_lb * 2.20462) * usdinr                 # ₹/kg (HG=F copper)
+
+def _conv_mt_to_kg(usd_per_mt, usdinr):
+    return (usd_per_mt / 1000.0) * usdinr                  # ₹/kg (LME base metals)
+
+def _conv_bbl(usd_per_bbl, usdinr):
+    return usd_per_bbl * usdinr                             # ₹/bbl
+
+def _conv_mmbtu(usd_per_mmbtu, usdinr):
+    return usd_per_mmbtu * usdinr                           # ₹/MMBtu
+
+def _conv_cents_lb_to_kg(cents_per_lb, usdinr):
+    # ICE softs (sugar/cotton/coffee) — divide cents → dollars first
+    return (cents_per_lb / 100.0 * 2.20462) * usdinr        # ₹/kg
+
+def _conv_cents_bu_to_qtl(cents_per_bu, usdinr):
+    # CBOT grains — divide cents → dollars, then 1 bu ≈ 27.2155 kg → quintal
+    return (cents_per_bu / 100.0 / 27.2155 * 100) * usdinr  # ₹/quintal
+
+def _conv_cents_lb_to_candy(cents_per_lb, usdinr):
+    # Cotton: 1 bale ≈ 170 kg ≈ 374.79 lb. Cotton ICE quote is cents/lb.
+    return (cents_per_lb / 100.0 * 374.79) * usdinr         # ₹/bale
+
+def _conv_palm_myr_mt(myr_per_mt, usdinr):
+    # Bursa palm oil quoted in MYR/MT — MYR ≈ 0.235 USD
+    # → MCX-equivalent ₹ per 10 kg.
+    return (myr_per_mt * 0.235 * usdinr) / 100.0            # ₹/10kg
+
+def _conv_cents_lb_to_qtl(cents_per_lb, usdinr):
+    # Sugar ICE → ₹/quintal
+    return (cents_per_lb / 100.0 * 220.462) * usdinr        # ₹/quintal
+
+
 _COMMODITY_CATALOG = [
-    # Energy
-    ("CRUDEOIL",    "Crude Oil (WTI)",     "Energy", "CL=F", "USD/bbl",
-     ("crude", "wti", "oil price", "barrel", "petroleum")),
-    ("BRENT",       "Brent Crude",         "Energy", "BZ=F", "USD/bbl",
+    # ── Bullion (MCX) ────────────────────────────────────────────────────
+    ("GOLD",        "Gold (MCX)",            "Bullion", "GC=F", "₹/10g",
+     _conv_oz_to_10g,
+     ("gold", "bullion", "mcx gold", "comex gold")),
+    ("SILVER",      "Silver (MCX)",          "Bullion", "SI=F", "₹/kg",
+     _conv_oz_to_kg,
+     ("silver", "mcx silver", "comex silver")),
+
+    # ── Energy (MCX) ─────────────────────────────────────────────────────
+    ("CRUDEOIL",    "Crude Oil (MCX)",       "Energy", "CL=F", "₹/bbl",
+     _conv_bbl,
+     ("crude", "wti", "oil price", "barrel", "petroleum", "opec")),
+    ("BRENT",       "Brent Crude",           "Energy", "BZ=F", "₹/bbl",
+     _conv_bbl,
      ("brent", "north sea")),
-    ("NATURALGAS",  "Natural Gas",         "Energy", "NG=F", "USD/MMBtu",
+    ("NATURALGAS",  "Natural Gas (MCX)",     "Energy", "NG=F", "₹/MMBtu",
+     _conv_mmbtu,
      ("natural gas", "henry hub", "lng")),
-    ("HEATINGOIL",  "Heating Oil",         "Energy", "HO=F", "USD/gal",
-     ("heating oil", "diesel")),
-    ("RBOB",        "RBOB Gasoline",       "Energy", "RB=F", "USD/gal",
-     ("gasoline", "rbob", "petrol")),
-    # Precious metals
-    ("GOLD",        "Gold",                "Metals", "GC=F", "USD/oz",
-     ("gold price", "gold rallies", "comex gold", "bullion")),
-    ("SILVER",      "Silver",              "Metals", "SI=F", "USD/oz",
-     ("silver price", "comex silver")),
-    ("PLATINUM",    "Platinum",            "Metals", "PL=F", "USD/oz",
-     ("platinum",)),
-    ("PALLADIUM",   "Palladium",           "Metals", "PA=F", "USD/oz",
-     ("palladium",)),
-    # Base / industrial metals
-    ("COPPER",      "Copper",              "Metals", "HG=F", "USD/lb",
+
+    # ── Base metals (MCX) ────────────────────────────────────────────────
+    ("COPPER",      "Copper (MCX)",          "Base Metals", "HG=F", "₹/kg",
+     _conv_lb_to_kg,
      ("copper", "lme copper")),
-    ("ALUMINIUM",   "Aluminium",           "Metals", "ALI=F", "USD/lb",
+    ("ALUMINIUM",   "Aluminium (MCX)",       "Base Metals", "ALI=F", "₹/kg",
+     _conv_mt_to_kg,       # ALI=F is USD/MT, not USD/lb
      ("aluminium", "aluminum", "lme alumin")),
-    # Agri — grains
-    ("WHEAT",       "Wheat",               "Agri", "ZW=F", "USD/bu",
-     ("wheat",)),
-    ("CORN",        "Corn",                "Agri", "ZC=F", "USD/bu",
-     ("corn", "maize")),
-    ("SOYBEAN",     "Soybean",             "Agri", "ZS=F", "USD/bu",
+    ("ZINC",        "Zinc (MCX)",            "Base Metals", "ZNC=F", "₹/kg",
+     _conv_mt_to_kg,       # LME zinc futures USD/MT
+     ("zinc", "lme zinc")),
+    ("LEAD",        "Lead (MCX)",            "Base Metals", "LD=F", "₹/kg",
+     _conv_mt_to_kg,       # LME lead futures USD/MT
+     ("lead", "lme lead")),
+    # (Nickel dropped — no Yahoo NI=F feed. Will re-add via TR API when wired.)
+
+    # ── Agri / Softs ─────────────────────────────────────────────────────
+    ("COTTON",      "Cotton (MCX)",          "Agri", "CT=F", "₹/bale",
+     _conv_cents_lb_to_candy,  # ICE cotton is cents/lb
+     ("cotton", "kapas", "cci")),
+    # (Palm oil FCPO=F dropped — Yahoo 404; will re-add via Bursa API when wired.)
+    ("SOYBEAN",     "Soybean",               "Agri", "ZS=F", "₹/qtl",
+     _conv_cents_bu_to_qtl,    # CBOT grains in cents/bu
      ("soybean", "soya")),
-    ("RICE",        "Rough Rice",          "Agri", "ZR=F", "USD/cwt",
-     ("rice",)),
-    ("OATS",        "Oats",                "Agri", "ZO=F", "USD/bu",
-     ("oats",)),
-    # Agri — softs
-    ("COTTON",      "Cotton",              "Softs", "CT=F", "USD/lb",
-     ("cotton",)),
-    ("SUGAR",       "Sugar",               "Softs", "SB=F", "USD/lb",
-     ("sugar",)),
-    ("COFFEE",      "Coffee",              "Softs", "KC=F", "USD/lb",
+    ("CORN",        "Corn / Maize",          "Agri", "ZC=F", "₹/qtl",
+     _conv_cents_bu_to_qtl,
+     ("corn", "maize")),
+    ("WHEAT",       "Wheat",                 "Agri", "ZW=F", "₹/qtl",
+     _conv_cents_bu_to_qtl,
+     ("wheat",)),
+    ("SUGAR",       "Sugar (NCDEX)",         "Agri", "SB=F", "₹/qtl",
+     _conv_cents_lb_to_qtl,    # ICE sugar in cents/lb
+     ("sugar", "isma", "ethanol")),
+    ("COFFEE",      "Coffee (Arabica)",      "Agri", "KC=F", "₹/kg",
+     _conv_cents_lb_to_kg,     # ICE coffee in cents/lb
      ("coffee",)),
-    ("COCOA",       "Cocoa",               "Softs", "CC=F", "USD/MT",
-     ("cocoa",)),
-    ("OJ",          "Orange Juice",        "Softs", "OJ=F", "USD/lb",
-     ("orange juice",)),
-    ("LUMBER",      "Lumber",              "Softs", "LBR=F", "USD/1000bf",
-     ("lumber", "timber")),
-    # Livestock
-    ("CATTLE",      "Live Cattle",         "Livestock", "LE=F", "USD/lb",
-     ("cattle",)),
-    ("HOGS",        "Lean Hogs",           "Livestock", "HE=F", "USD/lb",
-     ("lean hogs", "pork")),
-    # Asia-specific
-    ("PALMOIL",     "Palm Oil",            "Agri", "FCPO=F", "MYR/MT",
-     ("palm oil",)),
+    # (Rubber dropped — no clean yfinance feed; will re-add when we have an
+    # SHFE/RIC source.)
+
+    # ── FX peg (for context) ─────────────────────────────────────────────
+    ("DXY",         "Dollar Index",          "FX",     "DX-Y.NYB", "level",
+     None,
+     ("dxy", "dollar index", "us dollar")),
+    ("USDINR",      "USD / INR",             "FX",     "USDINR=X", "₹",
+     None,
+     ("rupee", "usd-inr", "dollar rupee")),
 ]
+
+
+def _live_usdinr() -> float:
+    """Fetch the current USD/INR rate. Cached at function level for 60s
+    so the bulk commodity feed only pays the cost once per refresh."""
+    global _USDINR_CACHE
+    try:
+        cached = _USDINR_CACHE
+        if cached and (datetime.utcnow() - cached["t"]).total_seconds() < 60:
+            return cached["rate"]
+    except Exception:
+        pass
+    try:
+        import yfinance as yf
+        t = yf.Ticker("USDINR=X")
+        fi = t.fast_info
+        rate = float(getattr(fi, "last_price", 0) or fi.get("regularMarketPrice", 0) or 0)
+        # Sanity-clamp — yfinance occasionally returns weekend-stale values
+        # outside the plausible USDINR range. Real bounds 60-100.
+        if rate < 60 or rate > 110:
+            raise ValueError(f"implausible USDINR={rate}")
+        _USDINR_CACHE = {"t": datetime.utcnow(), "rate": rate}
+        return rate
+    except Exception as e:
+        logger.warning("USDINR fetch failed, using fallback 83.0: %s", e)
+        return 83.0
+
+
+_USDINR_CACHE: Optional[Dict] = None
 
 
 def _commodity_alpha(db, keywords, hours: int = 168):
@@ -1288,7 +1588,7 @@ def commodities_all():
     price_map: Dict[str, Dict] = {}
     try:
         import yfinance as yf
-        data = yf.download(syms, period="3d", interval="1d",
+        data = yf.download(syms, period="5d", interval="1d",
                            group_by="ticker", progress=False, threads=True)
         for sym in syms:
             try:
@@ -1298,8 +1598,8 @@ def commodities_all():
                 last = float(closes.iloc[-1])
                 prev = float(closes.iloc[-2]) if len(closes) >= 2 else last
                 price_map[sym] = {
-                    "price": round(last, 2),
-                    "change": round(last - prev, 4),
+                    "raw_usd": round(last, 4),
+                    "raw_prev": round(prev, 4),
                     "change_pct": round((last - prev) / prev * 100, 2) if prev else 0.0,
                 }
             except Exception:
@@ -1307,31 +1607,78 @@ def commodities_all():
     except Exception as e:
         logger.warning(f"commodities_all yfinance failed: {e}")
 
+    # Live USDINR for conversion (cached internally so only one yfinance call)
+    usdinr = _live_usdinr()
+
     # Pull alpha + event counts per commodity from the events table.
     db = _get_db() if _get_db else None
     rows = []
-    for cid, name, category, sym, unit, keywords in items:
+    for entry in items:
+        # Catalog entries are 7-tuples: (id, name, cat, sym, unit, conv, kws)
+        cid, name, category, sym, unit, conv, keywords = entry
         price = price_map.get(sym, {})
+        raw_usd = price.get("raw_usd")
+        raw_prev = price.get("raw_prev")
+        # Convert to INR using the catalog's per-commodity conversion func.
+        # `None` conversion means the symbol is already in display units.
+        if raw_usd is None:
+            inr_price = None; inr_prev = None
+        elif conv is None:
+            inr_price = raw_usd; inr_prev = raw_prev
+        else:
+            try:
+                inr_price = round(conv(raw_usd, usdinr), 2)
+                inr_prev  = round(conv(raw_prev, usdinr), 2)
+            except Exception:
+                inr_price = round(raw_usd * usdinr, 2); inr_prev = round((raw_prev or 0) * usdinr, 2)
+        inr_change = round((inr_price - inr_prev), 4) if (inr_price is not None and inr_prev is not None) else None
+
         alpha = _commodity_alpha(db, keywords, hours=hours)
         net = alpha["bull"] - alpha["bear"]
         sentiment = ("bullish" if net > 0 and alpha["bull"] >= 2 else
                      "bearish" if net < 0 and alpha["bear"] >= 2 else
                      "neutral")
+
+        # Equity-impact narrative: connect this commodity move to the sectors
+        # / companies that benefit or get hurt. Pulled from the static
+        # causal_map so the front-end can render "Crude up → Aviation pressure"
+        # without an LLM round-trip. Direction derived from change_pct first
+        # (price truth), falling back to news sentiment when price is flat.
+        equity_impact = None
+        try:
+            from causal_map import commodity_implication_from_change, commodity_implication
+            ch = price.get("change_pct")
+            equity_impact = commodity_implication_from_change(cid, ch) \
+                            or commodity_implication_from_change(name, ch)
+            if equity_impact is None and sentiment != "neutral":
+                direction = "up" if sentiment == "bullish" else "down"
+                equity_impact = commodity_implication(cid, direction) \
+                                or commodity_implication(name, direction)
+        except Exception:
+            equity_impact = None
+
         rows.append({
             "id": cid,
             "name": name,
             "category": category,
             "symbol": sym,
             "unit": unit,
-            "price": price.get("price"),
+            "price": inr_price,           # ₹ at Indian unit-of-measure
+            "raw_usd_price": raw_usd,     # source price (USD)
             "change_pct": price.get("change_pct"),
-            "change": price.get("change"),
+            "change": inr_change,
             "alpha_score": alpha["alpha"],
             "events_in_window": alpha["events"],
             "bull_count": alpha["bull"],
             "bear_count": alpha["bear"],
             "sentiment": sentiment,
             "keywords": list(keywords),
+            # New: institutional read-through. None when commodity isn't
+            # mapped or the move is < flat_threshold (60 bps).
+            "equity_impact": equity_impact,
+            "market_implication": (equity_impact or {}).get("summary"),
+            "beneficiary_sectors": (equity_impact or {}).get("helps") or [],
+            "affected_sectors": (equity_impact or {}).get("hurts") or [],
         })
 
     # Sort: alpha desc (None last), then by absolute price-change
@@ -1344,6 +1691,7 @@ def commodities_all():
         "success": True,
         "data": rows,
         "count": len(rows),
+        "usdinr": usdinr,
         "lookback_hours": hours,
         "as_of": datetime.utcnow().isoformat() + "Z",
     })
@@ -1931,13 +2279,19 @@ def movers_spike():
                 pct = (last - prev) / prev * 100.0
                 if abs(pct) < min_pct:
                     continue
-                # Pull avg-volume for a z-score-ish signal alongside the move
+                # Volume z-score (today vs trailing avg) + raw volume in
+                # crore (Indian style) for the "Highest volume" widget.
                 vol_z = None
+                latest_vol = None
+                turnover_cr = None
                 if vols is not None and len(vols) >= 2:
                     try:
                         latest_vol = float(vols.iloc[-1])
                         avg_vol = float(vols.iloc[:-1].mean()) or 1.0
                         vol_z = round(latest_vol / avg_vol, 2)
+                        # Turnover in ₹ crore — better proxy for "biggest names
+                        # trading right now" than raw share count.
+                        turnover_cr = round((latest_vol * last) / 1e7, 1)
                     except Exception:
                         pass
                 out.append({
@@ -1945,6 +2299,8 @@ def movers_spike():
                     "price": round(last, 2),
                     "pct_change": round(pct, 2),
                     "vol_multiple": vol_z,
+                    "volume": int(latest_vol) if latest_vol is not None else None,
+                    "turnover_cr": turnover_cr,
                     "as_of": datetime.utcnow().isoformat() + "Z",
                 })
             except Exception:
@@ -2411,6 +2767,141 @@ def api_logo(ticker: str):
         return resp
     except Exception as e:
         logger.exception(f"api_logo {ticker}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ---- User profile (for TickerWave Planning Assistant) ----------------------
+# Stores the user's risk tolerance, horizon, preferred sectors, and goals.
+# Injected into the AGENT_ROLE block by backend/chat_routes.py so multi-turn
+# conversations can frame analysis in the user's context. Strictly preferences
+# only — never used as a recommendation trigger (SEBI-safe; see
+# [[financial-planner-agent]] memory).
+
+_VALID_RISK = {"low", "med", "high"}
+_VALID_HORIZON = {"intraday", "swing", "short", "medium", "long"}
+
+
+def _resolve_uid_or_401():
+    """Return (user_id, None) on success or (None, response) on failure."""
+    try:
+        from freemium import _resolve_user_id  # type: ignore
+    except Exception:
+        try:
+            from backend.freemium import _resolve_user_id  # type: ignore
+        except Exception:
+            _resolve_user_id = None
+    uid = None
+    if _resolve_user_id is not None:
+        uid = _resolve_user_id()
+    if not uid:
+        return None, (jsonify({"success": False, "error": "auth_required"}), 401)
+    return str(uid), None
+
+
+@bp.route("/api/user/profile", methods=["GET"])
+def user_profile_get():
+    uid, err = _resolve_uid_or_401()
+    if err:
+        return err
+    db = _get_db()
+    try:
+        cur = db.conn.cursor()
+        row = cur.execute(
+            "SELECT risk_profile, horizon, sectors_json, goals_text, "
+            "updated_at FROM user_profile WHERE user_id = ?", (uid,),
+        ).fetchone()
+        if not row:
+            return jsonify({"success": False, "error": "not_found"}), 404
+        if isinstance(row, dict):
+            risk, hor = row.get("risk_profile"), row.get("horizon")
+            sectors_json = row.get("sectors_json")
+            goals = row.get("goals_text")
+            updated = row.get("updated_at")
+        else:
+            risk, hor, sectors_json, goals, updated = row[0], row[1], row[2], row[3], row[4]
+        sectors: List[str] = []
+        if sectors_json:
+            try:
+                v = json.loads(sectors_json)
+                if isinstance(v, list):
+                    sectors = [str(s) for s in v][:10]
+            except Exception:
+                pass
+        return jsonify({
+            "success": True,
+            "profile": {
+                "risk_profile": risk,
+                "horizon": hor,
+                "sectors": sectors,
+                "goals_text": goals or "",
+                "updated_at": str(updated) if updated else None,
+            },
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route("/api/user/profile", methods=["PUT"])
+def user_profile_put():
+    uid, err = _resolve_uid_or_401()
+    if err:
+        return err
+    db = _get_db()
+    body = request.get_json(silent=True) or {}
+    risk = (body.get("risk_profile") or "").strip().lower() or None
+    hor = (body.get("horizon") or "").strip().lower() or None
+    sectors = body.get("sectors") or []
+    goals = (body.get("goals_text") or "").strip()
+
+    if risk and risk not in _VALID_RISK:
+        return jsonify({"success": False,
+                        "error": f"risk_profile must be in {sorted(_VALID_RISK)}"}), 400
+    if hor and hor not in _VALID_HORIZON:
+        return jsonify({"success": False,
+                        "error": f"horizon must be in {sorted(_VALID_HORIZON)}"}), 400
+    if not isinstance(sectors, list):
+        return jsonify({"success": False, "error": "sectors must be a list"}), 400
+    sectors = [str(s).strip()[:40] for s in sectors if s and str(s).strip()][:10]
+    if len(goals) > 500:
+        goals = goals[:500]
+
+    sectors_json = json.dumps(sectors) if sectors else None
+    try:
+        cur = db.conn.cursor()
+        # Upsert — works on both SQLite (3.24+) and Postgres
+        if getattr(db, "is_postgres", False):
+            cur.execute(
+                "INSERT INTO user_profile "
+                "(user_id, risk_profile, horizon, sectors_json, goals_text, updated_at) "
+                "VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP) "
+                "ON CONFLICT (user_id) DO UPDATE SET "
+                "  risk_profile = EXCLUDED.risk_profile, "
+                "  horizon = EXCLUDED.horizon, "
+                "  sectors_json = EXCLUDED.sectors_json, "
+                "  goals_text = EXCLUDED.goals_text, "
+                "  updated_at = CURRENT_TIMESTAMP",
+                (uid, risk, hor, sectors_json, goals or None),
+            )
+        else:
+            cur.execute(
+                "INSERT INTO user_profile "
+                "(user_id, risk_profile, horizon, sectors_json, goals_text, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) "
+                "ON CONFLICT(user_id) DO UPDATE SET "
+                "  risk_profile = excluded.risk_profile, "
+                "  horizon = excluded.horizon, "
+                "  sectors_json = excluded.sectors_json, "
+                "  goals_text = excluded.goals_text, "
+                "  updated_at = CURRENT_TIMESTAMP",
+                (uid, risk, hor, sectors_json, goals or None),
+            )
+        db.conn.commit()
+        return jsonify({"success": True, "profile": {
+            "risk_profile": risk, "horizon": hor,
+            "sectors": sectors, "goals_text": goals,
+        }})
+    except Exception as e:
+        logger.warning("user_profile_put failed: %s", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
 

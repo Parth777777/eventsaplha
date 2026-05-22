@@ -28,7 +28,7 @@
       if (!res?.success) throw new Error('fetch failed');
       const d = res.data;
       const commoditiesHtml = Object.entries(d.commodities || {}).map(([name, v]) => `
-        <div class="card" style="padding:12px;border:1px solid #2a3142;border-radius:8px;min-width:140px">
+        <div class="card" style="padding:12px;border:1px solid var(--surface-3);border-radius:8px;min-width:140px">
           <div style="opacity:.6;font-size:12px;text-transform:uppercase">${name.replace('_', ' ')}</div>
           <div style="font-size:20px;font-weight:600;margin-top:4px">${(+v.close).toFixed(2)}</div>
           <div>${fmtPct(v.pct_change)}</div>
@@ -77,13 +77,13 @@
       const pred = d.prediction || {};
       const dirColor = pred.direction === 'bullish' ? '#2dd4aa' : pred.direction === 'bearish' ? '#f26b6b' : '#9aa0aa';
       const idx = Object.entries(d.indices || {}).map(([name, v]) => `
-        <div style="padding:10px;border:1px solid #2a3142;border-radius:6px;min-width:120px">
+        <div style="padding:10px;border:1px solid var(--surface-3);border-radius:6px;min-width:120px">
           <div style="opacity:.6;font-size:11px;text-transform:uppercase">${name}</div>
           <div style="font-size:16px;font-weight:600">${(+v.close).toFixed(2)}</div>
           <div>${fmtPct(v.pct_change)}</div>
         </div>`).join('');
       host.innerHTML = `
-        <div style="padding:16px;border:1px solid #2a3142;border-radius:10px;margin-bottom:16px">
+        <div style="padding:16px;border:1px solid var(--surface-3);border-radius:10px;margin-bottom:16px">
           <div style="opacity:.6;font-size:12px;text-transform:uppercase">Expected Nifty open bias</div>
           <div style="font-size:28px;font-weight:700;color:${dirColor};margin-top:4px">
             ${pred.direction || 'neutral'} · ${pred.predicted_pct > 0 ? '+' : ''}${pred.predicted_pct || 0}%
@@ -113,10 +113,10 @@
           <td>${(+q.fii_pct || 0).toFixed(2)}%</td>
         </tr>`).join('');
       const flags = Object.entries(d.trend_flags || {}).filter(([k, v]) => v).map(([k]) => `
-        <span style="background:#3a1418;color:#f26b6b;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px">${k.replace(/_/g, ' ')}</span>
+        <span style="background:var(--bear-dim);color:#f26b6b;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px">${k.replace(/_/g, ' ')}</span>
       `).join('') || '<span style="color:#2dd4aa;font-size:12px">No red flags</span>';
       host.innerHTML = `
-        <div style="padding:16px;border:1px solid #2a3142;border-radius:10px">
+        <div style="padding:16px;border:1px solid var(--surface-3);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-weight:600">Promoter / shareholding</div>
             <div>${flags}</div>
@@ -137,7 +137,7 @@
     const source = item.source || 'unknown';
     // Inline badges: sentiment + social-priority + news-type chip
     const sentColor = item.sentiment === 'bullish' ? '#4edea3'
-                    : item.sentiment === 'bearish' ? '#ffb4ab' : '#8c909f';
+                    : item.sentiment === 'bearish' ? '#ffb4ab' : 'var(--text-secondary)';
     const typeChip = item.news_type === 'social_buzz'
       ? '<span style="background:#3a2a14;color:#f2a96b;padding:1px 6px;border-radius:8px;font-size:9px;margin-right:4px">social</span>'
       : item.news_type === 'filing'
@@ -185,10 +185,10 @@
       host.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
           <div>
-            <div style="padding:6px 10px;background:#142a3a;color:#8eb4e0;font-weight:600;font-size:12px;border-radius:6px 6px 0 0;text-transform:uppercase;letter-spacing:.5px">
+            <div style="padding:6px 10px;background:var(--info-dim);color:#8eb4e0;font-weight:600;font-size:12px;border-radius:6px 6px 0 0;text-transform:uppercase;letter-spacing:.5px">
               News articles · ${articles.length}
             </div>
-            <div style="max-height:480px;overflow:auto;border:1px solid #2a3142;border-top:none;border-radius:0 0 6px 6px">
+            <div style="max-height:480px;overflow:auto;border:1px solid var(--surface-3);border-top:none;border-radius:0 0 6px 6px">
               ${articles.map(_newsItemHtml).join('') || '<div style="padding:16px;opacity:.5;font-size:12px">no articles yet</div>'}
             </div>
           </div>
@@ -196,7 +196,7 @@
             <div style="padding:6px 10px;background:#3a2a14;color:#f2a96b;font-weight:600;font-size:12px;border-radius:6px 6px 0 0;text-transform:uppercase;letter-spacing:.5px">
               Social buzz · ${buzz.length}
             </div>
-            <div style="max-height:480px;overflow:auto;border:1px solid #2a3142;border-top:none;border-radius:0 0 6px 6px">
+            <div style="max-height:480px;overflow:auto;border:1px solid var(--surface-3);border-top:none;border-radius:0 0 6px 6px">
               ${buzz.map(_newsItemHtml).join('') || '<div style="padding:16px;opacity:.5;font-size:12px">no social posts yet — configure REDDIT/TELEGRAM creds in .env</div>'}
             </div>
           </div>
@@ -204,7 +204,7 @@
             <div style="padding:6px 10px;background:#14331f;color:#2dd4aa;font-weight:600;font-size:12px;border-radius:6px 6px 0 0;text-transform:uppercase;letter-spacing:.5px">
               Official filings · ${filings.length}
             </div>
-            <div style="max-height:480px;overflow:auto;border:1px solid #2a3142;border-top:none;border-radius:0 0 6px 6px">
+            <div style="max-height:480px;overflow:auto;border:1px solid var(--surface-3);border-top:none;border-radius:0 0 6px 6px">
               ${filings.map(_newsItemHtml).join('') || '<div style="padding:16px;opacity:.5;font-size:12px">no filings yet</div>'}
             </div>
           </div>
@@ -229,11 +229,11 @@
       host.innerHTML = `
         <div style="font-size:11px;opacity:.7;margin-bottom:6px">Stocks with OBV divergence or unexplained volume surge — "someone knows something."</div>
         ${rows.slice(0, 20).map(r => {
-          const divColor = r.obv_divergence_flag === 'bearish' ? '#ffb4ab' : r.obv_divergence_flag === 'bullish' ? '#4edea3' : '#8c909f';
+          const divColor = r.obv_divergence_flag === 'bearish' ? '#ffb4ab' : r.obv_divergence_flag === 'bullish' ? '#4edea3' : 'var(--text-secondary)';
           return `
             <div style="padding:8px;border-bottom:1px solid #1f2735;display:flex;justify-content:space-between;align-items:center" data-ticker="${r.ticker}">
               <div>
-                <b style="color:#dfe2eb">${r.ticker}</b>
+                <b style="color:var(--text-primary)">${r.ticker}</b>
                 <span style="opacity:.7;font-size:11px;margin-left:6px">${(r.headline || '').slice(0,80)}</span>
               </div>
               <div style="display:flex;gap:6px;align-items:center">

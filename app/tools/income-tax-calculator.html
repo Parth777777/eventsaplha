@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Income Tax Calculator (Old vs New Regime FY 2025-26) | Tickwave</title>
+<meta name="description" content="Compare old vs new tax regime side-by-side. Salary, 80C, HRA, home loan, NPS — see which regime saves you more for FY 2025-26.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/income-tax-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Income Tax · FY 2025-26</div>
+<h1>Old vs New tax regime — <span class="accent">which saves more?</span></h1>
+<p class="lead">Plug in your salary and deductions. We'll compute tax under both old and new regimes side-by-side, including 87A rebate and 4% cess, and tell you which to pick.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="60" width="70" height="80" rx="10" fill="#161d28" stroke="#e6b84a"/><text x="55" y="80" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">OLD</text><text x="55" y="108" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="14" font-weight="700" fill="#e6b84a">₹X</text><rect x="110" y="60" width="70" height="80" rx="10" fill="#161d28" stroke="#2dd4aa"/><text x="145" y="80" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">NEW</text><text x="145" y="108" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="14" font-weight="700" fill="#2dd4aa">₹Y</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your income</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual salary (gross) <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="sIn" value="1500000" min="100000" step="10000"></span></div><input type="range" id="s" class="tk-slider" min="100000" max="20000000" step="10000" value="1500000"><div class="tk-slider-bounds"><span>₹1 L</span><span>₹2 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Other income <span class="hint">(interest, rent etc)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="oIn" value="0" min="0" step="1000"></span></div><input type="range" id="o" class="tk-slider" min="0" max="2000000" step="1000" value="0"><div class="tk-slider-bounds"><span>₹0</span><span>₹20 L</span></div></div>
+<h2 style="margin-top:10px">Old regime deductions</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">80C <span class="hint">(PPF, ELSS, LIC — max ₹1.5L)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="c80In" value="150000" min="0" max="150000" step="1000"></span></div><input type="range" id="c80" class="tk-slider" min="0" max="150000" step="1000" value="150000"><div class="tk-slider-bounds"><span>₹0</span><span>₹1.5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">HRA exemption <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="hraIn" value="0" min="0" step="1000"></span></div><input type="range" id="hra" class="tk-slider" min="0" max="500000" step="1000" value="0"><div class="tk-slider-bounds"><span>₹0</span><span>₹5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Home loan interest <span class="hint">(max ₹2L Sec 24b)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="loanIn" value="0" min="0" max="200000" step="1000"></span></div><input type="range" id="loan" class="tk-slider" min="0" max="200000" step="1000" value="0"><div class="tk-slider-bounds"><span>₹0</span><span>₹2 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">NPS 80CCD(1B) <span class="hint">(max ₹50k extra)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="npsIn" value="0" min="0" max="50000" step="1000"></span></div><input type="range" id="nps" class="tk-slider" min="0" max="50000" step="1000" value="0"><div class="tk-slider-bounds"><span>₹0</span><span>₹50 K</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">80D health insurance <span class="hint">(max ₹25k / ₹50k senior)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="dIn" value="0" min="0" max="100000" step="500"></span></div><input type="range" id="d" class="tk-slider" min="0" max="100000" step="500" value="0"><div class="tk-slider-bounds"><span>₹0</span><span>₹1 L</span></div></div>
+</div>
+<div class="tk-card"><h2>Result side-by-side</h2>
+<div class="tk-result-headline">Recommended regime</div>
+<div class="tk-result-value" id="winner">—</div>
+<div class="tk-result-sub" id="diff">—</div>
+<div class="tk-stats" style="grid-template-columns:1fr 1fr;margin-top:24px">
+<div class="tk-stat"><div class="lbl">Old regime tax</div><div class="val bear" id="oldTax">—</div></div>
+<div class="tk-stat"><div class="lbl">New regime tax</div><div class="val bear" id="newTax">—</div></div>
+<div class="tk-stat"><div class="lbl">Old regime take-home</div><div class="val" id="oldNet">—</div></div>
+<div class="tk-stat"><div class="lbl">New regime take-home</div><div class="val" id="newNet">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>FY 2025-26 slabs</h2>
+<h3>New regime (default)</h3>
+<ul><li>₹0 – 4 L: 0%</li><li>₹4 – 8 L: 5%</li><li>₹8 – 12 L: 10%</li><li>₹12 – 16 L: 15%</li><li>₹16 – 20 L: 20%</li><li>₹20 – 24 L: 25%</li><li>₹24 L+: 30%</li></ul>
+<p>Standard deduction: ₹75,000. Rebate 87A: zero tax if total income ≤ ₹12 lakh (effectively ₹12.75L with standard deduction). 4% cess on tax.</p>
+<h3>Old regime</h3>
+<ul><li>₹0 – 2.5 L: 0%</li><li>₹2.5 – 5 L: 5%</li><li>₹5 – 10 L: 20%</li><li>₹10 L+: 30%</li></ul>
+<p>Standard deduction: ₹50,000. Rebate 87A: zero tax if taxable income ≤ ₹5 lakh. 4% cess.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Old or new regime — when is each better?</summary><p>If your total deductions (80C + HRA + home loan + NPS + 80D) exceed ~₹4 lakh, old usually wins. Below that, new regime almost always wins.</p></details>
+<details><summary>Can I switch between regimes every year?</summary><p>Salaried: yes, switch every year. Business income earners can switch only once in a lifetime back to old.</p></details>
+<details><summary>Is HRA available in new regime?</summary><p>No. HRA, LTA, home loan interest on self-occupied, 80C, 80D — all unavailable in new regime.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="hra-calculator.html">HRA Calculator<span class="sub">Compute HRA exemption</span></a>
+<a href="salary-calculator.html">Salary Take-Home<span class="sub">In-hand monthly</span></a>
+<a href="capital-gains-tax-calculator.html">Capital Gains<span class="sub">Investment tax</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function slabTax(income,slabs){
+  var t=0, p=0;
+  for(var i=0;i<slabs.length;i++){
+    var lim=slabs[i][0], rate=slabs[i][1];
+    if(income<=lim){ t+=(income-p)*rate; return t;}
+    t+=(lim-p)*rate; p=lim;
+  }
+  return t;
+}
+function newTax(taxable){
+  var slabs=[[400000,0],[800000,0.05],[1200000,0.10],[1600000,0.15],[2000000,0.20],[2400000,0.25],[Infinity,0.30]];
+  var t=slabTax(taxable,slabs);
+  // Rebate 87A: if taxable <= 12L, tax becomes 0 (capped at marginal relief)
+  if(taxable<=1200000) t=0;
+  else if(taxable<=1275000) t=Math.min(t,taxable-1200000); // marginal relief
+  return t*1.04;  // cess
+}
+function oldTax(taxable){
+  var slabs=[[250000,0],[500000,0.05],[1000000,0.20],[Infinity,0.30]];
+  var t=slabTax(taxable,slabs);
+  if(taxable<=500000) t=0;
+  return t*1.04;
+}
+function compute(){
+  var s=+document.getElementById('s').value, o=+document.getElementById('o').value;
+  var c80=+document.getElementById('c80').value, hra=+document.getElementById('hra').value, loan=+document.getElementById('loan').value, nps=+document.getElementById('nps').value, hi=+document.getElementById('d').value;
+  var gross=s+o;
+  // New: standard deduction 75k. No 80C/HRA/loan/etc.
+  var newTaxable=Math.max(0,gross-75000);
+  var newT=newTax(newTaxable);
+  // Old: standard deduction 50k + all deductions
+  var oldTaxable=Math.max(0,gross-50000-c80-hra-loan-nps-hi);
+  var oldT=oldTax(oldTaxable);
+  T.animateNumber(document.getElementById('oldTax'),oldT);
+  T.animateNumber(document.getElementById('newTax'),newT);
+  T.animateNumber(document.getElementById('oldNet'),gross-oldT);
+  T.animateNumber(document.getElementById('newNet'),gross-newT);
+  var w=document.getElementById('winner'), d=document.getElementById('diff');
+  if(newT<oldT){ w.textContent='NEW regime'; d.textContent='Saves '+T.formatINRShort(oldT-newT)+' vs old';}
+  else if(oldT<newT){ w.textContent='OLD regime'; d.textContent='Saves '+T.formatINRShort(newT-oldT)+' vs new';}
+  else{ w.textContent='Either'; d.textContent='Same tax under both';}
+}
+['s','o','c80','hra','loan','nps','d'].forEach(function(id){T.bindSlider({slider:document.getElementById(id),input:document.getElementById(id+'In'),onChange:compute});});
+compute();
+T.mountFAQ([{q:'Old or new regime when?',a:'If total deductions exceed ~Rs 4 lakh, old usually wins. Below that, new almost always wins.'},{q:'Switch between regimes every year?',a:'Salaried: yes. Business income earners: can switch back to old only once.'},{q:'Is HRA available in new regime?',a:'No. HRA, LTA, home loan SOP, 80C, 80D — all unavailable in new regime.'}]);
+T.mountSoftwareSchema({name:'Income Tax Calculator',description:'Compare old vs new tax regime for FY 2025-26 India.'});
+})();
+</script>
+</body></html>

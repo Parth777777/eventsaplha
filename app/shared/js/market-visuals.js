@@ -225,7 +225,7 @@
         MENTHAOIL:   { color:'#10b981', dark:'#065f46', icon:'spa',              tint:'rgba(16,185,129,0.10)' },
         SUGAR:       { color:'#fef3c7', dark:'#92741a', icon:'cookie',           tint:'rgba(254,243,199,0.08)' },
         COFFEE:      { color:'#6f4e37', dark:'#3e2918', icon:'coffee',           tint:'rgba(111,78,55,0.12)' },
-        DEFAULT:     { color:'#8a94a8', dark:'#3d4a5c', icon:'inventory_2',     tint:'rgba(138,148,168,0.08)' },
+        DEFAULT:     { color:'var(--text-secondary)', dark:'#3d4a5c', icon:'inventory_2',     tint:'rgba(138,148,168,0.08)' },
     };
 
     function commodityIcon(id) {

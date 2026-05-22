@@ -1,7 +1,7 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tickwave | Screeners</title>
@@ -12,7 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <style>
@@ -70,7 +73,7 @@ tr:hover { background:#0d1118; }
     <h2 id="resultTitle" style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:20px;color:#4ee6b8;"></h2>
     <span id="resultCount" style="font-size:11px;color:#5a5d6a;font-family:monospace;"></span>
     <div style="height:1px;flex:1;background:#1f2336;"></div>
-    <button onclick="exportCsv()" style="background:#1f2336;color:#9aa0c8;border:1px solid #2a3142;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;">â†“ CSV</button>
+    <button onclick="exportCsv()" style="background:#1f2336;color:#9aa0c8;border:1px solid #2a3142;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;">? CSV</button>
   </div>
   <div id="resultTable" style="overflow:auto;border-radius:12px;border:1px solid #1f2336;"></div>
 </section>
@@ -97,7 +100,7 @@ async function loadScreeners() {
           <span class="material-symbols-outlined" style="color:#4ee6b8;font-size:18px;flex-shrink:0;">${iconFor(s.id)}</span>
           <span style="font-weight:800;font-size:13px;color:#dde3ef;">${s.name}</span>
         </div>
-        <span class="screener-count" data-count-id="${s.id}" style="font-family:'Geist Mono',monospace;font-size:10px;font-weight:800;color:#5a6373;flex-shrink:0;">â€¦</span>
+        <span class="screener-count" data-count-id="${s.id}" style="font-family:'Geist Mono',monospace;font-size:10px;font-weight:800;color:#5a6373;flex-shrink:0;">…</span>
       </div>
       <div style="font-size:11px;color:#9aa0c8;line-height:1.5;">${s.description}</div>
     </div>
@@ -112,7 +115,7 @@ async function loadScreeners() {
       if (!el) return;
       const n = (typeof j.count === 'number') ? j.count : (j.data || []).length;
       if (j.warning) {
-        el.textContent = 'â€” PENDING';
+        el.textContent = '— PENDING';
         el.style.color = '#5a5d6a';
         el.title = j.warning;
         if (card) card.style.opacity = '0.55';
@@ -147,7 +150,7 @@ async function runScreener(id, el) {
   const panel = document.getElementById('resultPanel');
   panel.style.display = 'block';
   const tbl = document.getElementById('resultTable');
-  tbl.innerHTML = '<div style="padding:30px;text-align:center;color:#5a5d6a;font-size:11px;">Runningâ€¦</div>';
+  tbl.innerHTML = '<div style="padding:30px;text-align:center;color:#5a5d6a;font-size:11px;">Running…</div>';
 
   const r = await fetch('/api/screeners/' + id);
   const j = await r.json();
@@ -161,7 +164,7 @@ async function runScreener(id, el) {
       ? `<div style="font-size:13px;color:#e6b84a;margin-bottom:6px;font-weight:700;">Source not yet populated</div>
          <div style="font-size:11px;color:#9aa0c8;max-width:480px;margin:0 auto;line-height:1.5;">${j.warning}<br/><span style="color:#5a5d6a;">This screener will fill in automatically once the backing data pipeline runs.</span></div>`
       : `<div style="font-size:13px;color:#9aa0c8;margin-bottom:6px;font-weight:700;">No matches right now</div>
-         <div style="font-size:11px;color:#5a5d6a;max-width:480px;margin:0 auto;line-height:1.5;">Filters are live â€” nothing currently meets the criteria. Try another screener or check back later.</div>`;
+         <div style="font-size:11px;color:#5a5d6a;max-width:480px;margin:0 auto;line-height:1.5;">Filters are live — nothing currently meets the criteria. Try another screener or check back later.</div>`;
     tbl.innerHTML = `<div style="padding:48px 20px;text-align:center;">
       <span class="material-symbols-outlined" style="font-size:32px;color:#3d4a5c;display:block;margin-bottom:10px;">filter_alt_off</span>
       ${msg}
@@ -176,12 +179,12 @@ async function runScreener(id, el) {
 }
 
 function formatCell(v, col) {
-  if (v == null) return '<span style="color:#5a5d6a;">â€”</span>';
+  if (v == null) return '<span style="color:#5a5d6a;">—</span>';
   if (typeof v === 'number') {
     if (col.includes('alpha') || col.includes('score') || col.includes('pct')) return v.toFixed(2);
     return v.toLocaleString();
   }
-  if (typeof v === 'string' && v.length > 60) return v.slice(0, 58) + 'â€¦';
+  if (typeof v === 'string' && v.length > 60) return v.slice(0, 58) + '…';
   return String(v);
 }
 
@@ -199,5 +202,6 @@ function exportCsv() {
 
 document.addEventListener('DOMContentLoaded', loadScreeners);
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

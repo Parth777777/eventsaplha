@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Scraper Jobs</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="shared/css/tokens.css" />
+  <link rel="stylesheet" href="shared/css/style.css" />
+  <link rel="stylesheet" href="shared/css/site-premium.css?v=1779368305" />
+  <style>
+    body { background: var(--bg, #0a0f14); color: var(--fg, #e3f0ee); font-family: system-ui, sans-serif; padding: 24px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: #8aa; font-size: 13px; margin-bottom: 24px; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    input[type="password"], select { background: #111; color: #e3f0ee; border: 1px solid #233; border-radius: 6px; padding: 8px 10px; font-size: 13px; }
+    button { background: #2a8; color: #001; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #4cc; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    button.secondary { background: #234; color: #e3f0ee; }
+    button.secondary:hover { background: #345; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #1a2a2a; }
+    th { color: #6cc; font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .pill.ok      { background: rgba(74,200,128,.18); color: #6e9; }
+    .pill.partial { background: rgba(220,180,80,.18); color: #fc8; }
+    .pill.error   { background: rgba(240,90,90,.18); color: #f88; }
+    .pill.never_run { background: rgba(150,150,150,.18); color: #aaa; }
+    .num { font-variant-numeric: tabular-nums; }
+    .err { color: #f88; font-family: ui-monospace, monospace; font-size: 11px; max-width: 380px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    details { background: #0e1418; border: 1px solid #1a2a2a; border-radius: 6px; padding: 8px 12px; margin: 6px 0; }
+    details summary { cursor: pointer; font-weight: 500; }
+    pre { font-size: 11px; color: #8ab; background: #060a0c; padding: 8px; border-radius: 4px; overflow-x: auto; max-height: 220px; }
+    .section { background: #0e1418; border: 1px solid #1a2a2a; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .stat { color: #8aa; font-size: 12px; }
+    .stat strong { color: #e3f0ee; }
+  </style>
+</head>
+<body>
+  <h1>Scraper jobs</h1>
+  <div class="sub">Visibility into the data pipeline. All actions require <code>ADMIN_TOKEN</code>.</div>
+
+  <div class="section">
+    <div class="row">
+      <input type="password" id="admin-token" placeholder="ADMIN_TOKEN" size="40" autocomplete="off" />
+      <button id="refresh">Refresh</button>
+      <button id="run-all" class="secondary">Run ALL scrapers now</button>
+      <span class="stat" id="auth-status"></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 style="margin:0 0 10px;font-size:15px;">Job health (most-recent run per job)</h2>
+    <table id="health-tbl">
+      <thead>
+        <tr><th>Job</th><th>Last run (UTC)</th><th>Status</th><th>Rows</th><th>Duration</th><th>Action</th></tr>
+      </thead>
+      <tbody><tr><td colspan="6" style="text-align:center;color:#777;padding:20px">Enter ADMIN_TOKEN and click Refresh</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2 style="margin:0 0 10px;font-size:15px;">Recent runs (last 50)</h2>
+    <table id="runs-tbl">
+      <thead>
+        <tr><th>Job</th><th>Started (UTC)</th><th>Status</th><th>Rows</th><th>Dur</th><th>By</th><th>Detail</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const tokenInput = $('admin-token');
+    tokenInput.value = sessionStorage.getItem('admin_token') || '';
+
+    function authHeaders() {
+      const t = tokenInput.value.trim();
+      sessionStorage.setItem('admin_token', t);
+      return { 'X-Admin-Token': t, 'Content-Type': 'application/json' };
+    }
+
+    function pill(status) {
+      const cls = ({ok:'ok', partial:'partial', error:'error', never_run:'never_run'})[status] || 'never_run';
+      return `<span class="pill ${cls}">${status || 'never_run'}</span>`;
+    }
+
+    function fmtTime(s) {
+      if (!s) return '—';
+      try { return new Date(s).toISOString().replace('T', ' ').slice(0, 19); }
+      catch { return s; }
+    }
+
+    async function refresh() {
+      $('auth-status').textContent = 'loading…';
+      try {
+        const r = await fetch('/api/admin/jobs?limit=50', { headers: authHeaders() });
+        if (r.status === 401) { $('auth-status').textContent = 'invalid token'; return; }
+        if (r.status === 503) { $('auth-status').textContent = 'ADMIN_TOKEN not set on server'; return; }
+        const data = await r.json();
+        $('auth-status').textContent = `OK · ${data.known_jobs?.length || 0} jobs registered`;
+        renderHealth(data.health || {}, data.known_jobs || []);
+        renderRuns(data.recent || []);
+      } catch (e) {
+        $('auth-status').textContent = 'error: ' + e.message;
+      }
+    }
+
+    function renderHealth(health, knownJobs) {
+      const tbody = $('health-tbl').querySelector('tbody');
+      const rows = knownJobs.map(job => {
+        const h = health[job] || { status: 'never_run' };
+        const rows_inserted = h.rows_inserted ?? '—';
+        const dur = h.duration_secs != null ? h.duration_secs.toFixed(1) + 's' : '—';
+        return `<tr>
+          <td><strong>${job}</strong></td>
+          <td class="num">${fmtTime(h.started_at)}</td>
+          <td>${pill(h.status)}</td>
+          <td class="num">${rows_inserted}</td>
+          <td class="num">${dur}</td>
+          <td><button class="secondary" data-job="${job}">Run now</button></td>
+        </tr>`;
+      }).join('');
+      tbody.innerHTML = rows || '<tr><td colspan="6">No jobs</td></tr>';
+      tbody.querySelectorAll('button[data-job]').forEach(b =>
+        b.addEventListener('click', () => runOne(b.dataset.job)));
+    }
+
+    function renderRuns(runs) {
+      const tbody = $('runs-tbl').querySelector('tbody');
+      tbody.innerHTML = runs.map(r => {
+        let detailHTML = '<em>—</em>';
+        if (r.detail && typeof r.detail === 'object') {
+          if (r.detail.error) {
+            detailHTML = `<span class="err">${r.detail.error}</span>`;
+          } else {
+            detailHTML = `<details><summary>view</summary><pre>${
+              JSON.stringify(r.detail, null, 2).slice(0, 3000)
+            }</pre></details>`;
+          }
+        } else if (typeof r.detail === 'string') {
+          detailHTML = `<span class="err">${r.detail.slice(0, 80)}</span>`;
+        }
+        return `<tr>
+          <td>${r.job_name}</td>
+          <td class="num">${fmtTime(r.started_at)}</td>
+          <td>${pill(r.status)}</td>
+          <td class="num">${r.rows_inserted ?? 0}</td>
+          <td class="num">${(r.duration_secs ?? 0).toFixed(1)}s</td>
+          <td>${r.triggered_by || '—'}</td>
+          <td>${detailHTML}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function runOne(job) {
+      if (!confirm(`Run scraper "${job}" now?`)) return;
+      $('auth-status').textContent = `running ${job}…`;
+      try {
+        const r = await fetch('/api/admin/scrape-now', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ job }),
+        });
+        const data = await r.json();
+        $('auth-status').textContent = data.ok
+          ? `${job}: ${data.inserted ?? 0} rows in ${data.duration_secs ?? '?'}s`
+          : `${job} FAILED: ${data.error}`;
+        await refresh();
+      } catch (e) {
+        $('auth-status').textContent = `${job} error: ${e.message}`;
+      }
+    }
+
+    async function runAll() {
+      if (!confirm('Run ALL scrapers now? This blocks for 1-3 minutes.')) return;
+      $('auth-status').textContent = 'running all jobs (this can take a while)…';
+      $('run-all').disabled = true;
+      try {
+        const r = await fetch('/api/admin/scrape-now', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ job: 'all' }),
+        });
+        const data = await r.json();
+        const okCount = (data.results || []).filter(x => x.ok).length;
+        const total = (data.results || []).length;
+        $('auth-status').textContent = `complete: ${okCount}/${total} jobs OK`;
+        await refresh();
+      } catch (e) {
+        $('auth-status').textContent = 'run-all error: ' + e.message;
+      } finally {
+        $('run-all').disabled = false;
+      }
+    }
+
+    $('refresh').addEventListener('click', refresh);
+    $('run-all').addEventListener('click', runAll);
+    if (tokenInput.value) refresh();
+  </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sukanya Samriddhi Yojana Calculator | Tickwave</title>
+<meta name="description" content="SSY calculator — tax-free savings for your daughter. Annual deposit (max ₹1.5L) for 15 years, matures at girl's age 21. Current rate 8.2%.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/sukanya-samriddhi-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Sukanya Samriddhi Yojana</div>
+<h1>Tax-free savings for <span class="accent">your daughter</span></h1>
+<p class="lead">Open before your daughter turns 10. Deposit for 15 years. Account matures when she turns 21 — funds available for education or marriage. EEE tax status, current rate 8.2%.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="80" r="22" fill="none" stroke="#b794ff" stroke-width="2"/><path d="M76 105 C76 130, 124 130, 124 105" stroke="#b794ff" stroke-width="2" fill="#161d28"/><rect x="60" y="135" width="80" height="40" rx="6" fill="#161d28" stroke="#b794ff"/><text x="100" y="158" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="14" font-weight="700" fill="#b794ff">SSY</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual deposit <span class="hint">(₹, max ₹1.5L)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="aIn" value="100000" min="250" max="150000" step="500"></span></div><input type="range" id="a" class="tk-slider" min="250" max="150000" step="500" value="100000"><div class="tk-slider-bounds"><span>₹250</span><span>₹1.5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Daughter's age at start <span class="hint">(0-10 yr)</span></label><span class="tk-field-value-wrap"><input type="number" id="ageIn" value="3" min="0" max="10" step="1"><span class="suffix">yr</span></span></div><input type="range" id="age" class="tk-slider" min="0" max="10" step="1" value="3"><div class="tk-slider-bounds"><span>0 yr</span><span>10 yr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate <span class="hint">(current 8.2%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="8.2" min="6" max="10" step="0.05"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="6" max="10" step="0.05" value="8.2"><div class="tk-slider-bounds"><span>6%</span><span>10%</span></div></div>
+</div>
+<div class="tk-card"><h2>Maturity (age 21)</h2>
+<div class="tk-result-headline">Tax-free maturity</div>
+<div class="tk-result-value" id="m">—</div>
+<div class="tk-result-sub">Account matures in <span id="subY">—</span> years (when she turns 21)</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Deposited<strong id="lgD">—</strong></span><span><span class="dot" style="background:#b794ff"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total deposited</div><div class="val" id="dep">—</div></div><div class="tk-stat"><div class="lbl">Tax-free interest</div><div class="val bull" id="i">—</div></div></div>
+</div></section>
+
+<section class="tk-content">
+<section><h2>SSY rules quick reference</h2>
+<ul>
+<li><strong>Eligibility:</strong> One account per daughter, max two daughters (third allowed only if 2nd is twins). Open before age 10.</li>
+<li><strong>Deposits:</strong> 15 years from account opening. Min ₹250/yr, max ₹1.5L/yr (counts toward 80C).</li>
+<li><strong>Maturity:</strong> When daughter turns 21, OR on her marriage after age 18.</li>
+<li><strong>Partial withdrawal:</strong> Up to 50% allowed after she turns 18, for education.</li>
+<li><strong>Tax:</strong> EEE — 80C on contribution, interest tax-free, maturity tax-free.</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>SSY vs PPF vs equity MF for daughter's education?</summary><p>SSY: highest tax-free rate (8.2%) but locked till 21. PPF: 7.1%, more flexible. Equity MF (SIP): higher expected return but volatile. Balanced: max SSY + small equity SIP.</p></details>
+<details><summary>What if I don't deposit one year?</summary><p>Account becomes "discontinued" — pay ₹50 penalty + minimum ₹250 to revive.</p></details>
+<details><summary>Where to open SSY?</summary><p>Any post office or designated bank (SBI, PNB, ICICI, HDFC, etc.). KYC + daughter's birth certificate.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="ppf-calculator.html">PPF Calculator<span class="sub">Tax-free alternative</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Equity for child education</span></a>
+<a href="goal-sip-calculator.html">Goal SIP<span class="sub">Plan education corpus</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var A=+document.getElementById('a').value, age=+document.getElementById('age').value, r=+document.getElementById('r').value/100;
+  var depositYears=15, maturityAge=21, totalYears=maturityAge-age;
+  document.getElementById('subY').textContent=totalYears;
+  if(totalYears<depositYears) depositYears=totalYears;
+  var balance=0, totalDep=0;
+  for(var y=1;y<=totalYears;y++){
+    if(y<=depositYears){ balance+=A; totalDep+=A; }
+    balance=balance*(1+r);
+  }
+  var interest=balance-totalDep;
+  T.animateNumber(document.getElementById('m'),balance);
+  T.animateNumber(document.getElementById('dep'),totalDep);
+  T.animateNumber(document.getElementById('i'),interest);
+  document.getElementById('lgD').textContent=T.formatINRShort(totalDep);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  T.drawDonut(document.getElementById('donut'),[{value:totalDep,color:'#8eb4e0'},{value:interest,color:'#b794ff'}],{centerLabel:'Maturity',centerValue:T.formatINRShort(balance)});
+}
+T.bindSlider({slider:document.getElementById('a'),input:document.getElementById('aIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('age'),input:document.getElementById('ageIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'SSY vs PPF vs equity MF?',a:'SSY 8.2% tax-free but locked till 21. PPF 7.1% flexible. Equity MF higher expected but volatile.'},{q:'What if I miss a year?',a:'Account becomes discontinued. Rs 50 penalty + min Rs 250 to revive.'},{q:'Where to open SSY?',a:'Any post office or designated bank. KYC + daughter birth certificate.'}]);
+T.mountSoftwareSchema({name:'Sukanya Samriddhi Calculator',description:'Tax-free SSY maturity at girl child age 21.'});
+})();
+</script>
+</body></html>

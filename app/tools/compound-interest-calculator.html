@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compound Interest Calculator (Daily, Monthly, Quarterly, Yearly) | Tickwave</title>
+<meta name="description" content="Free compound interest calculator with selectable frequency: daily, monthly, quarterly, half-yearly, yearly. See future value, total interest, and growth chart.">
+<meta name="keywords" content="compound interest calculator, ci calculator India, monthly quarterly compounding, power of compounding">
+<link rel="canonical" href="https://alphaevent.in/app/tools/compound-interest-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Compound Interest</div>
+<h1>The <span class="accent">8th wonder</span> of the world</h1>
+<p class="lead">Pick any compounding frequency — daily for savings accounts, quarterly for FDs, monthly for SIPs — and see how a single deposit grows. The more frequent the compounding, the larger the final value (for the same nominal rate).</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2dd4aa"/><stop offset="1" stop-color="#b794ff"/></linearGradient></defs>
+<g transform="translate(100 100)"><circle r="60" fill="none" stroke="url(#g)" stroke-width="2" stroke-dasharray="3 4"/><circle r="45" fill="none" stroke="url(#g)" stroke-width="1.5" stroke-dasharray="2 3" opacity="0.7"/><circle r="30" fill="none" stroke="url(#g)" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"/><text text-anchor="middle" y="8" font-family="Plus Jakarta Sans" font-size="20" font-weight="700" fill="#2dd4aa">CI</text></g></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Principal <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="pIn" value="100000" min="1000" step="1000"></span></div><input type="range" id="p" class="tk-slider" min="1000" max="10000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹1 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual rate <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="8" min="1" max="30" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="30" step="0.25" value="8"><div class="tk-slider-bounds"><span>1%</span><span>30%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="10" min="1" max="40" step="1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="1" max="40" step="1" value="10"><div class="tk-slider-bounds"><span>1 yr</span><span>40 yr</span></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Compounding frequency</label>
+<div class="tk-tabs" id="freq" role="tablist">
+<button data-k="1" aria-pressed="false">Yearly</button><button data-k="2" aria-pressed="false">Half-yearly</button><button data-k="4" aria-pressed="true">Quarterly</button><button data-k="12" aria-pressed="false">Monthly</button><button data-k="365" aria-pressed="false">Daily</button></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">Maturity value</div>
+<div class="tk-result-value" id="fv">—</div>
+<div class="tk-result-sub">Compounded <span id="freqLabel">quarterly</span></div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Principal<strong id="lgP">—</strong></span><span><span class="dot" style="background:#2dd4aa"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats"><div class="tk-stat"><div class="lbl">Total interest</div><div class="val bull" id="interest">—</div></div><div class="tk-stat"><div class="lbl">Effective annual rate</div><div class="val" id="ear">—</div></div></div>
+</div></section>
+
+<section class="tk-chart" style="margin-bottom:40px"><h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif">Year-by-year growth</h2><svg id="area"></svg></section>
+
+<section class="tk-content">
+<section><h2>Compound interest formula</h2>
+<div class="tk-formula">FV = P × (1 + r/k)<sup>k×n</sup></div>
+<p>Where <strong>P</strong> = principal, <strong>r</strong> = annual rate, <strong>k</strong> = compounding periods per year, <strong>n</strong> = years. Daily compounding (k=365) gives an effective annual rate slightly higher than the nominal — e.g. 8% nominal daily compounds to 8.33% effective.</p>
+</section>
+<section><h2>Why compounding frequency matters</h2>
+<p>At 8% over 10 years on ₹1 lakh: yearly compounds to ₹2.16 L, quarterly to ₹2.21 L, monthly to ₹2.22 L, daily to ₹2.23 L. The gap looks small in 1 year but is meaningful over 20+ years, especially at higher rates.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>What is the difference between simple and compound interest?</summary><p>Simple interest is computed only on the principal; compound interest is computed on principal + accumulated interest. Over long periods compound interest absolutely dominates.</p></details>
+<details><summary>Which compounding frequency is best?</summary><p>Higher is better for the investor. Indian FDs typically compound quarterly. Savings accounts compute daily but credit quarterly. NPS / PPF compound annually.</p></details>
+<details><summary>How is effective annual rate (EAR) calculated?</summary><p>EAR = (1 + r/k)<sup>k</sup> − 1. For 12% compounded monthly, EAR = (1.01)^12 − 1 = 12.68%.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="lumpsum-calculator.html">Lumpsum Calculator<span class="sub">Annual compounding only</span></a>
+<a href="fd-calculator.html">FD Calculator<span class="sub">Indian FD with quarterly default</span></a>
+<a href="sip-calculator.html">SIP Calculator<span class="sub">Monthly SIP variant</span></a>
+<a href="inflation-calculator.html">Inflation Calculator<span class="sub">Reverse compounding</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var k=4;
+function compute(){
+  var P=+document.getElementById('p').value, r=+document.getElementById('r').value/100, n=+document.getElementById('y').value;
+  var fv=P*Math.pow(1+r/k,k*n), interest=fv-P, ear=Math.pow(1+r/k,k)-1;
+  T.animateNumber(document.getElementById('fv'),fv);
+  T.animateNumber(document.getElementById('interest'),interest);
+  document.getElementById('ear').textContent=T.formatPct(ear*100);
+  document.getElementById('lgP').textContent=T.formatINRShort(P);
+  document.getElementById('lgI').textContent=T.formatINRShort(interest);
+  document.getElementById('freqLabel').textContent={1:'yearly',2:'half-yearly',4:'quarterly',12:'monthly',365:'daily'}[k];
+  T.drawDonut(document.getElementById('donut'),[{value:P,color:'#8eb4e0'},{value:interest,color:'#2dd4aa'}],{centerLabel:'Maturity',centerValue:T.formatINRShort(fv)});
+  var pr=[],ig=[],lb=[];
+  for(var i=1;i<=n;i++){var v=P*Math.pow(1+r/k,k*i);pr.push(P);ig.push(Math.max(0,v-P));lb.push('Y'+i);}
+  T.drawStackedArea(document.getElementById('area'),[{label:'Principal',color:'#3a6ea8',values:pr},{label:'Interest',color:'#2dd4aa',values:ig}],{xLabels:lb});
+}
+document.querySelectorAll('#freq button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#freq button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');k=+b.dataset.k;compute();});});
+T.bindSlider({slider:document.getElementById('p'),input:document.getElementById('pIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Simple vs compound interest difference?',a:'Simple interest is on principal only; compound interest is on principal + accumulated interest. Compound dominates over long periods.'},{q:'Which compounding frequency is best?',a:'Higher is better for investor. Indian FDs typically compound quarterly. Savings accounts compute daily.'},{q:'How is effective annual rate (EAR) calculated?',a:'EAR = (1 + r/k)^k - 1. For 12% compounded monthly, EAR is 12.68%.'}]);
+T.mountSoftwareSchema({name:'Compound Interest Calculator',description:'Free CI calculator with daily, monthly, quarterly, yearly compounding.'});
+})();
+</script>
+</body></html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brokerage Calculator (Intraday / Delivery) India | Tickwave</title>
+<meta name="description" content="Discount-broker (Zerodha-style) brokerage calculator. Intraday and delivery — brokerage, STT, exchange fee, GST, SEBI, stamp duty, DP charges. Net P/L.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/brokerage-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Brokerage Calculator</div>
+<h1>What your trade <span class="accent">actually costs</span></h1>
+<p class="lead">Discount brokers advertise "₹20 flat" but real cost is brokerage + STT + GST + stamp duty + SEBI fee + DP charges. This calculator gives the all-in cost and your net P/L.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="60" width="140" height="80" rx="10" fill="#161d28" stroke="#f29090"/><text x="100" y="80" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8" letter-spacing="2">CHARGES</text><rect x="50" y="92" width="100" height="6" rx="2" fill="#1c2435"/><rect x="50" y="92" width="65" height="6" rx="2" fill="#f29090"/><rect x="50" y="104" width="100" height="6" rx="2" fill="#1c2435"/><rect x="50" y="104" width="42" height="6" rx="2" fill="#f29090" opacity="0.7"/><rect x="50" y="116" width="100" height="6" rx="2" fill="#1c2435"/><rect x="50" y="116" width="22" height="6" rx="2" fill="#f29090" opacity="0.4"/></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your trade</h2>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Segment</label>
+<div class="tk-tabs" id="seg"><button data-k="intraday" aria-pressed="true">Equity intraday</button><button data-k="delivery" aria-pressed="false">Equity delivery</button></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Buy price <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="bIn" value="100" min="0.05" step="0.05"></span></div><input type="range" id="b" class="tk-slider" min="1" max="10000" step="0.5" value="100"><div class="tk-slider-bounds"><span>₹1</span><span>₹10,000</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Sell price <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="sIn" value="105" min="0.05" step="0.05"></span></div><input type="range" id="s" class="tk-slider" min="1" max="10000" step="0.5" value="105"><div class="tk-slider-bounds"><span>₹1</span><span>₹10,000</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Quantity</label><span class="tk-field-value-wrap"><input type="number" id="qIn" value="100" min="1" step="1"></span></div><input type="range" id="q" class="tk-slider" min="1" max="100000" step="1" value="100"><div class="tk-slider-bounds"><span>1</span><span>1,00,000</span></div></div>
+</div>
+<div class="tk-card"><h2>Cost breakdown</h2>
+<div class="tk-result-headline">Net P/L</div>
+<div class="tk-result-value" id="net">—</div>
+<div class="tk-result-sub">Gross P/L: <span id="gross">—</span> · Total charges: <span id="charges">—</span></div>
+<div class="tk-stats" style="grid-template-columns:1fr;gap:6px;margin-top:16px">
+<div class="tk-stat"><div class="lbl">Brokerage (buy + sell)</div><div class="val" id="brk">—</div></div>
+<div class="tk-stat"><div class="lbl">STT</div><div class="val" id="stt">—</div></div>
+<div class="tk-stat"><div class="lbl">Exchange + SEBI</div><div class="val" id="ex">—</div></div>
+<div class="tk-stat"><div class="lbl">GST (18% on brk+exch)</div><div class="val" id="gst">—</div></div>
+<div class="tk-stat"><div class="lbl">Stamp duty (buy side)</div><div class="val" id="stamp">—</div></div>
+<div class="tk-stat" id="dpRow" style="display:none"><div class="lbl">DP charges (sell only, delivery)</div><div class="val" id="dp">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Charge breakdown (discount broker, e.g. Zerodha)</h2>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="border-bottom:1px solid #253040"><th style="text-align:left;padding:8px 4px">Charge</th><th style="text-align:left">Intraday</th><th style="text-align:left">Delivery</th></tr>
+<tr><td style="padding:6px 4px">Brokerage</td><td>0.03% or ₹20 (min) per side</td><td>₹0 (most brokers)</td></tr>
+<tr><td style="padding:6px 4px">STT</td><td>0.025% on sell side</td><td>0.1% both sides</td></tr>
+<tr><td style="padding:6px 4px">Exchange charge</td><td>0.00322% on turnover</td><td>0.00322% on turnover</td></tr>
+<tr><td style="padding:6px 4px">SEBI charge</td><td>0.0001% on turnover</td><td>0.0001% on turnover</td></tr>
+<tr><td style="padding:6px 4px">GST</td><td>18% on brokerage + exchange</td><td>18% on brokerage + exchange</td></tr>
+<tr><td style="padding:6px 4px">Stamp duty (buy side)</td><td>0.003% on buy</td><td>0.015% on buy</td></tr>
+<tr><td style="padding:6px 4px">DP charges</td><td>—</td><td>₹15.34 per scrip on sell</td></tr>
+</table>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Why so many separate charges?</summary><p>Brokerage goes to broker; STT and stamp duty to govt; exchange & SEBI charges to exchange/regulator; GST is tax on services; DP charges to depository. All real, none avoidable.</p></details>
+<details><summary>Are full-service broker rates similar?</summary><p>No — they typically charge 0.3-0.5% per side on delivery, which can be 10-20× the discount-broker total. Discount brokers won the retail mass market.</p></details>
+<details><summary>Does this work for F&O?</summary><p>This calculator is for cash equity only. F&O has different rates — STT 0.0125% on sell-side options, exchange charges ~0.053% for futures, etc.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="capital-gains-tax-calculator.html">Capital Gains<span class="sub">Tax on profit</span></a>
+<a href="mutual-fund-return-calculator.html">MF Returns<span class="sub">Lower friction</span></a>
+<a href="cagr-calculator.html">CAGR<span class="sub">Annualised after charges</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var seg='intraday';
+function compute(){
+  var b=+document.getElementById('b').value, s=+document.getElementById('s').value, q=+document.getElementById('q').value;
+  var buyTO=b*q, sellTO=s*q, totalTO=buyTO+sellTO;
+  var brkBuy, brkSell, stt, stamp, dp;
+  if(seg==='intraday'){
+    brkBuy=Math.min(buyTO*0.0003,20); brkSell=Math.min(sellTO*0.0003,20);
+    stt=sellTO*0.00025;
+    stamp=buyTO*0.00003;
+    dp=0;
+    document.getElementById('dpRow').style.display='none';
+  } else {
+    brkBuy=0; brkSell=0;
+    stt=(buyTO+sellTO)*0.001;
+    stamp=buyTO*0.00015;
+    dp=15.34;
+    document.getElementById('dpRow').style.display='';
+  }
+  var exch=totalTO*0.0000322, sebi=totalTO*0.000001;
+  var gst=(brkBuy+brkSell+exch+sebi)*0.18;
+  var totalChg=brkBuy+brkSell+stt+exch+sebi+gst+stamp+dp;
+  var gross=sellTO-buyTO, net=gross-totalChg;
+  T.animateNumber(document.getElementById('net'),net);
+  document.getElementById('gross').textContent=T.formatINRShort(gross);
+  document.getElementById('charges').textContent=T.formatINRShort(totalChg);
+  T.animateNumber(document.getElementById('brk'),brkBuy+brkSell);
+  T.animateNumber(document.getElementById('stt'),stt);
+  T.animateNumber(document.getElementById('ex'),exch+sebi);
+  T.animateNumber(document.getElementById('gst'),gst);
+  T.animateNumber(document.getElementById('stamp'),stamp);
+  if(seg==='delivery') T.animateNumber(document.getElementById('dp'),dp);
+  document.getElementById('net').className='tk-result-value';
+  if(net<0) document.getElementById('net').style.background='linear-gradient(120deg,#f29090,#f26b6b)';
+  else document.getElementById('net').style.background='linear-gradient(120deg,#2dd4aa,#8eb4e0)';
+  document.getElementById('net').style.webkitBackgroundClip='text';
+  document.getElementById('net').style.backgroundClip='text';
+  document.getElementById('net').style.webkitTextFillColor='transparent';
+}
+document.querySelectorAll('#seg button').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('#seg button').forEach(function(x){x.setAttribute('aria-pressed','false');});btn.setAttribute('aria-pressed','true');seg=btn.dataset.k;compute();});});
+['b','s','q'].forEach(function(id){T.bindSlider({slider:document.getElementById(id),input:document.getElementById(id+'In'),onChange:compute});});
+compute();
+T.mountFAQ([{q:'Why so many separate charges?',a:'Brokerage to broker; STT/stamp to govt; exchange/SEBI to regulators; GST on services; DP to depository. All real.'},{q:'Are full-service broker rates similar?',a:'No — they charge 0.3-0.5% per side on delivery, 10-20x discount broker total.'},{q:'Does this work for F&O?',a:'No — F&O has different rates (STT 0.0125% on sell-side options etc.).'}]);
+T.mountSoftwareSchema({name:'Brokerage Calculator',description:'All-in trade cost for Indian discount brokers (intraday + delivery).'});
+})();
+</script>
+</body></html>

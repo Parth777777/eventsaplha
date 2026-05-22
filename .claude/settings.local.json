@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -m flask --app backend.api run --debug)",
-      "PowerShell(if \\($env:GROQ_API_KEY\\) { \"env: GROQ_API_KEY is set \\($\\(\\($env:GROQ_API_KEY\\).Length\\) chars\\)\" } else { \"env: GROQ_API_KEY is NOT set in current shell\" }; if \\(Test-Path .env\\) { \"found .env file\"; \\(Get-Content .env | Select-String -Pattern '^GROQ' | ForEach-Object { $_.Line.Split\\('='\\)[0] + '=...\\(masked\\)' }\\) } else { \"no .env file in repo root\" })"
-    ]
-  }
-}

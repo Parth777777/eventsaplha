@@ -1205,20 +1205,77 @@ def social_feed():
       verified=1                      (X-verified-only quick news)
       hours=12                        (freshness window)
       limit=50
+      include_noise=1                 (default off — suppress clickbait/meme)
+      include_pump_cluster=1          (default off — coordinated-pump heuristic)
     """
     db = _get_db()
     try:
         from social.hub import feed, ensure_schema
         ensure_schema(db)
-        return jsonify({"success": True, "data": feed(
+        items = feed(
             db,
             platform=request.args.get("platform"),
             ticker=(request.args.get("ticker") or "").upper().strip() or None,
             severity=request.args.get("severity"),
             verified_only=request.args.get("verified") in ("1", "true", "True"),
             hours=int(request.args.get("hours", "12")),
-            limit=int(request.args.get("limit", "50")),
-        )})
+            # Over-fetch so noise removal doesn't thin out the feed.
+            limit=max(int(request.args.get("limit", "50")) * 3, 60),
+        )
+        # --- Noise filter: SEO/clickbait headlines paraphrased on social slip
+        # through pump_dump_risk=0; the news_quality classifier catches them.
+        include_noise = request.args.get("include_noise") in ("1", "true", "True")
+        try:
+            from news_quality import classify as _classify_news
+            for it in items:
+                q = _classify_news(title=it.get("title"),
+                                   summary=it.get("text"),
+                                   source=it.get("platform"))
+                it["impact_tier"] = q.impact_tier
+                it["quality_score"] = q.quality_score
+                if q.kinds:
+                    it["kinds"] = q.kinds
+                if q.market_implication:
+                    it["market_implication"] = q.market_implication
+            if not include_noise:
+                items = [it for it in items if it.get("impact_tier") != "noise"]
+        except Exception:
+            pass
+
+        # --- Coordinated-pump detection: same ticker, >=3 unverified posts
+        # within 30 minutes is suspicious. Flag the cluster; downstream UI can
+        # show a "coordinated buzz" badge or drop them entirely.
+        include_pump_cluster = request.args.get("include_pump_cluster") in ("1", "true", "True")
+        try:
+            from collections import defaultdict
+            buckets: dict = defaultdict(list)
+            for it in items:
+                tk = it.get("primary_ticker")
+                if not tk or it.get("verified"):
+                    continue
+                # 30-minute bucket key
+                ts = it.get("posted_at") or it.get("collected_at") or ""
+                bucket = ts[:13] + ":" + str(int(ts[14:16]) // 30 if len(ts) >= 16 else 0)
+                buckets[(tk, bucket)].append(it)
+            flagged: set = set()
+            for (tk, _), group in buckets.items():
+                if len(group) >= 3:
+                    for g in group:
+                        g["coordinated_pump"] = True
+                        flagged.add(id(g))
+            if not include_pump_cluster and flagged:
+                items = [it for it in items if id(it) not in flagged]
+        except Exception:
+            pass
+
+        # Final trim to requested limit
+        try:
+            cap = int(request.args.get("limit", "50"))
+        except (TypeError, ValueError):
+            cap = 50
+        items = items[:cap]
+
+        return jsonify({"success": True, "data": items})
     except Exception as e:
         return jsonify({"success": True, "data": [], "warning": str(e)})
 
@@ -1301,9 +1358,34 @@ def _cached(key: str, ttl: int, builder):
     return v
 
 
+_YF_RESOLVE_CACHE: Dict[str, str] = {}
+
+
 def _yf_ticker(ticker: str):
+    """Return a yfinance.Ticker honoring NSE/BSE listing.
+
+    Strategy:
+        1. Look up the BSE scrip map (scraper.fundamentals.bse_scrip_map)
+           which prefers '.NS' for dual-listed stocks and '.BO' for
+           BSE-exclusive scrips.
+        2. Cache the resolved suffix per upper-cased ticker so repeated
+           calls don't pay the dict lookup over and over.
+        3. Fall back to '.NS' to preserve historical behavior for tickers
+           neither cache knows about.
+    """
     import yfinance as yf
-    return yf.Ticker(f"{ticker.upper()}.NS")
+    t = (ticker or '').upper()
+    if not t:
+        return yf.Ticker('')
+    sym = _YF_RESOLVE_CACHE.get(t)
+    if not sym:
+        try:
+            from scraper.fundamentals.bse_scrip_map import get_yf_symbol
+            sym = get_yf_symbol(t)
+        except Exception:
+            sym = f'{t}.NS'
+        _YF_RESOLVE_CACHE[t] = sym
+    return yf.Ticker(sym)
 
 
 def _df_to_year_records(df, max_periods: int = 5) -> List[Dict]:
@@ -1365,6 +1447,79 @@ def stock_profile(ticker: str):
             return {"ticker": ticker, "error": str(e)}
 
     data = _cached(f"profile:{ticker}", _STOCK_CACHE_TTL, build)
+    return jsonify({"success": True, "data": data})
+
+
+@bp.route("/api/stock/<ticker>/technicals", methods=["GET"])
+def stock_technicals(ticker: str):
+    """Compute headline technicals from yfinance daily history:
+    last price, RSI(14), MA50, MA200, 52-week high/low, plus a simple trend
+    label ('strong_up' / 'mildly_up' / 'range_bound' / 'mildly_down' / 'down').
+
+    Used by the homepage Analyze button so the report can include a real
+    Technicals section instead of leaving it empty.
+
+    Cached 1 hour — intraday calls are fine to be ~stale; the chart is set
+    up off daily close anyway.
+    """
+    ticker = ticker.upper().strip()
+
+    def build():
+        try:
+            import numpy as np
+            t = _yf_ticker(ticker)
+            hist = t.history(period="1y", interval="1d", auto_adjust=False)
+            if hist is None or hist.empty or len(hist) < 60:
+                return {"ticker": ticker, "error": "insufficient price history"}
+            closes = hist["Close"].dropna()
+            if len(closes) < 60:
+                return {"ticker": ticker, "error": "insufficient price history"}
+            last = float(closes.iloc[-1])
+            # RSI(14) — Wilder's smoothing
+            delta = closes.diff()
+            gain = delta.where(delta > 0, 0.0)
+            loss = -delta.where(delta < 0, 0.0)
+            avg_gain = gain.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+            avg_loss = loss.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+            rs = avg_gain / avg_loss.replace(0, np.nan)
+            rsi_series = 100 - (100 / (1 + rs))
+            rsi14 = float(rsi_series.iloc[-1]) if not np.isnan(rsi_series.iloc[-1]) else None
+            # Moving averages
+            ma50  = float(closes.rolling(50).mean().iloc[-1]) if len(closes) >= 50 else None
+            ma200 = float(closes.rolling(200).mean().iloc[-1]) if len(closes) >= 200 else None
+            # 52w high/low
+            wk52_high = float(closes.tail(252).max())
+            wk52_low  = float(closes.tail(252).min())
+            # Trend label from MA stack + RSI
+            trend = "range_bound"
+            if ma50 and ma200:
+                if last > ma50 > ma200 and (rsi14 or 50) > 55:
+                    trend = "strong_up"
+                elif last > ma50 > ma200:
+                    trend = "mildly_up"
+                elif last < ma50 < ma200 and (rsi14 or 50) < 45:
+                    trend = "down"
+                elif last < ma50 < ma200:
+                    trend = "mildly_down"
+            return {
+                "ticker": ticker,
+                "last_price": round(last, 2),
+                "prev_close": round(float(closes.iloc[-2]), 2) if len(closes) >= 2 else None,
+                "pct_change_1d": round((last - float(closes.iloc[-2])) / float(closes.iloc[-2]) * 100, 2)
+                                  if len(closes) >= 2 and float(closes.iloc[-2]) else None,
+                "rsi_14": round(rsi14, 2) if rsi14 is not None else None,
+                "ma_50": round(ma50, 2) if ma50 is not None else None,
+                "ma_200": round(ma200, 2) if ma200 is not None else None,
+                "week_52_high": round(wk52_high, 2),
+                "week_52_low": round(wk52_low, 2),
+                "trend": trend,
+                "above_ma50": (last > ma50) if ma50 is not None else None,
+                "above_ma200": (last > ma200) if ma200 is not None else None,
+            }
+        except Exception as e:
+            return {"ticker": ticker, "error": str(e)}
+
+    data = _cached(f"tech:{ticker}", 60 * 60, build)
     return jsonify({"success": True, "data": data})
 
 
@@ -1480,6 +1635,52 @@ def fundamentals_score(ticker: str):
       0-39    avoid (recommendation gated)
     """
     ticker = ticker.upper().strip()
+
+    # ── Daily quota gate (Phase 4.5) ───────────────────────────────────
+    # Fundamental analysis is our headline product — everyone sees the
+    # FULL breakdown. Free is capped at FREE_ANALYSIS_PER_DAY DISTINCT
+    # tickers/day; Starter +30/day; Pro unlimited. Same-day same-ticker
+    # re-views don't count, so users can deep-dive without anxiety.
+    try:
+        from backend.freemium import (
+            analysis_count_today, analysis_daily_cap, get_user_tier,
+            current_analysis_bucket, _resolve_user_id,
+        )
+        from backend.api import get_db as _gd
+        _db = _gd()
+        _bucket = current_analysis_bucket(_db)
+        _uid = _resolve_user_id()
+        _tier = get_user_tier(_db, _uid) if _uid else 'free'
+        _used = analysis_count_today(_db, _bucket)
+        _cap = analysis_daily_cap(_tier)
+
+        # Has the user already analyzed THIS ticker today? Re-view is free.
+        _already = False
+        try:
+            _cur = _db.conn.cursor()
+            _r = _cur.execute(
+                "SELECT 1 FROM analysis_usage "
+                "WHERE user_id = ? AND ticker = ? "
+                "AND used_at >= datetime('now', 'start of day') LIMIT 1",
+                (_bucket, ticker),
+            ).fetchone()
+            _already = bool(_r)
+        except Exception:
+            pass
+
+        if _cap is not None and not _already and _used >= _cap:
+            return jsonify({
+                'success': False,
+                'error': 'analysis_quota_exceeded',
+                'tier': _tier,
+                'used_today': _used,
+                'limit': _cap,
+                'message': (f"You've used {_used}/{_cap} analyses today. "
+                            f"Upgrade for 30/day on Starter or unlimited on Pro."),
+                'upgrade_url': '/app/pricing.html',
+            }), 429
+    except Exception:
+        pass
 
     def build():
         try:
@@ -1683,7 +1884,48 @@ def fundamentals_score(ticker: str):
         }
 
     data = _cached(f"fund_score:{ticker}", _STOCK_CACHE_TTL, build)
-    return jsonify({"success": True, "data": data})
+
+    # Record the analysis AFTER a successful compute. If it failed (no
+    # data or error), don't penalize the user with a quota tick.
+    try:
+        if data and not data.get('error') and data.get('score') is not None:
+            from backend.freemium import record_analysis, current_analysis_bucket
+            from backend.api import get_db as _gd
+            _db2 = _gd()
+            record_analysis(_db2, current_analysis_bucket(_db2), ticker)
+            # Snapshot for trajectory + peer-rank features
+            try:
+                from backend.fundamentals_ai import snapshot_history
+                snapshot_history(_db2, ticker, data.get('score'), data.get('tier'))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Quota meta for the UI ("3/5 today · upgrade to Starter")
+    quota_meta = None
+    try:
+        from backend.freemium import (
+            analysis_count_today, analysis_daily_cap, get_user_tier,
+            current_analysis_bucket, _resolve_user_id,
+        )
+        from backend.api import get_db as _gd
+        _db3 = _gd()
+        _uid2 = _resolve_user_id()
+        _tier2 = get_user_tier(_db3, _uid2) if _uid2 else 'free'
+        _cap2 = analysis_daily_cap(_tier2)
+        _used2 = analysis_count_today(_db3, current_analysis_bucket(_db3))
+        quota_meta = {
+            'tier': _tier2,
+            'used_today': _used2,
+            'limit': _cap2,
+            'remaining': None if _cap2 is None else max(0, _cap2 - _used2),
+            'upgrade_url': '/app/pricing.html' if _tier2 != 'pro' else None,
+        }
+    except Exception:
+        pass
+
+    return jsonify({"success": True, "data": data, "quota": quota_meta})
 
 
 # Bulk variant — accepts ?tickers=TCS,RELIANCE,INFY and returns scores keyed by ticker
@@ -1707,27 +1949,85 @@ def fundamentals_score_bulk():
 
 @bp.route("/api/stock/<ticker>/shareholding", methods=["GET"])
 def stock_shareholding(ticker: str):
-    """Shareholding pattern — major holders, institutional list, mutual fund holders."""
+    """Shareholding pattern — major holders, institutional list, mutual fund holders.
+
+    Indian stocks rarely have data in yfinance's US-style `institutional_holders`
+    or `mutualfund_holders` tables (those are SEC-filed 13F data, Indian
+    issuers don't file with SEC). So we layer THREE sources:
+      1. `promoter_holdings` table — NSE quarterly shareholding pattern
+         (FII/DII/promoter/MF/insurance/public splits). Best data when present.
+      2. yfinance info — `heldPercentInsiders` + `heldPercentInstitutions`
+         for synthetic "Insiders vs Institutions vs Public" major-holder rows.
+      3. yfinance tables — institutional_holders / mutualfund_holders if any.
+    """
     ticker = ticker.upper().strip()
 
     def build():
+        out = {"major": [], "institutional": [], "mutual_funds": [],
+               "as_of": None, "source": []}
+
+        # ─── 1) NSE promoter_holdings table (preferred) ──────────────────
+        try:
+            db = _get_db() if _get_db else None
+            if db is not None and getattr(db, "conn", None) is not None:
+                p = "%s" if getattr(db, "is_postgres", False) else "?"
+                cur = db.conn.cursor()
+                cur.execute(
+                    f"""SELECT promoter_pct, promoter_pledge_pct, fii_pct, dii_pct,
+                              public_pct, mutual_fund_pct, insurance_pct, quarter_end
+                         FROM promoter_holdings
+                        WHERE ticker = {p}
+                     ORDER BY quarter_end DESC LIMIT 1""",
+                    (ticker,),
+                )
+                row = cur.fetchone()
+                if row:
+                    def g(idx, key):
+                        return (row[idx] if not isinstance(row, dict)
+                                else row.get(key)) or 0
+                    promoter = float(g(0, "promoter_pct")) or 0
+                    pledge   = float(g(1, "promoter_pledge_pct")) or 0
+                    fii      = float(g(2, "fii_pct")) or 0
+                    dii      = float(g(3, "dii_pct")) or 0
+                    public   = float(g(4, "public_pct")) or 0
+                    mf       = float(g(5, "mutual_fund_pct")) or 0
+                    ins      = float(g(6, "insurance_pct")) or 0
+                    qend     = g(7, "quarter_end")
+                    out["as_of"] = str(qend) if qend else None
+                    out["source"].append("promoter_holdings")
+                    if promoter > 0:
+                        out["major"].append({"label": "Promoters",       "pct": round(promoter, 2)})
+                        if pledge > 0:
+                            out["major"].append({"label": f"  └ Pledged",  "pct": round(pledge, 2)})
+                    if fii > 0:   out["major"].append({"label": "FII / FPI",  "pct": round(fii, 2)})
+                    if dii > 0:   out["major"].append({"label": "DII",        "pct": round(dii, 2)})
+                    if mf > 0:    out["major"].append({"label": "Mutual Funds","pct": round(mf, 2)})
+                    if ins > 0:   out["major"].append({"label": "Insurance",  "pct": round(ins, 2)})
+                    if public > 0:out["major"].append({"label": "Public",     "pct": round(public, 2)})
+        except Exception as e:
+            logger.debug("promoter_holdings lookup failed: %s", e)
+
+        # ─── 2) yfinance info — synthesise major-holder rows if needed ──
         try:
             t = _yf_ticker(ticker)
-            out = {"major": [], "institutional": [], "mutual_funds": []}
+            info = t.info or {}
+            ins_p  = info.get("heldPercentInsiders")
+            inst_p = info.get("heldPercentInstitutions")
+            # Only synthesise if we don't already have NSE data
+            if not out["major"] and (ins_p is not None or inst_p is not None):
+                out["source"].append("yfinance_info")
+                ins_pct  = round(float(ins_p)  * 100, 2) if ins_p  is not None else 0
+                inst_pct = round(float(inst_p) * 100, 2) if inst_p is not None else 0
+                public_pct = max(0.0, round(100 - ins_pct - inst_pct, 2))
+                if ins_pct > 0:  out["major"].append({"label": "Insiders / Promoters", "pct": ins_pct})
+                if inst_pct > 0: out["major"].append({"label": "Institutions",         "pct": inst_pct})
+                if public_pct > 0: out["major"].append({"label": "Public / Other",     "pct": public_pct})
 
-            try:
-                mh = t.major_holders
-                if mh is not None and not mh.empty:
-                    for _, row in mh.iterrows():
-                        vals = [str(v) for v in row.tolist()]
-                        if len(vals) >= 2:
-                            out["major"].append({"label": vals[1], "pct": vals[0]})
-            except Exception:
-                pass
-
+            # ─── 3) Yahoo's institutional + mutual fund tables (rare for IN) ──
             try:
                 ih = t.institutional_holders
                 if ih is not None and not ih.empty:
+                    out["source"].append("yfinance_institutional")
                     for _, row in ih.iterrows():
                         out["institutional"].append({
                             "holder": str(row.get("Holder", "")),
@@ -1736,13 +2036,13 @@ def stock_shareholding(ticker: str):
                             "pct_out": float(row.get("% Out", 0) or 0),
                             "value": int(row.get("Value", 0) or 0),
                         })
-            except Exception:
-                pass
+            except Exception: pass
 
             try:
-                mf = t.mutualfund_holders
-                if mf is not None and not mf.empty:
-                    for _, row in mf.iterrows():
+                mfh = t.mutualfund_holders
+                if mfh is not None and not mfh.empty:
+                    out["source"].append("yfinance_mutualfund")
+                    for _, row in mfh.iterrows():
                         out["mutual_funds"].append({
                             "holder": str(row.get("Holder", "")),
                             "shares": int(row.get("Shares", 0) or 0),
@@ -1750,12 +2050,47 @@ def stock_shareholding(ticker: str):
                             "pct_out": float(row.get("% Out", 0) or 0),
                             "value": int(row.get("Value", 0) or 0),
                         })
-            except Exception:
-                pass
+            except Exception: pass
 
-            return out
+            # ─── 3.5) Top SEBI insider/promoter transactions as a proxy ──
+            # When Yahoo gives no institutional list (typical for Indian
+            # stocks), surface the latest SEBI PIT disclosures as a useful
+            # "who's moving the holdings" hint.
+            if not out["institutional"]:
+                try:
+                    db2 = _get_db() if _get_db else None
+                    if db2 is not None and getattr(db2, "conn", None) is not None:
+                        ph = "%s" if getattr(db2, "is_postgres", False) else "?"
+                        cur2 = db2.conn.cursor()
+                        cur2.execute(
+                            f"""SELECT person_name, designation, transaction_type,
+                                       quantity, pct_after, transaction_date
+                                  FROM sebi_disclosures
+                                 WHERE ticker = {ph}
+                              ORDER BY transaction_date DESC LIMIT 12""",
+                            (ticker,),
+                        )
+                        rows = cur2.fetchall()
+                        if rows:
+                            out["source"].append("sebi_disclosures")
+                            for r in rows:
+                                def gg(idx, key):
+                                    return r[idx] if not isinstance(r, dict) else r.get(key)
+                                out["institutional"].append({
+                                    "holder": (gg(0,"person_name") or "—"),
+                                    "designation": gg(1,"designation"),
+                                    "side": gg(2,"transaction_type"),
+                                    "shares": int(gg(3,"quantity") or 0),
+                                    "pct_out": float(gg(4,"pct_after") or 0),
+                                    "date_reported": str(gg(5,"transaction_date") or ""),
+                                })
+                except Exception as e:
+                    logger.debug("sebi proxy failed: %s", e)
+
         except Exception as e:
-            return {"error": str(e)}
+            logger.debug("yfinance shareholding fetch failed: %s", e)
+
+        return out
 
     data = _cached(f"sh:{ticker}", _STOCK_CACHE_TTL, build)
     return jsonify({"success": True, "data": data})
@@ -2470,21 +2805,268 @@ def stock_documents(ticker: str):
     }})
 
 
+# ============ STOCK IR — Phase B structured corporate filings ==============
+# Replaces the title-regex `_bucket_doc` approach above with direct queries
+# against the bucketed `filings` table (filing_type values populated by
+# scraper/forensics/_filing_common.classify_filing).
+
+_IR_FILING_TYPES = (
+    "concall_transcript",
+    "investor_presentation",
+    "board_outcome",
+    "corporate_action",
+    "credit_rating",
+    "quarterly_result",
+    "agm_notice",
+    "qualified_opinion",
+    "ma_deal",
+    "shareholding",
+    "insider_disclosure",
+    "press_release",
+)
+
+
+def _stringify_date(v) -> str:
+    if not v:
+        return ""
+    try:
+        return v.strftime("%Y-%m-%d") if hasattr(v, "strftime") else str(v)[:10]
+    except Exception:
+        return str(v)[:10]
+
+
+def _filings_rows(db, ticker: str, types, limit: int = 80):
+    """Pull recent filings rows for ticker, filtered by filing_type list."""
+    if not db or not types:
+        return []
+    p = "%s" if getattr(db, "is_postgres", False) else "?"
+    placeholders = ",".join([p] * len(types))
+    sql = f"""
+        SELECT title, pdf_url, filed_at, filing_type, source, exchange, summary
+          FROM filings
+         WHERE ticker = {p}
+           AND filing_type IN ({placeholders})
+         ORDER BY filed_at DESC
+         LIMIT {p}
+    """
+    try:
+        cur = db.conn.cursor()
+        cur.execute(sql, (ticker.upper(), *types, limit))
+        return cur.fetchall() or []
+    except Exception as e:
+        logger.debug(f"_filings_rows failed ticker={ticker} err={e}")
+        return []
+
+
+@bp.route("/api/stock/<ticker>/ir", methods=["GET"])
+@ttl_cache(seconds=300)
+def stock_ir(ticker: str):
+    """Structured Investor Relations bundle for a ticker (Phase B endpoint).
+
+    Returns concalls + investor presentations + board outcomes + credit
+    ratings + corporate actions + quarterly results, sourced from the
+    `filings` table where BSE/NSE fetchers have bucketed corporate
+    announcements by filing_type. Replaces the regex-based bucketing
+    in /api/stock/<ticker>/documents (kept as a back-compat alias).
+    """
+    ticker = (ticker or "").upper().strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "ticker required"}), 400
+    db = _get_db()
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+
+    # Per-bucket limit — concalls/ratings are sparser, plain announcements dense
+    per_type_cap = max(3, min(40, int(request.args.get("limit", 12))))
+
+    rows = _filings_rows(db, ticker, _IR_FILING_TYPES, limit=300)
+
+    # Group by filing_type, normalising each row
+    grouped: Dict[str, List[Dict]] = {t: [] for t in _IR_FILING_TYPES}
+    for r in rows:
+        title, url, filed_at, ftype, source, exchange, summary = (
+            r[0], r[1], r[2], r[3], r[4],
+            (r[5] if len(r) > 5 else None),
+            (r[6] if len(r) > 6 else None),
+        )
+        grouped.setdefault(ftype, []).append({
+            "date":     _stringify_date(filed_at),
+            "title":    (title or "")[:300],
+            "url":      url or "",
+            "source":   source or "",
+            "exchange": exchange or "",
+            "summary":  (summary or "")[:500] if summary else None,
+        })
+
+    # Specialised resolvers add IR-page concalls + parse rating actions
+    try:
+        from scraper.concall_transcript_fetcher import resolve as _concall_resolve
+        concalls = _concall_resolve(db, ticker, limit=per_type_cap)
+    except Exception as e:
+        logger.debug(f"concall resolver: {e}")
+        concalls = grouped.get("concall_transcript", [])[:per_type_cap]
+
+    try:
+        from scraper.credit_rating_fetcher import resolve as _rating_resolve
+        ratings = _rating_resolve(db, ticker, limit=per_type_cap)
+    except Exception as e:
+        logger.debug(f"rating resolver: {e}")
+        ratings = grouped.get("credit_rating", [])[:per_type_cap]
+
+    def _cap(key: str):
+        return grouped.get(key, [])[:per_type_cap]
+
+    bundle = {
+        "ticker": ticker,
+        "exchange": None,  # Set below from first row if available
+        "concalls":              concalls,
+        "presentations":         _cap("investor_presentation"),
+        "board_outcomes":        _cap("board_outcome"),
+        "corporate_actions":     _cap("corporate_action"),
+        "quarterly_results":     _cap("quarterly_result"),
+        "agm_notices":           _cap("agm_notice"),
+        "ratings":               ratings,
+        "audit_qualifications":  _cap("qualified_opinion"),
+        "ma_deals":              _cap("ma_deal"),
+        "shareholding_filings":  _cap("shareholding"),
+        "insider_disclosures":   _cap("insider_disclosure"),
+        "press_releases":        _cap("press_release"),
+    }
+    # Detect exchange from first available row
+    for items in bundle.values():
+        if isinstance(items, list) and items:
+            exch = items[0].get("exchange") if isinstance(items[0], dict) else None
+            if exch:
+                bundle["exchange"] = exch
+                break
+
+    bundle["counts"] = {
+        k: len(v) for k, v in bundle.items()
+        if isinstance(v, list)
+    }
+    bundle["disclaimer"] = (
+        "Informational only — not investment advice. "
+        "AlphaEvent is not a SEBI-registered Investment Adviser or Research Analyst."
+    )
+    return jsonify({"success": True, "data": bundle})
+
+
+@bp.route("/api/stock/<ticker>/ir/refresh", methods=["POST", "GET"])
+def stock_ir_refresh(ticker: str):
+    """On-demand BSE filings fetch for a single ticker.
+
+    Triggered by the UI when /api/stock/<ticker>/ir returns mostly empty
+    buckets. Runs the BSEFilingFetcher synchronously for this one ticker
+    with a 30-day lookback, then returns count inserted so the UI can
+    decide whether to re-fetch /ir for the user.
+
+    Returns 503 if the BSE API is unreachable (dev machines without BSE
+    network egress, or the API itself being down).
+    """
+    ticker = (ticker or "").upper().strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "ticker required"}), 400
+    db = _get_db()
+    if not db:
+        return jsonify({"success": False, "error": "db unavailable"}), 503
+
+    try:
+        from scraper.forensics.bse_filing_fetcher import BSEFilingFetcher
+    except Exception:
+        try:
+            from forensics.bse_filing_fetcher import BSEFilingFetcher  # type: ignore
+        except Exception as e:
+            return jsonify({"success": False, "error": f"fetcher import failed: {e}"}), 500
+
+    try:
+        fetcher = BSEFilingFetcher(db, [ticker])
+        inserted = fetcher.refresh_ticker(ticker, lookback_days=30, keep_other=True)
+        # Re-query the IR endpoint inline so the client gets the fresh bundle
+        # without a round-trip.
+        return jsonify({
+            "success": True,
+            "data": {
+                "ticker": ticker,
+                "inserted": inserted,
+                "message": (f"Fetched {inserted} new filing(s)." if inserted
+                            else "No new filings found (or BSE rate-limited). "
+                                 "Try again in a few minutes."),
+            },
+        })
+    except Exception as e:
+        logger.warning(f"on-demand IR refresh failed ticker={ticker} err={e}")
+        return jsonify({
+            "success": False,
+            "error": "Failed to reach BSE API. "
+                     "This is usually a temporary rate-limit or dev-network issue.",
+            "detail": str(e)[:200],
+        }), 503
+
+
 @bp.route("/api/stock/<ticker>/peers-detail", methods=["GET"])
 def stock_peers_detail(ticker: str):
-    """Peer comparison with Tickertape-style metrics: P/E, P/B, market-cap, ROE, alpha."""
+    """Peer comparison with Tickertape-style metrics: P/E, P/B, market-cap, ROE, alpha.
+
+    Sector is resolved across THREE sources (in priority order):
+      1. config.STOCK_SECTORS — small curated map (~50 mega/large caps)
+      2. stock_universe.STOCK_UNIVERSE — 2300+ NSE tickers with sector
+      3. yfinance.info.sector — last-ditch fallback for stocks we never seeded
+
+    Peers list is built from STOCK_UNIVERSE so even a small-cap subject can
+    have 10+ same-sector peers — previously peers came back empty for
+    anything outside the curated map.
+    """
     ticker = ticker.upper().strip()
     try:
+        # Curated map (small + opinionated)
         try:
             from config import STOCK_SECTORS, SECTOR_STOCKS, STOCK_COMPANIES
         except Exception:
             STOCK_SECTORS = SECTOR_STOCKS = STOCK_COMPANIES = {}
+        # Full universe (2300+ NSE) with sector tags
+        try:
+            from stock_universe import STOCK_UNIVERSE
+        except Exception:
+            STOCK_UNIVERSE = {}
+
+        # Resolve subject sector
         sector = STOCK_SECTORS.get(ticker)
-        peers_list = (SECTOR_STOCKS.get(sector) or []) if sector else []
-        peers_list = [p for p in peers_list if p != ticker][:10]
+        if not sector:
+            meta = STOCK_UNIVERSE.get(ticker) or {}
+            sector = meta.get("sector") or meta.get("Sector")
+        if not sector or sector == "OTHER":
+            # Last resort — ask yfinance
+            try:
+                yinfo = _yf_ticker(ticker).info or {}
+                ysec = (yinfo.get("sector") or "").upper()
+                if ysec: sector = sector or ysec
+            except Exception: pass
+
+        # Build candidate peer pool from any source that matches our sector
+        peer_set = set()
+        if sector:
+            sec_norm = str(sector).upper().strip()
+            # Curated bucket
+            for p in (SECTOR_STOCKS.get(sec_norm) or []): peer_set.add(p)
+            # Universe-wide bucket (broader)
+            for tk, meta in STOCK_UNIVERSE.items():
+                sec = (meta.get("sector") or meta.get("Sector") or "").upper()
+                if sec == sec_norm: peer_set.add(tk)
+        peer_set.discard(ticker)
+
+        # Prefer peers from the curated mega-cap set first (well-known
+        # benchmarks make a better comparison than obscure micro-caps),
+        # then fill with the universe matches.
+        curated_peers = [p for p in (SECTOR_STOCKS.get(str(sector).upper()) or []) if p in peer_set]
+        other_peers = sorted(peer_set - set(curated_peers))
+        peers_list = (curated_peers + other_peers)[:10]
 
         def enrich(t):
-            row = {"ticker": t, "company": STOCK_COMPANIES.get(t, t)}
+            # Try curated → universe → ticker symbol
+            co = (STOCK_COMPANIES.get(t)
+                  or (STOCK_UNIVERSE.get(t) or {}).get("name")
+                  or t)
+            row = {"ticker": t, "company": co}
             try:
                 info = _yf_ticker(t).info or {}
                 row.update({

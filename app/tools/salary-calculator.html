@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salary Calculator — CTC to In-Hand Monthly | Tickwave</title>
+<meta name="description" content="Convert CTC to in-hand monthly salary. Subtract employer PF, gratuity, employee PF, professional tax, income tax. Old vs new regime supported. FY 2025-26.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/salary-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">Salary Calculator</div>
+<h1>CTC vs <span class="accent">actual in-hand</span></h1>
+<p class="lead">Your offer says ₹20 lakh CTC. What actually lands in your bank every month? This tool walks through gratuity, PF, professional tax and income tax to get the real take-home.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="50" width="50" height="120" rx="8" fill="#161d28" stroke="#e6b84a"/><text x="55" y="70" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">CTC</text><text x="55" y="100" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="13" font-weight="700" fill="#e6b84a">₹20L</text><path d="M85 110 L120 110 M110 102 L120 110 L110 118" stroke="#8a94a8" stroke-width="1.5"/><rect x="125" y="80" width="50" height="90" rx="8" fill="#161d28" stroke="#2dd4aa"/><text x="150" y="100" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">TAKE-HOME</text><text x="150" y="130" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="13" font-weight="700" fill="#2dd4aa">₹1.18L</text><text x="150" y="148" text-anchor="middle" font-family="Geist Mono" font-size="9" fill="#8a94a8">/ month</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your offer</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Annual CTC <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="cIn" value="2000000" min="100000" step="50000"></span></div><input type="range" id="c" class="tk-slider" min="100000" max="20000000" step="50000" value="2000000"><div class="tk-slider-bounds"><span>₹1 L</span><span>₹2 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Basic salary <span class="hint">(% of CTC)</span></label><span class="tk-field-value-wrap"><input type="number" id="bIn" value="40" min="20" max="60" step="5"><span class="suffix">%</span></span></div><input type="range" id="b" class="tk-slider" min="20" max="60" step="5" value="40"><div class="tk-slider-bounds"><span>20%</span><span>60%</span></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">Tax regime</label>
+<div class="tk-tabs" id="reg"><button data-k="new" aria-pressed="true">New (default)</button><button data-k="old" aria-pressed="false">Old</button></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Old-regime deductions <span class="hint">(80C + HRA + …)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="dedIn" value="200000" min="0" step="10000"></span></div><input type="range" id="ded" class="tk-slider" min="0" max="500000" step="10000" value="200000"><div class="tk-slider-bounds"><span>₹0</span><span>₹5 L</span></div></div>
+</div>
+<div class="tk-card"><h2>Breakdown</h2>
+<div class="tk-result-headline">In-hand (monthly)</div>
+<div class="tk-result-value" id="inhand">—</div>
+<div class="tk-result-sub">Annual take-home: <span id="annual">—</span></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Basic salary</div><div class="val" id="basic">—</div></div>
+<div class="tk-stat"><div class="lbl">Gross salary</div><div class="val" id="gross">—</div></div>
+<div class="tk-stat"><div class="lbl">Employer PF + gratuity</div><div class="val bear" id="empPart">—</div></div>
+<div class="tk-stat"><div class="lbl">Employee PF</div><div class="val bear" id="emp">—</div></div>
+<div class="tk-stat"><div class="lbl">Professional tax</div><div class="val bear" id="pt">—</div></div>
+<div class="tk-stat"><div class="lbl">Income tax</div><div class="val bear" id="tax">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>Why CTC ≠ take-home</h2>
+<ul>
+<li><strong>Employer PF (12% of basic):</strong> goes to your EPF account, NOT in your bank</li>
+<li><strong>Gratuity (~4.81% of basic):</strong> employer sets aside, payable on resignation after 5+ years</li>
+<li><strong>Employee PF (12% of basic):</strong> deducted from your salary</li>
+<li><strong>Professional tax:</strong> ~₹200/month in most states (Maharashtra, Karnataka, WB, Gujarat)</li>
+<li><strong>Income tax (TDS):</strong> based on annual taxable income + chosen regime</li>
+</ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Is gratuity part of in-hand?</summary><p>No. Gratuity is paid only on resignation after 5+ years (or at retirement). Most companies show it in CTC but it never lands in your bank monthly.</p></details>
+<details><summary>Why is employee PF deducted if it's "my money"?</summary><p>It is your money — saved for retirement. It earns 8.25% tax-free. Treat it as forced savings, not a tax.</p></details>
+<details><summary>Old or new regime — which to pick at offer?</summary><p>New regime if your tax-saving investments are < ₹4 lakh. Old if more. Switching is free each year for salaried.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="income-tax-calculator.html">Income Tax<span class="sub">Old vs new detail</span></a>
+<a href="hra-calculator.html">HRA Calculator<span class="sub">Maximise exemption</span></a>
+<a href="epf-calculator.html">EPF Calculator<span class="sub">Provident fund corpus</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var regime='new';
+function slabTax(income,slabs){var t=0,p=0; for(var i=0;i<slabs.length;i++){var lim=slabs[i][0],rate=slabs[i][1]; if(income<=lim){t+=(income-p)*rate; return t;} t+=(lim-p)*rate; p=lim;} return t;}
+function newTax(t){var s=[[400000,0],[800000,0.05],[1200000,0.10],[1600000,0.15],[2000000,0.20],[2400000,0.25],[Infinity,0.30]]; var x=slabTax(t,s); if(t<=1200000)x=0; else if(t<=1275000)x=Math.min(x,t-1200000); return x*1.04;}
+function oldTax(t){var s=[[250000,0],[500000,0.05],[1000000,0.20],[Infinity,0.30]]; var x=slabTax(t,s); if(t<=500000)x=0; return x*1.04;}
+function compute(){
+  var ctc=+document.getElementById('c').value, bp=+document.getElementById('b').value/100, ded=+document.getElementById('ded').value;
+  var basic=ctc*bp;
+  var empPF=Math.min(basic*0.12, 1800*12*7);  // capped indicative
+  empPF=basic*0.12;
+  var gratuity=basic*0.0481;
+  var grossSalary=ctc-empPF-gratuity;       // what employer pays you (cash compensation)
+  var emp=basic*0.12;                        // employee PF deducted
+  var pt=2500;                                // ~Rs 200/mo annual
+  var taxable=regime==='new'?Math.max(0,grossSalary-75000):Math.max(0,grossSalary-50000-ded);
+  var tax=regime==='new'?newTax(taxable):oldTax(taxable);
+  var inhandAnnual=grossSalary-emp-pt-tax;
+  var inhandMonthly=inhandAnnual/12;
+  T.animateNumber(document.getElementById('inhand'),inhandMonthly);
+  T.animateNumber(document.getElementById('basic'),basic);
+  T.animateNumber(document.getElementById('gross'),grossSalary);
+  T.animateNumber(document.getElementById('empPart'),empPF+gratuity);
+  T.animateNumber(document.getElementById('emp'),emp);
+  T.animateNumber(document.getElementById('pt'),pt);
+  T.animateNumber(document.getElementById('tax'),tax);
+  document.getElementById('annual').textContent=T.formatINRShort(inhandAnnual);
+}
+document.querySelectorAll('#reg button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#reg button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');regime=b.dataset.k;compute();});});
+['c','b','ded'].forEach(function(id){T.bindSlider({slider:document.getElementById(id),input:document.getElementById(id+'In'),onChange:compute});});
+compute();
+T.mountFAQ([{q:'Is gratuity part of in-hand?',a:'No — paid only on resignation after 5+ years or retirement. Shown in CTC but never monthly.'},{q:'Why is employee PF deducted?',a:'Forced savings — your money, earns 8.25% tax-free. Treat as retirement saving not tax.'},{q:'Old or new regime at offer?',a:'New if tax-saving investments < Rs 4 lakh. Old if more. Switch free each year for salaried.'}]);
+T.mountSoftwareSchema({name:'Salary Take-Home Calculator',description:'CTC to in-hand monthly salary India FY 2025-26.'});
+})();
+</script>
+</body></html>

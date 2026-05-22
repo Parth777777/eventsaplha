@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tickwave | Paper Trading</title>
@@ -12,7 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 </head>
@@ -65,7 +68,7 @@
       <option value="LONG">LONG</option><option value="SHORT">SHORT</option>
     </select>
     <input id="pQty" type="number" placeholder="Quantity" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
-    <input id="pEntry" type="number" step="0.05" placeholder="Entry ₹" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
+    <input id="pEntry" type="number" step="0.05" placeholder="Entry ?" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
     <input id="pTag" placeholder="Tag (optional)" style="background:#1f2336;color:#dde3ef;border:1px solid #2a3142;border-radius:6px;padding:8px 12px;font-size:13px;" />
     <button onclick="openPosition()" style="background:#5b6cff;color:#fff;border:0;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:800;letter-spacing:0.06em;cursor:pointer;">+ OPEN</button>
   </div>
@@ -92,9 +95,9 @@ async function loadAll() {
   strip.innerHTML =
     card('Open positions', sum.open_count || 0, '#5b6cff') +
     card('Closed', sum.closed_count || 0, '#9aa0c8') +
-    card('Realized P&L', '₹' + (sum.realized_pnl || 0).toLocaleString('en-IN'), (sum.realized_pnl || 0) >= 0 ? '#4ee6b8' : '#ff7a8a') +
-    card('Win rate', sum.win_rate_pct != null ? sum.win_rate_pct.toFixed(1) + '%' : '—', '#f9d423') +
-    card('Avg P&L %', (sum.avg_pnl_pct != null ? sum.avg_pnl_pct.toFixed(2) + '%' : '—'), (sum.avg_pnl_pct || 0) >= 0 ? '#4ee6b8' : '#ff7a8a');
+    card('Realized P&L', '?' + (sum.realized_pnl || 0).toLocaleString('en-IN'), (sum.realized_pnl || 0) >= 0 ? '#4ee6b8' : '#ff7a8a') +
+    card('Win rate', sum.win_rate_pct != null ? sum.win_rate_pct.toFixed(1) + '%' : '�', '#f9d423') +
+    card('Avg P&L %', (sum.avg_pnl_pct != null ? sum.avg_pnl_pct.toFixed(2) + '%' : '�'), (sum.avg_pnl_pct || 0) >= 0 ? '#4ee6b8' : '#ff7a8a');
 
   const open = pos.filter(p => p.status === 'OPEN');
   const closed = pos.filter(p => p.status === 'CLOSED');
@@ -113,9 +116,9 @@ async function loadAll() {
         <td style="padding:10px 14px;font-family:monospace;font-weight:800;">${p.ticker}</td>
         <td style="padding:10px 14px;color:${p.side === 'LONG' ? '#4ee6b8' : '#ff7a8a'};font-weight:700;">${p.side}</td>
         <td style="padding:10px 14px;font-family:monospace;">${p.quantity}</td>
-        <td style="padding:10px 14px;font-family:monospace;">₹${p.entry_price.toFixed(2)}</td>
-        <td style="padding:10px 14px;font-family:monospace;">${p.current_price ? '₹' + p.current_price.toFixed(2) : '—'}</td>
-        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${pct != null ? (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% (₹' + (p.unrealized_inr || 0).toLocaleString('en-IN') + ')' : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;">?${p.entry_price.toFixed(2)}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.current_price ? '?' + p.current_price.toFixed(2) : '�'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${pct != null ? (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% (?' + (p.unrealized_inr || 0).toLocaleString('en-IN') + ')' : '�'}</td>
         <td style="padding:10px 14px;color:#9aa0c8;font-size:11px;">${p.tag || ''}</td>
         <td style="padding:10px 14px;"><button onclick="closePosition(${p.id})" style="background:#3a1f1f;color:#ff7a8a;border:1px solid #ff7a8a33;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">CLOSE</button></td>
       </tr>`;
@@ -126,7 +129,7 @@ async function loadAll() {
     html += `<h3 style="font-weight:800;color:#dde3ef;margin-bottom:10px;">Closed (${closed.length})</h3>`;
     html += '<div style="background:#0d1118;border:1px solid #1f2336;border-radius:12px;overflow:auto;"><table style="width:100%;font-size:12px;color:#dde3ef;border-collapse:collapse;">';
     html += '<thead><tr style="border-bottom:1px solid #1f2336;">';
-    ['Ticker','Side','Qty','Entry','Exit','P&L %','P&L ₹','Closed at'].forEach(h => html += `<th style="text-align:left;padding:10px 14px;font-size:10px;color:#9aa0c8;text-transform:uppercase;font-weight:800;">${h}</th>`);
+    ['Ticker','Side','Qty','Entry','Exit','P&L %','P&L ?','Closed at'].forEach(h => html += `<th style="text-align:left;padding:10px 14px;font-size:10px;color:#9aa0c8;text-transform:uppercase;font-weight:800;">${h}</th>`);
     html += '</tr></thead><tbody>';
     for (const p of closed.slice(0, 100)) {
       const color = p.pnl_pct >= 0 ? '#4ee6b8' : '#ff7a8a';
@@ -134,10 +137,10 @@ async function loadAll() {
         <td style="padding:10px 14px;font-family:monospace;font-weight:800;">${p.ticker}</td>
         <td style="padding:10px 14px;color:${p.side === 'LONG' ? '#4ee6b8' : '#ff7a8a'};">${p.side}</td>
         <td style="padding:10px 14px;font-family:monospace;">${p.quantity}</td>
-        <td style="padding:10px 14px;font-family:monospace;">₹${p.entry_price.toFixed(2)}</td>
-        <td style="padding:10px 14px;font-family:monospace;">${p.exit_price ? '₹' + p.exit_price.toFixed(2) : '—'}</td>
-        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${p.pnl_pct != null ? (p.pnl_pct >= 0 ? '+' : '') + p.pnl_pct.toFixed(2) + '%' : '—'}</td>
-        <td style="padding:10px 14px;font-family:monospace;color:${color};">${p.pnl_inr != null ? '₹' + p.pnl_inr.toLocaleString('en-IN') : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;">?${p.entry_price.toFixed(2)}</td>
+        <td style="padding:10px 14px;font-family:monospace;">${p.exit_price ? '?' + p.exit_price.toFixed(2) : '�'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};font-weight:700;">${p.pnl_pct != null ? (p.pnl_pct >= 0 ? '+' : '') + p.pnl_pct.toFixed(2) + '%' : '�'}</td>
+        <td style="padding:10px 14px;font-family:monospace;color:${color};">${p.pnl_inr != null ? '?' + p.pnl_inr.toLocaleString('en-IN') : '�'}</td>
         <td style="padding:10px 14px;color:#5a5d6a;font-size:10px;">${p.exit_at || ''}</td>
       </tr>`;
     }
@@ -173,5 +176,6 @@ document.addEventListener('DOMContentLoaded', () => { loadAll(); setInterval(loa
 </script>
 <script src="./shared/js/company-logo.js" defer></script>
 <script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

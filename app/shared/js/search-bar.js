@@ -114,20 +114,48 @@
         const json = await res.json().catch(() => ({}));
         const rows = (json && json.data) || [];
         if (!rows.length) {
-          slotStocks.innerHTML = '<div class="tw-search__hint-row">No matching stocks.</div>';
+          // If the query *looks* like a ticker, still offer the direct-page CTA —
+          // covers the case where /api/search has no fundamentals row yet but
+          // the user clearly typed a symbol.
+          const upper = q.toUpperCase().trim();
+          if (/^[A-Z][A-Z0-9&]{1,14}$/.test(upper)) {
+            slotStocks.innerHTML = `<a class="tw-search__row tw-search__row--cta" data-no-popup data-ticker-link="full"
+                 href="stock.html?ticker=${encodeURIComponent(upper)}">
+                <span class="ticker">${escapeHtml(upper)}</span>
+                <span class="name">Open full page →</span>
+              </a>`;
+          } else {
+            slotStocks.innerHTML = '<div class="tw-search__hint-row">No matching stocks.</div>';
+          }
         } else {
-          slotStocks.innerHTML = rows.slice(0, 6).map(r => {
+          // If the top hit is an exact-ish ticker match, prepend a prominent
+          // "Open <TICKER> — full page →" CTA. The whole row already navigates
+          // to stock.html, but a labelled action makes the option explicit so
+          // users don't think the search panel is the only destination.
+          const upperQ = q.toUpperCase().trim();
+          const top = rows[0] || {};
+          const exact = (top.ticker || '').toUpperCase() === upperQ;
+          const ctaTicker = exact ? top.ticker : upperQ;
+          const ctaHtml = `<a class="tw-search__row tw-search__row--cta" data-no-popup data-ticker-link="full"
+               href="stock.html?ticker=${encodeURIComponent(ctaTicker)}">
+              <span class="material-symbols-outlined" style="font-size:16px;color:#2dd4aa;">open_in_new</span>
+              <span class="ticker">${escapeHtml(ctaTicker)}</span>
+              <span class="name">Open full page · timeline · predictions →</span>
+            </a>`;
+          const listHtml = rows.slice(0, 6).map(r => {
             const pct = r.change_pct;
             const dir = pct == null ? '' : (pct >= 0 ? 'up' : 'dn');
             const pctStr = pct == null ? '' : (pct >= 0 ? '+' : '') + Number(pct).toFixed(2) + '%';
             const priceStr = r.price ? '₹' + Number(r.price).toFixed(2) : '';
-            return `<a class="tw-search__row" href="stock.html?ticker=${encodeURIComponent(r.ticker)}">
+            return `<a class="tw-search__row" data-no-popup data-ticker-link="full" href="stock.html?ticker=${encodeURIComponent(r.ticker)}">
               <span class="ticker">${escapeHtml(r.ticker)}</span>
               <span class="name">${escapeHtml(r.company || '')}</span>
               <span class="meta">${priceStr}</span>
               <span class="meta ${dir}">${pctStr}</span>
+              <span class="meta" style="color:#8eb4e0;font-weight:600;">View →</span>
             </a>`;
           }).join('');
+          slotStocks.innerHTML = ctaHtml + listHtml;
         }
       } catch (e) {
         slotStocks.innerHTML = '<div class="tw-search__hint-row">Search failed.</div>';

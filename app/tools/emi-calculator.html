@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMI Calculator — Equated Monthly Instalment | Tickwave</title>
+<meta name="description" content="Free EMI calculator for any loan. Enter principal, rate, tenure — see EMI, total interest, total payment and amortisation chart. Personal, car, education loans.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/emi-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">EMI Calculator</div>
+<h1>Your monthly <span class="accent">loan instalment</span></h1>
+<p class="lead">Personal loan, car loan, education loan or any flat-EMI debt. Enter the principal, rate and tenure — get monthly EMI, total interest paid over the life of the loan, and the interest-vs-principal split.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="50" width="160" height="100" rx="12" fill="#161d28" stroke="#8eb4e0"/><rect x="40" y="70" width="120" height="14" rx="3" fill="#1c2435"/><rect x="40" y="92" width="80" height="10" rx="2" fill="#8eb4e0" opacity="0.5"/><rect x="40" y="108" width="120" height="14" rx="3" fill="#1c2435"/><rect x="40" y="130" width="120" height="6" rx="2" fill="#2dd4aa"/></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your loan</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Loan amount <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="pIn" value="500000" min="1000" step="10000"></span></div><input type="range" id="p" class="tk-slider" min="10000" max="100000000" step="10000" value="500000"><div class="tk-slider-bounds"><span>₹10,000</span><span>₹10 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Interest rate p.a. <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rIn" value="10" min="1" max="30" step="0.25"><span class="suffix">%</span></span></div><input type="range" id="r" class="tk-slider" min="1" max="30" step="0.25" value="10"><div class="tk-slider-bounds"><span>1%</span><span>30%</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="5" min="0.5" max="40" step="0.5"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.5" max="40" step="0.5" value="5"><div class="tk-slider-bounds"><span>6 mo</span><span>40 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">Monthly EMI</div>
+<div class="tk-result-value" id="emi">—</div>
+<div class="tk-result-sub">For <span id="subY">5</span> years at <span id="subR">10</span>% per annum</div>
+<div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Principal<strong id="lgP">—</strong></span><span><span class="dot" style="background:#f29090"></span>Interest<strong id="lgI">—</strong></span></div></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Total interest</div><div class="val bear" id="ti">—</div></div>
+<div class="tk-stat"><div class="lbl">Total payable</div><div class="val" id="tp">—</div></div>
+</div></div></section>
+
+<section class="tk-chart" style="margin-bottom:40px"><h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif">Outstanding balance over time</h2><svg id="area"></svg>
+<div class="tk-legend"><span><span class="dot" style="background:#3a6ea8"></span>Principal repaid</span><span><span class="dot" style="background:#f29090"></span>Interest paid</span></div></section>
+
+<section class="tk-content">
+<section><h2>EMI formula</h2>
+<div class="tk-formula">EMI = [P × r × (1+r)<sup>n</sup>] / [(1+r)<sup>n</sup> − 1]</div>
+<p>Where <strong>P</strong> = principal, <strong>r</strong> = monthly interest rate (annual ÷ 12 ÷ 100), <strong>n</strong> = number of months. The same formula works for any flat-EMI loan: personal, car, education, etc. Home loans use the same formula but with longer tenures — see the dedicated <a href="home-loan-calculator.html">Home Loan Calculator</a>.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Does EMI include processing fees?</summary><p>No. Lenders typically charge 0.5-2% as processing fee, deducted upfront. Add that to your effective cost.</p></details>
+<details><summary>What if interest rate changes mid-tenure (floating rate)?</summary><p>Either the EMI stays and tenure changes, or tenure stays and EMI changes. Most retail loans default to extending tenure.</p></details>
+<details><summary>Is prepayment allowed without penalty?</summary><p>RBI rules: floating-rate retail loans cannot levy prepayment penalty. Fixed-rate loans can have a 2-4% prepayment charge. Always check the sanction letter.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="home-loan-calculator.html">Home Loan EMI<span class="sub">+ amortisation table</span></a>
+<a href="loan-prepayment-calculator.html">Loan Prepayment<span class="sub">Interest saved by prepaying</span></a>
+<a href="fd-calculator.html">FD Calculator<span class="sub">Compare paying-off-loan vs FD</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var P=+document.getElementById('p').value, R=+document.getElementById('r').value/100/12, Y=+document.getElementById('y').value, n=Math.round(Y*12);
+  var emi=R===0?P/n:P*R*Math.pow(1+R,n)/(Math.pow(1+R,n)-1);
+  var tp=emi*n, ti=tp-P;
+  T.animateNumber(document.getElementById('emi'),emi);
+  T.animateNumber(document.getElementById('ti'),ti);
+  T.animateNumber(document.getElementById('tp'),tp);
+  document.getElementById('subY').textContent=Y;
+  document.getElementById('subR').textContent=(R*12*100).toFixed(R*12*100%1===0?0:2);
+  document.getElementById('lgP').textContent=T.formatINRShort(P);
+  document.getElementById('lgI').textContent=T.formatINRShort(ti);
+  T.drawDonut(document.getElementById('donut'),[{value:P,color:'#8eb4e0'},{value:ti,color:'#f29090'}],{centerLabel:'Total',centerValue:T.formatINRShort(tp)});
+  // Amortisation — outstanding balance each month, plotted yearly
+  var bal=P, paid=0, interestPaid=0, principalPaid=[], interestSeries=[], lb=[];
+  var monthCount=0;
+  for(var m=1;m<=n;m++){
+    var intM=bal*R, prinM=emi-intM;
+    bal-=prinM; interestPaid+=intM; paid+=prinM;
+    if(m%12===0 || m===n){
+      principalPaid.push(paid); interestSeries.push(interestPaid); lb.push('Y'+Math.ceil(m/12));
+    }
+  }
+  T.drawStackedArea(document.getElementById('area'),[{label:'Principal',color:'#3a6ea8',values:principalPaid},{label:'Interest',color:'#f29090',values:interestSeries}],{xLabels:lb});
+}
+T.bindSlider({slider:document.getElementById('p'),input:document.getElementById('pIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Does EMI include processing fees?',a:'No. Lenders charge 0.5-2% as processing fee deducted upfront — add to effective cost.'},{q:'What if floating rate changes mid-tenure?',a:'EMI stays + tenure changes, or tenure stays + EMI changes. Retail defaults to tenure extension.'},{q:'Is prepayment allowed without penalty?',a:'Floating-rate retail loans: no penalty (RBI rule). Fixed-rate loans: 2-4% prepayment charge possible.'}]);
+T.mountSoftwareSchema({name:'EMI Calculator',description:'Loan EMI, total interest, amortisation schedule.'});
+})();
+</script>
+</body></html>

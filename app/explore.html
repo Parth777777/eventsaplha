@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,12 +29,15 @@
         }
     </script>
     <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
     <link rel="stylesheet" href="./shared/css/refined.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
     <script src="./shared/js/theme.js"></script>
     <script src="./shared/js/widgets.js"></script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        /* stock-grid defined in style.css — override local def only */
+        /* stock-grid defined in style.css � override local def only */
     </style>
 </head>
 <body class="bg-background text-on-surface font-body rf-page">
@@ -80,7 +83,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div style="display:flex;align-items:baseline;gap:10px;">
                 <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);">Tickwave</span>
-                <span style="color:var(--b2);">·</span>
+                <span style="color:var(--b2);">�</span>
                 <h1 style="font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--t1);">Signal Scanner</h1>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
@@ -93,7 +96,7 @@
             <div style="flex:1;min-width:180px;position:relative;" id="searchContainer">
                 <span class="material-symbols-outlined" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--t3);z-index:1;pointer-events:none;">search</span>
                 <input id="stockSearch" type="text" autocomplete="off"
-                    placeholder="Ticker or company…"
+                    placeholder="Ticker or company�"
                     style="width:100%;background:var(--s1);border:1px solid var(--b1);border-radius:4px;padding:5px 56px 5px 28px;font-size:12px;color:var(--t1);outline:none;font-family:var(--font-ui);"
                     onfocus="this.style.borderColor='var(--info)'" onblur="this.style.borderColor='var(--b1)'">
                 <button onclick="searchNewStock()" id="searchBtn"
@@ -130,7 +133,7 @@
               <div class="widget__title">Universe by sector</div>
               <div class="widget__meta">Click a ring to filter the grid</div>
             </div>
-            <span class="widget__year-pill" id="explUniTotal">— stocks</span>
+            <span class="widget__year-pill" id="explUniTotal">� stocks</span>
           </div>
           <div id="explRings" style="flex:1;"></div>
         </div>
@@ -138,7 +141,7 @@
           <div class="widget__head">
             <div>
               <div class="widget__title">Live alpha movers</div>
-              <div class="widget__meta">Top 6 by alpha — click to scan</div>
+              <div class="widget__meta">Top 6 by alpha � click to scan</div>
             </div>
           </div>
           <div id="explMovers" style="margin-top:8px;"></div>
@@ -156,7 +159,7 @@
         const sigs = (sigRes && sigRes.data) || [];
         document.getElementById('explUniTotal').textContent = stocks.length + ' stocks';
 
-        // Universe rings — top 4 sectors by stock count
+        // Universe rings � top 4 sectors by stock count
         const byS = {};
         for (const s of stocks) {
           const sec = (s.sector || 'OTHER').replace(/_/g, ' ');
@@ -167,7 +170,7 @@
           top.map(([s, n]) => ({label: s, value: n})),
           {onClick: 'explRingClick'});
 
-        // Live alpha movers — top signals by alpha, mini-spark using their alpha trend
+        // Live alpha movers � top signals by alpha, mini-spark using their alpha trend
         const byTicker = {};
         for (const s of sigs) {
           if (!byTicker[s.ticker]) byTicker[s.ticker] = [];
@@ -186,7 +189,7 @@
             const first = points[0] || last;
             return {
               label: t,
-              value: 'α ' + last.toFixed(0),
+              value: 'a ' + last.toFixed(0),
               deltaPct: first ? ((last - first) / first * 100) : 0,
               points: points.length > 1 ? points : [last - 3, last + 1, last - 1, last],
               onClick: `document.getElementById('stockSearch').value='${t}';loadExplorePage();`
@@ -209,7 +212,7 @@
       // Toast
       const toast = document.createElement('div');
       toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--s2);border:1px solid var(--info-border);color:var(--info);padding:10px 16px;border-radius:8px;font-size:12px;z-index:1000;cursor:pointer;';
-      toast.textContent = '✓ Filtered to ' + label + ' (' + shown + ') · click to clear';
+      toast.textContent = '? Filtered to ' + label + ' (' + shown + ') � click to clear';
       toast.onclick = () => { cards.forEach(c => c.style.display = ''); toast.remove(); };
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 5000);
@@ -362,7 +365,7 @@ function renderGrid() {
 
     // Drop junk rows where ticker is null/empty (these render as "None" and
     // are usually orphaned signals from articles that didn't extract a real
-    // company). Also dedupe ticker dupes — keep the highest-alpha row.
+    // company). Also dedupe ticker dupes � keep the highest-alpha row.
     let filtered = (allSignals || []).filter(s => s && s.ticker && String(s.ticker).trim());
     if (search && !searchResult) {
         filtered = filtered.filter(s =>
@@ -401,13 +404,13 @@ function renderGrid() {
     grid.innerHTML = html;
 }
 
-// ── shared card helpers ────────────────────────────────────────────────────
+// -- shared card helpers ----------------------------------------------------
 function _cardVars(card) {
     const alpha   = card.alpha_score || 0;
     const conf    = card.confidence || 0;
     const confPct = conf <= 1 ? Math.round(conf * 100) : Math.round(conf);
     const sent    = card.sentiment || 'neutral';
-    // CSS class — uses design system variable names (no inline hex)
+    // CSS class � uses design system variable names (no inline hex)
     const dirCls  = sent === 'bullish' ? 'bull' : sent === 'bearish' ? 'bear' : 'neut';
     const dirLabel = sent === 'bullish' ? 'LONG' : sent === 'bearish' ? 'SHORT' : 'NEUTRAL';
     const evType  = (card.event_type || 'news').replace(/_/g, ' ');
@@ -416,14 +419,14 @@ function _cardVars(card) {
     const regime  = (card.regime || '').replace(/_/g, ' ');
     const inWl    = watchlistSet.has(card.ticker);
     const { hitRate, ev, rr, predicted } = calcEV(card);
-    // Alpha class: high ≥ 75, mid ≥ 55, else low
+    // Alpha class: high = 75, mid = 55, else low
     const alphaCls = alpha >= 75 ? 'high' : alpha >= 55 ? 'mid' : 'low';
     // EV class
     const evCls   = ev > 0.3 ? 'high' : ev > 0 ? 'mid' : 'low';
 
     const rawReason = buildReasoning(card);
     let cause = rawReason, impact = '';
-    const splitIdx = rawReason.search(/[→|]/);
+    const splitIdx = rawReason.search(/[?|]/);
     if (splitIdx > 0) {
         cause  = rawReason.slice(0, splitIdx).trim();
         impact = rawReason.slice(splitIdx + 1).trim();
@@ -434,7 +437,7 @@ function _cardVars(card) {
              alphaCls, evCls, cause, impact };
 }
 
-// Shared expandable detail panel — no inline colors
+// Shared expandable detail panel � no inline colors
 function _expandDetail(id, v) {
     const { confPct, entry, ev, rr, predicted, evCls, cause, headline, impact } = v;
     return `
@@ -460,13 +463,13 @@ function _expandDetail(id, v) {
         <div style="padding:10px 14px 12px;border-top:1px solid var(--b0);">
             <div class="reasoning-pill">
                 <span class="reasoning-cause">Cause:</span> ${cause || headline}
-                ${impact ? `<span class="reasoning-impact"> → Impact: ${impact}</span>` : ''}
+                ${impact ? `<span class="reasoning-impact"> ? Impact: ${impact}</span>` : ''}
             </div>
         </div>
     </div>`;
 }
 
-// ── Unified square signal card (all tiers) ───────────────────
+// -- Unified square signal card (all tiers) -------------------
 function renderSignalCard(card, tier) {
     const id = card.id || card.ticker + Math.random().toString(36).slice(2, 6);
     const v  = _cardVars(card);
@@ -486,8 +489,8 @@ function renderSignalCard(card, tier) {
                     <span class="dir-badge ${dirCls}">${dirLabel}</span>
                     <span class="text-[9px] px-1.5 py-0.5 bg-surface-container-highest rounded font-bold text-on-surface-variant uppercase tracking-wider">${evType}</span>
                 </div>
-                <span data-ticker="${card.ticker}" class="font-mono font-black text-lg text-on-surface cursor-pointer hover:text-primary transition-colors leading-none block">${card.ticker || '—'}</span>
-                <p class="text-[11px] text-on-surface-variant mt-0.5 truncate">${card.company && card.company !== 'None' ? card.company : (card.ticker || '—')}</p>
+                <span data-ticker="${card.ticker}" class="font-mono font-black text-lg text-on-surface cursor-pointer hover:text-primary transition-colors leading-none block">${card.ticker || '�'}</span>
+                <p class="text-[11px] text-on-surface-variant mt-0.5 truncate">${card.company && card.company !== 'None' ? card.company : (card.ticker || '�')}</p>
             </div>
             <div class="text-right flex-shrink-0">
                 <div class="font-mono font-black leading-none" style="font-size:${alphaSize};color:${alphaColor};">${alpha.toFixed(0)}</div>
@@ -647,5 +650,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

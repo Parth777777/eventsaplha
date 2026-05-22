@@ -663,26 +663,86 @@ AMBIGUOUS_TICKERS = {t for t in UNIVERSE_TICKERS
                     if t.lower() in AMBIGUOUS_FIRST_WORDS}
 
 # Build name lookup tables
+#
+# Subject-extraction bug fix (2026-05-20): the previous build registered the
+# FIRST WORD of each company name as a match form, then hard-coded fallbacks
+# 'tata' -> TCS, 'bajaj' -> BAJFINANCE, etc. Result: a "Tata Steel sees higher
+# steel prices" article matched 'tata', routed to TCS, and got published as a
+# TCS pick. Same catastrophe across all 13 Tata / 10 Bajaj / 6 Adani / 5
+# Reliance / 8 Aditya / 6 Mahindra companies in the universe.
+#
+# New approach:
+#   1. Count first-token usage across STOCK_UNIVERSE.
+#   2. For UNIQUE first tokens (e.g. "infosys", "wipro"), register the bare
+#      first word.
+#   3. For AMBIGUOUS first tokens (head of 2+ companies — tata, bajaj, adani,
+#      hdfc, reliance, godrej, mahindra, aditya, birla, jsw), register the
+#      TWO-WORD form per ticker instead: 'tata consultancy' -> TCS,
+#      'tata steel' -> TATASTEEL, 'tata motors' -> TMCV, etc.
+#   4. Curated bigram overrides below pin the canonical winner when multiple
+#      tickers would share the same bigram (e.g. both TMCV and TMPV start
+#      with "Tata Motors"; we point the bigram at TMCV, the older listing).
+from collections import Counter as _Counter
+
+_first_token_counts: _Counter = _Counter()
+for _t, _info in STOCK_UNIVERSE.items():
+    _nm = (_info.get('name') or '').strip()
+    if not _nm:
+        continue
+    _w = _nm.split(' ')[0].lower()
+    if len(_w) > 3 and _w not in AMBIGUOUS_FIRST_WORDS:
+        _first_token_counts[_w] += 1
+
 UNIVERSE_SHORT_NAMES = {}
 for _ticker, _info in STOCK_UNIVERSE.items():
-    short = _info['name'].split(' ')[0].lower()
-    if len(short) > 3 and short not in AMBIGUOUS_FIRST_WORDS:
-        # For duplicates, prefer the first-encountered (curated overrides win below)
-        if short not in UNIVERSE_SHORT_NAMES:
-            UNIVERSE_SHORT_NAMES[short] = _ticker
+    _nm = (_info.get('name') or '').strip()
+    if not _nm:
+        continue
+    _words = _nm.split(' ')
+    _first = _words[0].lower()
+    if len(_first) <= 3 or _first in AMBIGUOUS_FIRST_WORDS:
+        continue
+    if _first_token_counts[_first] == 1:
+        # Unique first token across the universe — safe to register bare form.
+        if _first not in UNIVERSE_SHORT_NAMES:
+            UNIVERSE_SHORT_NAMES[_first] = _ticker
+    elif len(_words) >= 2:
+        # Ambiguous brand prefix — register the bigram for this ticker.
+        _bigram = (_words[0] + ' ' + _words[1]).lower()
+        if len(_bigram) > 5 and _bigram not in UNIVERSE_SHORT_NAMES:
+            UNIVERSE_SHORT_NAMES[_bigram] = _ticker
 
-# Override with major companies (ensure right mapping for common names)
+# Curated bigram overrides — pin the canonical ticker when news commonly uses
+# a bigram that the auto-build above would assign by iteration order.
+# Removed the old broken `'tata' -> 'TCS'` style entries; bigram-only here.
 UNIVERSE_SHORT_NAMES.update({
-    'tata': 'TCS',           # "Tata" in news usually means TCS or Tata group
-    'adani': 'ADANIENT',     # Adani group → Adani Enterprises
-    'reliance': 'RELIANCE',  # Not Reliance Power
-    'bajaj': 'BAJFINANCE',   # Bajaj group → Bajaj Finance
-    'hdfc': 'HDFCBANK',      # HDFC → HDFC Bank
-    'kotak': 'KOTAKBANK',
-    'birla': 'GRASIM',
-    'vedanta': 'VEDL',
-    'godrej': 'GODREJCP',
-    'mahindra': 'M&M',
+    'tata consultancy':    'TCS',
+    'tata steel':          'TATASTEEL',
+    'tata power':          'TATAPOWER',
+    'tata motors':         'TMCV',           # older Tata Motors listing
+    'tata consumer':       'TATACONSUM',
+    'tata chemicals':      'TATACHEM',
+    'tata elxsi':          'TATAELXSI',
+    'tata communications': 'TATACOMM',
+    'tata investment':     'TATAINVEST',
+    'tata technologies':   'TATATECH',
+    'reliance industries': 'RELIANCE',
+    'reliance power':      'RPOWER',
+    'bajaj finance':       'BAJFINANCE',
+    'bajaj finserv':       'BAJAJFINSV',
+    'bajaj auto':          'BAJAJ-AUTO',
+    'bajaj holdings':      'BAJAJHLDNG',
+    'adani enterprises':   'ADANIENT',
+    'adani ports':         'ADANIPORTS',
+    'adani green':         'ADANIGREEN',
+    'adani power':         'ADANIPOWER',
+    'hdfc bank':           'HDFCBANK',
+    'hdfc life':           'HDFCLIFE',
+    'godrej properties':   'GODREJPROP',
+    'godrej consumer':     'GODREJCP',
+    'godrej industries':   'GODREJIND',
+    'godrej agrovet':      'GODREJAGRO',
+    'tech mahindra':       'TECHM',          # explicit — overrides any auto-bigram
 })
 
 

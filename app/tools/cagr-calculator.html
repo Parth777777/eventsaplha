@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAGR Calculator — Compound Annual Growth Rate | Tickwave</title>
+<meta name="description" content="Free CAGR calculator. Enter initial value, final value and duration — get the annualised return. Compare CAGR with absolute return and inflation-adjusted (real) return.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/cagr-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">CAGR Calculator</div>
+<h1>What was the <span class="accent">annualised return?</span></h1>
+<p class="lead">Bought a stock at ₹100, sold at ₹250 after 5 years? That's a 150% absolute return — but the CAGR (compound annual growth rate) is 20.1%. CAGR lets you compare investments of different durations on equal footing.</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M20 160 L60 130 L100 100 L140 60 L180 30" stroke="#2dd4aa" stroke-width="3" fill="none"/><circle cx="20" cy="160" r="5" fill="#8eb4e0"/><circle cx="180" cy="30" r="6" fill="#2dd4aa"/><text x="20" y="180" font-family="Geist Mono" font-size="10" fill="#8a94a8">Buy</text><text x="160" y="20" font-family="Geist Mono" font-size="10" fill="#2dd4aa">Sell</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Initial value <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="iIn" value="100000" min="1" step="1000"></span></div><input type="range" id="i" class="tk-slider" min="1000" max="10000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹1 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Final value <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="fIn" value="250000" min="1" step="1000"></span></div><input type="range" id="f" class="tk-slider" min="1000" max="50000000" step="1000" value="250000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹5 Cr</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Duration <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yIn" value="5" min="0.1" max="40" step="0.1"><span class="suffix">yr</span></span></div><input type="range" id="y" class="tk-slider" min="0.1" max="40" step="0.1" value="5"><div class="tk-slider-bounds"><span>0.1 yr</span><span>40 yr</span></div></div>
+</div>
+<div class="tk-card"><h2>Result</h2>
+<div class="tk-result-headline">CAGR (annualised)</div>
+<div class="tk-result-value" id="cagr">—</div>
+<div class="tk-result-sub">Absolute return: <span id="abs">—</span></div>
+<div class="tk-stats">
+<div class="tk-stat"><div class="lbl">Absolute return</div><div class="val" id="absV">—</div></div>
+<div class="tk-stat"><div class="lbl">CAGR</div><div class="val bull" id="cagrV">—</div></div>
+<div class="tk-stat"><div class="lbl">Real (vs 6% inflation)</div><div class="val" id="real">—</div></div>
+<div class="tk-stat"><div class="lbl">Wealth multiplier</div><div class="val" id="mult">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>CAGR formula</h2>
+<div class="tk-formula">CAGR = (FV / PV)<sup>1/n</sup> − 1</div>
+<p>Where <strong>PV</strong> = initial value, <strong>FV</strong> = final value, <strong>n</strong> = years. The result is the constant annual rate that would have produced the same end value via pure compounding.</p>
+</section>
+<section><h2>CAGR vs absolute return — why CAGR matters</h2>
+<p>A 200% absolute return looks great. Over how long? If 4 years, that's 31.6% CAGR (excellent). If 20 years, 5.6% CAGR (worse than an FD). Always ask: <em>over what duration</em>.</p>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Can CAGR be negative?</summary><p>Yes — if FV < PV, CAGR is negative. Means the investment lost value on an annualised basis.</p></details>
+<details><summary>Is CAGR the same as XIRR?</summary><p>No. CAGR works for a single buy + single sell. XIRR handles multiple buy/sell points (like SIPs). For mutual fund SIPs use XIRR.</p></details>
+<details><summary>What's a good CAGR?</summary><p>Context-dependent. Equity benchmarks (Nifty 50 long-term) ~12%. FDs ~7%. Real estate ~8%. Anything beating Nifty long-term is exceptional.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="mutual-fund-return-calculator.html">Mutual Fund Returns<span class="sub">Single buy → sell with absolute % too</span></a>
+<a href="lumpsum-calculator.html">Lumpsum Calculator<span class="sub">Forward — what will it grow to?</span></a>
+<a href="inflation-calculator.html">Inflation Calculator<span class="sub">Real return adjustment</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var PV=+document.getElementById('i').value, FV=+document.getElementById('f').value, n=+document.getElementById('y').value;
+  if(PV<=0||n<=0){return;}
+  var cagr=Math.pow(FV/PV,1/n)-1, abs=(FV-PV)/PV;
+  var real=((1+cagr)/(1+0.06))-1;
+  var mult=FV/PV;
+  document.getElementById('cagr').textContent=T.formatPct(cagr*100);
+  document.getElementById('abs').textContent=T.formatPct(abs*100);
+  document.getElementById('absV').textContent=T.formatPct(abs*100);
+  document.getElementById('cagrV').textContent=T.formatPct(cagr*100);
+  var realEl=document.getElementById('real');
+  realEl.textContent=T.formatPct(real*100);
+  realEl.className='val '+(real>=0?'bull':'bear');
+  document.getElementById('mult').textContent=mult.toFixed(2)+'×';
+}
+T.bindSlider({slider:document.getElementById('i'),input:document.getElementById('iIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('f'),input:document.getElementById('fIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('y'),input:document.getElementById('yIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Can CAGR be negative?',a:'Yes — if FV < PV, CAGR is negative meaning the investment lost value on an annualised basis.'},{q:'Is CAGR the same as XIRR?',a:'No. CAGR is for single-entry single-exit. XIRR handles multiple cashflows like SIPs.'},{q:"What's a good CAGR?",a:'Nifty long-term ~12%. FD ~7%. Real estate ~8%. Beating Nifty over long term is exceptional.'}]);
+T.mountSoftwareSchema({name:'CAGR Calculator',description:'Compound annual growth rate from initial value, final value, and duration.'});
+})();
+</script>
+</body></html>

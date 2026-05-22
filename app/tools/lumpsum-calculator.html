@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lumpsum Calculator — One-time Investment Returns | Tickwave</title>
+  <meta name="description" content="Lumpsum calculator for Indian mutual funds and equity. Enter principal, expected return, tenure — see future value, gains and yearly compounding chart. Free, instant.">
+  <meta name="keywords" content="lumpsum calculator, lumpsum sip calculator, one-time investment calculator, mutual fund lumpsum">
+  <meta property="og:title" content="Lumpsum Investment Calculator — Future Value with Compounding">
+  <link rel="canonical" href="https://alphaevent.in/app/tools/lumpsum-calculator.html">
+  <link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools">
+<div class="tk-page">
+  <header class="tk-topbar">
+    <a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a>
+    <nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav>
+  </header>
+
+  <section class="tk-hero">
+    <div>
+      <div class="tk-eyebrow">Lumpsum Calculator</div>
+      <h1>One-time investment — <span class="accent">how it grows</span></h1>
+      <p class="lead">If you invest a lump amount today and let it compound at an annual rate, what will it be worth at the end? Useful for bonus money, inheritance, or any one-shot deployment into a mutual fund.</p>
+    </div>
+    <div class="tk-hero-art">
+      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#8eb4e0"/><stop offset="1" stop-color="#2dd4aa"/></linearGradient></defs>
+        <circle cx="60" cy="140" r="30" fill="#161d28" stroke="#8eb4e0" stroke-width="2"/><text x="60" y="146" text-anchor="middle" font-family="Geist Mono" font-size="14" fill="#8eb4e0">₹P</text>
+        <path d="M85 130 Q120 80 160 50" stroke="url(#lg)" stroke-width="3" fill="none" stroke-dasharray="3 4"/>
+        <circle cx="160" cy="50" r="34" fill="#161d28" stroke="#2dd4aa" stroke-width="2"/><text x="160" y="56" text-anchor="middle" font-family="Geist Mono" font-size="14" fill="#2dd4aa">FV</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="tk-calc">
+    <div class="tk-card">
+      <h2>Your inputs</h2>
+      <div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Investment amount <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="amtIn" value="100000" min="1000" max="100000000" step="1000"></span></div><input type="range" id="amt" class="tk-slider" min="1000" max="10000000" step="1000" value="100000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹1 Cr</span></div></div>
+      <div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Expected return p.a. <span class="hint">(%)</span></label><span class="tk-field-value-wrap"><input type="number" id="rateIn" value="12" min="1" max="30" step="0.5"><span class="suffix">%</span></span></div><input type="range" id="rate" class="tk-slider" min="1" max="30" step="0.5" value="12"><div class="tk-slider-bounds"><span>1%</span><span>30%</span></div></div>
+      <div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Tenure <span class="hint">(years)</span></label><span class="tk-field-value-wrap"><input type="number" id="yrsIn" value="10" min="1" max="40" step="1"><span class="suffix">yr</span></span></div><input type="range" id="yrs" class="tk-slider" min="1" max="40" step="1" value="10"><div class="tk-slider-bounds"><span>1 yr</span><span>40 yr</span></div></div>
+    </div>
+    <div class="tk-card">
+      <h2>What you get</h2>
+      <div class="tk-result-headline">Future value</div>
+      <div class="tk-result-value" id="futureValue">—</div>
+      <div class="tk-result-sub">After <span id="subYears">10</span> years at <span id="subRate">12</span>% expected return</div>
+      <div class="tk-chart"><svg id="donut" viewBox="0 0 220 220"></svg>
+        <div class="tk-legend"><span><span class="dot" style="background:#8eb4e0"></span>Principal<strong id="lgP">—</strong></span><span><span class="dot" style="background:#2dd4aa"></span>Gains<strong id="lgG">—</strong></span></div></div>
+      <div class="tk-stats"><div class="tk-stat"><div class="lbl">Principal</div><div class="val" id="principal">—</div></div><div class="tk-stat"><div class="lbl">Wealth gained</div><div class="val bull" id="gains">—</div></div></div>
+    </div>
+  </section>
+
+  <section class="tk-chart" style="margin-bottom:40px"><h2 style="margin:0 0 12px;font:700 14px 'Plus Jakarta Sans',sans-serif">Year-by-year growth</h2><svg id="area"></svg></section>
+
+  <section class="tk-content">
+    <section><h2>How the lumpsum formula works</h2>
+      <div class="tk-formula">FV = P × (1 + r)<sup>n</sup></div>
+      <p>Where <strong>P</strong> is the principal, <strong>r</strong> is the annual rate (as a decimal — 12% = 0.12), and <strong>n</strong> is the number of years. Each year, the entire balance — principal plus all accumulated gains — earns the next year's return.</p>
+    </section>
+    <section><h2>Lumpsum vs SIP — when which?</h2>
+      <p>Lumpsum is better when you already have a sizeable amount in cash AND the market is at a fair-to-low valuation. SIP is better when you're investing from a monthly salary or when you're uncertain about market direction (rupee-cost averaging smooths the entry).</p>
+      <p>A useful middle path: park the lumpsum in a liquid fund, then run a 6-12 month STP (Systematic Transfer Plan) into your equity fund — captures lumpsum benefit if market dips, averages cost if market rises.</p>
+    </section>
+    <section class="tk-faq"><h2>FAQ</h2>
+      <details><summary>How accurate is this for actual mutual fund returns?</summary><p>It assumes a constant compound rate. Real funds have year-to-year volatility — over a 10-year horizon the long-run CAGR is usually close to the assumption, but interim drawdowns of 20-40% are normal.</p></details>
+      <details><summary>Does this account for exit load and taxes?</summary><p>No, this is a gross-of-tax calculator. For after-tax view, use the <a href="capital-gains-tax-calculator.html">Capital Gains Tax Calculator</a>.</p></details>
+      <details><summary>Should I time the market for a lumpsum?</summary><p>Historically, time-in-market beats timing-the-market for any horizon over 7 years. A simple rule: if Nifty PE is in the bottom third of its 10-year range, lump in; if top third, stagger via STP.</p></details>
+    </section>
+  </section>
+
+  <section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+    <a href="sip-calculator.html">SIP Calculator<span class="sub">Monthly investment compounding</span></a>
+    <a href="compound-interest-calculator.html">Compound Interest<span class="sub">Any compounding frequency</span></a>
+    <a href="cagr-calculator.html">CAGR Calculator<span class="sub">Backwards: what return did you get?</span></a>
+    <a href="inflation-calculator.html">Inflation Calculator<span class="sub">Real value over time</span></a>
+  </div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;
+function compute(){
+  var P=+document.getElementById('amt').value, r=+document.getElementById('rate').value/100, n=+document.getElementById('yrs').value;
+  var fv=P*Math.pow(1+r,n), gains=fv-P;
+  document.getElementById('subYears').textContent=n;
+  document.getElementById('subRate').textContent=(r*100).toFixed(r*100%1===0?0:1);
+  T.animateNumber(document.getElementById('futureValue'),fv);
+  T.animateNumber(document.getElementById('principal'),P);
+  T.animateNumber(document.getElementById('gains'),gains);
+  document.getElementById('lgP').textContent=T.formatINRShort(P);
+  document.getElementById('lgG').textContent=T.formatINRShort(gains);
+  T.drawDonut(document.getElementById('donut'),[{value:P,color:'#8eb4e0'},{value:gains,color:'#2dd4aa'}],{centerLabel:'Future value',centerValue:T.formatINRShort(fv)});
+  var inv=[],gn=[],lb=[];
+  for(var y=1;y<=n;y++){var v=P*Math.pow(1+r,y);inv.push(P);gn.push(Math.max(0,v-P));lb.push('Y'+y);}
+  T.drawStackedArea(document.getElementById('area'),[{label:'Principal',color:'#3a6ea8',values:inv},{label:'Gains',color:'#2dd4aa',values:gn}],{xLabels:lb});
+}
+T.bindSlider({slider:document.getElementById('amt'),input:document.getElementById('amtIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('rate'),input:document.getElementById('rateIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('yrs'),input:document.getElementById('yrsIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'How accurate is the lumpsum calculator?',a:'It assumes constant compound rate. Real fund returns vary year to year but long-run CAGR is usually close.'},{q:'Does it include taxes?',a:'No, it shows gross returns. Use the Capital Gains Calculator for after-tax view.'},{q:'Should I time the market for lumpsum investment?',a:'Time-in-market beats timing-the-market over horizons > 7 years. STP over 6-12 months reduces timing risk.'}]);
+T.mountSoftwareSchema({name:'Tickwave Lumpsum Calculator',description:'One-time investment future value calculator for Indian mutual funds.'});
+})();
+</script>
+</body></html>

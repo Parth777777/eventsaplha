@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tickwave | Quant Playground</title>
+<!-- Force dark theme regardless of any prior toggle state in localStorage -->
+<script>(function(){try{document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark');document.documentElement.style.colorScheme='dark';}catch(e){}})();</script>
+<!-- Inline dark bg to kill any white flash before external CSS parses -->
+<style>html,body{background:#0a0a0a !important;color:#f4f4f5;}main,.main-content,.rf-page{background:#0a0a0a !important;}</style>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+        "primary": "#8eb4e0", "secondary": "#2dd4aa", "tertiary": "#f29090",
+        "error": "#f26b6b", "background": "#080c12", "surface": "#0d1118",
+        "on-surface": "#dde3ef", "on-surface-variant": "#8a94a8",
+        "outline": "#3d4a5c", "outline-variant": "#253040",
+    }}}};
+</script>
+<link rel="stylesheet" href="./shared/css/style.css">
+<link rel="stylesheet" href="./shared/css/disclosures.css">
+<link rel="stylesheet" href="./shared/css/redesign.css">
+<link rel="stylesheet" href="./shared/css/premium.css">
+<link rel="stylesheet" href="./shared/css/playground.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+
+<!-- KaTeX for math rendering (deferred — falls back to <code> if it fails) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+<!-- Chart.js — primary lib for animated visualizations (Brownian motion, distributions) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- ApexCharts — secondary for static financial-style charts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@latest/dist/apexcharts.min.js"></script>
+
+<!-- Quant playground modules -->
+<script src="./shared/js/quant.js"></script>
+<script src="./shared/js/quant-glossary.js"></script>
+<script src="./shared/js/quant-demo.js"></script>
+<script src="./shared/js/quant-motion.js"></script>
+<style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+</head>
+<body class="bg-background text-on-surface font-body rf-page qp-active">
+
+<aside class="sidebar hidden md:flex">
+    <div class="sidebar-header">
+        <a href="index.html"><img class="sidebar-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="120" height="120"></a>
+        <p class="sidebar-brand-sub">Alpha Terminal</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" href="index.html"><span class="material-symbols-outlined sidebar-icon">home</span>Home</a>
+      <div class="sidebar-section">Markets</div>
+      <a class="sidebar-link" href="explore.html"><span class="material-symbols-outlined sidebar-icon">explore</span>Explore</a>
+      <a class="sidebar-link" href="sectors.html"><span class="material-symbols-outlined sidebar-icon">grid_view</span>Sectors</a>
+      <a class="sidebar-link" href="map.html"><span class="material-symbols-outlined sidebar-icon">map</span>Heatmap</a>
+      <a class="sidebar-link" href="global.html"><span class="material-symbols-outlined sidebar-icon">public</span>Global</a>
+      <a class="sidebar-link" href="commodities.html"><span class="material-symbols-outlined sidebar-icon">inventory_2</span>Commodities</a>
+      <div class="sidebar-section">News</div>
+      <a class="sidebar-link" href="events.html"><span class="material-symbols-outlined sidebar-icon">newspaper</span>Newsroom</a>
+      <a class="sidebar-link" href="earnings.html"><span class="material-symbols-outlined sidebar-icon">event_note</span>Earnings</a>
+      <a class="sidebar-link" href="fo.html"><span class="material-symbols-outlined sidebar-icon">candlestick_chart</span>F&amp;O</a>
+      <div class="sidebar-section">Tools</div>
+      <a class="sidebar-link" href="screeners.html"><span class="material-symbols-outlined sidebar-icon">filter_alt</span>Screeners</a>
+      <a class="sidebar-link" href="watchlist.html"><span class="material-symbols-outlined sidebar-icon">star</span>Watchlist</a>
+      <a class="sidebar-link active" href="playground.html"><span class="material-symbols-outlined sidebar-icon">functions</span>Quant Playground</a>
+      <div class="sidebar-section">Insights</div>
+      <a class="sidebar-link" href="forensics.html"><span class="material-symbols-outlined sidebar-icon">policy</span>Forensics</a>
+    </nav>
+</aside>
+
+<main class="main-content" id="main">
+<div class="qp-page">
+
+  <!-- Hero -->
+  <div class="qp-hero">
+    <div>
+      <div class="qp-hero-mark">Quant Playground &middot; v1.0</div>
+      <h1>Hello, <span class="em">trader.</span></h1>
+      <div class="sub">Poke at options pricing. Build a payoff. Watch Brownian paths animate. Stress-test your watchlist. Everything is a sandbox &mdash; <em>nothing here moves real money</em>.</div>
+    </div>
+    <div class="qp-hero-meta">
+      <div>
+        <div class="v" id="qpHeroStat">7</div>
+        <span>tools &middot; 45 terms</span>
+      </div>
+      <button class="qp-btn ghost" id="qpRandomBtn">🎲 Surprise me</button>
+    </div>
+  </div>
+
+  <!-- Live market pulse -->
+  <div class="qp-tape" id="qpTape">
+    <span class="qp-tape-dot"></span>
+    <span class="qp-tape-item"><span class="lbl">Session</span><span class="val" id="qpTapeSession">—</span></span>
+    <span class="qp-tape-sep"></span>
+    <span class="qp-tape-item"><span class="lbl">IST</span><span class="val" id="qpTapeClock">—</span></span>
+    <span class="qp-tape-sep"></span>
+    <span class="qp-tape-item"><span class="lbl">NIFTY</span><span class="val" id="qpTapeNifty">…</span></span>
+    <span class="qp-tape-sep"></span>
+    <span class="qp-tape-item"><span class="lbl">Bank Nifty</span><span class="val" id="qpTapeBankNifty">…</span></span>
+    <span class="qp-tape-sep"></span>
+    <span class="qp-tape-item"><span class="lbl">India VIX</span><span class="val" id="qpTapeVIX">…</span></span>
+  </div>
+
+  <!-- Soft disclaimer -->
+  <div class="qp-disclaimer">
+    <span class="tag">Educational</span>
+    <span>Outputs are theoretical (Black-Scholes, GBM). Real markets diverge from model assumptions. Nothing here is investment advice.</span>
+    <a class="more" href="disclosures.html">Full disclosures &rarr;</a>
+  </div>
+
+  <!-- Tab nav — pill row with sliding lime indicator -->
+  <div class="qp-tabs-wrap">
+    <div class="qp-tabs" id="qpTabs" role="tablist">
+      <button class="qp-tab" data-tab="greeks"     role="tab"><span class="material-symbols-outlined ico">tune</span>Greeks</button>
+      <button class="qp-tab" data-tab="payoff"     role="tab"><span class="material-symbols-outlined ico">show_chart</span>Payoff</button>
+      <button class="qp-tab" data-tab="montecarlo" role="tab"><span class="material-symbols-outlined ico">moving</span>Monte Carlo</button>
+      <button class="qp-tab" data-tab="sizing"     role="tab"><span class="material-symbols-outlined ico">balance</span>Sizing</button>
+      <button class="qp-tab" data-tab="portfolio"  role="tab"><span class="material-symbols-outlined ico">donut_large</span>Portfolio</button>
+      <button class="qp-tab" data-tab="backtest"   role="tab"><span class="material-symbols-outlined ico">history</span>Backtest</button>
+      <button class="qp-tab" data-tab="glossary"   role="tab"><span class="material-symbols-outlined ico">menu_book</span>Glossary</button>
+      <div class="qp-tab-indicator" id="qpTabIndicator"></div>
+    </div>
+  </div>
+
+  <!-- Tab panes -->
+  <section class="qp-pane" data-pane="greeks">
+    <div id="qpGreeksRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">tune</span>
+        Options Pricer + Greeks &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="payoff">
+    <div id="qpPayoffRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">show_chart</span>
+        Strategy Payoff Builder &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="montecarlo">
+    <div id="qpMCRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">moving</span>
+        Monte Carlo Simulator &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="sizing">
+    <div id="qpSizingRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">balance</span>
+        Position Sizing &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="portfolio">
+    <div id="qpPortRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">donut_large</span>
+        Portfolio Analytics &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="backtest">
+    <div id="qpBacktestRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">history</span>
+        Historical Reactions Backtester &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+  <section class="qp-pane" data-pane="glossary">
+    <div id="qpGlossaryRoot">
+      <div class="qp-soon">
+        <span class="material-symbols-outlined ico">menu_book</span>
+        Glossary &mdash; loading&hellip;
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- AI coach FAB + drawer (Phase 10 will wire it up) -->
+<button class="qp-ai-fab" id="qpAiFab" aria-label="Open AI coach">
+  <span class="material-symbols-outlined" style="font-size:24px;">smart_toy</span>
+</button>
+<aside class="qp-ai-drawer" id="qpAiDrawer" aria-hidden="true">
+  <div class="qp-ai-head">
+    <span class="material-symbols-outlined" style="color:#6ddec0;">smart_toy</span>
+    <h3>Explain this</h3>
+    <button class="qp-ai-close" id="qpAiClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="qp-ai-body" id="qpAiBody">
+    <div style="color:#6a7484;font:500 12px 'DM Sans';">
+      AI coach coming online soon. Will explain any current calculation or strategy in plain English, grounded in NSE/BSE context. No buy/sell advice.
+    </div>
+  </div>
+  <div class="qp-ai-foot">
+    <textarea id="qpAiInput" placeholder="Ask about this tool…" disabled></textarea>
+  </div>
+</aside>
+
+<!-- Page wiring -->
+<script>
+(function () {
+  'use strict';
+
+  // ── Tab routing — URL ?tool=<name> drives which pane is active ──
+  function activeTabFromUrl() {
+    var params = new URLSearchParams(location.search);
+    return params.get('tool') || 'greeks';
+  }
+  function setActiveTab(name) {
+    var tabs = document.querySelectorAll('.qp-tab');
+    var panes = document.querySelectorAll('.qp-pane');
+    var found = false;
+    for (var i = 0; i < tabs.length; i++) {
+      var on = tabs[i].dataset.tab === name;
+      tabs[i].classList.toggle('is-active', on);
+      tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) found = true;
+    }
+    for (var j = 0; j < panes.length; j++) {
+      panes[j].classList.toggle('is-active', panes[j].dataset.pane === name);
+    }
+    if (!found) setActiveTab('greeks');
+    // Update URL without reloading
+    var url = new URL(location.href);
+    url.searchParams.set('tool', name);
+    history.replaceState({}, '', url.toString());
+    // Notify tab modules so they can lazy-init
+    document.dispatchEvent(new CustomEvent('qp:tab', { detail: { tab: name } }));
+  }
+  document.getElementById('qpTabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('.qp-tab');
+    if (btn) setActiveTab(btn.dataset.tab);
+  });
+
+  // ── Sliding tab indicator ──
+  function moveIndicator(name) {
+    var indicator = document.getElementById('qpTabIndicator');
+    var btn = document.querySelector('.qp-tab[data-tab="' + name + '"]');
+    if (!indicator || !btn) return;
+    indicator.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+    indicator.style.width = btn.offsetWidth + 'px';
+  }
+  window.addEventListener('load', function () { moveIndicator(activeTabFromUrl()); });
+  window.addEventListener('resize', function () {
+    var on = document.querySelector('.qp-tab.is-active');
+    if (on) moveIndicator(on.dataset.tab);
+  });
+  document.addEventListener('qp:tab', function (e) { moveIndicator(e.detail.tab); });
+
+  // ── Ticker tape — live NSE pulse, falls back to friendly demo if offline ──
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function updateClock() {
+    var d = new Date();
+    // IST = UTC+5:30
+    var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    var ist = new Date(utc + (5.5 * 60 * 60000));
+    var h = ist.getHours(), m = ist.getMinutes(), s = ist.getSeconds();
+    var clk = document.getElementById('qpTapeClock');
+    if (clk) clk.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+    var ses = document.getElementById('qpTapeSession');
+    if (ses) {
+      var dow = ist.getDay();
+      var min = h * 60 + m;
+      var open = (dow >= 1 && dow <= 5 && min >= 9 * 60 + 15 && min < 15 * 60 + 30);
+      ses.textContent = open ? 'OPEN' : 'CLOSED';
+      ses.style.color = open ? 'var(--qp-bull)' : 'var(--qp-text-3)';
+    }
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  function setTapeQuote(id, ticker, j) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var price = j && (j.data && (j.data.last_price || j.data.close) || j.last_price || j.close);
+    var pct = j && (j.data && j.data.pct_change != null ? j.data.pct_change : j.pct_change);
+    if (price == null) { el.textContent = '—'; return; }
+    var sign = pct >= 0 ? '+' : '';
+    el.innerHTML = Number(price).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+      + ' <span class="' + (pct >= 0 ? 'up' : 'dn') + '">' + sign + (pct != null ? Number(pct).toFixed(2) + '%' : '') + '</span>';
+  }
+  function loadTape() {
+    ['NIFTY','BANKNIFTY','INDIAVIX'].forEach(function (t, i) {
+      var ids = ['qpTapeNifty','qpTapeBankNifty','qpTapeVIX'];
+      fetch('/api/stock/' + t + '/quote', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; })
+        .then(function (j) {
+          if (!j) {
+            // Friendly demo values when live data isn't available
+            var demo = { NIFTY: { p: 24567, c: 0.34 }, BANKNIFTY: { p: 52384, c: -0.18 }, INDIAVIX: { p: 13.42, c: 1.2 } };
+            var d = demo[t];
+            setTapeQuote(ids[i], t, { last_price: d.p, pct_change: d.c });
+          } else {
+            setTapeQuote(ids[i], t, j);
+          }
+        });
+    });
+  }
+  loadTape();
+  setInterval(loadTape, 30000);
+
+  // ── Surprise-me button — dispatches qp:random for whichever tab is active ──
+  var rb = document.getElementById('qpRandomBtn');
+  if (rb) rb.addEventListener('click', function () {
+    var active = document.querySelector('.qp-tab.is-active');
+    var tab = active ? active.dataset.tab : 'greeks';
+    document.dispatchEvent(new CustomEvent('qp:random', { detail: { tab: tab } }));
+  });
+
+  // ── AI drawer toggle (wiring only — RAG integration is phase 10) ──
+  document.getElementById('qpAiFab').addEventListener('click', function () {
+    document.getElementById('qpAiDrawer').classList.add('is-open');
+    document.getElementById('qpAiDrawer').setAttribute('aria-hidden', 'false');
+  });
+  document.getElementById('qpAiClose').addEventListener('click', function () {
+    document.getElementById('qpAiDrawer').classList.remove('is-open');
+    document.getElementById('qpAiDrawer').setAttribute('aria-hidden', 'true');
+  });
+
+  // ── KaTeX auto-render once it loads ──
+  function whenKatexReady(cb) {
+    if (window.katex) return cb();
+    var tries = 0;
+    var iv = setInterval(function () {
+      if (window.katex || tries++ > 100) { clearInterval(iv); cb(); }
+    }, 50);
+  }
+  window.addEventListener('load', function () {
+    whenKatexReady(function () {
+      if (window.Glossary && Glossary.renderAll) Glossary.renderAll();
+    });
+  });
+
+  // Boot
+  setActiveTab(activeTabFromUrl());
+})();
+</script>
+
+<!-- Tab modules (loaded in next phases) — each registers itself for `qp:tab` and
+     renders into its #qp*Root container the first time its tab activates. -->
+<script src="./shared/js/quant-greeks.js" defer></script>
+<script src="./shared/js/quant-payoff.js" defer></script>
+<script src="./shared/js/quant-montecarlo.js" defer></script>
+<script src="./shared/js/quant-sizing.js" defer></script>
+<script src="./shared/js/quant-portfolio.js" defer></script>
+<script src="./shared/js/quant-backtest.js" defer></script>
+<script src="./shared/js/quant-glossary-tab.js" defer></script>
+<script src="./shared/js/quant-ai.js" defer></script>
+
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
+</body>
+</html>

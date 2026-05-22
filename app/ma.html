@@ -1,7 +1,7 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,8 +23,11 @@
   }, fontFamily:{ "headline":["Plus Jakarta Sans"], "body":["DM Sans"], "mono":["Geist Mono"] } } } }
 </script>
 <link rel="stylesheet" href="./shared/css/style.css">
+    <link rel="stylesheet" href="./shared/css/disclosures.css">
+    <link rel="stylesheet" href="./shared/css/redesign.css">
 <link rel="stylesheet" href="./shared/css/refined.css">
 <link rel="stylesheet" href="./shared/css/search-bar.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
 <script src="./shared/js/theme.js"></script>
 <script src="./shared/js/widgets.js"></script>
 <style>
@@ -104,12 +107,12 @@
     <div style="flex:1;min-width:280px;">
       <h1 class="text-4xl font-black font-headline text-on-surface mb-2">M&amp;A</h1>
       <p class="text-on-surface-variant text-sm mb-4">
-        Mergers, acquisitions, open offers, schemes of arrangement and delistings â€” tracked from filings + news, scored on size, synergy and acquirer track record.
+        Mergers, acquisitions, open offers, schemes of arrangement and delistings — tracked from filings + news, scored on size, synergy and acquirer track record.
       </p>
       <div data-tw-search></div>
     </div>
     <div class="flex flex-wrap items-center gap-2">
-      <button id="refreshBtn" class="rf-chip" title="Trigger fresh scrape">â†» Refresh</button>
+      <button id="refreshBtn" class="rf-chip" title="Trigger fresh scrape">? Refresh</button>
     </div>
   </div>
 </header>
@@ -117,10 +120,10 @@
 <!-- KPI strip -->
 <section class="px-6 mb-6">
   <div class="rf-bento" style="margin: 0;">
-    <div class="rf-kpi"><div class="rf-kpi-label">Deals Â· 90d</div><div class="rf-kpi-value" id="kpiTotal">â€”</div><div class="rf-kpi-delta">tracked</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">Total value</div><div class="rf-kpi-value" id="kpiValue">â€”</div><div class="rf-kpi-delta">crore INR</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">Active</div><div class="rf-kpi-value" id="kpiActive">â€”</div><div class="rf-kpi-delta">in flight</div></div>
-    <div class="rf-kpi"><div class="rf-kpi-label">Top sector</div><div class="rf-kpi-value" id="kpiTopSector" style="font-size:18px;">â€”</div><div class="rf-kpi-delta" id="kpiTopSectorN">â€”</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Deals · 90d</div><div class="rf-kpi-value" id="kpiTotal">—</div><div class="rf-kpi-delta">tracked</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Total value</div><div class="rf-kpi-value" id="kpiValue">—</div><div class="rf-kpi-delta">crore INR</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Active</div><div class="rf-kpi-value" id="kpiActive">—</div><div class="rf-kpi-delta">in flight</div></div>
+    <div class="rf-kpi"><div class="rf-kpi-label">Top sector</div><div class="rf-kpi-value" id="kpiTopSector" style="font-size:18px;">—</div><div class="rf-kpi-delta" id="kpiTopSectorN">—</div></div>
   </div>
 </section>
 
@@ -143,7 +146,7 @@
     <div class="rf-skel" style="height: 64px; border-radius: 10px;"></div>
     <div class="rf-skel" style="height: 64px; border-radius: 10px;"></div>
   </div>
-  <div id="dealCount" style="margin-top: 14px; font-size: 12px; color: var(--rf-text-dim);">â€”</div>
+  <div id="dealCount" style="margin-top: 14px; font-size: 12px; color: var(--rf-text-dim);">—</div>
 </section>
 
 <!-- Drill panel (deep-linkable via ?deal=<id>) -->
@@ -151,8 +154,8 @@
   <div class="ma-card" style="padding: 0;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--rf-line);gap:14px;">
       <div style="min-width: 0;">
-        <div style="font: 700 20px 'Plus Jakarta Sans',sans-serif;color:var(--rf-text);" id="drillTitle">â€”</div>
-        <div style="font-size: 12px; color:var(--rf-text-dim); margin-top: 4px;" id="drillSub">â€”</div>
+        <div style="font: 700 20px 'Plus Jakarta Sans',sans-serif;color:var(--rf-text);" id="drillTitle">—</div>
+        <div style="font-size: 12px; color:var(--rf-text-dim); margin-top: 4px;" id="drillSub">—</div>
       </div>
       <div style="display: flex; gap: 8px;">
         <button id="drillClose" class="rf-chip">Close</button>
@@ -183,16 +186,16 @@
 <script src="./shared/js/search-bar.js" defer></script>
 <script>
 const escape = s => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const fmtCr = v => v == null || isNaN(v) ? 'â€”' : 'â‚¹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 }) + ' cr';
+const fmtCr = v => v == null || isNaN(v) ? '—' : '?' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 }) + ' cr';
 const fmtCrShort = v => {
-  if (v == null || isNaN(v)) return 'â€”';
+  if (v == null || isNaN(v)) return '—';
   const n = Number(v);
-  if (n >= 100000) return 'â‚¹' + (n/100000).toFixed(1) + ' lakh cr';
-  if (n >= 1000) return 'â‚¹' + (n/1000).toFixed(1) + 'k cr';
-  return 'â‚¹' + n.toFixed(0) + ' cr';
+  if (n >= 100000) return '?' + (n/100000).toFixed(1) + ' lakh cr';
+  if (n >= 1000) return '?' + (n/1000).toFixed(1) + 'k cr';
+  return '?' + n.toFixed(0) + ' cr';
 };
 const fmtDate = s => {
-  if (!s) return 'â€”';
+  if (!s) return '—';
   const d = new Date(s);
   return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 };
@@ -220,12 +223,12 @@ async function loadAll() {
 }
 
 function renderKpis(s) {
-  document.getElementById('kpiTotal').textContent = s.total ?? 'â€”';
+  document.getElementById('kpiTotal').textContent = s.total ?? '—';
   document.getElementById('kpiValue').textContent = fmtCrShort(s.total_value_cr);
-  document.getElementById('kpiActive').textContent = s.active ?? 'â€”';
+  document.getElementById('kpiActive').textContent = s.active ?? '—';
   const top = (s.top_sectors || [])[0];
-  document.getElementById('kpiTopSector').textContent = top ? top.sector : 'â€”';
-  document.getElementById('kpiTopSectorN').textContent = top ? top.n + ' deals' : 'â€”';
+  document.getElementById('kpiTopSector').textContent = top ? top.sector : '—';
+  document.getElementById('kpiTopSectorN').textContent = top ? top.n + ' deals' : '—';
 }
 
 function renderDealList() {
@@ -234,7 +237,7 @@ function renderDealList() {
   if (!filtered.length) {
     el.innerHTML = `<div class="ma-card" style="text-align:center;color:var(--rf-text-dim);padding:36px;">
       <div style="font-size:14px;font-weight:600;margin-bottom:6px;">No M&amp;A deals${activeStatus !== 'all' ? ' in <code>' + activeStatus + '</code>' : ''}</div>
-      <div style="font-size:12px;">Click <strong>â†» Refresh</strong> above to scrape fresh filings + news.</div>
+      <div style="font-size:12px;">Click <strong>? Refresh</strong> above to scrape fresh filings + news.</div>
     </div>`;
     document.getElementById('dealCount').textContent = '0 deals';
     return;
@@ -247,27 +250,27 @@ function renderDealList() {
       <div style="min-width:0;">
         <div class="ma-deal-parties">
           ${CompanyLogo.img(d.acquirer_ticker || d.acquirer_name, { size: 24, round: true })}
-          <span class="ma-deal-acq">${escape(d.acquirer_name || 'â€”')}</span>
+          <span class="ma-deal-acq">${escape(d.acquirer_name || '—')}</span>
           <span class="ma-deal-arrow material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
           ${CompanyLogo.img(d.target_ticker || d.target_name, { size: 24, round: true })}
-          <span class="ma-deal-tgt">${escape(d.target_name || 'â€”')}</span>
+          <span class="ma-deal-tgt">${escape(d.target_name || '—')}</span>
         </div>
         <div class="ma-deal-meta">
           <span style="text-transform:capitalize;">${escape((d.deal_type || '').replace(/_/g, ' '))}</span>
-          ${d.deal_value_cr ? `<span>Â· ${escape(fmtCr(d.deal_value_cr))}</span>` : ''}
-          ${d.stake_pct ? `<span>Â· ${d.stake_pct.toFixed(1)}%</span>` : ''}
-          ${d.consideration_type ? `<span>Â· ${escape(d.consideration_type)}</span>` : ''}
-          ${ageStr ? `<span>Â· ${ageStr}</span>` : ''}
+          ${d.deal_value_cr ? `<span>· ${escape(fmtCr(d.deal_value_cr))}</span>` : ''}
+          ${d.stake_pct ? `<span>· ${d.stake_pct.toFixed(1)}%</span>` : ''}
+          ${d.consideration_type ? `<span>· ${escape(d.consideration_type)}</span>` : ''}
+          ${ageStr ? `<span>· ${ageStr}</span>` : ''}
         </div>
       </div>
       <span class="ma-status ${escape(d.status || 'rumor')}">${escape((d.status || 'rumor').replace(/_/g, ' '))}</span>
-      <span class="ma-alpha ${alphaClass(a)}">${a != null ? a : 'â€”'}</span>
+      <span class="ma-alpha ${alphaClass(a)}">${a != null ? a : '—'}</span>
     </div>`;
   }).join('');
   el.querySelectorAll('.ma-deal').forEach(node => {
     node.addEventListener('click', () => openDrill(node.dataset.id));
   });
-  document.getElementById('dealCount').textContent = filtered.length + ' deals' + (activeStatus !== 'all' ? ' Â· status: ' + activeStatus : '');
+  document.getElementById('dealCount').textContent = filtered.length + ' deals' + (activeStatus !== 'all' ? ' · status: ' + activeStatus : '');
 }
 
 document.getElementById('statusChips').addEventListener('click', e => {
@@ -281,7 +284,7 @@ document.getElementById('statusChips').addEventListener('click', e => {
 
 document.getElementById('refreshBtn').addEventListener('click', async () => {
   const btn = document.getElementById('refreshBtn');
-  btn.textContent = 'scrapingâ€¦';
+  btn.textContent = 'scraping…';
   btn.disabled = true;
   try {
     const r = await fetch('/api/ma/refresh', {
@@ -291,15 +294,15 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
     });
     const j = await r.json();
     if (j && j.success) {
-      btn.textContent = `âœ“ ${j.data.new || 0} new, ${j.data.merged || 0} merged`;
+      btn.textContent = `? ${j.data.new || 0} new, ${j.data.merged || 0} merged`;
       await loadAll();
     } else {
-      btn.textContent = 'âœ— ' + (j && j.error || 'failed');
+      btn.textContent = '? ' + (j && j.error || 'failed');
     }
   } catch (e) {
-    btn.textContent = 'âœ— network';
+    btn.textContent = '? network';
   }
-  setTimeout(() => { btn.textContent = 'â†» Refresh'; btn.disabled = false; }, 4000);
+  setTimeout(() => { btn.textContent = '? Refresh'; btn.disabled = false; }, 4000);
 });
 
 // --- Drill view ---
@@ -309,7 +312,7 @@ async function openDrill(dealId) {
   const sec = document.getElementById('drillSection');
   sec.style.display = '';
   sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  document.getElementById('drillTitle').textContent = 'Loadingâ€¦';
+  document.getElementById('drillTitle').textContent = 'Loading…';
   document.getElementById('drillSub').textContent = '';
   document.getElementById('drillTimeline').innerHTML = '<div class="rf-skel" style="height: 80px; border-radius: 8px;"></div>';
   document.getElementById('drillFactors').innerHTML = '<div class="rf-skel" style="height: 60px; border-radius: 8px;"></div>';
@@ -334,21 +337,21 @@ function renderDrill(deal) {
   document.getElementById('drillTitle').innerHTML =
     `<span style="display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">` +
     `${CompanyLogo.img(deal.acquirer_ticker || deal.acquirer_name, { size: 28 })}` +
-    `${escape(deal.acquirer_name || 'â€”')}` +
+    `${escape(deal.acquirer_name || '—')}` +
     `</span> <span class="material-symbols-outlined" style="font-size:18px;color:var(--rf-text-dim);vertical-align:middle;">arrow_forward</span> ` +
     `<span style="display:inline-flex;align-items:center;gap:8px;vertical-align:middle;">` +
     `${CompanyLogo.img(deal.target_ticker || deal.target_name, { size: 28 })}` +
-    `${escape(deal.target_name || 'â€”')}` +
+    `${escape(deal.target_name || '—')}` +
     `</span>` +
     `&nbsp;<span class="ma-status ${escape(deal.status || 'rumor')}" style="vertical-align:middle;">${escape((deal.status || 'rumor').replace(/_/g, ' '))}</span>` +
-    `&nbsp;<span class="ma-alpha ${alphaClass(a)}" style="vertical-align:middle;">${a != null ? a : 'â€”'}</span>`;
+    `&nbsp;<span class="ma-alpha ${alphaClass(a)}" style="vertical-align:middle;">${a != null ? a : '—'}</span>`;
   const subBits = [];
   if (deal.deal_type) subBits.push(deal.deal_type.replace(/_/g, ' '));
   if (deal.deal_value_cr) subBits.push(fmtCr(deal.deal_value_cr));
   if (deal.stake_pct) subBits.push(deal.stake_pct.toFixed(1) + '%');
   if (deal.consideration_type) subBits.push(deal.consideration_type);
   if (deal.announcement_date) subBits.push('announced ' + fmtDate(deal.announcement_date));
-  document.getElementById('drillSub').textContent = subBits.join(' Â· ');
+  document.getElementById('drillSub').textContent = subBits.join(' · ');
 
   // Timeline
   const events = (deal.events || []).slice().sort((a,b) => (a.event_date || '').localeCompare(b.event_date || ''));
@@ -359,7 +362,7 @@ function renderDrill(deal) {
     tl.innerHTML = events.map((e, i) => `
       <div class="ma-timeline-item ${i === events.length - 1 ? 'hi' : ''}">
         <div style="font-size: 12px; color: var(--rf-text-dim); font-family: 'Geist Mono', monospace;">${escape(fmtDate(e.event_date))}</div>
-        <div style="font-size: 13px; font-weight: 600; margin-top: 2px;">${escape((e.event_type || '').replace(/_/g, ' ').replace(/:/g, ' â†’ '))}</div>
+        <div style="font-size: 13px; font-weight: 600; margin-top: 2px;">${escape((e.event_type || '').replace(/_/g, ' ').replace(/:/g, ' ? '))}</div>
         ${e.description ? `<div style="font-size:12px;color:var(--rf-text-mute);margin-top:4px;">${escape(e.description)}</div>` : ''}
         ${e.source_url ? `<a href="${escape(e.source_url)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--rf-text-dim);text-decoration:underline;">source</a>` : ''}
       </div>
@@ -370,7 +373,7 @@ function renderDrill(deal) {
   const factors = (deal.payload && deal.payload._factors) || {};
   const fEl = document.getElementById('drillFactors');
   if (!Object.keys(factors).length) {
-    fEl.innerHTML = '<div style="font-size:13px;color:var(--rf-text-dim);">No factor breakdown â€” re-run scoring to populate.</div>';
+    fEl.innerHTML = '<div style="font-size:13px;color:var(--rf-text-dim);">No factor breakdown — re-run scoring to populate.</div>';
   } else {
     fEl.innerHTML = Object.entries(factors).map(([k, v]) => {
       const score = Math.round(v.score || 0);
@@ -412,5 +415,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script src="./shared/js/stock-popup.js" defer></script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

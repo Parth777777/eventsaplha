@@ -1,207 +1,446 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>(function(){try{var t=localStorage.getItem('tw-theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<script>(function(){try{var t=localStorage.getItem('tickwave:theme')||'dark';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 <script src="./shared/js/theme-toggle.js" defer></script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welcome to Tickwave</title>
-    <link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
-    <link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
-    <link rel="manifest" href="./manifest.json">
+<title>Welcome to AlphaEvent</title>
+<link rel="icon" type="image/jpeg" href="./shared/img/logo.jpeg" data-tw-favicon>
+<link rel="apple-touch-icon" href="./shared/img/logo.jpeg">
+<link rel="manifest" href="./manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&family=DM+Sans&family=Geist+Mono&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<link rel="stylesheet" href="./shared/css/refined.css">
+<link rel="stylesheet" href="./shared/css/tokens.css">
+<link rel="stylesheet" href="./shared/css/style.css">
+<link rel="stylesheet" href="./shared/css/redesign.css">
+<link rel="stylesheet" href="./shared/css/components.css">
+    <link rel="stylesheet" href="./shared/css/site-premium.css?v=1779368305">
+<script src="./shared/js/app.js"></script>
+<script src="./shared/js/bootstrap.js" defer></script>
 <style>
-  body { background:#07080d; color:#f0f2f8; font-family:'DM Sans',sans-serif; min-height:100vh; }
-  .step { display:none; }
-  .step.active { display:block; }
-  .pill { display:inline-block; padding:6px 14px; border-radius:999px; background:#1f2336; color:#9aa0c8; font-size:12px; font-weight:700; margin:4px; cursor:pointer; transition:all 0.15s; border:1px solid transparent; }
-  .pill.selected { background:#4ee6b822; color:#4ee6b8; border-color:#4ee6b855; }
-  input, select { background:#1f2336; color:#dde3ef; border:1px solid #2a3142; border-radius:8px; padding:10px 14px; font-size:14px; width:100%; }
-  button.primary { background:#5b6cff; color:#fff; border:0; border-radius:8px; padding:12px 28px; font-size:13px; font-weight:800; letter-spacing:0.06em; cursor:pointer; text-transform:uppercase; }
-  button.ghost { background:transparent; color:#9aa0c8; border:1px solid #2a3142; border-radius:8px; padding:10px 20px; font-size:12px; font-weight:700; cursor:pointer; }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .onb-shell { max-width: 720px; margin: 0 auto; padding: 48px 24px 96px; }
+  .onb-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+  .onb-brand { display: flex; align-items: center; gap: 10px; }
+  .onb-brand-logo { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: var(--surface-1); font-weight: 800; font-family: 'Plus Jakarta Sans'; }
+  .onb-brand-name { font-weight: 800; font-size: 16px; color: var(--text-primary); }
+  .onb-skip { color: var(--text-tertiary); font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+  .onb-skip:hover { color: var(--text-secondary); background: var(--surface-3); }
+  .onb-progress { display: flex; gap: 6px; margin-bottom: 36px; }
+  .onb-progress > div { height: 4px; flex: 1; background: var(--border-subtle); border-radius: 2px; transition: background 220ms var(--ease-out); }
+  .onb-progress > div.done { background: var(--link, var(--accent)); }
+  .step { display: none; animation: fadeUp 320ms var(--ease-out) backwards; }
+  .step.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  h1.onb-title {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(26px, 4vw, 34px);
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    line-height: 1.15;
+  }
+  .onb-sub { color: var(--text-secondary); font-size: 15px; margin: 0 0 28px; line-height: 1.5; max-width: 540px; }
+
+  .card-grid-3 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 640px) { .card-grid-3 { grid-template-columns: repeat(3, 1fr); } }
+  .choice-card {
+    background: var(--surface-1);
+    border: 2px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 22px 18px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: border-color var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out);
+  }
+  .choice-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .choice-card.selected { border-color: var(--link, var(--accent)); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .choice-card .ico {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--accent-dim); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .choice-card .ico .material-symbols-outlined { font-size: 22px; }
+  .choice-title { font-weight: 700; font-size: 16px; margin: 0 0 4px; letter-spacing: -0.005em; }
+  .choice-desc { color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    color: var(--text-secondary);
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 4px 4px 0 0;
+    cursor: pointer;
+    border: 1px solid var(--border-subtle);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+  .pill:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  .pill.selected {
+    background: var(--accent);
+    color: var(--surface-1);
+    border-color: var(--accent);
+  }
+  .pill .material-symbols-outlined { font-size: 14px; }
+
+  .search-row { margin: 8px 0 16px; }
+  .search-row input {
+    width: 100%;
+    background: var(--surface-1);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .picks-box {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px 16px;
+    min-height: 64px;
+    margin-top: 14px;
+  }
+  .picks-label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .picks-empty { color: var(--text-tertiary); font-size: 13px; }
+
+  .channel-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease-out);
+    margin-bottom: 8px;
+  }
+  .channel-row:hover { border-color: var(--border-strong); }
+  .channel-row input { accent-color: var(--link, var(--accent)); }
+  .channel-row .ch-label { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+  .channel-row .ch-hint { font-size: 12px; color: var(--text-tertiary); }
+
+  .disc-card {
+    margin-top: 28px;
+    background: var(--surface-1);
+    border: 1px solid var(--caution-border, var(--border-subtle));
+    border-left: 3px solid var(--caution);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .nav-row {
+    display: flex; gap: 12px; justify-content: space-between;
+    margin-top: 36px;
+  }
+  .nav-spacer { flex: 1; }
 </style>
 </head>
-<body class="rf-page">
-<div class="rf-aurora-bg"></div>
-<div class="rf-dot-grid"></div>
+<body>
 
+<main id="main" class="onb-shell">
 
-<main style="max-width:680px; margin:0 auto; padding:48px 24px;">
+  <header class="onb-head">
+    <div class="onb-brand">
+      <div class="onb-brand-logo">A</div>
+      <div class="onb-brand-name">AlphaEvent</div>
+    </div>
+    <a class="onb-skip" href="index.html" id="skipLink">Skip and explore →</a>
+  </header>
 
-<header style="margin-bottom:32px;">
-  <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-    <img class="onboarding-logo" src="./shared/img/logo.jpeg" alt="TickWave" width="40" height="40" style="border-radius:8px;" data-tw-logo>
+  <div class="onb-progress" aria-label="Onboarding progress">
+    <div data-step="1" class="done"></div>
+    <div data-step="2"></div>
+    <div data-step="3"></div>
+    <div data-step="4"></div>
   </div>
-  <div style="display:flex; gap:6px;">
-    <div class="step-bar" data-step="1" style="height:4px; flex:1; background:#4ee6b8; border-radius:2px;"></div>
-    <div class="step-bar" data-step="2" style="height:4px; flex:1; background:#1f2336; border-radius:2px;"></div>
-    <div class="step-bar" data-step="3" style="height:4px; flex:1; background:#1f2336; border-radius:2px;"></div>
-    <div class="step-bar" data-step="4" style="height:4px; flex:1; background:#1f2336; border-radius:2px;"></div>
-  </div>
-</header>
 
-<div class="step active" data-step="1">
-  <h1 style="font-family:'Plus Jakarta Sans'; font-weight:900; font-size:32px; margin-bottom:8px;">Pick 5 stocks you care about</h1>
-  <p style="color:#9aa0c8; margin-bottom:24px;">We'll wire alerts and personalized news around these. Add or remove anytime.</p>
-  <div style="margin-bottom:16px;">
-    <input id="tickerSearch" placeholder="Type ticker (e.g. RELIANCE, TCS, HDFCBANK)..." />
-  </div>
-  <div id="suggestedTickers" style="margin-bottom:20px;">
-    <div style="font-size:11px; color:#5a5d6a; text-transform:uppercase; letter-spacing:0.06em; font-weight:800; margin-bottom:8px;">Quick picks (click to add):</div>
+  <!-- ── STEP 1 — What do you trade? ───────────────────────────── -->
+  <section class="step active" data-step="1">
+    <h1 class="onb-title">What do you trade?</h1>
+    <p class="onb-sub">We'll tailor the signals you see. You can change this anytime in Settings.</p>
+    <div class="card-grid-3" id="tradeChoices">
+      <button type="button" class="choice-card" data-trade="stocks">
+        <span class="ico"><span class="material-symbols-outlined">show_chart</span></span>
+        <div class="choice-title">Stocks (cash)</div>
+        <div class="choice-desc">NSE/BSE equities, delivery + intraday. The default for most retail traders.</div>
+      </button>
+      <button type="button" class="choice-card" data-trade="fo">
+        <span class="ico"><span class="material-symbols-outlined">candlestick_chart</span></span>
+        <div class="choice-title">F&amp;O</div>
+        <div class="choice-desc">Futures and options. We'll surface OI shifts and unusual options activity.</div>
+      </button>
+      <button type="button" class="choice-card" data-trade="both">
+        <span class="ico"><span class="material-symbols-outlined">layers</span></span>
+        <div class="choice-title">Both</div>
+        <div class="choice-desc">Stocks plus derivatives. Most signals + options Greeks alerts.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── STEP 2 — Pick stocks ─────────────────────────────────── -->
+  <section class="step" data-step="2">
+    <h1 class="onb-title">Pick 3-5 stocks you actually follow</h1>
+    <p class="onb-sub">We've pre-selected the Nifty 10 to get you started. Tap to add or remove. Search to add anything else.</p>
+
+    <div class="search-row">
+      <input id="tickerSearch" placeholder="Type a ticker and press Enter (e.g. RELIANCE, TCS, HDFCBANK)" autocomplete="off" />
+    </div>
+
+    <div style="font-size:11px;color:var(--text-tertiary);letter-spacing:0.06em;text-transform:uppercase;font-weight:600;margin:8px 0;">
+      Suggested · tap to toggle
+    </div>
     <div id="quickPicks"></div>
-  </div>
-  <div id="pickedTickers" style="background:#0d1118; border:1px solid #1f2336; border-radius:8px; padding:14px; min-height:60px;">
-    <div style="font-size:11px; color:#5a5d6a; margin-bottom:8px;">Your picks (<span id="pickCount">0</span>/10):</div>
-    <div id="pickedList"></div>
-  </div>
-</div>
 
-<div class="step" data-step="2">
-  <h1 style="font-family:'Plus Jakarta Sans'; font-weight:900; font-size:32px; margin-bottom:8px;">Which sectors interest you?</h1>
-  <p style="color:#9aa0c8; margin-bottom:24px;">We'll surface sector rotation events for these.</p>
-  <div id="sectorPicks"></div>
-</div>
+    <div class="picks-box">
+      <div class="picks-label">Your picks (<span id="pickCount">0</span>/10)</div>
+      <div id="pickedList"><div class="picks-empty">No stocks selected yet.</div></div>
+    </div>
+  </section>
 
-<div class="step" data-step="3">
-  <h1 style="font-family:'Plus Jakarta Sans'; font-weight:900; font-size:32px; margin-bottom:8px;">Risk tolerance</h1>
-  <p style="color:#9aa0c8; margin-bottom:24px;">Tunes the alpha threshold for which signals will alert you.</p>
-  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
-    <button onclick="pickRisk('conservative', this)" class="risk-btn" style="background:#0d1118;border:2px solid #1f2336;border-radius:12px;padding:20px;text-align:left;cursor:pointer;color:#dde3ef;">
-      <div style="font-weight:900;font-size:18px;color:#5b6cff;">Conservative</div>
-      <div style="font-size:11px;color:#9aa0c8;margin-top:4px;">Only the cleanest signals. α ≥ 75 + filing-grade only.</div>
+  <!-- ── STEP 3 — Aggressiveness (jargon-free) ────────────────── -->
+  <section class="step" data-step="3">
+    <h1 class="onb-title">How aggressive should we be?</h1>
+    <p class="onb-sub">This controls how often we ping you and how strict our filters are.</p>
+    <div class="card-grid-3" id="riskChoices">
+      <button type="button" class="choice-card" data-risk="conservative">
+        <span class="ico"><span class="material-symbols-outlined">shield</span></span>
+        <div class="choice-title">Conservative</div>
+        <div class="choice-desc">Fewer, higher-conviction alerts. You'll only hear from us when something really matters.</div>
+      </button>
+      <button type="button" class="choice-card selected" data-risk="balanced">
+        <span class="ico"><span class="material-symbols-outlined">tune</span></span>
+        <div class="choice-title">Balanced</div>
+        <div class="choice-desc">A daily mix of meaningful events. Most users start here.</div>
+      </button>
+      <button type="button" class="choice-card" data-risk="aggressive">
+        <span class="ico"><span class="material-symbols-outlined">bolt</span></span>
+        <div class="choice-title">Aggressive</div>
+        <div class="choice-desc">Every meaningful move. Expect 10-20 alerts per active day.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── STEP 4 — Notifications (optional) ────────────────────── -->
+  <section class="step" data-step="4">
+    <h1 class="onb-title">Where should we reach you?</h1>
+    <p class="onb-sub">Optional. The in-app feed is always on. Add more channels for time-sensitive alerts.</p>
+
+    <label class="channel-row">
+      <input type="checkbox" value="browser" class="ch-channel" checked />
+      <div>
+        <div class="ch-label">In-app feed (always on)</div>
+        <div class="ch-hint">Lives in your dashboard. No setup needed.</div>
+      </div>
+    </label>
+    <label class="channel-row">
+      <input type="checkbox" value="push" class="ch-channel" />
+      <div>
+        <div class="ch-label">Browser push</div>
+        <div class="ch-hint">Works when the tab is closed. Mobile-friendly.</div>
+      </div>
+    </label>
+    <label class="channel-row">
+      <input type="checkbox" value="telegram" class="ch-channel" />
+      <div>
+        <div class="ch-label">Telegram</div>
+        <div class="ch-hint">Connect a bot from the Alerts page later.</div>
+      </div>
+    </label>
+
+    <div class="disc-card">
+      <b style="color:var(--caution);">Informational only — not investment advice.</b>
+      AlphaEvent publishes statistical signals derived from public news + market data.
+      We're not a SEBI-registered investment adviser. Do your own diligence and consult a
+      SEBI-registered advisor before acting on anything you see here.
+    </div>
+  </section>
+
+  <div class="nav-row">
+    <button onclick="prevStep()" id="backBtn" class="ae-btn" data-variant="ghost" style="visibility:hidden;">
+      <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">arrow_back</span> Back
     </button>
-    <button onclick="pickRisk('moderate', this)" class="risk-btn" style="background:#0d1118;border:2px solid #1f2336;border-radius:12px;padding:20px;text-align:left;cursor:pointer;color:#dde3ef;">
-      <div style="font-weight:900;font-size:18px;color:#4ee6b8;">Moderate</div>
-      <div style="font-size:11px;color:#9aa0c8;margin-top:4px;">Balanced. α ≥ 65 with confirmed source backing. Default.</div>
-    </button>
-    <button onclick="pickRisk('aggressive', this)" class="risk-btn" style="background:#0d1118;border:2px solid #1f2336;border-radius:12px;padding:20px;text-align:left;cursor:pointer;color:#dde3ef;">
-      <div style="font-weight:900;font-size:18px;color:#ff9466;">Aggressive</div>
-      <div style="font-size:11px;color:#9aa0c8;margin-top:4px;">More signals, more noise. α ≥ 55 even on single sources.</div>
+    <div class="nav-spacer"></div>
+    <button onclick="nextStep()" id="nextBtn" class="ae-btn" data-variant="primary">
+      Continue <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">arrow_forward</span>
     </button>
   </div>
-</div>
-
-<div class="step" data-step="4">
-  <h1 style="font-family:'Plus Jakarta Sans'; font-weight:900; font-size:32px; margin-bottom:8px;">How should we reach you?</h1>
-  <p style="color:#9aa0c8; margin-bottom:24px;">Pick all that apply.</p>
-  <div style="display:flex;flex-direction:column;gap:10px;">
-    <label style="display:flex;align-items:center;gap:10px;background:#0d1118;border:1px solid #1f2336;border-radius:8px;padding:14px;cursor:pointer;">
-      <input type="checkbox" value="browser" class="ch-channel" checked /> <span>Live in-app feed (always on)</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:10px;background:#0d1118;border:1px solid #1f2336;border-radius:8px;padding:14px;cursor:pointer;">
-      <input type="checkbox" value="push" class="ch-channel" /> <span>Browser push (mobile-friendly, works when tab is closed)</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:10px;background:#0d1118;border:1px solid #1f2336;border-radius:8px;padding:14px;cursor:pointer;">
-      <input type="checkbox" value="telegram" class="ch-channel" /> <span>Telegram (configure bot in Alerts page later)</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:10px;background:#0d1118;border:1px solid #1f2336;border-radius:8px;padding:14px;cursor:pointer;">
-      <input type="checkbox" value="discord" class="ch-channel" /> <span>Discord webhook (configure in Alerts page later)</span>
-    </label>
-  </div>
-
-  <div style="margin-top:30px;background:#0d1118;border:1px solid #ff946655;border-radius:8px;padding:16px;font-size:12px;color:#9aa0c8;line-height:1.6;">
-    <b style="color:#ff9466;">Disclaimer:</b> Tickwave publishes statistical signals derived from public news + market data. Not investment advice, not registered advisory. Do your own diligence and consult a SEBI-registered investment advisor before acting on anything you see here.
-  </div>
-</div>
-
-<div style="display:flex;gap:12px;justify-content:space-between;margin-top:32px;">
-  <button onclick="prevStep()" id="backBtn" class="ghost">← Back</button>
-  <button onclick="nextStep()" id="nextBtn" class="primary">Continue →</button>
-</div>
-
 </main>
 
 <script>
-let step = 1;
-const total = 4;
-const pickedTickers = new Set();
-const pickedSectors = new Set();
-let risk = 'moderate';
+(function () {
+  'use strict';
 
-const QUICK_TICKERS = ['RELIANCE','TCS','INFY','HDFCBANK','ICICIBANK','SBIN','BHARTIARTL','ITC','LT','TATAMOTORS','MARUTI','SUNPHARMA','AXISBANK','BAJFINANCE','HINDUNILVR'];
-const SECTORS = ['IT','BFSI','AUTO','PHARMA','METALS','ENERGY','FMCG','REAL ESTATE','TELECOM','INFRA','CHEMICALS','CONSUMER'];
+  const QUICK_TICKERS = [
+    'RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK',
+    'SBIN','BHARTIARTL','ITC','LT','HINDUNILVR',
+    'AXISBANK','MARUTI','SUNPHARMA','BAJFINANCE','TATAMOTORS'
+  ];
+  // Nifty top 10 — pre-selected so the user can hit Continue immediately.
+  const PRESELECT = new Set(['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK']);
 
-function showStep(n) {
-  document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', +s.dataset.step === n));
-  document.querySelectorAll('.step-bar').forEach(b => b.style.background = (+b.dataset.step <= n ? '#4ee6b8' : '#1f2336'));
-  document.getElementById('backBtn').style.visibility = n === 1 ? 'hidden' : 'visible';
-  document.getElementById('nextBtn').textContent = n === total ? 'Finish & open dashboard →' : 'Continue →';
-}
+  // Sectors auto-derived from trade_type so the user doesn't have to pick.
+  const SECTORS_FOR = {
+    stocks: ['IT','BFSI','AUTO','PHARMA','FMCG'],
+    fo:     ['BFSI','IT','METALS','ENERGY'],
+    both:   ['IT','BFSI','AUTO','PHARMA','METALS','ENERGY','FMCG'],
+  };
 
-function nextStep() {
-  if (step === 1 && pickedTickers.size < 1) { alert('Pick at least one stock.'); return; }
-  if (step === total) { saveAndGo(); return; }
-  step++;
-  showStep(step);
-}
-function prevStep() { if (step > 1) { step--; showStep(step); } }
+  let step = 1;
+  const total = 4;
+  let trade = 'stocks';
+  let risk = 'balanced';
+  const picked = new Set(PRESELECT);
 
-function renderQuickPicks() {
-  document.getElementById('quickPicks').innerHTML = QUICK_TICKERS.map(t =>
-    `<span class="pill ${pickedTickers.has(t) ? 'selected' : ''}" onclick="togglePick('${t}', this)">${t}</span>`
-  ).join('');
-}
-function togglePick(t, el) {
-  if (pickedTickers.has(t)) { pickedTickers.delete(t); }
-  else if (pickedTickers.size < 10) { pickedTickers.add(t); }
-  else { alert('Limit 10 stocks during onboarding.'); return; }
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach((s) => {
+      s.classList.toggle('active', +s.dataset.step === n);
+    });
+    document.querySelectorAll('.onb-progress > div').forEach((b) => {
+      b.classList.toggle('done', +b.dataset.step <= n);
+    });
+    document.getElementById('backBtn').style.visibility = n === 1 ? 'hidden' : 'visible';
+    document.getElementById('nextBtn').innerHTML = n === total
+      ? 'Finish &amp; open dashboard <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">check</span>'
+      : 'Continue <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px;">arrow_forward</span>';
+    // Refocus to title for screen readers
+    const title = document.querySelector(`.step[data-step="${n}"] .onb-title`);
+    if (title) title.setAttribute('tabindex', '-1'), title.focus({ preventScroll: true });
+  }
+
+  function nextStep() {
+    if (step === 2 && picked.size < 1) {
+      const inp = document.getElementById('tickerSearch');
+      if (inp) inp.focus();
+      return;
+    }
+    if (step === total) return saveAndGo();
+    step++;
+    showStep(step);
+  }
+  function prevStep() { if (step > 1) { step--; showStep(step); } }
+  window.nextStep = nextStep;
+  window.prevStep = prevStep;
+
+  // Step 1: trade choice
+  document.querySelectorAll('#tradeChoices .choice-card').forEach((card) => {
+    if (card.dataset.trade === trade) card.classList.add('selected');
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#tradeChoices .choice-card').forEach((c) => c.classList.remove('selected'));
+      card.classList.add('selected');
+      trade = card.dataset.trade;
+    });
+  });
+
+  // Step 3: risk choice
+  document.querySelectorAll('#riskChoices .choice-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#riskChoices .choice-card').forEach((c) => c.classList.remove('selected'));
+      card.classList.add('selected');
+      risk = card.dataset.risk;
+    });
+  });
+
+  // Step 2: stock pills
+  function renderQuickPicks() {
+    document.getElementById('quickPicks').innerHTML = QUICK_TICKERS.map((t) => {
+      const sel = picked.has(t) ? 'selected' : '';
+      return `<span class="pill ${sel}" data-tk="${t}">${t}${sel ? ' <span class="material-symbols-outlined">check</span>' : ''}</span>`;
+    }).join('');
+    document.getElementById('quickPicks').querySelectorAll('.pill').forEach((p) => {
+      p.addEventListener('click', () => toggle(p.dataset.tk));
+    });
+  }
+  function renderPicked() {
+    document.getElementById('pickCount').textContent = String(picked.size);
+    const list = document.getElementById('pickedList');
+    if (!picked.size) {
+      list.innerHTML = '<div class="picks-empty">No stocks selected yet.</div>';
+      return;
+    }
+    list.innerHTML = [...picked].map((t) =>
+      `<span class="pill selected" data-tk="${t}">${t} <span class="material-symbols-outlined">close</span></span>`
+    ).join('');
+    list.querySelectorAll('.pill').forEach((p) => {
+      p.addEventListener('click', () => toggle(p.dataset.tk));
+    });
+  }
+  function toggle(t) {
+    if (!t) return;
+    if (picked.has(t)) picked.delete(t);
+    else if (picked.size < 10) picked.add(t);
+    else return;
+    renderQuickPicks();
+    renderPicked();
+  }
+
+  document.getElementById('tickerSearch').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = e.target.value.toUpperCase().trim();
+      if (v) toggle(v);
+      e.target.value = '';
+    }
+  });
+
+  async function saveAndGo() {
+    const channels = [...document.querySelectorAll('.ch-channel:checked')].map((c) => c.value);
+    const sectors = SECTORS_FOR[trade] || SECTORS_FOR.stocks;
+    try {
+      await fetch('/api/onboarding/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trade_type: trade,
+          tickers: [...picked],
+          sectors,
+          risk,
+          channels,
+        }),
+      });
+    } catch (_) {}
+    if (channels.includes('push') && 'Notification' in window) {
+      try { await Notification.requestPermission(); } catch (_) {}
+    }
+    try { localStorage.setItem('ea_onboarded', '1'); } catch (_) {}
+    window.location = 'index.html';
+  }
+
+  // Skip — mark as explored so the bootstrap banner doesn't keep nagging.
+  document.getElementById('skipLink').addEventListener('click', () => {
+    try { localStorage.setItem('ea_skipped_onboarding', '1'); } catch (_) {}
+  });
+
   renderQuickPicks();
   renderPicked();
-}
-function renderPicked() {
-  document.getElementById('pickCount').textContent = pickedTickers.size;
-  document.getElementById('pickedList').innerHTML = [...pickedTickers].map(t =>
-    `<span class="pill selected" onclick="togglePick('${t}', this)">${t} ×</span>`
-  ).join('') || '<span style="color:#5a5d6a;font-size:12px;">none yet</span>';
-}
-document.getElementById('tickerSearch').addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const v = e.target.value.toUpperCase().trim();
-    if (v) togglePick(v, null);
-    e.target.value = '';
-  }
-});
-
-function renderSectors() {
-  document.getElementById('sectorPicks').innerHTML = SECTORS.map(s =>
-    `<span class="pill ${pickedSectors.has(s) ? 'selected' : ''}" onclick="toggleSector('${s}', this)">${s}</span>`
-  ).join('');
-}
-function toggleSector(s) {
-  if (pickedSectors.has(s)) pickedSectors.delete(s); else pickedSectors.add(s);
-  renderSectors();
-}
-
-function pickRisk(r, el) {
-  risk = r;
-  document.querySelectorAll('.risk-btn').forEach(b => b.style.borderColor = '#1f2336');
-  if (el) el.style.borderColor = '#4ee6b8';
-}
-
-async function saveAndGo() {
-  const channels = [...document.querySelectorAll('.ch-channel:checked')].map(c => c.value);
-  try {
-    await fetch('/api/onboarding/save', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tickers: [...pickedTickers],
-        sectors: [...pickedSectors],
-        risk, channels,
-      }),
-    });
-  } catch (e) {}
-  // If push channel selected, request notification permission
-  if (channels.includes('push') && 'Notification' in window) {
-    try { await Notification.requestPermission(); } catch (e) {}
-  }
-  window.location = 'index.html';
-}
-
-renderQuickPicks();
-renderSectors();
-showStep(1);
+  showStep(1);
+})();
 </script>
+<script src="./shared/js/site-motion.js?v=1779368305" defer></script>
 </body>
 </html>

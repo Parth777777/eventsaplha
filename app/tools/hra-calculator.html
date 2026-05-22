@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HRA Exemption Calculator (Section 10(13A)) | Tickwave</title>
+<meta name="description" content="Calculate your HRA tax exemption under Section 10(13A). Enter basic salary, HRA received, rent paid, city — get exempt amount and taxable HRA portion.">
+<link rel="canonical" href="https://alphaevent.in/app/tools/hra-calculator.html">
+<link rel="icon" type="image/jpeg" href="../shared/img/logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/css/tools.css">
+</head>
+<body class="tk-tools"><div class="tk-page">
+<header class="tk-topbar"><a class="tk-brand" href="../index.html"><img src="../shared/img/logo.jpeg" alt="Tickwave"> Tickwave</a><nav><a href="../index.html">Home</a><a href="./" class="active">Calculators</a></nav></header>
+
+<section class="tk-hero"><div>
+<div class="tk-eyebrow">HRA Calculator</div>
+<h1>Your <span class="accent">tax-free HRA</span> exemption</h1>
+<p class="lead">If you rent a home and your salary includes HRA, Section 10(13A) lets you exempt the smallest of three calculations. This tool runs all three and shows the maximum exemption you can claim (old tax regime only).</p>
+</div>
+<div class="tk-hero-art"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 110 L100 50 L170 110" stroke="#e6b84a" stroke-width="2" fill="none"/><rect x="40" y="110" width="120" height="80" fill="#161d28" stroke="#e6b84a"/><rect x="60" y="135" width="30" height="40" fill="#1c2435"/><rect x="110" y="135" width="30" height="40" fill="#1c2435"/><circle cx="100" cy="80" r="6" fill="#e6b84a"/><text x="100" y="180" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#8a94a8">HRA</text></svg></div></section>
+
+<section class="tk-calc">
+<div class="tk-card"><h2>Your inputs (monthly)</h2>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Basic + DA (monthly) <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="bIn" value="50000" min="1000" step="500"></span></div><input type="range" id="b" class="tk-slider" min="1000" max="500000" step="500" value="50000"><div class="tk-slider-bounds"><span>₹1,000</span><span>₹5 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">HRA received (monthly) <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="hIn" value="20000" min="0" step="500"></span></div><input type="range" id="h" class="tk-slider" min="0" max="300000" step="500" value="20000"><div class="tk-slider-bounds"><span>₹0</span><span>₹3 L</span></div></div>
+<div class="tk-field"><div class="tk-field-row"><label class="tk-field-label">Rent paid (monthly) <span class="hint">(₹)</span></label><span class="tk-field-value-wrap"><span class="prefix">₹</span><input type="number" id="rIn" value="25000" min="0" step="500"></span></div><input type="range" id="r" class="tk-slider" min="0" max="300000" step="500" value="25000"><div class="tk-slider-bounds"><span>₹0</span><span>₹3 L</span></div></div>
+<div class="tk-field"><label class="tk-field-label" style="display:block;margin-bottom:10px">City type</label>
+<div class="tk-tabs" id="city"><button data-k="metro" aria-pressed="true">Metro (50% basic)</button><button data-k="nonmetro" aria-pressed="false">Non-metro (40% basic)</button></div></div>
+</div>
+<div class="tk-card"><h2>Exemption</h2>
+<div class="tk-result-headline">HRA exempt (annual)</div>
+<div class="tk-result-value" id="exempt">—</div>
+<div class="tk-result-sub">Taxable HRA portion: <span id="taxablePart">—</span></div>
+<div class="tk-stats" style="grid-template-columns:1fr;gap:8px;margin-top:18px">
+<div class="tk-stat"><div class="lbl">A · Actual HRA received (annual)</div><div class="val" id="A">—</div></div>
+<div class="tk-stat"><div class="lbl">B · Rent − 10% basic (annual)</div><div class="val" id="B">—</div></div>
+<div class="tk-stat"><div class="lbl">C · 50% / 40% of basic (annual)</div><div class="val" id="C">—</div></div>
+<div class="tk-stat" style="background:#1c2435;border-color:#3d4a5c"><div class="lbl">Exempt = min(A, B, C)</div><div class="val bull" id="minPick">—</div></div>
+</div></div></section>
+
+<section class="tk-content">
+<section><h2>HRA exemption formula (Section 10(13A))</h2>
+<p>The exempt HRA is the <strong>minimum</strong> of:</p>
+<div class="tk-formula">A. Actual HRA received from employer<br>B. Rent paid − 10% of basic salary<br>C. 50% of basic (metro) or 40% (non-metro)</div>
+<p>Metros for HRA purposes: <strong>Mumbai, Delhi, Kolkata, Chennai</strong>. Bengaluru, Hyderabad, Pune, etc. are non-metro under this section.</p>
+</section>
+<section><h2>Documents you need</h2>
+<ul><li>Rent receipts every month (or quarterly)</li><li>Landlord PAN if annual rent > ₹1,00,000</li><li>Rent agreement (recommended)</li><li>Bank statement showing rent paid (recommended for clean trail)</li></ul>
+</section>
+<section class="tk-faq"><h2>FAQ</h2>
+<details><summary>Can I claim HRA while owning a house?</summary><p>Yes, if you actually pay rent (e.g. living in a rented place in your work city while your owned house is elsewhere). The house and rented residence must be in different cities, or there must be a genuine reason.</p></details>
+<details><summary>Is HRA available in new tax regime?</summary><p>No. HRA exemption is old regime only.</p></details>
+<details><summary>What if I pay rent to my parents?</summary><p>Allowed, but parent must declare it as rental income on their return. Bank transfer (not cash) recommended. Watch for clubbing-of-income rules if spouse.</p></details>
+</section>
+</section>
+
+<section class="tk-related"><h2>Related calculators</h2><div class="tk-related-grid">
+<a href="income-tax-calculator.html">Income Tax<span class="sub">Apply this exemption</span></a>
+<a href="salary-calculator.html">Salary Calculator<span class="sub">In-hand monthly</span></a>
+<a href="home-loan-calculator.html">Home Loan EMI<span class="sub">Compare buying vs renting</span></a>
+</div></section>
+</div>
+
+<script src="../shared/js/tools.js"></script>
+<script>
+(function(){var T=window.TKTools;var city='metro';
+function compute(){
+  var basic=+document.getElementById('b').value, hra=+document.getElementById('h').value, rent=+document.getElementById('r').value;
+  var A=hra*12, B=Math.max(0,(rent-basic*0.1))*12, C=(city==='metro'?0.5:0.4)*basic*12;
+  var exempt=Math.min(A,B,C);
+  document.getElementById('A').textContent=T.formatINRShort(A);
+  document.getElementById('B').textContent=T.formatINRShort(B);
+  document.getElementById('C').textContent=T.formatINRShort(C);
+  T.animateNumber(document.getElementById('exempt'),exempt);
+  document.getElementById('taxablePart').textContent=T.formatINRShort(A-exempt)+' / year';
+  var pickLbl=exempt===A?'A (actual HRA)':exempt===B?'B (rent − 10% basic)':'C ('+(city==='metro'?'50':'40')+'% basic)';
+  document.getElementById('minPick').textContent=T.formatINRShort(exempt)+' — via '+pickLbl;
+}
+document.querySelectorAll('#city button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#city button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');city=b.dataset.k;compute();});});
+T.bindSlider({slider:document.getElementById('b'),input:document.getElementById('bIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('h'),input:document.getElementById('hIn'),onChange:compute});
+T.bindSlider({slider:document.getElementById('r'),input:document.getElementById('rIn'),onChange:compute});
+compute();
+T.mountFAQ([{q:'Can I claim HRA while owning a house?',a:'Yes if you actually pay rent. House and rented place should be in different cities or have genuine reason.'},{q:'HRA in new tax regime?',a:'No. HRA exemption is old regime only.'},{q:'Pay rent to parents allowed?',a:'Yes, parent must declare as rental income. Bank transfer recommended.'}]);
+T.mountSoftwareSchema({name:'HRA Calculator',description:'House rent allowance tax exemption Section 10(13A) India.'});
+})();
+</script>
+</body></html>
